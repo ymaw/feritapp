@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Registro de ventas semanal para tu local de ropa, con dictado por voz.">
+<meta name="theme-color" content="#14161c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Registro de Ventas">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>FeritApp - Tus Ventas de Feria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div id="authGate">
+  <div class="gate-card">
+
+    <div id="gateStep1">
+      <p class="eyebrow">FeritApp · Registro de Ventas</p>
+      <h1>Ingresá tu correo</h1>
+      <p class="gate-sub">Te vamos a mandar un link de acceso a tu correo. Con un click entrás, sin contraseña.</p>
+
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="gateEmail" placeholder="tu@correo.com" autocomplete="email" inputmode="email">
+      </div>
+      <p class="gate-error" id="gateError" style="display:none;"></p>
+      <button class="save-btn" id="gateSubmit" disabled>Enviar link de acceso</button>
+      <p class="gate-note">Vas a poder entrar desde cualquier dispositivo con este mismo correo: tus ventas quedan guardadas en la nube, no solo en este dispositivo.</p>
+    </div>
+
+    <div id="gateSent" style="display:none;">
+      <p class="eyebrow">FeritApp · Registro de Ventas</p>
+      <h1>Revisá tu correo</h1>
+      <p class="gate-sub">📩 Te enviamos un link de acceso a <strong id="sentEmailTarget"></strong>.<br><br>Abrilo desde este mismo dispositivo para entrar. No hace falta contraseña.</p>
+      <button class="reset-link" id="backToEmailBtn" type="button">Usar otro correo</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="appRoot" style="display:none;">
+
+<header>
+  <div class="header-top">
+    <div>
+      <p class="eyebrow">FeritApp · Registro de Ventas</p>
+      <h1>Registro semanal</h1>
+    </div>
+    <button class="logout-link" id="logoutBtn">Salir</button>
+  </div>
+  <p class="session-email" id="sessionEmail"></p>
+</header>
+
+<div class="section-block">
+  <p class="section-title">Artículos de esta semana</p>
+  <div id="currentWeekTable"></div>
+</div>
+
+<div class="ticket-wrap" id="currentTicket"></div>
+
+<div class="section-block">
+  <p class="section-title">Semanas anteriores</p>
+  <div class="weeks" id="weeksContainer"></div>
+</div>
+
+<div class="footer-row">
+  <button class="reset-link" id="resetBtn">Borrar todos los datos</button>
+</div>
+
+<button class="fab" id="openSheet" aria-label="Agregar venta">+</button>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <h2>Nueva venta</h2>
+  <div id="voiceWarning"></div>
+
+  <div class="field">
+    <label>Nombre del cliente</label>
+    <div class="input-row">
+      <input type="text" id="fCliente" placeholder="Ej: Juan Pérez">
+      <button class="mic-btn" data-target="fCliente" data-mode="text" aria-label="Dictar nombre del cliente">🎤</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Artículo</label>
+    <div class="input-row">
+      <input type="text" id="fArticulo" placeholder="Ej: remera azul talle M">
+      <button class="mic-btn" data-target="fArticulo" data-mode="text" aria-label="Dictar artículo">🎤</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Precio</label>
+    <div class="input-row">
+      <input type="number" id="fPrecio" placeholder="0" inputmode="decimal">
+      <button class="mic-btn" data-target="fPrecio" data-mode="number" aria-label="Dictar precio">🎤</button>
+    </div>
+    <p class="hint">Podés decir el número o el texto: "tres mil quinientos".</p>
+  </div>
+
+  <div class="field">
+    <label>Categoría</label>
+    <div class="chip-row" id="categoryChips"></div>
+    <div class="new-cat-row" id="newCatRow" style="display:none;">
+      <input type="text" id="fNuevaCategoria" placeholder="Nombre de la categoría">
+      <button class="mic-btn" data-target="fNuevaCategoria" data-mode="text" type="button" aria-label="Dictar categoría">🎤</button>
+      <button class="mini-btn" id="confirmNewCat" type="button">Crear</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Estado del pago</label>
+    <div class="seg">
+      <button type="button" class="pago-opt paid" data-val="1">Pagado</button>
+      <button type="button" class="pago-opt active pending" data-val="0">Pendiente</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Quién retira</label>
+    <div class="seg">
+      <button type="button" class="retira-opt active neutral" data-val="cliente">El mismo cliente</button>
+      <button type="button" class="retira-opt neutral" data-val="otro">Otra persona</button>
+    </div>
+  </div>
+
+  <div class="field" id="terceroField" style="display:none;">
+    <label>Nombre de quien retira</label>
+    <div class="input-row">
+      <input type="text" id="fTercero" placeholder="Ej: María Gómez">
+      <button class="mic-btn" data-target="fTercero" data-mode="text" aria-label="Dictar nombre">🎤</button>
+    </div>
+  </div>
+
+  <button class="save-btn" id="saveBtn">Guardar venta</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div><!-- /appRoot -->
+
+<script src="script.js"></script>
+</body>
+</html>
