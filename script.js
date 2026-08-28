@@ -15,7 +15,14 @@ document.addEventListener('DOMContentLoaded', function(){
                      && SUPABASE_ANON_KEY.indexOf("PEGAR_") !== 0
                      && typeof supabase !== 'undefined';
 
-  var sb = SUPABASE_READY ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  var sb = SUPABASE_READY ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage
+    }
+  }) : null;
   var entered = false;
 
   function isValidEmail(v){
@@ -48,7 +55,24 @@ document.addEventListener('DOMContentLoaded', function(){
     btn.disabled = true; btn.textContent = 'Enviando…';
 
     var redirectTo = window.location.origin + window.location.pathname;
-    var result = await sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: redirectTo } });
+
+    // Paso 1: probamos asumiendo que el correo YA está registrado
+    // (shouldCreateUser:false no crea cuenta nueva; si el correo no
+    // existe todavía, Supabase devuelve error y ahí sabemos que es nuevo).
+    var isReturning = true;
+    var result = await sb.auth.signInWithOtp({
+      email: email,
+      options: { emailRedirectTo: redirectTo, shouldCreateUser: false }
+    });
+
+    if(result.error){
+      // No estaba registrado: lo damos de alta y le mandamos el link igual.
+      isReturning = false;
+      result = await sb.auth.signInWithOtp({
+        email: email,
+        options: { emailRedirectTo: redirectTo, shouldCreateUser: true }
+      });
+    }
 
     btn.disabled = false; btn.textContent = 'Enviar link de acceso';
 
@@ -57,7 +81,10 @@ document.addEventListener('DOMContentLoaded', function(){
       return;
     }
 
-    document.getElementById('sentEmailTarget').textContent = email;
+    document.getElementById('gateSentTitle').textContent = isReturning ? '¡Bienvenido/a de vuelta!' : 'Revisá tu correo';
+    document.getElementById('gateSentText').innerHTML = isReturning
+      ? '👋 Te reenviamos el link de acceso a <strong>' + email + '</strong>. Abrilo desde este mismo dispositivo para entrar a tu FeritApp.'
+      : '📩 Te enviamos un link de acceso a <strong>' + email + '</strong>.<br><br>Abrilo desde este mismo dispositivo para entrar. No hace falta contraseña.';
     document.getElementById('gateStep1').style.display = 'none';
     document.getElementById('gateSent').style.display = 'block';
   });
@@ -206,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return s.getFullYear() + "-" + String(s.getMonth()+1).padStart(2,'0') + "-" + String(s.getDate()).padStart(2,'0');
   }
   var MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  var MESES_LARGO = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
   function formatRange(weekStartKey){
     var start = new Date(weekStartKey + "T00:00:00");
     var end = new Date(start); end.setDate(end.getDate()+6);
@@ -213,6 +241,15 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   function money(n){
     return "$" + Number(n||0).toLocaleString('es-AR');
+  }
+  function monthKey(d){
+    var date = new Date(d);
+    return date.getFullYear() + "-" + String(date.getMonth()+1).padStart(2,'0');
+  }
+  function monthLabel(key){
+    var parts = key.split("-");
+    var y = parts[0], m = parseInt(parts[1],10) - 1;
+    return MESES_LARGO[m] + " " + y;
   }
 
   /* ---------------- rendering ---------------- */
@@ -226,6 +263,96 @@ document.addEventListener('DOMContentLoaded', function(){
     return groups;
   }
 
+  function groupByMonth(){
+    var groups = {};
+    sales.forEach(function(s){
+      var k = monthKey(s.fecha);
+      if(!groups[k]) groups[k] = [];
+      groups[k].push(s);
+    });
+    return groups;
+  }
+
+  var compareMonthA = null, compareMonthB = null;
+
+  function deltaHtml(a, b){
+    if(!b){
+      if(!a) return '<span class="delta flat">—</span>';
+      return '<span class="delta up">▲ nuevo</span>';
+    }
+    var pct = Math.round(((a - b) / b) * 100);
+    if(pct === 0) return '<span class="delta flat">0%</span>';
+    var cls = pct > 0 ? 'up' : 'down';
+    var arrow = pct > 0 ? '▲' : '▼';
+    return '<span class="delta ' + cls + '">' + arrow + ' ' + Math.abs(pct) + '%</span>';
+  }
+
+  function renderMonthComparison(){
+    var wrap = document.getElementById('monthCompare');
+    if(!wrap) return;
+
+    var groups = groupByMonth();
+    var keys = Object.keys(groups).sort();
+
+    if(keys.length === 0){
+      wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas suficientes para comparar meses.</div>';
+      return;
+    }
+
+    var currentMK = monthKey(new Date());
+    var monthStats = {};
+    keys.forEach(function(k){ monthStats[k] = weekStats(groups[k]); });
+    var maxTotal = Math.max.apply(null, keys.map(function(k){ return monthStats[k].total; }));
+
+    var chartKeys = keys.slice(-6);
+    var chartHtml = '<div class="month-chart">';
+    chartKeys.forEach(function(k){
+      var st = monthStats[k];
+      var heightPct = maxTotal > 0 ? Math.max(4, Math.round((st.total / maxTotal) * 100)) : 4;
+      var monthIdx = parseInt(k.split("-")[1], 10) - 1;
+      chartHtml += '<div class="month-bar-col">' +
+        '<div class="month-bar-value">' + money(st.total) + '</div>' +
+        '<div class="month-bar' + (k === currentMK ? ' current' : '') + '" style="height:' + heightPct + '%"></div>' +
+        '<div class="month-bar-label">' + MESES[monthIdx] + '</div>' +
+      '</div>';
+    });
+    chartHtml += '</div>';
+
+    if(!compareMonthA || keys.indexOf(compareMonthA) === -1){ compareMonthA = keys[keys.length - 1]; }
+    if(!compareMonthB || keys.indexOf(compareMonthB) === -1){ compareMonthB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
+
+    var optionsHtml = keys.slice().reverse().map(function(k){
+      return '<option value="' + k + '">' + monthLabel(k) + '</option>';
+    }).join('');
+
+    var selectHtml = '<div class="compare-row">' +
+      '<select class="compare-select" id="compareSelectA">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareSelectB">' + optionsHtml + '</select>' +
+    '</div>';
+
+    var stA = monthStats[compareMonthA] || {total:0,cobrado:0,pendiente:0,count:0};
+    var stB = monthStats[compareMonthB] || {total:0,cobrado:0,pendiente:0,count:0};
+
+    var tableHtml = '<div class="compare-table-card"><table class="compare-table"><tbody>' +
+      '<tr><td class="label"></td><td class="head">' + monthLabel(compareMonthA) + '</td><td class="head">' + monthLabel(compareMonthB) + '</td></tr>' +
+      '<tr><td class="label">Total vendido</td><td class="num">' + money(stA.total) + '</td><td class="num">' + money(stB.total) + deltaHtml(stA.total, stB.total) + '</td></tr>' +
+      '<tr><td class="label">Cobrado</td><td class="num">' + money(stA.cobrado) + '</td><td class="num">' + money(stB.cobrado) + deltaHtml(stA.cobrado, stB.cobrado) + '</td></tr>' +
+      '<tr><td class="label">Pendiente</td><td class="num">' + money(stA.pendiente) + '</td><td class="num">' + money(stB.pendiente) + deltaHtml(stA.pendiente, stB.pendiente) + '</td></tr>' +
+      '<tr><td class="label">Artículos vendidos</td><td class="num">' + stA.count + '</td><td class="num">' + stB.count + deltaHtml(stA.count, stB.count) + '</td></tr>' +
+    '</tbody></table></div>';
+
+    wrap.innerHTML = chartHtml + selectHtml + tableHtml;
+
+    document.getElementById('compareSelectA').value = compareMonthA;
+    document.getElementById('compareSelectB').value = compareMonthB;
+    document.getElementById('compareSelectA').addEventListener('change', function(){
+      compareMonthA = this.value; renderMonthComparison();
+    });
+    document.getElementById('compareSelectB').addEventListener('change', function(){
+      compareMonthB = this.value; renderMonthComparison();
+    });
+  }
+
   function weekStats(items){
     var total=0, cobrado=0, pendiente=0;
     items.forEach(function(i){
@@ -236,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return {total:total, cobrado:cobrado, pendiente:pendiente, count:items.length};
   }
 
-  function renderSalesTable(items){
+  function renderSalesTable(items, editable){
     if(!items.length){
       return '<div class="empty-inline">Sin artículos registrados.</div>';
     }
@@ -255,6 +382,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 '<td><div class="client-name">' + escapeHtml(item.cliente || 'Sin nombre') + '</div>' + retiraHtml + '</td>' +
                 '<td class="num price-cell">' + money(item.precio) + '</td>' +
                 '<td><div class="row-actions">' +
+                  (editable ? '<button class="edit-btn" data-edit="' + item.id + '" aria-label="Editar">✎</button>' : '') +
                   '<button class="pay-toggle ' + (item.pagado ? 'paid' : 'pending') + '" data-toggle-pay="' + item.id + '">' + (item.pagado ? 'Pagado' : 'Pendiente') + '</button>' +
                   '<button class="del-btn" data-del="' + item.id + '">✕</button>' +
                 '</div></td>' +
@@ -277,6 +405,13 @@ document.addEventListener('DOMContentLoaded', function(){
         deleteSale(btn.getAttribute('data-del'));
       });
     });
+    root.querySelectorAll('[data-edit]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-edit');
+        var item = sales.find(function(s){ return s.id === id; });
+        if(item){ openEditSheet(item); }
+      });
+    });
   }
 
   function render(){
@@ -284,10 +419,10 @@ document.addEventListener('DOMContentLoaded', function(){
     var keys = Object.keys(groups).sort().reverse();
     var currentKey = weekKey(new Date());
 
-    /* current week: table of articles (shown above the summary) */
+    /* current week: table of articles (shown above the summary) — editable */
     var curItems = (groups[currentKey] || []).slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
     var curTableEl = document.getElementById('currentWeekTable');
-    curTableEl.innerHTML = renderSalesTable(curItems);
+    curTableEl.innerHTML = renderSalesTable(curItems, true);
     bindTableEvents(curTableEl);
 
     /* current week: summary ticket, below the table */
@@ -307,6 +442,8 @@ document.addEventListener('DOMContentLoaded', function(){
     var container = document.getElementById('weeksContainer');
     if(pastKeys.length === 0){
       container.innerHTML = '<div class="empty"><b>Sin historial todavía</b>Las semanas anteriores van a aparecer acá.</div>';
+      renderMonthComparison();
+      renderClientSearch();
       return;
     }
     var html = '';
@@ -330,7 +467,40 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('wk-' + wk).classList.toggle('open');
       });
     });
+
+    renderMonthComparison();
+    renderClientSearch();
   }
+
+  function renderClientSearch(){
+    var input = document.getElementById('clientSearch');
+    var wrap = document.getElementById('clientSearchResults');
+    if(!input || !wrap) return;
+    var query = input.value.trim().toLowerCase();
+    if(!query){ wrap.innerHTML = ''; return; }
+
+    var matches = sales.filter(function(s){
+      return (s.cliente || '').toLowerCase().indexOf(query) !== -1;
+    });
+
+    if(matches.length === 0){
+      wrap.innerHTML = '<div class="empty-inline">No se encontraron ventas para ese nombre.</div>';
+      return;
+    }
+
+    var st = weekStats(matches);
+    var owedClass = st.pendiente > 0 ? '' : 'zero';
+    var summaryHtml = '<div class="client-summary">' +
+      '<div><div class="name">' + escapeHtml(query) + '</div><div class="owed-label">Debe abonar en total</div></div>' +
+      '<div class="owed-value ' + owedClass + '">' + money(st.pendiente) + '</div>' +
+    '</div>';
+
+    var sorted = matches.slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+    wrap.innerHTML = summaryHtml + renderSalesTable(sorted, false);
+    bindTableEvents(wrap);
+  }
+
+  document.getElementById('clientSearch').addEventListener('input', renderClientSearch);
 
   function escapeHtml(str){
     var d = document.createElement('div');
@@ -358,6 +528,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- form state ---------------- */
   var formState = { pagado: false, retira: 'cliente', categoria: '' };
+  var editingSaleId = null;
 
   function resetForm(){
     document.getElementById('fCliente').value = '';
@@ -371,7 +542,33 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('terceroField').style.display = 'none';
     document.getElementById('newCatRow').style.display = 'none';
     document.getElementById('fNuevaCategoria').value = '';
+    editingSaleId = null;
+    document.getElementById('sheetTitle').textContent = 'Nueva venta';
+    document.getElementById('saveBtnText').textContent = 'Guardar venta';
     renderCategoryChips();
+  }
+
+  function openEditSheet(item){
+    editingSaleId = item.id;
+    document.getElementById('fCliente').value = item.cliente;
+    document.getElementById('fArticulo').value = item.articulo;
+    document.getElementById('fPrecio').value = item.precio;
+    document.getElementById('fTercero').value = item.tercero || '';
+
+    formState.pagado = !!item.pagado;
+    formState.retira = item.retira === 'otro' ? 'otro' : 'cliente';
+    formState.categoria = item.categoria || (categories.length ? categories[0] : '');
+
+    document.querySelectorAll('.pago-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === (formState.pagado ? '1' : '0')); });
+    document.querySelectorAll('.retira-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === formState.retira); });
+    document.getElementById('terceroField').style.display = (formState.retira === 'otro') ? 'block' : 'none';
+
+    renderCategoryChips();
+
+    document.getElementById('sheetTitle').textContent = 'Editar venta';
+    document.getElementById('saveBtnText').textContent = 'Guardar cambios';
+
+    openSheet();
   }
 
   /* ---------------- category chips ---------------- */
@@ -449,7 +646,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(isNaN(precio) || precio <= 0){ showToast('Ingresá un precio válido'); return; }
     if(formState.retira === 'otro' && !tercero){ showToast('Falta el nombre de quien retira'); return; }
 
-    var newSale = {
+    var saleData = {
       cliente: cliente,
       articulo: articulo,
       precio: precio,
@@ -463,14 +660,24 @@ document.addEventListener('DOMContentLoaded', function(){
     saveBtn.disabled = true;
 
     try{
-      var res = await sb.from('sales').insert([newSale]).select();
-      if(res.error) throw res.error;
-      sales.unshift(mapRowToSale(res.data[0]));
-      render();
-      closeSheet();
-      showToast('Venta guardada');
+      if(editingSaleId){
+        var updRes = await sb.from('sales').update(saleData).eq('id', editingSaleId).select();
+        if(updRes.error) throw updRes.error;
+        var idx = sales.findIndex(function(s){ return s.id === editingSaleId; });
+        if(idx !== -1){ sales[idx] = mapRowToSale(updRes.data[0]); }
+        render();
+        closeSheet();
+        showToast('Venta actualizada');
+      }else{
+        var res = await sb.from('sales').insert([saleData]).select();
+        if(res.error) throw res.error;
+        sales.unshift(mapRowToSale(res.data[0]));
+        render();
+        closeSheet();
+        showToast('Venta guardada');
+      }
     }catch(e){
-      showToast('No se pudo guardar la venta. Probá de nuevo.');
+      showToast('No se pudo guardar. Probá de nuevo.');
     }finally{
       saveBtn.disabled = false;
     }
@@ -561,6 +768,7 @@ document.addEventListener('DOMContentLoaded', function(){
         var cap = transcript.charAt(0).toUpperCase() + transcript.slice(1);
         input.value = cap;
       }
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     };
     recognition.onerror = function(event){
       if(event.error === 'not-allowed' || event.error === 'permission-denied'){
