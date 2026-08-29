@@ -47,11 +47,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function checkGateInputs(){
-    var email = document.getElementById('gateEmail').value.trim();
-    var pin = document.getElementById('gatePin').value;
-    var ok = !!email && !!pin;
-    document.getElementById('loginBtn').disabled = !ok;
-    document.getElementById('signupBtn').disabled = !ok;
     document.getElementById('gateError').style.display = 'none';
   }
 
