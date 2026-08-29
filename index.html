@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Registro de ventas semanal para tu local de ropa, con dictado por voz.">
-<meta name="theme-color" content="#14161c">
+<meta name="theme-color" content="#01172f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Registro de Ventas">
+<meta name="apple-mobile-web-app-title" content="FeritApp">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Registro de Ventas</title>
+<title>FeritApp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -23,14 +23,9 @@
   <div class="gate-card">
 
     <div id="gateStep1">
-      <p class="eyebrow">FeritApp · Registro de Ventas</p>
-      <h1 id="gateModeTitle">Ingresá a tu cuenta</h1>
-      <p class="gate-sub" id="gateModeSub">Ingresá tu correo y tu PIN de acceso.</p>
-
-      <div class="seg" style="margin-bottom:18px;">
-        <button type="button" class="mode-opt active" data-mode="login">Iniciar sesión</button>
-        <button type="button" class="mode-opt" data-mode="signup">Crear cuenta</button>
-      </div>
+      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+      <h1>Ingresá a tu cuenta</h1>
+      <p class="gate-sub">Ingresá tu correo y tu contraseña.</p>
 
       <div class="field">
         <label>Correo electrónico</label>
@@ -38,45 +33,50 @@
       </div>
 
       <div class="field">
-        <label>PIN de acceso (6 dígitos)</label>
-        <input type="password" id="gatePin" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password">
+        <label>Contraseña</label>
+        <input type="password" id="gatePin" placeholder="••••••••" autocomplete="current-password">
+        <p class="hint">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
       </div>
 
-      <div class="field" id="pinConfirmField" style="display:none;">
-        <label>Confirmar PIN</label>
-        <input type="password" id="gatePinConfirm" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+      <div class="field">
+        <label>Confirmar contraseña <span style="text-transform:none; opacity:.7;">(solo para crear cuenta)</span></label>
+        <input type="password" id="gatePinConfirm" placeholder="••••••••" autocomplete="new-password">
       </div>
 
       <p class="gate-error" id="gateError" style="display:none;"></p>
-      <button class="save-btn" id="gateSubmit" disabled><span id="gateSubmitText">Ingresar</span></button>
+
+      <div class="gate-actions">
+        <button class="gate-btn gate-btn-primary" id="loginBtn" type="button" disabled>Iniciar sesión</button>
+        <button class="gate-btn gate-btn-secondary" id="signupBtn" type="button" disabled>Crear cuenta</button>
+      </div>
 
       <div class="gate-links">
-        <button class="reset-link" id="forgotPinBtn" type="button">Olvidé mi PIN</button>
+        <button class="reset-link" id="forgotPinBtn" type="button">Olvidé mi contraseña</button>
       </div>
-      <p class="gate-note">Tus ventas quedan guardadas en la nube: podés entrar desde cualquier dispositivo con el mismo correo y PIN.</p>
+      <p class="gate-note">Tus ventas quedan guardadas en la nube: podés entrar desde cualquier dispositivo con el mismo correo y contraseña.</p>
     </div>
 
     <div id="gateSent" style="display:none;">
-      <p class="eyebrow">FeritApp · Registro de Ventas</p>
+      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
       <h1 id="gateSentTitle">Revisá tu correo</h1>
       <p class="gate-sub" id="gateSentText"></p>
       <button class="reset-link" id="backToEmailBtn" type="button">Volver</button>
     </div>
 
     <div id="gateNewPin" style="display:none;">
-      <p class="eyebrow">FeritApp · Registro de Ventas</p>
-      <h1>Elegí tu nuevo PIN</h1>
-      <p class="gate-sub">Ingresá un PIN nuevo de 6 dígitos para tu cuenta.</p>
+      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+      <h1>Elegí tu nueva contraseña</h1>
+      <p class="gate-sub">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
       <div class="field">
-        <label>Nuevo PIN</label>
-        <input type="password" id="newPin" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+        <label>Nueva contraseña</label>
+        <input type="password" id="newPin" placeholder="••••••••" autocomplete="new-password">
       </div>
       <div class="field">
-        <label>Confirmar nuevo PIN</label>
-        <input type="password" id="newPinConfirm" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+        <label>Confirmar nueva contraseña</label>
+        <input type="password" id="newPinConfirm" placeholder="••••••••" autocomplete="new-password">
       </div>
       <p class="gate-error" id="newPinError" style="display:none;"></p>
-      <button class="save-btn" id="newPinSubmit">Guardar PIN</button>
+      <button class="save-btn" id="newPinSubmit">Guardar contraseña</button>
     </div>
 
   </div>
@@ -87,7 +87,7 @@
 <header>
   <div class="header-top">
     <div>
-      <p class="eyebrow">FeritApp · Registro de Ventas</p>
+      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
       <h1>Registro semanal</h1>
     </div>
     <button class="logout-link" id="logoutBtn">Salir</button>

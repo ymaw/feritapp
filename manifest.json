@@ -1,31 +1,25 @@
 {
-  "name": "Registro de Ventas — Boutique",
-  "short_name": "Ventas",
+  "name": "FeritApp — Todas tus ventas en un solo lugar",
+  "short_name": "FeritApp",
   "description": "Registro de ventas semanal para tu local de ropa, con dictado por voz.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#14161c",
-  "theme_color": "#14161c",
+  "background_color": "#01172f",
+  "theme_color": "#01172f",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ]
 }

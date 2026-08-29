@@ -26,19 +26,19 @@ document.addEventListener('DOMContentLoaded', function(){
   var entered = false;
 
   /* =========================================================
-     ACCESO: correo + PIN con Supabase Auth
+     ACCESO: correo + contraseña con Supabase Auth
      =========================================================
      El correo se confirma UNA sola vez, al crear la cuenta.
-     Las próximas veces, se valida correo + PIN directamente
+     Las próximas veces, se valida correo + contraseña directamente
      contra Supabase (signInWithPassword) — sin reenviar nada.
   ========================================================= */
-  var gateMode = 'login'; // 'login' | 'signup'
 
   function isValidEmail(v){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   }
-  function isValidPin(v){
-    return /^\d{6}$/.test(v);
+  // Mínimo 6 caracteres, al menos 1 mayúscula, 1 número y 1 símbolo.
+  function isValidPassword(v){
+    return /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{6,}$/.test(v);
   }
   function showGateError(msg){
     var err = document.getElementById('gateError');
@@ -46,92 +46,84 @@ document.addEventListener('DOMContentLoaded', function(){
     err.style.display = 'block';
   }
 
-  document.querySelectorAll('.mode-opt').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      document.querySelectorAll('.mode-opt').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      gateMode = btn.dataset.mode;
-      var isSignup = gateMode === 'signup';
-      document.getElementById('pinConfirmField').style.display = isSignup ? 'block' : 'none';
-      document.getElementById('gateModeTitle').textContent = isSignup ? 'Creá tu cuenta' : 'Ingresá a tu cuenta';
-      document.getElementById('gateModeSub').textContent = isSignup
-        ? 'Elegí un PIN de 6 dígitos. Vas a confirmar tu correo una sola vez, ahora.'
-        : 'Ingresá tu correo y tu PIN de acceso.';
-      document.getElementById('gateSubmitText').textContent = isSignup ? 'Crear cuenta' : 'Ingresar';
-      document.getElementById('forgotPinBtn').style.display = isSignup ? 'none' : 'inline-block';
-      checkGateInputs();
-    });
-  });
-
   function checkGateInputs(){
     var email = document.getElementById('gateEmail').value.trim();
-    var pin = document.getElementById('gatePin').value.trim();
-    var ok = !!email && isValidPin(pin);
-    if(gateMode === 'signup'){
-      var pinConfirm = document.getElementById('gatePinConfirm').value.trim();
-      ok = ok && pinConfirm === pin;
-    }
-    document.getElementById('gateSubmit').disabled = !ok;
+    var pin = document.getElementById('gatePin').value;
+    var ok = !!email && !!pin;
+    document.getElementById('loginBtn').disabled = !ok;
+    document.getElementById('signupBtn').disabled = !ok;
     document.getElementById('gateError').style.display = 'none';
   }
   ['gateEmail','gatePin','gatePinConfirm'].forEach(function(id){
     document.getElementById(id).addEventListener('input', checkGateInputs);
   });
 
-  document.getElementById('gateSubmit').addEventListener('click', async function(){
+  document.getElementById('loginBtn').addEventListener('click', async function(){
     var email = document.getElementById('gateEmail').value.trim().toLowerCase();
-    var pin = document.getElementById('gatePin').value.trim();
+    var pin = document.getElementById('gatePin').value;
 
     if(!isValidEmail(email)){ showGateError('Ingresá un correo electrónico válido.'); return; }
-    if(!isValidPin(pin)){ showGateError('El PIN debe tener 6 dígitos.'); return; }
+    if(!pin){ showGateError('Ingresá tu contraseña.'); return; }
     if(!SUPABASE_READY){ showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).'); return; }
 
-    var btn = document.getElementById('gateSubmit');
-    btn.disabled = true;
-    var redirectTo = window.location.origin + window.location.pathname;
+    var loginBtn = document.getElementById('loginBtn');
+    var signupBtn = document.getElementById('signupBtn');
+    loginBtn.disabled = true; signupBtn.disabled = true;
 
-    if(gateMode === 'signup'){
-      var pinConfirm = document.getElementById('gatePinConfirm').value.trim();
-      if(pin !== pinConfirm){ showGateError('Los PIN no coinciden.'); btn.disabled = false; return; }
+    var loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
 
-      var signUpRes = await sb.auth.signUp({
-        email: email,
-        password: pin,
-        options: { emailRedirectTo: redirectTo }
-      });
-      btn.disabled = false;
+    loginBtn.disabled = false; signupBtn.disabled = false;
 
-      if(signUpRes.error){
-        showGateError(
-          /registered|exists/i.test(signUpRes.error.message)
-            ? 'Ese correo ya tiene una cuenta creada. Elegí "Iniciar sesión".'
-            : 'No se pudo crear la cuenta: ' + signUpRes.error.message
-        );
-        return;
-      }
-
-      document.getElementById('gateSentTitle').textContent = '¡Cuenta creada!';
-      document.getElementById('gateSentText').innerHTML =
-        '📩 Te enviamos un correo de confirmación a <strong>' + email + '</strong>. Abrilo una sola vez para activar tu cuenta — de ahí en más, entrás directo con tu correo y PIN, sin más correos.';
-      document.getElementById('gateStep1').style.display = 'none';
-      document.getElementById('gateSent').style.display = 'block';
-
-    }else{
-      var loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
-      btn.disabled = false;
-
-      if(loginRes.error){
-        showGateError('Correo o PIN incorrectos.');
-        return;
-      }
-      if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user); }
+    if(loginRes.error){
+      showGateError('Correo o contraseña incorrectos.');
+      return;
     }
+    if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user); }
+  });
+
+  document.getElementById('signupBtn').addEventListener('click', async function(){
+    var email = document.getElementById('gateEmail').value.trim().toLowerCase();
+    var pin = document.getElementById('gatePin').value;
+    var pinConfirm = document.getElementById('gatePinConfirm').value;
+
+    if(!isValidEmail(email)){ showGateError('Ingresá un correo electrónico válido.'); return; }
+    if(!isValidPassword(pin)){ showGateError('La contraseña necesita mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'); return; }
+    if(pin !== pinConfirm){ showGateError('Las contraseñas no coinciden.'); return; }
+    if(!SUPABASE_READY){ showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).'); return; }
+
+    var loginBtn = document.getElementById('loginBtn');
+    var signupBtn = document.getElementById('signupBtn');
+    loginBtn.disabled = true; signupBtn.disabled = true;
+
+    var redirectTo = window.location.origin + window.location.pathname;
+    var signUpRes = await sb.auth.signUp({
+      email: email,
+      password: pin,
+      options: { emailRedirectTo: redirectTo }
+    });
+
+    loginBtn.disabled = false; signupBtn.disabled = false;
+
+    if(signUpRes.error){
+      showGateError(
+        /registered|exists/i.test(signUpRes.error.message)
+          ? 'Ese correo ya tiene una cuenta creada. Usá "Iniciar sesión".'
+          : 'No se pudo crear la cuenta: ' + signUpRes.error.message
+      );
+      return;
+    }
+
+    document.getElementById('gateSentTitle').textContent = '¡Cuenta creada!';
+    document.getElementById('gateSentText').innerHTML =
+      '📩 Te enviamos un correo de confirmación a <strong>' + email + '</strong>. Abrilo una sola vez para activar tu cuenta — de ahí en más, entrás directo con tu correo y contraseña, sin más correos.';
+    document.getElementById('gateStep1').style.display = 'none';
+    document.getElementById('gateSent').style.display = 'block';
   });
 
   document.getElementById('forgotPinBtn').addEventListener('click', async function(){
     var email = document.getElementById('gateEmail').value.trim().toLowerCase();
     if(!isValidEmail(email)){
-      showGateError('Escribí tu correo arriba y volvé a tocar "Olvidé mi PIN".');
+      showGateError('Escribí tu correo arriba y volvé a tocar "Olvidé mi contraseña".');
       return;
     }
     if(!SUPABASE_READY){ showGateError('Falta configurar Supabase.'); return; }
@@ -144,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     document.getElementById('gateSentTitle').textContent = 'Revisá tu correo';
     document.getElementById('gateSentText').innerHTML =
-      '📩 Te enviamos un link para elegir un PIN nuevo a <strong>' + email + '</strong>. Abrilo desde este dispositivo.';
+      '📩 Te enviamos un link para elegir una contraseña nueva a <strong>' + email + '</strong>. Abrilo desde este dispositivo.';
     document.getElementById('gateStep1').style.display = 'none';
     document.getElementById('gateSent').style.display = 'block';
   });
@@ -155,17 +147,17 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.getElementById('newPinSubmit').addEventListener('click', async function(){
-    var p1 = document.getElementById('newPin').value.trim();
-    var p2 = document.getElementById('newPinConfirm').value.trim();
+    var p1 = document.getElementById('newPin').value;
+    var p2 = document.getElementById('newPinConfirm').value;
     var err = document.getElementById('newPinError');
     err.style.display = 'none';
 
-    if(!isValidPin(p1)){ err.textContent = 'El PIN debe tener 6 dígitos.'; err.style.display = 'block'; return; }
-    if(p1 !== p2){ err.textContent = 'Los PIN no coinciden.'; err.style.display = 'block'; return; }
+    if(!isValidPassword(p1)){ err.textContent = 'Mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
+    if(p1 !== p2){ err.textContent = 'Las contraseñas no coinciden.'; err.style.display = 'block'; return; }
 
     var res = await sb.auth.updateUser({ password: p1 });
     if(res.error){
-      err.textContent = 'No se pudo guardar el PIN: ' + res.error.message;
+      err.textContent = 'No se pudo guardar la contraseña: ' + res.error.message;
       err.style.display = 'block';
       return;
     }
@@ -232,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function(){
   var categories = [];
   var sheet = document.getElementById('sheet');
   var scrim = document.getElementById('scrim');
-  var CATEGORY_COLORS = ['#6C8EBF','#9B8AC4','#5FA8A0','#C97B5B','#B8A45C','#7C93A0','#B07AA1','#6FA8DC'];
+  var CATEGORY_COLORS = ['#446DF6','#08A4BD','#17A897','#B23A52','#8C4A9C','#5FA8A0','#6C8EBF','#C9A15F'];
 
   function categoryColor(name){
     var str = String(name || '');
