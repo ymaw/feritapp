@@ -1,44 +1,23 @@
 // Service worker mínimo: solo lo necesario para que el navegador
-// considere la app "instalable" (PWA). No cachea datos de Supabase,
-// así que siempre vas a ver la información más actualizada.
-const CACHE_NAME = 'registro-ventas-v1';
-const SHELL_FILES = [
-  './index.html',
-  './style.css',
-  './script.js',
-  './manifest.json'
-];
-
+// considere la app "instalable" (PWA). NO guarda nada en caché,
+// así que cada vez que entrás se piden los archivos actualizados
+// a la red. Esto evita quedarte con una versión vieja de la app.
 self.addEventListener('install', function(event){
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache){
-      return cache.addAll(SHELL_FILES);
-    })
-  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', function(event){
+  // Borra cualquier caché vieja que haya quedado de versiones
+  // anteriores de este service worker.
   event.waitUntil(
     caches.keys().then(function(keys){
-      return Promise.all(
-        keys.filter(function(k){ return k !== CACHE_NAME; })
-            .map(function(k){ return caches.delete(k); })
-      );
+      return Promise.all(keys.map(function(k){ return caches.delete(k); }));
     })
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', function(event){
-  // Solo el "shell" estático se sirve desde caché; todo lo demás
-  // (Supabase, fuentes, etc.) va siempre a la red.
-  var url = new URL(event.request.url);
-  if(url.origin === self.location.origin && SHELL_FILES.some(function(f){ return url.pathname.endsWith(f.replace('./','')); })){
-    event.respondWith(
-      caches.match(event.request).then(function(cached){
-        return cached || fetch(event.request);
-      })
-    );
-  }
+  // Siempre a la red, nunca desde caché.
+  event.respondWith(fetch(event.request));
 });

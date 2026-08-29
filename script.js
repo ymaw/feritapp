@@ -25,8 +25,20 @@ document.addEventListener('DOMContentLoaded', function(){
   }) : null;
   var entered = false;
 
+  /* =========================================================
+     ACCESO: correo + PIN con Supabase Auth
+     =========================================================
+     El correo se confirma UNA sola vez, al crear la cuenta.
+     Las próximas veces, se valida correo + PIN directamente
+     contra Supabase (signInWithPassword) — sin reenviar nada.
+  ========================================================= */
+  var gateMode = 'login'; // 'login' | 'signup'
+
   function isValidEmail(v){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+  function isValidPin(v){
+    return /^\d{6}$/.test(v);
   }
   function showGateError(msg){
     var err = document.getElementById('gateError');
@@ -34,57 +46,105 @@ document.addEventListener('DOMContentLoaded', function(){
     err.style.display = 'block';
   }
 
-  document.getElementById('gateEmail').addEventListener('input', function(){
-    document.getElementById('gateSubmit').disabled = !this.value.trim();
+  document.querySelectorAll('.mode-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.mode-opt').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      gateMode = btn.dataset.mode;
+      var isSignup = gateMode === 'signup';
+      document.getElementById('pinConfirmField').style.display = isSignup ? 'block' : 'none';
+      document.getElementById('gateModeTitle').textContent = isSignup ? 'Creá tu cuenta' : 'Ingresá a tu cuenta';
+      document.getElementById('gateModeSub').textContent = isSignup
+        ? 'Elegí un PIN de 6 dígitos. Vas a confirmar tu correo una sola vez, ahora.'
+        : 'Ingresá tu correo y tu PIN de acceso.';
+      document.getElementById('gateSubmitText').textContent = isSignup ? 'Crear cuenta' : 'Ingresar';
+      document.getElementById('forgotPinBtn').style.display = isSignup ? 'none' : 'inline-block';
+      checkGateInputs();
+    });
+  });
+
+  function checkGateInputs(){
+    var email = document.getElementById('gateEmail').value.trim();
+    var pin = document.getElementById('gatePin').value.trim();
+    var ok = !!email && isValidPin(pin);
+    if(gateMode === 'signup'){
+      var pinConfirm = document.getElementById('gatePinConfirm').value.trim();
+      ok = ok && pinConfirm === pin;
+    }
+    document.getElementById('gateSubmit').disabled = !ok;
     document.getElementById('gateError').style.display = 'none';
+  }
+  ['gateEmail','gatePin','gatePinConfirm'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', checkGateInputs);
   });
 
   document.getElementById('gateSubmit').addEventListener('click', async function(){
     var email = document.getElementById('gateEmail').value.trim().toLowerCase();
+    var pin = document.getElementById('gatePin').value.trim();
 
-    if(!isValidEmail(email)){
-      showGateError('Ingresá un correo electrónico válido.');
-      return;
-    }
-    if(!SUPABASE_READY){
-      showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).');
-      return;
-    }
+    if(!isValidEmail(email)){ showGateError('Ingresá un correo electrónico válido.'); return; }
+    if(!isValidPin(pin)){ showGateError('El PIN debe tener 6 dígitos.'); return; }
+    if(!SUPABASE_READY){ showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).'); return; }
 
     var btn = document.getElementById('gateSubmit');
-    btn.disabled = true; btn.textContent = 'Enviando…';
-
+    btn.disabled = true;
     var redirectTo = window.location.origin + window.location.pathname;
 
-    // Paso 1: probamos asumiendo que el correo YA está registrado
-    // (shouldCreateUser:false no crea cuenta nueva; si el correo no
-    // existe todavía, Supabase devuelve error y ahí sabemos que es nuevo).
-    var isReturning = true;
-    var result = await sb.auth.signInWithOtp({
-      email: email,
-      options: { emailRedirectTo: redirectTo, shouldCreateUser: false }
-    });
+    if(gateMode === 'signup'){
+      var pinConfirm = document.getElementById('gatePinConfirm').value.trim();
+      if(pin !== pinConfirm){ showGateError('Los PIN no coinciden.'); btn.disabled = false; return; }
 
-    if(result.error){
-      // No estaba registrado: lo damos de alta y le mandamos el link igual.
-      isReturning = false;
-      result = await sb.auth.signInWithOtp({
+      var signUpRes = await sb.auth.signUp({
         email: email,
-        options: { emailRedirectTo: redirectTo, shouldCreateUser: true }
+        password: pin,
+        options: { emailRedirectTo: redirectTo }
       });
+      btn.disabled = false;
+
+      if(signUpRes.error){
+        showGateError(
+          /registered|exists/i.test(signUpRes.error.message)
+            ? 'Ese correo ya tiene una cuenta creada. Elegí "Iniciar sesión".'
+            : 'No se pudo crear la cuenta: ' + signUpRes.error.message
+        );
+        return;
+      }
+
+      document.getElementById('gateSentTitle').textContent = '¡Cuenta creada!';
+      document.getElementById('gateSentText').innerHTML =
+        '📩 Te enviamos un correo de confirmación a <strong>' + email + '</strong>. Abrilo una sola vez para activar tu cuenta — de ahí en más, entrás directo con tu correo y PIN, sin más correos.';
+      document.getElementById('gateStep1').style.display = 'none';
+      document.getElementById('gateSent').style.display = 'block';
+
+    }else{
+      var loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
+      btn.disabled = false;
+
+      if(loginRes.error){
+        showGateError('Correo o PIN incorrectos.');
+        return;
+      }
+      if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user); }
     }
+  });
 
-    btn.disabled = false; btn.textContent = 'Enviar link de acceso';
-
-    if(result.error){
-      showGateError('No se pudo enviar el correo: ' + result.error.message);
+  document.getElementById('forgotPinBtn').addEventListener('click', async function(){
+    var email = document.getElementById('gateEmail').value.trim().toLowerCase();
+    if(!isValidEmail(email)){
+      showGateError('Escribí tu correo arriba y volvé a tocar "Olvidé mi PIN".');
       return;
     }
+    if(!SUPABASE_READY){ showGateError('Falta configurar Supabase.'); return; }
 
-    document.getElementById('gateSentTitle').textContent = isReturning ? '¡Bienvenido/a de vuelta!' : 'Revisá tu correo';
-    document.getElementById('gateSentText').innerHTML = isReturning
-      ? '👋 Te reenviamos el link de acceso a <strong>' + email + '</strong>. Abrilo desde este mismo dispositivo para entrar a tu FeritApp.'
-      : '📩 Te enviamos un link de acceso a <strong>' + email + '</strong>.<br><br>Abrilo desde este mismo dispositivo para entrar. No hace falta contraseña.';
+    var redirectTo = window.location.origin + window.location.pathname;
+    var res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    if(res.error){
+      showGateError('No se pudo enviar el correo de recuperación: ' + res.error.message);
+      return;
+    }
+    document.getElementById('gateSentTitle').textContent = 'Revisá tu correo';
+    document.getElementById('gateSentText').innerHTML =
+      '📩 Te enviamos un link para elegir un PIN nuevo a <strong>' + email + '</strong>. Abrilo desde este dispositivo.';
     document.getElementById('gateStep1').style.display = 'none';
     document.getElementById('gateSent').style.display = 'block';
   });
@@ -92,6 +152,25 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('backToEmailBtn').addEventListener('click', function(){
     document.getElementById('gateSent').style.display = 'none';
     document.getElementById('gateStep1').style.display = 'block';
+  });
+
+  document.getElementById('newPinSubmit').addEventListener('click', async function(){
+    var p1 = document.getElementById('newPin').value.trim();
+    var p2 = document.getElementById('newPinConfirm').value.trim();
+    var err = document.getElementById('newPinError');
+    err.style.display = 'none';
+
+    if(!isValidPin(p1)){ err.textContent = 'El PIN debe tener 6 dígitos.'; err.style.display = 'block'; return; }
+    if(p1 !== p2){ err.textContent = 'Los PIN no coinciden.'; err.style.display = 'block'; return; }
+
+    var res = await sb.auth.updateUser({ password: p1 });
+    if(res.error){
+      err.textContent = 'No se pudo guardar el PIN: ' + res.error.message;
+      err.style.display = 'block';
+      return;
+    }
+    document.getElementById('gateNewPin').style.display = 'none';
+    if(res.data && res.data.user){ enterApp(res.data.user); }
   });
 
   document.getElementById('logoutBtn').addEventListener('click', async function(){
@@ -105,9 +184,16 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('authGate').style.display = 'none';
     document.getElementById('appRoot').style.display = 'block';
     document.getElementById('sessionEmail').textContent = 'Ingresaste como ' + user.email;
-    // limpia el token del link mágico de la barra de direcciones
     window.history.replaceState({}, document.title, window.location.pathname);
     loadSales();
+  }
+
+  function showSetNewPinPrompt(){
+    document.getElementById('authGate').style.display = 'flex';
+    document.getElementById('appRoot').style.display = 'none';
+    document.getElementById('gateStep1').style.display = 'none';
+    document.getElementById('gateSent').style.display = 'none';
+    document.getElementById('gateNewPin').style.display = 'block';
   }
 
   async function initGate(){
@@ -118,12 +204,20 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     document.getElementById('authGate').style.display = 'flex';
 
-    var sessionRes = await sb.auth.getSession();
-    if(sessionRes.data && sessionRes.data.session && sessionRes.data.session.user){
-      enterApp(sessionRes.data.session.user);
+    try{
+      var sessionRes = await sb.auth.getSession();
+      if(sessionRes.data && sessionRes.data.session && sessionRes.data.session.user){
+        enterApp(sessionRes.data.session.user);
+      }
+    }catch(e){
+      console.error('Error leyendo la sesión de Supabase:', e);
     }
 
     sb.auth.onAuthStateChange(function(event, newSession){
+      if(event === 'PASSWORD_RECOVERY'){
+        showSetNewPinPrompt();
+        return;
+      }
       if(event === 'SIGNED_IN' && newSession && newSession.user){
         enterApp(newSession.user);
       }

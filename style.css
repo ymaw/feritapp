@@ -260,6 +260,7 @@ input:focus{ border-color:var(--gold); }
 .seg button.active.paid{ background:rgba(67,184,132,.18); border-color:var(--sage); color:var(--sage); }
 .seg button.active.pending{ background:rgba(239,90,103,.18); border-color:var(--rose); color:var(--rose); }
 .seg button.active.neutral{ background:rgba(224,121,63,.18); border-color:var(--gold); color:var(--gold-soft); }
+.mode-opt.active{ background:rgba(224,121,63,.18); border-color:var(--gold); color:var(--gold-soft); }
 
 .save-btn{
   width:100%; margin-top:6px; padding:15px; border:none; border-radius:12px;
@@ -294,6 +295,10 @@ input:focus{ border-color:var(--gold); }
 .gate-sub{ color:var(--text-dim); font-size:13.5px; line-height:1.55; margin:0 0 24px; }
 .gate-error{ color:var(--red); font-size:12.5px; margin:-8px 0 14px; }
 .gate-note{ color:var(--text-dim); font-size:11px; line-height:1.6; margin-top:16px; }
+.gate-code-input{
+  letter-spacing:.5em; font-family:var(--mono); font-size:20px; text-align:center;
+}
+.gate-links{ display:flex; justify-content:center; margin:14px 0 4px; }
 
 /* ---------- responsive tweaks for small phones ---------- */
 @media (max-width:360px){

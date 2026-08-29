@@ -23,24 +23,60 @@
   <div class="gate-card">
 
     <div id="gateStep1">
-      <p class="eyebrow">Boutique · Libro de ventas</p>
-      <h1>Ingresá tu correo</h1>
-      <p class="gate-sub">Te vamos a mandar un link de acceso a tu correo. Con un toque entrás, sin contraseña.</p>
+      <p class="eyebrow">FeritApp · Registro de Ventas</p>
+      <h1 id="gateModeTitle">Ingresá a tu cuenta</h1>
+      <p class="gate-sub" id="gateModeSub">Ingresá tu correo y tu PIN de acceso.</p>
+
+      <div class="seg" style="margin-bottom:18px;">
+        <button type="button" class="mode-opt active" data-mode="login">Iniciar sesión</button>
+        <button type="button" class="mode-opt" data-mode="signup">Crear cuenta</button>
+      </div>
 
       <div class="field">
         <label>Correo electrónico</label>
         <input type="email" id="gateEmail" placeholder="tu@correo.com" autocomplete="email" inputmode="email">
       </div>
+
+      <div class="field">
+        <label>PIN de acceso (6 dígitos)</label>
+        <input type="password" id="gatePin" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password">
+      </div>
+
+      <div class="field" id="pinConfirmField" style="display:none;">
+        <label>Confirmar PIN</label>
+        <input type="password" id="gatePinConfirm" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+      </div>
+
       <p class="gate-error" id="gateError" style="display:none;"></p>
-      <button class="save-btn" id="gateSubmit" disabled>Enviar link de acceso</button>
-      <p class="gate-note">Vas a poder entrar desde cualquier dispositivo con este mismo correo: tus ventas quedan guardadas en la nube, no solo en este celular.</p>
+      <button class="save-btn" id="gateSubmit" disabled><span id="gateSubmitText">Ingresar</span></button>
+
+      <div class="gate-links">
+        <button class="reset-link" id="forgotPinBtn" type="button">Olvidé mi PIN</button>
+      </div>
+      <p class="gate-note">Tus ventas quedan guardadas en la nube: podés entrar desde cualquier dispositivo con el mismo correo y PIN.</p>
     </div>
 
     <div id="gateSent" style="display:none;">
-      <p class="eyebrow">Boutique · Libro de ventas</p>
+      <p class="eyebrow">FeritApp · Registro de Ventas</p>
       <h1 id="gateSentTitle">Revisá tu correo</h1>
-      <p class="gate-sub" id="gateSentText">📩 Te enviamos un link de acceso a <strong id="sentEmailTarget"></strong>.<br><br>Abrilo desde este mismo dispositivo para entrar. No hace falta contraseña.</p>
-      <button class="reset-link" id="backToEmailBtn" type="button">Usar otro correo</button>
+      <p class="gate-sub" id="gateSentText"></p>
+      <button class="reset-link" id="backToEmailBtn" type="button">Volver</button>
+    </div>
+
+    <div id="gateNewPin" style="display:none;">
+      <p class="eyebrow">FeritApp · Registro de Ventas</p>
+      <h1>Elegí tu nuevo PIN</h1>
+      <p class="gate-sub">Ingresá un PIN nuevo de 6 dígitos para tu cuenta.</p>
+      <div class="field">
+        <label>Nuevo PIN</label>
+        <input type="password" id="newPin" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>Confirmar nuevo PIN</label>
+        <input type="password" id="newPinConfirm" class="gate-code-input" placeholder="••••••" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password">
+      </div>
+      <p class="gate-error" id="newPinError" style="display:none;"></p>
+      <button class="save-btn" id="newPinSubmit">Guardar PIN</button>
     </div>
 
   </div>
@@ -51,7 +87,7 @@
 <header>
   <div class="header-top">
     <div>
-      <p class="eyebrow">Boutique · Libro de ventas</p>
+      <p class="eyebrow">FeritApp · Registro de Ventas</p>
       <h1>Registro semanal</h1>
     </div>
     <button class="logout-link" id="logoutBtn">Salir</button>
