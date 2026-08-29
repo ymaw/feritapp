@@ -997,7 +997,11 @@ document.addEventListener('DOMContentLoaded', function(){
   function extractPrice(transcript){
     var digitMatch = transcript.replace(/[.,](?=\d{3}\b)/g,'').match(/\d+/g);
     if(digitMatch){
-      return parseInt(digitMatch.join(''), 10);
+      // Tomamos solo el primer grupo de dígitos (no los concatenamos todos).
+      // Si se concatenaran, un decimal accidental (ej: "1500.50" -> ["1500","50"])
+      // o un doble dictado por ruido terminarían formando un precio absurdo
+      // como 150050 en vez de 1500.
+      return parseInt(digitMatch[0], 10);
     }
     return wordsToNumber(transcript);
   }
