@@ -101,41 +101,69 @@
   <div class="header-top">
     <div>
       <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
-      <h1>Registro semanal</h1>
+      <h1 id="viewHeading">Registro semanal</h1>
     </div>
-    <button class="logout-link" id="logoutBtn">Salir</button>
+    <div class="menu-wrap">
+      <button class="menu-btn" id="menuBtn" aria-label="Menú">☰</button>
+      <div class="menu-dropdown" id="menuDropdown" style="display:none;">
+        <button type="button" class="menu-item" data-view="dashboard">📊 Ver Dashboard</button>
+        <button type="button" class="menu-item" data-view="sales">🧾 Ver tabla de ventas</button>
+        <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
+      </div>
+    </div>
   </div>
   <p class="session-email" id="sessionEmail"></p>
 </header>
 
-<div class="section-block">
-  <p class="section-title">Buscar cliente</p>
-  <div class="input-row">
-    <input type="text" id="clientSearch" placeholder="Nombre del cliente…" autocomplete="off">
-    <button class="mic-btn" data-target="clientSearch" data-mode="text" type="button" aria-label="Dictar nombre de cliente">🎤</button>
+<div id="viewDashboard" class="app-view" style="display:none;">
+  <div class="section-block">
+    <p class="section-title">Configuración</p>
+    <div class="field">
+      <label>Tu semana de ventas empieza el</label>
+      <select id="weekStartSelect" class="settings-select">
+        <option value="1">Lunes</option>
+        <option value="2">Martes</option>
+        <option value="3">Miércoles</option>
+        <option value="4">Jueves</option>
+        <option value="5">Viernes</option>
+        <option value="6">Sábado</option>
+        <option value="0">Domingo</option>
+      </select>
+      <p class="hint">Ej: si entregás los sábados, elegí "Sábado" para que tu semana vaya de sábado a viernes.</p>
+    </div>
   </div>
-  <div id="clientSearchResults"></div>
+
+  <div class="ticket-wrap" id="currentTicket"></div>
+
+  <div class="section-block">
+    <p class="section-title">Comparar meses</p>
+    <div id="monthCompare"></div>
+  </div>
 </div>
 
-<div class="section-block">
-  <p class="section-title">Artículos de esta semana</p>
-  <div id="currentWeekTable"></div>
-</div>
+<div id="viewSales" class="app-view">
+  <div class="section-block">
+    <p class="section-title">Buscar cliente</p>
+    <div class="input-row">
+      <input type="text" id="clientSearch" placeholder="Nombre del cliente…" autocomplete="off">
+      <button class="mic-btn" data-target="clientSearch" data-mode="text" type="button" aria-label="Dictar nombre de cliente">🎤</button>
+    </div>
+    <div id="clientSearchResults"></div>
+  </div>
 
-<div class="ticket-wrap" id="currentTicket"></div>
+  <div class="section-block">
+    <p class="section-title">Artículos de esta semana</p>
+    <div id="currentWeekTable"></div>
+  </div>
 
-<div class="section-block">
-  <p class="section-title">Semanas anteriores</p>
-  <div class="weeks" id="weeksContainer"></div>
-</div>
+  <div class="section-block">
+    <p class="section-title">Semanas anteriores</p>
+    <div class="weeks" id="weeksContainer"></div>
+  </div>
 
-<div class="section-block">
-  <p class="section-title">Comparar meses</p>
-  <div id="monthCompare"></div>
-</div>
-
-<div class="footer-row">
-  <button class="reset-link" id="resetBtn">Borrar todos los datos</button>
+  <div class="footer-row">
+    <button class="reset-link" id="resetBtn">Borrar todos los datos</button>
+  </div>
 </div>
 
 <button class="fab" id="openSheet" aria-label="Agregar venta">+</button>

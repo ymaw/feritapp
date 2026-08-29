@@ -195,6 +195,32 @@ document.addEventListener('DOMContentLoaded', function(){
     location.reload();
   });
 
+  /* ---------------- menú desplegable / vistas ---------------- */
+  var menuBtn = document.getElementById('menuBtn');
+  var menuDropdown = document.getElementById('menuDropdown');
+
+  menuBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    menuDropdown.style.display = (menuDropdown.style.display === 'none') ? 'block' : 'none';
+  });
+  menuDropdown.addEventListener('click', function(e){ e.stopPropagation(); });
+  document.addEventListener('click', function(){ menuDropdown.style.display = 'none'; });
+
+  function switchView(view){
+    var isSales = view === 'sales';
+    document.getElementById('viewSales').style.display = isSales ? 'block' : 'none';
+    document.getElementById('viewDashboard').style.display = isSales ? 'none' : 'block';
+    document.getElementById('openSheet').style.display = isSales ? 'flex' : 'none';
+    document.getElementById('viewHeading').textContent = isSales ? 'Registro semanal' : 'Dashboard';
+  }
+
+  document.querySelectorAll('.menu-item[data-view]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      switchView(btn.getAttribute('data-view'));
+      menuDropdown.style.display = 'none';
+    });
+  });
+
   function enterApp(user){
     if(entered) return;
     entered = true;
@@ -202,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('appRoot').style.display = 'block';
     document.getElementById('sessionEmail').textContent = 'Ingresaste como ' + user.email;
     window.history.replaceState({}, document.title, window.location.pathname);
+    switchView('sales');
     loadSales();
   }
 
@@ -247,6 +274,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   var sales = [];
   var categories = [];
+  var weekStartDay = 1; // 0=domingo .. 6=sábado. Por defecto: lunes.
   var sheet = document.getElementById('sheet');
   var scrim = document.getElementById('scrim');
   var CATEGORY_COLORS = ['#446DF6','#08A4BD','#17A897','#B23A52','#8C4A9C','#5FA8A0','#6C8EBF','#C9A15F'];
@@ -297,9 +325,35 @@ document.addEventListener('DOMContentLoaded', function(){
       categories = defaults;
     }
 
+    try{
+      var settingsRes = await sb.from('user_settings').select('week_start_day').maybeSingle();
+      if(settingsRes.data){
+        weekStartDay = settingsRes.data.week_start_day;
+      }else{
+        await sb.from('user_settings').insert([{}]); // usa los valores por defecto (lunes)
+        weekStartDay = 1;
+      }
+    }catch(e){
+      weekStartDay = 1;
+    }
+    var weekStartSelect = document.getElementById('weekStartSelect');
+    if(weekStartSelect){ weekStartSelect.value = String(weekStartDay); }
+
     render();
     resetForm();
   }
+
+  document.getElementById('weekStartSelect').addEventListener('change', async function(){
+    var val = parseInt(this.value, 10);
+    weekStartDay = val;
+    try{
+      await sb.from('user_settings').upsert({ week_start_day: val }, { onConflict: 'user_id' });
+      showToast('Configuración guardada');
+    }catch(e){
+      showToast('No se pudo guardar la configuración.');
+    }
+    render();
+  });
 
   async function persistNewCategory(name){
     try{
@@ -334,8 +388,8 @@ document.addEventListener('DOMContentLoaded', function(){
   function startOfWeek(d){
     var date = new Date(d);
     var day = date.getDay(); // 0 sun .. 6 sat
-    var diff = (day === 0 ? -6 : 1) - day; // move to monday
-    date.setDate(date.getDate() + diff);
+    var diff = (day - weekStartDay + 7) % 7; // días desde el inicio de semana elegido
+    date.setDate(date.getDate() - diff);
     date.setHours(0,0,0,0);
     return date;
   }
