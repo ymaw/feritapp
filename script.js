@@ -54,9 +54,26 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('signupBtn').disabled = !ok;
     document.getElementById('gateError').style.display = 'none';
   }
+
+  function updatePwRequirements(){
+    var pin = document.getElementById('gatePin').value;
+    setReq('reqLength', pin.length >= 6);
+    setReq('reqUpper', /[A-Z]/.test(pin));
+    setReq('reqNumber', /[0-9]/.test(pin));
+    setReq('reqSymbol', /[^A-Za-z0-9]/.test(pin));
+  }
+  function setReq(id, ok){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.querySelector('.req-icon').textContent = ok ? '✓' : '✕';
+    el.classList.toggle('req-ok', ok);
+    el.classList.toggle('req-bad', !ok);
+  }
+
   ['gateEmail','gatePin','gatePinConfirm'].forEach(function(id){
     document.getElementById(id).addEventListener('input', checkGateInputs);
   });
+  document.getElementById('gatePin').addEventListener('input', updatePwRequirements);
 
   document.getElementById('loginBtn').addEventListener('click', async function(){
     var email = document.getElementById('gateEmail').value.trim().toLowerCase();
@@ -82,6 +99,17 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.getElementById('signupBtn').addEventListener('click', async function(){
+    var confirmField = document.getElementById('pinConfirmField');
+
+    // Primer click en "Crear cuenta": solo revela confirmar contraseña + el checklist.
+    // No envía nada todavía — recién en el segundo click se procesa el alta.
+    if(confirmField.style.display === 'none'){
+      confirmField.style.display = 'block';
+      updatePwRequirements();
+      document.getElementById('gatePinConfirm').focus();
+      return;
+    }
+
     var email = document.getElementById('gateEmail').value.trim().toLowerCase();
     var pin = document.getElementById('gatePin').value;
     var pinConfirm = document.getElementById('gatePinConfirm').value;
@@ -144,6 +172,8 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('backToEmailBtn').addEventListener('click', function(){
     document.getElementById('gateSent').style.display = 'none';
     document.getElementById('gateStep1').style.display = 'block';
+    document.getElementById('pinConfirmField').style.display = 'none';
+    document.getElementById('gatePinConfirm').value = '';
   });
 
   document.getElementById('newPinSubmit').addEventListener('click', async function(){
@@ -273,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     render();
-    renderCategoryChips();
+    resetForm();
   }
 
   async function persistNewCategory(name){
@@ -613,81 +643,137 @@ document.addEventListener('DOMContentLoaded', function(){
   scrim.addEventListener('click', closeSheet);
 
   /* ---------------- form state ---------------- */
-  var formState = { pagado: false, retira: 'cliente', categoria: '' };
+  var formState = { pagado: false, retira: 'cliente' };
   var editingSaleId = null;
+  var itemRowCounter = 0;
+
+  function categoryOptionsHtml(selected){
+    return categories.map(function(c){
+      var sel = (c === selected) ? ' selected' : '';
+      return '<option value="' + escapeHtml(c) + '"' + sel + '>' + escapeHtml(c) + '</option>';
+    }).join('');
+  }
+
+  function addItemRow(prefill){
+    itemRowCounter++;
+    var rowId = 'row' + itemRowCounter;
+    var container = document.getElementById('itemRowsContainer');
+    var defaultCat = (prefill && prefill.categoria) || (categories.length ? categories[0] : '');
+
+    var html =
+      '<div class="item-row" data-row-id="' + rowId + '">' +
+        '<div class="item-row-header">' +
+          '<span class="item-row-label">Artículo</span>' +
+          '<button type="button" class="item-row-del" data-del-row="' + rowId + '">✕ Quitar</button>' +
+        '</div>' +
+        '<div class="input-row">' +
+          '<input type="text" class="row-articulo" placeholder="Ej: remera azul talle M" value="' + (prefill ? escapeHtml(prefill.articulo) : '') + '">' +
+          '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="articulo" data-mode="text" aria-label="Dictar artículo">🎤</button>' +
+        '</div>' +
+        '<div class="input-row">' +
+          '<input type="number" class="row-precio" placeholder="0" inputmode="decimal" value="' + (prefill ? prefill.precio : '') + '">' +
+          '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="precio" data-mode="number" aria-label="Dictar precio">🎤</button>' +
+        '</div>' +
+        '<select class="row-categoria">' + categoryOptionsHtml(defaultCat) + '</select>' +
+      '</div>';
+
+    container.insertAdjacentHTML('beforeend', html);
+    var rowEl = container.querySelector('[data-row-id="' + rowId + '"]');
+
+    rowEl.querySelectorAll('.mic-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ startDictation(btn); });
+    });
+    if(!voiceSupported){
+      rowEl.querySelectorAll('.mic-btn').forEach(function(b){ b.style.display = 'none'; });
+    }
+    rowEl.querySelector('.row-precio').addEventListener('input', updateItemsTotal);
+    rowEl.querySelector('.item-row-del').addEventListener('click', function(){
+      rowEl.remove();
+      updateItemsTotal();
+      updateItemRowLabels();
+    });
+
+    updateItemsTotal();
+    updateItemRowLabels();
+  }
+
+  function updateItemRowLabels(){
+    var rows = document.querySelectorAll('#itemRowsContainer .item-row');
+    rows.forEach(function(r, idx){
+      r.querySelector('.item-row-label').textContent = 'Artículo ' + (idx + 1);
+      var del = r.querySelector('.item-row-del');
+      del.style.display = rows.length <= 1 ? 'none' : 'inline-block';
+    });
+  }
+
+  function updateItemsTotal(){
+    var total = 0;
+    document.querySelectorAll('#itemRowsContainer .row-precio').forEach(function(inp){
+      var v = parseFloat(inp.value);
+      if(!isNaN(v)) total += v;
+    });
+    var el = document.getElementById('itemsTotalValue');
+    if(el) el.textContent = money(total);
+  }
+
+  function refreshAllRowCategorySelects(){
+    document.querySelectorAll('#itemRowsContainer .row-categoria').forEach(function(sel){
+      var current = sel.value;
+      sel.innerHTML = categoryOptionsHtml(current || (categories.length ? categories[0] : ''));
+    });
+  }
+
+  document.getElementById('addItemRowBtn').addEventListener('click', function(){ addItemRow(); });
 
   function resetForm(){
     document.getElementById('fCliente').value = '';
-    document.getElementById('fArticulo').value = '';
-    document.getElementById('fPrecio').value = '';
     document.getElementById('fTercero').value = '';
     formState.pagado = false; formState.retira = 'cliente';
-    formState.categoria = categories.length ? categories[0] : '';
     document.querySelectorAll('.pago-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === '0'); });
     document.querySelectorAll('.retira-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === 'cliente'); });
     document.getElementById('terceroField').style.display = 'none';
     document.getElementById('newCatRow').style.display = 'none';
     document.getElementById('fNuevaCategoria').value = '';
+
+    document.getElementById('itemRowsContainer').innerHTML = '';
+    itemRowCounter = 0;
+    addItemRow();
+    document.getElementById('addItemRowBtn').style.display = 'block';
+
     editingSaleId = null;
     document.getElementById('sheetTitle').textContent = 'Nueva venta';
     document.getElementById('saveBtnText').textContent = 'Guardar venta';
-    renderCategoryChips();
   }
 
   function openEditSheet(item){
     editingSaleId = item.id;
     document.getElementById('fCliente').value = item.cliente;
-    document.getElementById('fArticulo').value = item.articulo;
-    document.getElementById('fPrecio').value = item.precio;
     document.getElementById('fTercero').value = item.tercero || '';
 
     formState.pagado = !!item.pagado;
     formState.retira = item.retira === 'otro' ? 'otro' : 'cliente';
-    formState.categoria = item.categoria || (categories.length ? categories[0] : '');
 
     document.querySelectorAll('.pago-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === (formState.pagado ? '1' : '0')); });
     document.querySelectorAll('.retira-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === formState.retira); });
     document.getElementById('terceroField').style.display = (formState.retira === 'otro') ? 'block' : 'none';
 
-    renderCategoryChips();
+    // En modo edición solo se toca UN artículo a la vez.
+    document.getElementById('itemRowsContainer').innerHTML = '';
+    itemRowCounter = 0;
+    addItemRow({ articulo: item.articulo, precio: item.precio, categoria: item.categoria });
+    document.getElementById('addItemRowBtn').style.display = 'none';
 
-    document.getElementById('sheetTitle').textContent = 'Editar venta';
+    document.getElementById('sheetTitle').textContent = 'Editar artículo';
     document.getElementById('saveBtnText').textContent = 'Guardar cambios';
 
     openSheet();
   }
 
-  /* ---------------- category chips ---------------- */
-  function renderCategoryChips(){
-    var wrap = document.getElementById('categoryChips');
-    if(!wrap) return;
-    if(!formState.categoria && categories.length){ formState.categoria = categories[0]; }
-    var html = '';
-    categories.forEach(function(cat){
-      var active = (cat === formState.categoria) ? ' active' : '';
-      html += '<button type="button" class="chip' + active + '" data-cat="' + escapeHtml(cat) + '">' +
-                '<span class="dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) +
-              '</button>';
-    });
-    html += '<button type="button" class="chip add-chip" id="addCatChip">+ Nueva</button>';
-    wrap.innerHTML = html;
-
-    wrap.querySelectorAll('[data-cat]').forEach(function(chip){
-      chip.addEventListener('click', function(){
-        formState.categoria = chip.getAttribute('data-cat');
-        document.getElementById('newCatRow').style.display = 'none';
-        renderCategoryChips();
-      });
-    });
-    var addChip = document.getElementById('addCatChip');
-    if(addChip){
-      addChip.addEventListener('click', function(){
-        var row = document.getElementById('newCatRow');
-        row.style.display = (row.style.display === 'none') ? 'flex' : 'none';
-        if(row.style.display === 'flex'){ document.getElementById('fNuevaCategoria').focus(); }
-      });
-    }
-  }
+  document.getElementById('openNewCatBtn').addEventListener('click', function(){
+    var row = document.getElementById('newCatRow');
+    row.style.display = (row.style.display === 'none') ? 'flex' : 'none';
+    if(row.style.display === 'flex'){ document.getElementById('fNuevaCategoria').focus(); }
+  });
 
   document.getElementById('confirmNewCat').addEventListener('click', async function(){
     var input = document.getElementById('fNuevaCategoria');
@@ -698,10 +784,9 @@ document.addEventListener('DOMContentLoaded', function(){
       await persistNewCategory(name);
       categories.push(name);
     }
-    formState.categoria = name;
     input.value = '';
     document.getElementById('newCatRow').style.display = 'none';
-    renderCategoryChips();
+    refreshAllRowCategorySelects();
     showToast('Categoría creada');
   });
 
@@ -723,44 +808,63 @@ document.addEventListener('DOMContentLoaded', function(){
 
   document.getElementById('saveBtn').addEventListener('click', async function(){
     var cliente = document.getElementById('fCliente').value.trim();
-    var articulo = document.getElementById('fArticulo').value.trim();
-    var precio = parseFloat(document.getElementById('fPrecio').value);
     var tercero = document.getElementById('fTercero').value.trim();
 
     if(!cliente){ showToast('Falta el nombre del cliente'); return; }
-    if(!articulo){ showToast('Falta el nombre del artículo'); return; }
-    if(isNaN(precio) || precio <= 0){ showToast('Ingresá un precio válido'); return; }
     if(formState.retira === 'otro' && !tercero){ showToast('Falta el nombre de quien retira'); return; }
 
-    var saleData = {
-      cliente: cliente,
-      articulo: articulo,
-      precio: precio,
-      pagado: formState.pagado,
-      retira: formState.retira,
-      tercero: formState.retira === 'otro' ? tercero : '',
-      categoria: formState.categoria || 'Sin categoría'
-    };
+    var rowEls = document.querySelectorAll('#itemRowsContainer .item-row');
+    if(rowEls.length === 0){ showToast('Agregá al menos un artículo'); return; }
+
+    var items = [];
+    for(var i = 0; i < rowEls.length; i++){
+      var articulo = rowEls[i].querySelector('.row-articulo').value.trim();
+      var precio = parseFloat(rowEls[i].querySelector('.row-precio').value);
+      var categoria = rowEls[i].querySelector('.row-categoria').value || 'Sin categoría';
+      if(!articulo){ showToast('Falta el nombre del artículo ' + (i + 1)); return; }
+      if(isNaN(precio) || precio <= 0){ showToast('Precio inválido en el artículo ' + (i + 1)); return; }
+      items.push({ articulo: articulo, precio: precio, categoria: categoria });
+    }
 
     var saveBtn = document.getElementById('saveBtn');
     saveBtn.disabled = true;
 
     try{
       if(editingSaleId){
+        var saleData = {
+          cliente: cliente,
+          articulo: items[0].articulo,
+          precio: items[0].precio,
+          pagado: formState.pagado,
+          retira: formState.retira,
+          tercero: formState.retira === 'otro' ? tercero : '',
+          categoria: items[0].categoria
+        };
         var updRes = await sb.from('sales').update(saleData).eq('id', editingSaleId).select();
         if(updRes.error) throw updRes.error;
         var idx = sales.findIndex(function(s){ return s.id === editingSaleId; });
         if(idx !== -1){ sales[idx] = mapRowToSale(updRes.data[0]); }
         render();
         closeSheet();
-        showToast('Venta actualizada');
+        showToast('Artículo actualizado');
       }else{
-        var res = await sb.from('sales').insert([saleData]).select();
+        var batch = items.map(function(it){
+          return {
+            cliente: cliente,
+            articulo: it.articulo,
+            precio: it.precio,
+            pagado: formState.pagado,
+            retira: formState.retira,
+            tercero: formState.retira === 'otro' ? tercero : '',
+            categoria: it.categoria
+          };
+        });
+        var res = await sb.from('sales').insert(batch).select();
         if(res.error) throw res.error;
-        sales.unshift(mapRowToSale(res.data[0]));
+        res.data.forEach(function(row){ sales.unshift(mapRowToSale(row)); });
         render();
         closeSheet();
-        showToast('Venta guardada');
+        showToast(items.length > 1 ? items.length + ' artículos guardados' : 'Venta guardada');
       }
     }catch(e){
       showToast('No se pudo guardar. Probá de nuevo.');
@@ -828,11 +932,23 @@ document.addEventListener('DOMContentLoaded', function(){
     return wordsToNumber(transcript);
   }
 
+  function resolveDictationInput(btn){
+    var targetId = btn.getAttribute('data-target');
+    if(targetId){ return document.getElementById(targetId); }
+    var rowId = btn.getAttribute('data-row');
+    var field = btn.getAttribute('data-field');
+    if(rowId && field){
+      var rowEl = document.querySelector('[data-row-id="' + rowId + '"]');
+      if(rowEl){ return rowEl.querySelector('.row-' + field); }
+    }
+    return null;
+  }
+
   function startDictation(btn){
     if(!voiceSupported) return;
-    var targetId = btn.getAttribute('data-target');
     var mode = btn.getAttribute('data-mode');
-    var input = document.getElementById(targetId);
+    var input = resolveDictationInput(btn);
+    if(!input) return;
 
     var recognition = new SpeechRec();
     recognition.lang = 'es-AR';
@@ -881,5 +997,65 @@ document.addEventListener('DOMContentLoaded', function(){
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('sw.js').catch(function(){ /* si falla, la app sigue funcionando igual */ });
     });
+  }
+
+  /* ---------------- PWA: banner propio de instalación ---------------- */
+  var installBanner = document.getElementById('installBanner');
+  var deferredInstallPrompt = null;
+
+  function showInstallBanner(){
+    if(localStorage.getItem('installBannerDismissed') === '1') return;
+    installBanner.style.display = 'flex';
+    document.body.style.paddingTop = installBanner.offsetHeight + 'px';
+  }
+  function hideInstallBanner(){
+    installBanner.style.display = 'none';
+    document.body.style.paddingTop = '';
+  }
+
+  // Android/Chrome/Edge: Chrome nos avisa cuando la app cumple los
+  // requisitos de instalación disparando este evento. Lo interceptamos
+  // para mostrar NUESTRO banner en vez de esperar a que el usuario
+  // busque la opción en el menú de 3 puntitos.
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    document.getElementById('installBannerText').textContent = '📲 Instalá la app para acceso rápido';
+    document.getElementById('installBannerBtn').style.display = 'inline-block';
+    showInstallBanner();
+  });
+
+  document.getElementById('installBannerBtn').addEventListener('click', async function(){
+    if(!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    hideInstallBanner();
+  });
+
+  document.getElementById('installBannerClose').addEventListener('click', function(){
+    hideInstallBanner();
+    localStorage.setItem('installBannerDismissed', '1');
+  });
+
+  window.addEventListener('appinstalled', function(){
+    hideInstallBanner();
+    localStorage.setItem('installBannerDismissed', '1');
+  });
+
+  // iOS/Safari: no existe beforeinstallprompt, así que mostramos
+  // instrucciones manuales en el mismo banner (sin botón "Instalar",
+  // porque en iPhone no se puede disparar la instalación por código).
+  function isIos(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function isStandalone(){
+    return (window.navigator.standalone === true) ||
+           (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }
+  if(isIos() && !isStandalone() && localStorage.getItem('installBannerDismissed') !== '1'){
+    document.getElementById('installBannerText').textContent = '📲 Instalá FeritApp: tocá Compartir → Agregar a inicio';
+    document.getElementById('installBannerBtn').style.display = 'none';
+    showInstallBanner();
   }
 });

@@ -19,6 +19,14 @@
 </head>
 <body>
 
+<div id="installBanner" class="install-banner" style="display:none;">
+  <span id="installBannerText" class="install-banner-text">📲 Instalá la app para acceso rápido</span>
+  <div class="install-banner-actions">
+    <button id="installBannerBtn" class="install-banner-btn" type="button">Instalar</button>
+    <button id="installBannerClose" class="install-banner-close" type="button" aria-label="Cerrar">✕</button>
+  </div>
+</div>
+
 <div id="authGate">
   <div class="gate-card">
 
@@ -35,12 +43,17 @@
       <div class="field">
         <label>Contraseña</label>
         <input type="password" id="gatePin" placeholder="••••••••" autocomplete="current-password">
-        <p class="hint">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
       </div>
 
-      <div class="field">
-        <label>Confirmar contraseña <span style="text-transform:none; opacity:.7;">(solo para crear cuenta)</span></label>
+      <div class="field" id="pinConfirmField" style="display:none;">
+        <label>Confirmar contraseña</label>
         <input type="password" id="gatePinConfirm" placeholder="••••••••" autocomplete="new-password">
+        <ul class="pw-requirements" id="pwRequirements">
+          <li id="reqLength" class="req-bad"><span class="req-icon">✕</span> Mínimo 6 caracteres</li>
+          <li id="reqUpper" class="req-bad"><span class="req-icon">✕</span> Una letra mayúscula</li>
+          <li id="reqNumber" class="req-bad"><span class="req-icon">✕</span> Un número</li>
+          <li id="reqSymbol" class="req-bad"><span class="req-icon">✕</span> Un símbolo (ej: ! @ # $)</li>
+        </ul>
       </div>
 
       <p class="gate-error" id="gateError" style="display:none;"></p>
@@ -142,30 +155,24 @@
   </div>
 
   <div class="field">
-    <label>Artículo</label>
-    <div class="input-row">
-      <input type="text" id="fArticulo" placeholder="Ej: remera azul talle M">
-      <button class="mic-btn" data-target="fArticulo" data-mode="text" aria-label="Dictar artículo">🎤</button>
+    <div class="field-row-head">
+      <label style="margin:0;">Artículos de esta venta</label>
+      <button type="button" class="new-cat-link" id="openNewCatBtn">+ Nueva categoría</button>
     </div>
-  </div>
+    <div id="itemRowsContainer"></div>
+    <button type="button" class="add-item-btn" id="addItemRowBtn">+ Agregar otro artículo</button>
 
-  <div class="field">
-    <label>Precio</label>
-    <div class="input-row">
-      <input type="number" id="fPrecio" placeholder="0" inputmode="decimal">
-      <button class="mic-btn" data-target="fPrecio" data-mode="number" aria-label="Dictar precio">🎤</button>
-    </div>
-    <p class="hint">Escribiendo, solo se aceptan números. Usando el micrófono 🎤 podés decirlo con palabras (ej: "tres mil quinientos") y se convierte solo.</p>
-  </div>
-
-  <div class="field">
-    <label>Categoría</label>
-    <div class="chip-row" id="categoryChips"></div>
     <div class="new-cat-row" id="newCatRow" style="display:none;">
       <input type="text" id="fNuevaCategoria" placeholder="Nombre de la categoría">
       <button class="mic-btn" data-target="fNuevaCategoria" data-mode="text" type="button" aria-label="Dictar categoría">🎤</button>
       <button class="mini-btn" id="confirmNewCat" type="button">Crear</button>
     </div>
+
+    <div class="items-total-row">
+      <span>Total de esta venta</span>
+      <span id="itemsTotalValue">$0</span>
+    </div>
+    <p class="hint">Escribiendo, solo se aceptan números. Usando el micrófono 🎤 podés decir el precio con palabras (ej: "tres mil quinientos") y se convierte solo.</p>
   </div>
 
   <div class="field">
@@ -174,6 +181,7 @@
       <button type="button" class="pago-opt paid" data-val="1">Pagado</button>
       <button type="button" class="pago-opt active pending" data-val="0">Pendiente</button>
     </div>
+    <p class="hint">Se aplica a todos los artículos de esta venta.</p>
   </div>
 
   <div class="field">
