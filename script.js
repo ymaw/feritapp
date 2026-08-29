@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     document.getElementById('gateSentTitle').textContent = '¡Cuenta creada!';
     document.getElementById('gateSentText').innerHTML =
-      '📩 Te enviamos un correo de confirmación a <strong>' + email + '</strong>. Abrilo una sola vez para activar tu cuenta — de ahí en más, entrás directo con tu correo y contraseña, sin más correos.';
+      '📩 Te enviamos un correo de confirmación a <strong>' + escapeHtml(email) + '</strong>. Abrilo una sola vez para activar tu cuenta — de ahí en más, entrás directo con tu correo y contraseña, sin más correos.';
     document.getElementById('gateStep1').style.display = 'none';
     document.getElementById('gateSent').style.display = 'block';
   });
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     document.getElementById('gateSentTitle').textContent = 'Revisá tu correo';
     document.getElementById('gateSentText').innerHTML =
-      '📩 Te enviamos un link para elegir una contraseña nueva a <strong>' + email + '</strong>. Abrilo desde este dispositivo.';
+      '📩 Te enviamos un link para elegir una contraseña nueva a <strong>' + escapeHtml(email) + '</strong>. Abrilo desde este dispositivo.';
     document.getElementById('gateStep1').style.display = 'none';
     document.getElementById('gateSent').style.display = 'block';
   });
@@ -201,7 +201,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
   menuBtn.addEventListener('click', function(e){
     e.stopPropagation();
-    menuDropdown.style.display = (menuDropdown.style.display === 'none') ? 'block' : 'none';
+    var isOpen = menuDropdown.style.display === 'block';
+    if(isOpen){
+      menuDropdown.style.display = 'none';
+      return;
+    }
+    var rect = menuBtn.getBoundingClientRect();
+    menuDropdown.style.top = (rect.bottom + 8) + 'px';
+    menuDropdown.style.right = (window.innerWidth - rect.right) + 'px';
+    menuDropdown.style.left = 'auto';
+    menuDropdown.style.display = 'block';
   });
   menuDropdown.addEventListener('click', function(e){ e.stopPropagation(); });
   document.addEventListener('click', function(){ menuDropdown.style.display = 'none'; });
@@ -248,24 +257,33 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     document.getElementById('authGate').style.display = 'flex';
 
+    // Importante: el listener se registra ANTES de consultar la sesión
+    // inicial. Si no lo hiciéramos así, podría darse una condición de
+    // carrera donde un link de "olvidé mi contraseña" deja una sesión
+    // de recuperación válida, y el usuario entraría directo a la app
+    // sin llegar a elegir una contraseña nueva (quedando con la vieja,
+    // que es justo la que había olvidado).
+    var recoveryDetected = false;
+
+    sb.auth.onAuthStateChange(function(event, newSession){
+      if(event === 'PASSWORD_RECOVERY'){
+        recoveryDetected = true;
+        showSetNewPinPrompt();
+        return;
+      }
+      if(event === 'SIGNED_IN' && newSession && newSession.user && !recoveryDetected){
+        enterApp(newSession.user);
+      }
+    });
+
     try{
       var sessionRes = await sb.auth.getSession();
-      if(sessionRes.data && sessionRes.data.session && sessionRes.data.session.user){
+      if(!recoveryDetected && sessionRes.data && sessionRes.data.session && sessionRes.data.session.user){
         enterApp(sessionRes.data.session.user);
       }
     }catch(e){
       console.error('Error leyendo la sesión de Supabase:', e);
     }
-
-    sb.auth.onAuthStateChange(function(event, newSession){
-      if(event === 'PASSWORD_RECOVERY'){
-        showSetNewPinPrompt();
-        return;
-      }
-      if(event === 'SIGNED_IN' && newSession && newSession.user){
-        enterApp(newSession.user);
-      }
-    });
   }
 
   /* =========================================================
@@ -533,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function(){
       return '<div class="empty-inline">Sin artículos registrados.</div>';
     }
     var html = '<div class="table-card"><div class="table-wrap"><table class="sales-table"><thead><tr>' +
-                 '<th>Artículo</th><th>Categoría</th><th>Cliente</th><th class="num">Precio</th><th></th>' +
+                 '<th>Artículo</th><th>Cliente</th><th class="num">Precio</th><th></th>' +
                '</tr></thead><tbody>';
     items.forEach(function(item){
       var fechaTxt = new Date(item.fecha).toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'short'});
@@ -542,8 +560,11 @@ document.addEventListener('DOMContentLoaded', function(){
         ? '<div class="retira-info other">↳ Retira: ' + escapeHtml(item.tercero) + '</div>'
         : '<div class="retira-info same">↳ Retira el mismo cliente</div>';
       html += '<tr>' +
-                '<td><div class="item-name">' + escapeHtml(item.articulo) + '</div><div class="item-meta">' + fechaTxt + '</div></td>' +
-                '<td><span class="cat-badge"><span class="cat-dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) + '</span></td>' +
+                '<td>' +
+                  '<div class="item-name">' + escapeHtml(item.articulo) + '</div>' +
+                  '<span class="cat-badge"><span class="cat-dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) + '</span>' +
+                  '<div class="item-meta">' + fechaTxt + '</div>' +
+                '</td>' +
                 '<td><div class="client-name">' + escapeHtml(item.cliente || 'Sin nombre') + '</div>' + retiraHtml + '</td>' +
                 '<td class="num price-cell">' + money(item.precio) + '</td>' +
                 '<td><div class="row-actions">' +
@@ -1050,6 +1071,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- PWA: banner propio de instalación ---------------- */
   var installBanner = document.getElementById('installBanner');
+  var menuInstallBtn = document.getElementById('menuInstallBtn');
   var deferredInstallPrompt = null;
 
   function showInstallBanner(){
@@ -1057,9 +1079,24 @@ document.addEventListener('DOMContentLoaded', function(){
     installBanner.style.display = 'flex';
     document.body.style.paddingTop = installBanner.offsetHeight + 'px';
   }
+  // A diferencia de showInstallBanner(), esta versión ignora el "no
+  // volver a mostrar": se usa cuando el usuario pide instalar a
+  // propósito desde el menú, así que sí o sí hay que mostrárselo.
+  function forceShowInstallBanner(){
+    installBanner.style.display = 'flex';
+    document.body.style.paddingTop = installBanner.offsetHeight + 'px';
+  }
   function hideInstallBanner(){
     installBanner.style.display = 'none';
     document.body.style.paddingTop = '';
+  }
+
+  function isIos(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function isStandalone(){
+    return (window.navigator.standalone === true) ||
+           (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   }
 
   // Android/Chrome/Edge: Chrome nos avisa cuando la app cumple los
@@ -1072,6 +1109,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('installBannerText').textContent = '📲 Instalá la app para acceso rápido';
     document.getElementById('installBannerBtn').style.display = 'inline-block';
     showInstallBanner();
+    menuInstallBtn.style.display = 'block';
   });
 
   document.getElementById('installBannerBtn').addEventListener('click', async function(){
@@ -1080,29 +1118,46 @@ document.addEventListener('DOMContentLoaded', function(){
     await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
     hideInstallBanner();
+    menuInstallBtn.style.display = 'none';
   });
 
   document.getElementById('installBannerClose').addEventListener('click', function(){
     hideInstallBanner();
     localStorage.setItem('installBannerDismissed', '1');
+    // Ojo: NO ocultamos menuInstallBtn acá — cerrar el banner no debe
+    // dejarte sin ninguna forma de instalar salvo por los 3 puntitos.
   });
 
   window.addEventListener('appinstalled', function(){
     hideInstallBanner();
     localStorage.setItem('installBannerDismissed', '1');
+    menuInstallBtn.style.display = 'none';
+    deferredInstallPrompt = null;
+  });
+
+  // Ítem del menú: siempre disponible una vez que Chrome ofreció instalar
+  // (Android) o directamente en iPhone (donde no hay evento programático).
+  menuInstallBtn.addEventListener('click', function(){
+    menuDropdown.style.display = 'none';
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(function(){
+        deferredInstallPrompt = null;
+        menuInstallBtn.style.display = 'none';
+      });
+    }else if(isIos() && !isStandalone()){
+      document.getElementById('installBannerText').textContent = '📲 Instalá FeritApp: tocá Compartir → Agregar a inicio';
+      document.getElementById('installBannerBtn').style.display = 'none';
+      forceShowInstallBanner();
+    }
   });
 
   // iOS/Safari: no existe beforeinstallprompt, así que mostramos
-  // instrucciones manuales en el mismo banner (sin botón "Instalar",
-  // porque en iPhone no se puede disparar la instalación por código).
-  function isIos(){
-    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-  }
-  function isStandalone(){
-    return (window.navigator.standalone === true) ||
-           (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  }
-  if(isIos() && !isStandalone() && localStorage.getItem('installBannerDismissed') !== '1'){
+  // instrucciones manuales. El ítem del menú queda siempre visible acá
+  // (no depende de si el banner se cerró antes), porque es la única
+  // forma de volver a ver el instructivo sin depender del banner.
+  if(isIos() && !isStandalone()){
+    menuInstallBtn.style.display = 'block';
     document.getElementById('installBannerText').textContent = '📲 Instalá FeritApp: tocá Compartir → Agregar a inicio';
     document.getElementById('installBannerBtn').style.display = 'none';
     showInstallBanner();

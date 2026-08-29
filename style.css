@@ -57,11 +57,6 @@ h1{
   margin:0;
   letter-spacing:-.01em;
 }
-.logout-link{
-  flex-shrink:0; background:none; border:1px solid var(--hairline); color:var(--text-dim);
-  font-family:var(--mono); font-size:10px; letter-spacing:.03em; padding:7px 11px;
-  border-radius:100px; cursor:pointer; white-space:nowrap;
-}
 .session-email{ font-family:var(--mono); font-size:11px; color:var(--text-dim); margin:12px 0 0; word-break:break-all; }
 
 /* ---------- menu dropdown ---------- */
@@ -73,7 +68,7 @@ h1{
 }
 .menu-btn:hover{ border-color:var(--gold); color:var(--gold-soft); }
 .menu-dropdown{
-  position:absolute; top:48px; right:0; min-width:210px; z-index:50;
+  position:fixed; min-width:210px; max-width:calc(100vw - 32px); z-index:100;
   background:var(--paper-2); border:1px solid var(--hairline); border-radius:12px;
   padding:6px; box-shadow:0 10px 28px rgba(0,0,0,.45);
 }
@@ -151,7 +146,7 @@ h1{
   border-radius:14px; overflow:hidden;
 }
 .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-.sales-table{ width:100%; border-collapse:collapse; min-width:560px; }
+.sales-table{ width:100%; border-collapse:collapse; min-width:440px; }
 .sales-table thead tr{ background:var(--table-header-bg); }
 .sales-table th{
   font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:.07em;
@@ -162,7 +157,7 @@ h1{
 .sales-table tbody tr:nth-child(even){ background:var(--table-row-alt); }
 .item-name{ font-size:13.5px; font-weight:600; color:var(--text); }
 .item-meta{ font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:3px; white-space:nowrap; }
-.cat-badge{ display:inline-flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-dim); white-space:nowrap;}
+.cat-badge{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim); white-space:nowrap; margin-top:3px;}
 .cat-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .client-name{ font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; }
 .retira-info{ font-size:10.5px; margin-top:4px; display:inline-block; white-space:nowrap; }
@@ -202,16 +197,7 @@ h1{
 .client-summary .owed-value{ font-family:var(--mono); font-size:20px; font-weight:700; color:var(--red); text-align:right; }
 .client-summary .owed-value.zero{ color:var(--green); }
 
-/* ---------- category chips ---------- */
-.chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
-.chip{
-  padding:8px 12px; border-radius:100px; border:1px solid var(--hairline); background:var(--paper-2);
-  color:var(--text-dim); font-size:12.5px; font-weight:600; cursor:pointer;
-  display:flex; align-items:center; gap:6px;
-}
-.chip .dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.chip.active{ border-color:var(--gold); color:var(--gold-soft); background:rgba(68,109,246,.14); }
-.chip.add-chip{ border-style:dashed; }
+/* ---------- repeatable item rows (nueva venta) ---------- */
 .new-cat-row{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
 .new-cat-row input{ flex:1; min-width:120px; }
 .mini-btn{
@@ -222,8 +208,6 @@ h1{
   padding:40px 4px; text-align:center; color:var(--text-dim); font-size:13.5px; line-height:1.6;
 }
 .empty b{ color:var(--text); display:block; font-family:var(--display); font-size:18px; font-weight:600; margin-bottom:6px;}
-
-/* ---------- repeatable item rows (nueva venta) ---------- */
 .field-row-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
 .new-cat-link{
   background:none; border:none; color:var(--gold-soft); font-family:var(--body);
@@ -321,7 +305,6 @@ input:focus{ border-color:var(--gold); }
 .seg button.active.paid{ background:rgba(23,168,151,.18); border-color:var(--sage); color:var(--sage); }
 .seg button.active.pending{ background:rgba(178,58,82,.18); border-color:var(--rose); color:var(--rose); }
 .seg button.active.neutral{ background:rgba(68,109,246,.18); border-color:var(--gold); color:var(--gold-soft); }
-.mode-opt.active{ background:rgba(68,109,246,.18); border-color:var(--gold); color:var(--gold-soft); }
 
 .save-btn{
   width:100%; margin-top:6px; padding:15px; border:none; border-radius:12px;
@@ -356,9 +339,6 @@ input:focus{ border-color:var(--gold); }
 .gate-sub{ color:var(--text-dim); font-size:13.5px; line-height:1.55; margin:0 0 24px; }
 .gate-error{ color:var(--red); font-size:12.5px; margin:-8px 0 14px; }
 .gate-note{ color:var(--text-dim); font-size:11px; line-height:1.6; margin-top:16px; }
-.gate-code-input{
-  letter-spacing:.5em; font-family:var(--mono); font-size:20px; text-align:center;
-}
 .gate-links{ display:flex; justify-content:center; margin:14px 0 4px; }
 
 .gate-actions{ display:flex; gap:10px; margin-top:6px; }
