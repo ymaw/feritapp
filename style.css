@@ -31,7 +31,7 @@ body{
   min-height:100vh;
   min-height:100dvh;
   -webkit-tap-highlight-color:transparent;
-  padding-bottom:calc(96px + env(safe-area-inset-bottom));
+  padding-bottom:calc(86px + env(safe-area-inset-bottom));
   overflow-x:hidden;
 }
 ::selection{background:var(--gold);color:var(--ink);}
@@ -197,6 +197,14 @@ h1{
 .client-summary .owed-value{ font-family:var(--mono); font-size:20px; font-weight:700; color:var(--red); text-align:right; }
 .client-summary .owed-value.zero{ color:var(--green); }
 
+.client-list{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+.client-list-item{
+  text-align:left; background:var(--table-bg); border:1px solid var(--table-border);
+  color:var(--text); font-family:var(--body); font-size:14px; font-weight:600;
+  padding:13px 16px; border-radius:12px; cursor:pointer;
+}
+.client-list-item:hover{ border-color:var(--gold); color:var(--gold-soft); }
+
 /* ---------- repeatable item rows (nueva venta) ---------- */
 .new-cat-row{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
 .new-cat-row input{ flex:1; min-width:120px; }
@@ -240,16 +248,30 @@ h1{
 }
 .items-total-row span:last-child{ font-family:var(--mono); font-size:16px; color:var(--gold-soft); }
 
-/* ---------- fab ---------- */
-.fab{
-  position:fixed; right:20px; bottom:calc(22px + env(safe-area-inset-bottom));
-  width:58px; height:58px; border-radius:50%;
-  background:var(--gold); color:var(--ink); border:none;
-  font-size:28px; line-height:1; cursor:pointer;
-  box-shadow:0 8px 20px rgba(0,0,0,.4);
-  display:flex; align-items:center; justify-content:center;
-  z-index:20;
+/* ---------- bottom nav ---------- */
+.bottom-nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:25;
+  display:flex; align-items:center; justify-content:space-around;
+  background:var(--paper-2); border-top:1px solid var(--hairline);
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom));
 }
+.nav-item{
+  flex:1; background:none; border:none; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  color:var(--text-dim); font-family:var(--body); font-size:10.5px; font-weight:600;
+  padding:4px 2px; min-width:0;
+}
+.nav-item .nav-icon{ font-size:20px; line-height:1; }
+.nav-item.active{ color:var(--gold-soft); }
+.nav-fab{
+  flex-shrink:0; width:52px; height:52px; border-radius:50%;
+  background:var(--gold); color:#fff; border:none;
+  font-size:26px; line-height:1; cursor:pointer;
+  margin-top:-30px; box-shadow:0 6px 16px rgba(0,0,0,.45);
+  display:flex; align-items:center; justify-content:center;
+}
+.nav-fab:hover{ background:var(--gold-soft); }
+.nav-fab:active{ transform:scale(.96); }
 
 /* ---------- sheet ---------- */
 .scrim{
@@ -322,7 +344,7 @@ input:focus{ border-color:var(--gold); }
 .reset-link{ background:none; border:none; color:var(--text-dim); font-size:11.5px; font-family:var(--mono); cursor:pointer; text-decoration:underline; padding:6px; }
 
 .toast{
-  position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px);
+  position:fixed; left:50%; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px);
   background:var(--gold); color:var(--ink); font-family:var(--body); font-weight:600; font-size:13px;
   padding:10px 18px; border-radius:100px; opacity:0; pointer-events:none;
   transition:all .25s ease; z-index:40; max-width:88vw; text-align:center;

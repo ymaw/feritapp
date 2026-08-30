@@ -105,16 +105,20 @@
     </div>
     <div class="menu-wrap">
       <button class="menu-btn" id="menuBtn" aria-label="Menú">☰</button>
-      <div class="menu-dropdown" id="menuDropdown" style="display:none;">
-        <button type="button" class="menu-item" data-view="dashboard">📊 Ver Dashboard</button>
-        <button type="button" class="menu-item" data-view="sales">🧾 Ver tabla de ventas</button>
-        <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar app</button>
-        <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
-      </div>
     </div>
   </div>
   <p class="session-email" id="sessionEmail"></p>
 </header>
+
+<div class="menu-dropdown" id="menuDropdown" style="display:none;">
+  <button type="button" class="menu-item" data-view="dashboard">📊 Ver Dashboard</button>
+  <button type="button" class="menu-item" data-view="clients">👥 Ver clientes</button>
+  <button type="button" class="menu-item" data-view="sales">🧾 Ver tabla de ventas</button>
+  <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar app</button>
+  <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
+</div>
+
+<datalist id="clientsDatalist"></datalist>
 
 <div id="viewDashboard" class="app-view" style="display:none;">
   <div class="section-block">
@@ -142,16 +146,19 @@
   </div>
 </div>
 
-<div id="viewSales" class="app-view">
+<div id="viewClients" class="app-view" style="display:none;">
   <div class="section-block">
-    <p class="section-title">Buscar cliente</p>
+    <p class="section-title">Clientes</p>
     <div class="input-row">
-      <input type="text" id="clientSearch" placeholder="Nombre del cliente…" autocomplete="off">
+      <input type="text" id="clientSearch" placeholder="Buscar cliente…" list="clientsDatalist" autocomplete="off">
       <button class="mic-btn" data-target="clientSearch" data-mode="text" type="button" aria-label="Dictar nombre de cliente">🎤</button>
     </div>
     <div id="clientSearchResults"></div>
+    <div id="clientsFullList"></div>
   </div>
+</div>
 
+<div id="viewSales" class="app-view">
   <div class="section-block">
     <p class="section-title">Artículos de esta semana</p>
     <div id="currentWeekTable"></div>
@@ -167,9 +174,24 @@
   </div>
 </div>
 
-<button class="fab" id="openSheet" aria-label="Agregar venta">+</button>
+<nav class="bottom-nav" id="bottomNav">
+  <button type="button" class="nav-item" data-view="dashboard">
+    <span class="nav-icon">🏠</span><span class="nav-label">Inicio</span>
+  </button>
+  <button type="button" class="nav-item" data-view="clients">
+    <span class="nav-icon">👥</span><span class="nav-label">Clientes</span>
+  </button>
+  <button class="nav-fab" id="openSheet" aria-label="Agregar venta">+</button>
+  <button type="button" class="nav-item active" data-view="sales">
+    <span class="nav-icon">🧾</span><span class="nav-label">Ventas</span>
+  </button>
+  <button type="button" class="nav-item" id="moreBtn">
+    <span class="nav-icon">⋯</span><span class="nav-label">Más</span>
+  </button>
+</nav>
 
 <div class="scrim" id="scrim"></div>
+
 <div class="sheet" id="sheet">
   <div class="sheet-handle"></div>
   <h2 id="sheetTitle">Nueva venta</h2>
@@ -178,7 +200,7 @@
   <div class="field">
     <label>Nombre del cliente</label>
     <div class="input-row">
-      <input type="text" id="fCliente" placeholder="Ej: Juan Pérez">
+      <input type="text" id="fCliente" placeholder="Ej: Juan Pérez" list="clientsDatalist">
       <button class="mic-btn" data-target="fCliente" data-mode="text" aria-label="Dictar nombre del cliente">🎤</button>
     </div>
   </div>

@@ -197,33 +197,62 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- menú desplegable / vistas ---------------- */
   var menuBtn = document.getElementById('menuBtn');
+  var moreBtn = document.getElementById('moreBtn');
   var menuDropdown = document.getElementById('menuDropdown');
 
-  menuBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    var isOpen = menuDropdown.style.display === 'block';
-    if(isOpen){
+  // Abre el desplegable anclado al botón que lo disparó (el ☰ del header
+  // o el "Más" del menú inferior), calculando si conviene abrirlo hacia
+  // abajo o hacia arriba según el espacio disponible en pantalla.
+  function openMenuFrom(anchorEl){
+    menuDropdown.style.visibility = 'hidden';
+    menuDropdown.style.display = 'block';
+    var ddHeight = menuDropdown.offsetHeight;
+    menuDropdown.style.visibility = '';
+
+    var rect = anchorEl.getBoundingClientRect();
+    var spaceBelow = window.innerHeight - rect.bottom;
+    var top = (spaceBelow >= ddHeight + 12) ? (rect.bottom + 8) : (rect.top - ddHeight - 8);
+
+    menuDropdown.style.top = Math.max(8, top) + 'px';
+    menuDropdown.style.right = (window.innerWidth - rect.right) + 'px';
+    menuDropdown.style.left = 'auto';
+  }
+
+  function toggleMenuFrom(anchorEl){
+    if(menuDropdown.style.display === 'block'){
       menuDropdown.style.display = 'none';
       return;
     }
-    var rect = menuBtn.getBoundingClientRect();
-    menuDropdown.style.top = (rect.bottom + 8) + 'px';
-    menuDropdown.style.right = (window.innerWidth - rect.right) + 'px';
-    menuDropdown.style.left = 'auto';
-    menuDropdown.style.display = 'block';
+    openMenuFrom(anchorEl);
+  }
+
+  menuBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    toggleMenuFrom(menuBtn);
+  });
+  moreBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    toggleMenuFrom(moreBtn);
   });
   menuDropdown.addEventListener('click', function(e){ e.stopPropagation(); });
   document.addEventListener('click', function(){ menuDropdown.style.display = 'none'; });
 
   function switchView(view){
-    var isSales = view === 'sales';
-    document.getElementById('viewSales').style.display = isSales ? 'block' : 'none';
-    document.getElementById('viewDashboard').style.display = isSales ? 'none' : 'block';
-    document.getElementById('openSheet').style.display = isSales ? 'flex' : 'none';
-    document.getElementById('viewHeading').textContent = isSales ? 'Registro semanal' : 'Dashboard';
+    document.getElementById('viewSales').style.display = (view === 'sales') ? 'block' : 'none';
+    document.getElementById('viewDashboard').style.display = (view === 'dashboard') ? 'block' : 'none';
+    document.getElementById('viewClients').style.display = (view === 'clients') ? 'block' : 'none';
+
+    document.getElementById('viewHeading').textContent =
+      view === 'sales' ? 'Registro semanal' : (view === 'clients' ? 'Clientes' : 'Dashboard');
+
+    document.querySelectorAll('.nav-item[data-view]').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-view') === view);
+    });
+
+    if(view === 'clients'){ renderClientSearch(); renderClientsFullList(); }
   }
 
-  document.querySelectorAll('.menu-item[data-view]').forEach(function(btn){
+  document.querySelectorAll('[data-view]').forEach(function(btn){
     btn.addEventListener('click', function(){
       switchView(btn.getAttribute('data-view'));
       menuDropdown.style.display = 'none';
@@ -292,6 +321,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   var sales = [];
   var categories = [];
+  var clients = [];
   var weekStartDay = 1; // 0=domingo .. 6=sábado. Por defecto: lunes.
   var sheet = document.getElementById('sheet');
   var scrim = document.getElementById('scrim');
@@ -318,6 +348,24 @@ document.addEventListener('DOMContentLoaded', function(){
     };
   }
 
+  function refreshClientsDatalist(){
+    var dl = document.getElementById('clientsDatalist');
+    if(!dl) return;
+    dl.innerHTML = clients.map(function(c){
+      return '<option value="' + escapeHtml(c) + '">';
+    }).join('');
+  }
+
+  async function persistClientIfNew(name){
+    var exists = clients.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
+    if(exists) return;
+    clients.push(name);
+    refreshClientsDatalist();
+    try{
+      await sb.from('clients').insert([{ name: name }]);
+    }catch(e){ /* si falla, igual queda disponible en esta sesión */ }
+  }
+
   async function loadSales(){
     if(!sb) return;
     try{
@@ -342,6 +390,14 @@ document.addEventListener('DOMContentLoaded', function(){
       }
       categories = defaults;
     }
+
+    try{
+      var clientsRes = await sb.from('clients').select('*').order('name', { ascending:true });
+      clients = (clientsRes.data || []).map(function(c){ return c.name; });
+    }catch(e){
+      clients = [];
+    }
+    refreshClientsDatalist();
 
     try{
       var settingsRes = await sb.from('user_settings').select('week_start_day').maybeSingle();
@@ -630,6 +686,7 @@ document.addEventListener('DOMContentLoaded', function(){
       container.innerHTML = '<div class="empty"><b>Sin historial todavía</b>Las semanas anteriores van a aparecer acá.</div>';
       renderMonthComparison();
       renderClientSearch();
+      renderClientsFullList();
       return;
     }
     var html = '';
@@ -656,6 +713,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     renderMonthComparison();
     renderClientSearch();
+    renderClientsFullList();
   }
 
   function renderClientSearch(){
@@ -686,7 +744,39 @@ document.addEventListener('DOMContentLoaded', function(){
     bindTableEvents(wrap);
   }
 
-  document.getElementById('clientSearch').addEventListener('input', renderClientSearch);
+  function renderClientsFullList(){
+    var searchInput = document.getElementById('clientSearch');
+    var wrap = document.getElementById('clientsFullList');
+    if(!searchInput || !wrap) return;
+
+    if(searchInput.value.trim()){ wrap.innerHTML = ''; return; }
+
+    if(clients.length === 0){
+      wrap.innerHTML = '<div class="empty-inline">Todavía no guardaste ningún cliente. Se guardan solos la primera vez que cargués una venta con su nombre.</div>';
+      return;
+    }
+
+    var sorted = clients.slice().sort(function(a,b){ return a.localeCompare(b, 'es'); });
+    var html = '<div class="client-list">';
+    sorted.forEach(function(name){
+      html += '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '">' + escapeHtml(name) + '</button>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+
+    wrap.querySelectorAll('[data-client-name]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        searchInput.value = btn.getAttribute('data-client-name');
+        renderClientSearch();
+        renderClientsFullList();
+      });
+    });
+  }
+
+  document.getElementById('clientSearch').addEventListener('input', function(){
+    renderClientSearch();
+    renderClientsFullList();
+  });
 
   function escapeHtml(str){
     var d = document.createElement('div');
@@ -914,6 +1004,7 @@ document.addEventListener('DOMContentLoaded', function(){
         if(updRes.error) throw updRes.error;
         var idx = sales.findIndex(function(s){ return s.id === editingSaleId; });
         if(idx !== -1){ sales[idx] = mapRowToSale(updRes.data[0]); }
+        await persistClientIfNew(cliente);
         render();
         closeSheet();
         showToast('Artículo actualizado');
@@ -932,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', function(){
         var res = await sb.from('sales').insert(batch).select();
         if(res.error) throw res.error;
         res.data.forEach(function(row){ sales.unshift(mapRowToSale(row)); });
+        await persistClientIfNew(cliente);
         render();
         closeSheet();
         showToast(items.length > 1 ? items.length + ' artículos guardados' : 'Venta guardada');
