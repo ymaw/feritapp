@@ -42,12 +42,18 @@
 
       <div class="field">
         <label>Contraseña</label>
-        <input type="password" id="gatePin" placeholder="••••••••" autocomplete="current-password">
+        <div class="input-row">
+          <input type="password" id="gatePin" placeholder="••••••••" autocomplete="current-password">
+          <button class="pw-toggle-btn" type="button" data-target="gatePin" aria-label="Mostrar contraseña">👁</button>
+        </div>
       </div>
 
       <div class="field" id="pinConfirmField" style="display:none;">
         <label>Confirmar contraseña</label>
-        <input type="password" id="gatePinConfirm" placeholder="••••••••" autocomplete="new-password">
+        <div class="input-row">
+          <input type="password" id="gatePinConfirm" placeholder="••••••••" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="gatePinConfirm" aria-label="Mostrar contraseña">👁</button>
+        </div>
         <ul class="pw-requirements" id="pwRequirements">
           <li id="reqLength" class="req-bad"><span class="req-icon">✕</span> Mínimo 6 caracteres</li>
           <li id="reqUpper" class="req-bad"><span class="req-icon">✕</span> Una letra mayúscula</li>
@@ -82,11 +88,17 @@
       <p class="gate-sub">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
       <div class="field">
         <label>Nueva contraseña</label>
-        <input type="password" id="newPin" placeholder="••••••••" autocomplete="new-password">
+        <div class="input-row">
+          <input type="password" id="newPin" placeholder="••••••••" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="newPin" aria-label="Mostrar contraseña">👁</button>
+        </div>
       </div>
       <div class="field">
         <label>Confirmar nueva contraseña</label>
-        <input type="password" id="newPinConfirm" placeholder="••••••••" autocomplete="new-password">
+        <div class="input-row">
+          <input type="password" id="newPinConfirm" placeholder="••••••••" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="newPinConfirm" aria-label="Mostrar contraseña">👁</button>
+        </div>
       </div>
       <p class="gate-error" id="newPinError" style="display:none;"></p>
       <button class="save-btn" id="newPinSubmit">Guardar contraseña</button>
@@ -98,15 +110,8 @@
 <div id="appRoot" style="display:none;">
 
 <header>
-  <div class="header-top">
-    <div>
-      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
-      <h1 id="viewHeading">Registro semanal</h1>
-    </div>
-    <div class="menu-wrap">
-      <button class="menu-btn" id="menuBtn" aria-label="Menú">☰</button>
-    </div>
-  </div>
+  <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+  <h1 id="viewHeading">Registro semanal</h1>
   <p class="session-email" id="sessionEmail"></p>
 </header>
 
@@ -141,8 +146,18 @@
   <div class="ticket-wrap" id="currentTicket"></div>
 
   <div class="section-block">
+    <p class="section-title">Comparar semanas</p>
+    <div id="weekCompare"></div>
+  </div>
+
+  <div class="section-block">
     <p class="section-title">Comparar meses</p>
     <div id="monthCompare"></div>
+  </div>
+
+  <div class="section-block">
+    <p class="section-title">Clientes que más compraron</p>
+    <div id="topClients"></div>
   </div>
 </div>
 

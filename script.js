@@ -196,13 +196,12 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   /* ---------------- menú desplegable / vistas ---------------- */
-  var menuBtn = document.getElementById('menuBtn');
   var moreBtn = document.getElementById('moreBtn');
   var menuDropdown = document.getElementById('menuDropdown');
 
-  // Abre el desplegable anclado al botón que lo disparó (el ☰ del header
-  // o el "Más" del menú inferior), calculando si conviene abrirlo hacia
-  // abajo o hacia arriba según el espacio disponible en pantalla.
+  // Abre el desplegable anclado al botón "Más" del menú inferior,
+  // calculando si conviene abrirlo hacia abajo o hacia arriba según
+  // el espacio disponible en pantalla.
   function openMenuFrom(anchorEl){
     menuDropdown.style.visibility = 'hidden';
     menuDropdown.style.display = 'block';
@@ -226,10 +225,6 @@ document.addEventListener('DOMContentLoaded', function(){
     openMenuFrom(anchorEl);
   }
 
-  menuBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    toggleMenuFrom(menuBtn);
-  });
   moreBtn.addEventListener('click', function(e){
     e.stopPropagation();
     toggleMenuFrom(moreBtn);
@@ -592,6 +587,117 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
+  function formatRangeShort(weekStartKey){
+    var start = new Date(weekStartKey + "T00:00:00");
+    return start.getDate() + " " + MESES[start.getMonth()];
+  }
+
+  var compareWeekA = null, compareWeekB = null;
+
+  function renderWeekComparison(){
+    var wrap = document.getElementById('weekCompare');
+    if(!wrap) return;
+
+    var groups = groupByWeek();
+    var keys = Object.keys(groups).sort();
+
+    if(keys.length === 0){
+      wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas suficientes para comparar semanas.</div>';
+      return;
+    }
+
+    var thisWeekKey = weekKey(new Date());
+    var wStats = {};
+    keys.forEach(function(k){ wStats[k] = weekStats(groups[k]); });
+    // La comparación semanal se centra en CANTIDAD de artículos, no en dinero.
+    var maxCount = Math.max.apply(null, keys.map(function(k){ return wStats[k].count; }));
+
+    var chartKeys = keys.slice(-6);
+    var chartHtml = '<div class="month-chart">';
+    chartKeys.forEach(function(k){
+      var st = wStats[k];
+      var heightPct = maxCount > 0 ? Math.max(4, Math.round((st.count / maxCount) * 100)) : 4;
+      chartHtml += '<div class="month-bar-col">' +
+        '<div class="month-bar-value">' + st.count + '</div>' +
+        '<div class="month-bar' + (k === thisWeekKey ? ' current' : '') + '" style="height:' + heightPct + '%"></div>' +
+        '<div class="month-bar-label">' + formatRangeShort(k) + '</div>' +
+      '</div>';
+    });
+    chartHtml += '</div>';
+
+    if(!compareWeekA || keys.indexOf(compareWeekA) === -1){ compareWeekA = keys[keys.length - 1]; }
+    if(!compareWeekB || keys.indexOf(compareWeekB) === -1){ compareWeekB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
+
+    var optionsHtml = keys.slice().reverse().map(function(k){
+      return '<option value="' + k + '">Semana del ' + formatRange(k) + '</option>';
+    }).join('');
+
+    var selectHtml = '<div class="compare-row">' +
+      '<select class="compare-select" id="compareWeekSelectA">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareWeekSelectB">' + optionsHtml + '</select>' +
+    '</div>';
+
+    var stA = wStats[compareWeekA] || {total:0,cobrado:0,pendiente:0,count:0};
+    var stB = wStats[compareWeekB] || {total:0,cobrado:0,pendiente:0,count:0};
+
+    var tableHtml = '<div class="compare-table-card"><table class="compare-table"><tbody>' +
+      '<tr><td class="label"></td><td class="head">' + formatRange(compareWeekA) + '</td><td class="head">' + formatRange(compareWeekB) + '</td></tr>' +
+      '<tr><td class="label">Artículos vendidos</td><td class="num">' + stA.count + '</td><td class="num">' + stB.count + deltaHtml(stA.count, stB.count) + '</td></tr>' +
+      '<tr><td class="label">Total vendido</td><td class="num">' + money(stA.total) + '</td><td class="num">' + money(stB.total) + deltaHtml(stA.total, stB.total) + '</td></tr>' +
+      '<tr><td class="label">Cobrado</td><td class="num">' + money(stA.cobrado) + '</td><td class="num">' + money(stB.cobrado) + deltaHtml(stA.cobrado, stB.cobrado) + '</td></tr>' +
+      '<tr><td class="label">Pendiente</td><td class="num">' + money(stA.pendiente) + '</td><td class="num">' + money(stB.pendiente) + deltaHtml(stA.pendiente, stB.pendiente) + '</td></tr>' +
+    '</tbody></table></div>';
+
+    wrap.innerHTML = chartHtml + selectHtml + tableHtml;
+
+    document.getElementById('compareWeekSelectA').value = compareWeekA;
+    document.getElementById('compareWeekSelectB').value = compareWeekB;
+    document.getElementById('compareWeekSelectA').addEventListener('change', function(){
+      compareWeekA = this.value; renderWeekComparison();
+    });
+    document.getElementById('compareWeekSelectB').addEventListener('change', function(){
+      compareWeekB = this.value; renderWeekComparison();
+    });
+  }
+
+  function renderTopClients(){
+    var wrap = document.getElementById('topClients');
+    if(!wrap) return;
+
+    if(sales.length === 0){
+      wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas registradas.</div>';
+      return;
+    }
+
+    var byClient = {};
+    sales.forEach(function(s){
+      var name = s.cliente || 'Sin nombre';
+      if(!byClient[name]){ byClient[name] = { name: name, count: 0, total: 0 }; }
+      byClient[name].count += 1;
+      byClient[name].total += Number(s.precio) || 0;
+    });
+
+    var ranked = Object.keys(byClient).map(function(k){ return byClient[k]; });
+    ranked.sort(function(a, b){ return b.count - a.count || b.total - a.total; });
+    ranked = ranked.slice(0, 5);
+
+    var medals = ['🥇','🥈','🥉'];
+    var html = '<div class="rank-list">';
+    ranked.forEach(function(c, idx){
+      var medal = medals[idx] || ('#' + (idx + 1));
+      html += '<div class="rank-item">' +
+        '<div class="rank-medal">' + medal + '</div>' +
+        '<div class="rank-info">' +
+          '<div class="rank-name">' + escapeHtml(c.name) + '</div>' +
+          '<div class="rank-sub">' + c.count + ' artículo' + (c.count === 1 ? '' : 's') + ' comprado' + (c.count === 1 ? '' : 's') + '</div>' +
+        '</div>' +
+        '<div class="rank-total">' + money(c.total) + '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
   function weekStats(items){
     var total=0, cobrado=0, pendiente=0;
     items.forEach(function(i){
@@ -684,7 +790,9 @@ document.addEventListener('DOMContentLoaded', function(){
     var container = document.getElementById('weeksContainer');
     if(pastKeys.length === 0){
       container.innerHTML = '<div class="empty"><b>Sin historial todavía</b>Las semanas anteriores van a aparecer acá.</div>';
+      renderWeekComparison();
       renderMonthComparison();
+      renderTopClients();
       renderClientSearch();
       renderClientsFullList();
       return;
@@ -711,7 +819,9 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     });
 
+    renderWeekComparison();
     renderMonthComparison();
+    renderTopClients();
     renderClientSearch();
     renderClientsFullList();
   }
@@ -759,7 +869,11 @@ document.addEventListener('DOMContentLoaded', function(){
     var sorted = clients.slice().sort(function(a,b){ return a.localeCompare(b, 'es'); });
     var html = '<div class="client-list">';
     sorted.forEach(function(name){
-      html += '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '">' + escapeHtml(name) + '</button>';
+      html += '<div class="client-row">' +
+                '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '">' + escapeHtml(name) + '</button>' +
+                '<button type="button" class="client-edit-btn" data-edit-client="' + escapeHtml(name) + '" aria-label="Editar cliente">✎</button>' +
+                '<button type="button" class="client-del-btn" data-del-client="' + escapeHtml(name) + '" aria-label="Eliminar cliente">✕</button>' +
+              '</div>';
     });
     html += '</div>';
     wrap.innerHTML = html;
@@ -771,6 +885,51 @@ document.addEventListener('DOMContentLoaded', function(){
         renderClientsFullList();
       });
     });
+    wrap.querySelectorAll('[data-edit-client]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var oldName = btn.getAttribute('data-edit-client');
+        var newName = prompt('Editar nombre del cliente:', oldName);
+        if(newName === null) return;
+        newName = newName.trim();
+        if(!newName || newName === oldName) return;
+        renameClientEntry(oldName, newName);
+      });
+    });
+    wrap.querySelectorAll('[data-del-client]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var name = btn.getAttribute('data-del-client');
+        if(confirm('¿Eliminar a "' + name + '" de tu lista de clientes?\n\nEsto NO borra sus ventas ya registradas, solo lo saca del autocompletado y de esta lista.')){
+          deleteClientEntry(name);
+        }
+      });
+    });
+  }
+
+  async function renameClientEntry(oldName, newName){
+    try{
+      await sb.from('clients').update({ name: newName }).eq('name', oldName);
+      await sb.from('sales').update({ cliente: newName }).eq('cliente', oldName);
+      clients = clients.map(function(c){ return c.toLowerCase() === oldName.toLowerCase() ? newName : c; });
+      sales.forEach(function(s){ if(s.cliente === oldName){ s.cliente = newName; } });
+      refreshClientsDatalist();
+      document.getElementById('clientSearch').value = '';
+      render();
+      showToast('Cliente actualizado');
+    }catch(e){
+      showToast('No se pudo actualizar el cliente.');
+    }
+  }
+
+  async function deleteClientEntry(name){
+    try{
+      await sb.from('clients').delete().eq('name', name);
+      clients = clients.filter(function(c){ return c.toLowerCase() !== name.toLowerCase(); });
+      refreshClientsDatalist();
+      renderClientsFullList();
+      showToast('Cliente eliminado de la lista');
+    }catch(e){
+      showToast('No se pudo eliminar el cliente.');
+    }
   }
 
   document.getElementById('clientSearch').addEventListener('input', function(){
