@@ -799,23 +799,34 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     var html = '';
     pastKeys.forEach(function(k){
-      var items = groups[k].slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
-      var st = weekStats(items);
+      var st = weekStats(groups[k]);
       var label = "Semana del " + formatRange(k);
       html += '<button class="week-toggle" data-week="' + k + '">' +
                 '<span><span class="lbl">' + label + '</span><br><span class="sub">' + st.count + ' art. · ' + money(st.total) + '</span></span>' +
                 '<span class="chev">▾</span>' +
               '</button>';
-      html += '<div class="week-items" id="wk-' + k + '">' + renderSalesTable(items) + '</div>';
+      // El contenido de la tabla NO se genera acá: se arma recién la
+      // primera vez que el usuario abre esta semana (ver más abajo).
+      // Con historiales largos, esto evita construir de entrada el HTML
+      // de todas las semanas pasadas cuando solo se ve una a la vez.
+      html += '<div class="week-items" id="wk-' + k + '" data-loaded="0"></div>';
     });
     container.innerHTML = html;
-    bindTableEvents(container);
 
     container.querySelectorAll('.week-toggle').forEach(function(btn){
       btn.addEventListener('click', function(){
         var wk = btn.getAttribute('data-week');
+        var itemsEl = document.getElementById('wk-' + wk);
+
+        if(itemsEl.getAttribute('data-loaded') === '0'){
+          var items = groups[wk].slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+          itemsEl.innerHTML = renderSalesTable(items);
+          bindTableEvents(itemsEl);
+          itemsEl.setAttribute('data-loaded', '1');
+        }
+
         btn.classList.toggle('open');
-        document.getElementById('wk-' + wk).classList.toggle('open');
+        itemsEl.classList.toggle('open');
       });
     });
 
@@ -932,9 +943,13 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
+  var clientSearchDebounce = null;
   document.getElementById('clientSearch').addEventListener('input', function(){
-    renderClientSearch();
-    renderClientsFullList();
+    clearTimeout(clientSearchDebounce);
+    clientSearchDebounce = setTimeout(function(){
+      renderClientSearch();
+      renderClientsFullList();
+    }, 150);
   });
 
   function escapeHtml(str){
@@ -1312,6 +1327,19 @@ document.addEventListener('DOMContentLoaded', function(){
 
   document.querySelectorAll('.mic-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ startDictation(btn); });
+  });
+
+  /* ---------------- mostrar / ocultar contraseña ---------------- */
+  document.querySelectorAll('.pw-toggle-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var input = document.getElementById(btn.getAttribute('data-target'));
+      if(!input) return;
+      var showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.textContent = showing ? '👁' : '🙈';
+      btn.classList.toggle('showing', !showing);
+      btn.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+    });
   });
 
   /* ---------------- init ---------------- */
