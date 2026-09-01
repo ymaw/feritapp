@@ -236,15 +236,17 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewSales').style.display = (view === 'sales') ? 'block' : 'none';
     document.getElementById('viewDashboard').style.display = (view === 'dashboard') ? 'block' : 'none';
     document.getElementById('viewClients').style.display = (view === 'clients') ? 'block' : 'none';
+    document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
 
-    document.getElementById('viewHeading').textContent =
-      view === 'sales' ? 'Registro semanal' : (view === 'clients' ? 'Clientes' : 'Dashboard');
+    var titles = { sales:'Registro semanal', clients:'Clientes', ranking:'Ranking de clientes' };
+    document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view]').forEach(function(btn){
       btn.classList.toggle('active', btn.getAttribute('data-view') === view);
     });
 
     if(view === 'clients'){ renderClientSearch(); renderClientsFullList(); }
+    if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
   }
 
   document.querySelectorAll('[data-view]').forEach(function(btn){
@@ -408,8 +410,76 @@ document.addEventListener('DOMContentLoaded', function(){
     var weekStartSelect = document.getElementById('weekStartSelect');
     if(weekStartSelect){ weekStartSelect.value = String(weekStartDay); }
 
+    await checkSemesterCleanup();
+
     render();
     resetForm();
+  }
+
+  // Cada semestre (ene-jun / jul-dic), borra las ventas anteriores al
+  // mes en curso, dejando solo el mes actual. Se controla con
+  // last_purge_semester en user_settings para que corra como mucho
+  // una vez por semestre, no en cada inicio de sesión.
+  function csvEscape(val){
+    val = String(val === null || val === undefined ? '' : val);
+    if(/[",\n;]/.test(val)){
+      val = '"' + val.replace(/"/g, '""') + '"';
+    }
+    return val;
+  }
+
+  function exportSalesToCSV(items, filename){
+    if(!items || items.length === 0) return false;
+
+    var headers = ['Fecha','Cliente','Artículo','Categoría','Precio','Pagado','Retira','Tercero'];
+    var lines = [headers.map(csvEscape).join(',')];
+
+    items.slice().sort(function(a,b){ return new Date(a.fecha) - new Date(b.fecha); }).forEach(function(s){
+      var fechaTxt = new Date(s.fecha).toLocaleDateString('es-AR') + ' ' + new Date(s.fecha).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+      var retiraTxt = s.retira === 'otro' ? 'Otra persona' : 'El mismo cliente';
+      var row = [fechaTxt, s.cliente, s.articulo, s.categoria, s.precio, s.pagado ? 'Sí' : 'No', retiraTxt, s.tercero || ''];
+      lines.push(row.map(csvEscape).join(','));
+    });
+
+    // \uFEFF (BOM) al principio para que Excel abra los acentos bien.
+    var csvContent = '\uFEFF' + lines.join('\r\n');
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    return true;
+  }
+
+  async function checkSemesterCleanup(){
+    var now = new Date();
+    var currentSemester = now.getFullYear() + '-' + (now.getMonth() < 6 ? 'H1' : 'H2');
+
+    try{
+      var res = await sb.from('user_settings').select('last_purge_semester').maybeSingle();
+      var stored = res.data ? res.data.last_purge_semester : null;
+
+      if(stored && stored !== currentSemester){
+        var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        var oldItems = sales.filter(function(s){ return new Date(s.fecha) < startOfMonth; });
+
+        if(oldItems.length > 0){
+          exportSalesToCSV(oldItems, 'feritapp-historial-' + stored + '.csv');
+        }
+
+        await sb.from('sales').delete().lt('fecha', startOfMonth.toISOString());
+        sales = sales.filter(function(s){ return new Date(s.fecha) >= startOfMonth; });
+        showToast('Mantenimiento semestral: se descargó un CSV de respaldo y se limpió el historial anterior.', 5000);
+      }
+
+      await sb.from('user_settings').upsert({ last_purge_semester: currentSemester }, { onConflict: 'user_id' });
+    }catch(e){
+      // Si falla, no es crítico: se vuelve a intentar en el próximo login.
+    }
   }
 
   document.getElementById('weekStartSelect').addEventListener('change', async function(){
@@ -508,6 +578,22 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   var compareMonthA = null, compareMonthB = null;
+  var compareWeekA = null, compareWeekB = null;
+  var comparePeriodMode = 'week';
+
+  function renderPeriodComparison(){
+    if(comparePeriodMode === 'week'){ renderWeekComparison(); }
+    else{ renderMonthComparison(); }
+  }
+
+  document.querySelectorAll('.period-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.period-opt').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      comparePeriodMode = btn.getAttribute('data-period');
+      renderPeriodComparison();
+    });
+  });
 
   function deltaHtml(a, b){
     if(!b){
@@ -522,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function renderMonthComparison(){
-    var wrap = document.getElementById('monthCompare');
+    var wrap = document.getElementById('periodCompare');
     if(!wrap) return;
 
     var groups = groupByMonth();
@@ -592,10 +678,8 @@ document.addEventListener('DOMContentLoaded', function(){
     return start.getDate() + " " + MESES[start.getMonth()];
   }
 
-  var compareWeekA = null, compareWeekB = null;
-
   function renderWeekComparison(){
-    var wrap = document.getElementById('weekCompare');
+    var wrap = document.getElementById('periodCompare');
     if(!wrap) return;
 
     var groups = groupByWeek();
@@ -660,6 +744,9 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
+  var showRankingMoney = false;
+  var rankingVisibleCount = 5;
+
   function renderTopClients(){
     var wrap = document.getElementById('topClients');
     if(!wrap) return;
@@ -677,13 +764,15 @@ document.addEventListener('DOMContentLoaded', function(){
       byClient[name].total += Number(s.precio) || 0;
     });
 
+    // El ranking ordena por CANTIDAD de artículos comprados (no por monto).
     var ranked = Object.keys(byClient).map(function(k){ return byClient[k]; });
     ranked.sort(function(a, b){ return b.count - a.count || b.total - a.total; });
-    ranked = ranked.slice(0, 5);
+
+    var visible = ranked.slice(0, rankingVisibleCount);
 
     var medals = ['🥇','🥈','🥉'];
     var html = '<div class="rank-list">';
-    ranked.forEach(function(c, idx){
+    visible.forEach(function(c, idx){
       var medal = medals[idx] || ('#' + (idx + 1));
       html += '<div class="rank-item">' +
         '<div class="rank-medal">' + medal + '</div>' +
@@ -691,11 +780,33 @@ document.addEventListener('DOMContentLoaded', function(){
           '<div class="rank-name">' + escapeHtml(c.name) + '</div>' +
           '<div class="rank-sub">' + c.count + ' artículo' + (c.count === 1 ? '' : 's') + ' comprado' + (c.count === 1 ? '' : 's') + '</div>' +
         '</div>' +
-        '<div class="rank-total">' + money(c.total) + '</div>' +
+        (showRankingMoney ? '<div class="rank-total">' + money(c.total) + '</div>' : '') +
       '</div>';
     });
     html += '</div>';
+
+    if(ranked.length > visible.length){
+      html += '<button type="button" class="reset-link" id="rankingShowMoreBtn" style="margin-top:12px;">Ver más (' + (ranked.length - visible.length) + ' restantes)</button>';
+    }
+
     wrap.innerHTML = html;
+
+    var moreBtn = document.getElementById('rankingShowMoreBtn');
+    if(moreBtn){
+      moreBtn.addEventListener('click', function(){
+        rankingVisibleCount += 5;
+        renderTopClients();
+      });
+    }
+  }
+
+  var toggleRankingMoneyBtn = document.getElementById('toggleRankingMoney');
+  if(toggleRankingMoneyBtn){
+    toggleRankingMoneyBtn.addEventListener('click', function(){
+      showRankingMoney = !showRankingMoney;
+      toggleRankingMoneyBtn.textContent = showRankingMoney ? '💰 Ocultar montos gastados' : '💰 Mostrar montos gastados';
+      renderTopClients();
+    });
   }
 
   function weekStats(items){
@@ -790,8 +901,7 @@ document.addEventListener('DOMContentLoaded', function(){
     var container = document.getElementById('weeksContainer');
     if(pastKeys.length === 0){
       container.innerHTML = '<div class="empty"><b>Sin historial todavía</b>Las semanas anteriores van a aparecer acá.</div>';
-      renderWeekComparison();
-      renderMonthComparison();
+      renderPeriodComparison();
       renderTopClients();
       renderClientSearch();
       renderClientsFullList();
@@ -830,8 +940,7 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     });
 
-    renderWeekComparison();
-    renderMonthComparison();
+    renderPeriodComparison();
     renderTopClients();
     renderClientSearch();
     renderClientsFullList();
@@ -844,19 +953,21 @@ document.addEventListener('DOMContentLoaded', function(){
     var query = input.value.trim().toLowerCase();
     if(!query){ wrap.innerHTML = ''; return; }
 
+    var thisWeekKey = weekKey(new Date());
     var matches = sales.filter(function(s){
-      return (s.cliente || '').toLowerCase().indexOf(query) !== -1;
+      return weekKey(new Date(s.fecha)) === thisWeekKey &&
+             (s.cliente || '').toLowerCase().indexOf(query) !== -1;
     });
 
     if(matches.length === 0){
-      wrap.innerHTML = '<div class="empty-inline">No se encontraron ventas para ese nombre.</div>';
+      wrap.innerHTML = '<div class="empty-inline">Sin ventas de esta semana para ese nombre.</div>';
       return;
     }
 
     var st = weekStats(matches);
     var owedClass = st.pendiente > 0 ? '' : 'zero';
     var summaryHtml = '<div class="client-summary">' +
-      '<div><div class="name">' + escapeHtml(query) + '</div><div class="owed-label">Debe abonar en total</div></div>' +
+      '<div><div class="name">' + escapeHtml(query) + '</div><div class="owed-label">Debe abonar esta semana</div></div>' +
       '<div class="owed-value ' + owedClass + '">' + money(st.pendiente) + '</div>' +
     '</div>';
 
@@ -958,11 +1069,11 @@ document.addEventListener('DOMContentLoaded', function(){
     return d.innerHTML;
   }
 
-  function showToast(msg){
+  function showToast(msg, duration){
     var t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 2200);
+    setTimeout(function(){ t.classList.remove('show'); }, duration || 2200);
   }
 
   /* ---------------- sheet open/close ---------------- */
@@ -1210,6 +1321,15 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   /* ---------------- reset all ---------------- */
+  function handleManualExport(){
+    if(sales.length === 0){ showToast('No hay ventas para exportar.'); return; }
+    var today = new Date().toISOString().slice(0,10);
+    exportSalesToCSV(sales, 'feritapp-historial-completo-' + today + '.csv');
+    showToast('CSV descargado');
+  }
+  document.getElementById('exportCsvBtn').addEventListener('click', handleManualExport);
+  document.getElementById('exportCsvBtn2').addEventListener('click', handleManualExport);
+
   document.getElementById('resetBtn').addEventListener('click', async function(){
     if(!confirm('¿Borrar todo el historial de ventas? Esta acción no se puede deshacer.')) return;
     try{
