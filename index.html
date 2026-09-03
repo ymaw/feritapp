@@ -131,13 +131,33 @@
   <button type="button" class="menu-item" data-view="clients">👥 Ver clientes</button>
   <button type="button" class="menu-item" data-view="ranking">🏆 Ranking de clientes</button>
   <button type="button" class="menu-item" data-view="sales">🧾 Ver tabla de ventas</button>
+  <button type="button" class="menu-item" data-view="settings">⚙️ Configuración</button>
   <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar app</button>
   <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
+  <button type="button" class="menu-item menu-item-danger" id="logoutAllBtn">🚪 Cerrar sesión en todos los dispositivos</button>
 </div>
 
 <datalist id="clientsDatalist"></datalist>
 
 <div id="viewDashboard" class="app-view" style="display:none;">
+  <div class="ticket-wrap" id="currentTicket"></div>
+
+  <div class="section-block">
+    <p class="section-title">Categoría más vendida del mes</p>
+    <div id="topCategoryChart"></div>
+  </div>
+
+  <div class="section-block">
+    <p class="section-title">Comparar ventas</p>
+    <div class="seg" style="margin-bottom:12px;">
+      <button type="button" class="period-opt active" data-period="week">Semanal</button>
+      <button type="button" class="period-opt" data-period="month">Mensual</button>
+    </div>
+    <div id="periodCompare"></div>
+  </div>
+</div>
+
+<div id="viewSettings" class="app-view" style="display:none;">
   <div class="section-block">
     <p class="section-title">Configuración</p>
     <div class="field">
@@ -160,15 +180,34 @@
     </div>
   </div>
 
-  <div class="ticket-wrap" id="currentTicket"></div>
-
   <div class="section-block">
-    <p class="section-title">Comparar ventas</p>
-    <div class="seg" style="margin-bottom:12px;">
-      <button type="button" class="period-opt active" data-period="week">Semanal</button>
-      <button type="button" class="period-opt" data-period="month">Mensual</button>
+    <p class="section-title">Configuración › Notificaciones</p>
+    <div class="field">
+      <label>Avisar pagos atrasados</label>
+      <div class="seg">
+        <button type="button" class="notify-opt active" data-notify="on">Activadas</button>
+        <button type="button" class="notify-opt" data-notify="off">Desactivadas</button>
+      </div>
     </div>
-    <div id="periodCompare"></div>
+    <div class="field" id="notifyDaysField">
+      <label>Avisar cuando el atraso sea de</label>
+      <select id="notifyDaysSelect" class="settings-select">
+        <option value="1">1 día</option>
+        <option value="2">2 días</option>
+        <option value="3">3 días</option>
+        <option value="4" selected>4 días</option>
+        <option value="5">5 días</option>
+        <option value="7">7 días</option>
+        <option value="10">10 días</option>
+        <option value="15">15 días</option>
+        <option value="30">30 días</option>
+      </select>
+    </div>
+    <div class="field">
+      <button type="button" class="save-btn" id="enableNotifPermBtn">🔔 Activar permiso de notificaciones</button>
+      <p class="hint" id="notifPermStatus">Tu navegador te va a pedir permiso una sola vez.</p>
+    </div>
+    <p class="hint">Las notificaciones aparecen cuando abrís la app y detecta pagos atrasados según lo configurado acá — no llegan si la app está completamente cerrada.</p>
   </div>
 </div>
 

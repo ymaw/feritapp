@@ -2,20 +2,20 @@ document.addEventListener('DOMContentLoaded', function(){
   "use strict";
 
   /* =========================================================
-     ACCESO: magic link con Supabase Auth
+     ACCESO: correo + contraseña con Supabase Auth
      =========================================================
      Completá estos 2 datos con los de TU proyecto de Supabase
      (Settings → API): Project URL y la clave "anon public".
      Nunca pongas acá la clave "service_role".
   ========================================================= */
-  var SUPABASE_URL = "https://tzajchnflgvdbmiwfyvj.supabase.co";
-  var SUPABASE_ANON_KEY = "sb_publishable_IZtlTCgLYAJCRuLBaDvlkQ_yhHfOIcE";
+  const SUPABASE_URL = "https://tzajchnflgvdbmiwfyvj.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_IZtlTCgLYAJCRuLBaDvlkQ_yhHfOIcE";
 
-  var SUPABASE_READY = SUPABASE_URL.indexOf("PEGAR_") !== 0
+  const SUPABASE_READY = SUPABASE_URL.indexOf("PEGAR_") !== 0
                      && SUPABASE_ANON_KEY.indexOf("PEGAR_") !== 0
                      && typeof supabase !== 'undefined';
 
-  var sb = SUPABASE_READY ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  const sb = SUPABASE_READY ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function(){
       storage: window.localStorage
     }
   }) : null;
-  var entered = false;
+  let entered = false;
 
   /* =========================================================
      ACCESO: correo + contraseña con Supabase Auth
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{6,}$/.test(v);
   }
   function showGateError(msg){
-    var err = document.getElementById('gateError');
+    let err = document.getElementById('gateError');
     err.textContent = msg;
     err.style.display = 'block';
   }
@@ -51,14 +51,14 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function updatePwRequirements(){
-    var pin = document.getElementById('gatePin').value;
+    let pin = document.getElementById('gatePin').value;
     setReq('reqLength', pin.length >= 6);
     setReq('reqUpper', /[A-Z]/.test(pin));
     setReq('reqNumber', /[0-9]/.test(pin));
     setReq('reqSymbol', /[^A-Za-z0-9]/.test(pin));
   }
   function setReq(id, ok){
-    var el = document.getElementById(id);
+    let el = document.getElementById(id);
     if(!el) return;
     el.querySelector('.req-icon').textContent = ok ? '✓' : '✕';
     el.classList.toggle('req-ok', ok);
@@ -70,19 +70,20 @@ document.addEventListener('DOMContentLoaded', function(){
   });
   document.getElementById('gatePin').addEventListener('input', updatePwRequirements);
 
-  document.getElementById('loginBtn').addEventListener('click', async function(){
-    var email = document.getElementById('gateEmail').value.trim().toLowerCase();
-    var pin = document.getElementById('gatePin').value;
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+
+  loginBtn.addEventListener('click', async function(){
+    let email = document.getElementById('gateEmail').value.trim().toLowerCase();
+    let pin = document.getElementById('gatePin').value;
 
     if(!isValidEmail(email)){ showGateError('Ingresá un correo electrónico válido.'); return; }
     if(!pin){ showGateError('Ingresá tu contraseña.'); return; }
     if(!SUPABASE_READY){ showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).'); return; }
 
-    var loginBtn = document.getElementById('loginBtn');
-    var signupBtn = document.getElementById('signupBtn');
     loginBtn.disabled = true; signupBtn.disabled = true;
 
-    var loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
+    let loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
 
     loginBtn.disabled = false; signupBtn.disabled = false;
 
@@ -93,8 +94,8 @@ document.addEventListener('DOMContentLoaded', function(){
     if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user); }
   });
 
-  document.getElementById('signupBtn').addEventListener('click', async function(){
-    var confirmField = document.getElementById('pinConfirmField');
+  signupBtn.addEventListener('click', async function(){
+    let confirmField = document.getElementById('pinConfirmField');
 
     // Primer click en "Crear cuenta": solo revela confirmar contraseña + el checklist.
     // No envía nada todavía — recién en el segundo click se procesa el alta.
@@ -105,21 +106,19 @@ document.addEventListener('DOMContentLoaded', function(){
       return;
     }
 
-    var email = document.getElementById('gateEmail').value.trim().toLowerCase();
-    var pin = document.getElementById('gatePin').value;
-    var pinConfirm = document.getElementById('gatePinConfirm').value;
+    let email = document.getElementById('gateEmail').value.trim().toLowerCase();
+    let pin = document.getElementById('gatePin').value;
+    let pinConfirm = document.getElementById('gatePinConfirm').value;
 
     if(!isValidEmail(email)){ showGateError('Ingresá un correo electrónico válido.'); return; }
     if(!isValidPassword(pin)){ showGateError('La contraseña necesita mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'); return; }
     if(pin !== pinConfirm){ showGateError('Las contraseñas no coinciden.'); return; }
     if(!SUPABASE_READY){ showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).'); return; }
 
-    var loginBtn = document.getElementById('loginBtn');
-    var signupBtn = document.getElementById('signupBtn');
     loginBtn.disabled = true; signupBtn.disabled = true;
 
-    var redirectTo = window.location.origin + window.location.pathname;
-    var signUpRes = await sb.auth.signUp({
+    let redirectTo = window.location.origin + window.location.pathname;
+    let signUpRes = await sb.auth.signUp({
       email: email,
       password: pin,
       options: { emailRedirectTo: redirectTo }
@@ -144,15 +143,15 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.getElementById('forgotPinBtn').addEventListener('click', async function(){
-    var email = document.getElementById('gateEmail').value.trim().toLowerCase();
+    let email = document.getElementById('gateEmail').value.trim().toLowerCase();
     if(!isValidEmail(email)){
       showGateError('Escribí tu correo arriba y volvé a tocar "Olvidé mi contraseña".');
       return;
     }
     if(!SUPABASE_READY){ showGateError('Falta configurar Supabase.'); return; }
 
-    var redirectTo = window.location.origin + window.location.pathname;
-    var res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    let redirectTo = window.location.origin + window.location.pathname;
+    let res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
     if(res.error){
       showGateError('No se pudo enviar el correo de recuperación: ' + res.error.message);
       return;
@@ -172,15 +171,15 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.getElementById('newPinSubmit').addEventListener('click', async function(){
-    var p1 = document.getElementById('newPin').value;
-    var p2 = document.getElementById('newPinConfirm').value;
-    var err = document.getElementById('newPinError');
+    let p1 = document.getElementById('newPin').value;
+    let p2 = document.getElementById('newPinConfirm').value;
+    let err = document.getElementById('newPinError');
     err.style.display = 'none';
 
     if(!isValidPassword(p1)){ err.textContent = 'Mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
     if(p1 !== p2){ err.textContent = 'Las contraseñas no coinciden.'; err.style.display = 'block'; return; }
 
-    var res = await sb.auth.updateUser({ password: p1 });
+    let res = await sb.auth.updateUser({ password: p1 });
     if(res.error){
       err.textContent = 'No se pudo guardar la contraseña: ' + res.error.message;
       err.style.display = 'block';
@@ -195,9 +194,49 @@ document.addEventListener('DOMContentLoaded', function(){
     location.reload();
   });
 
+  document.getElementById('logoutAllBtn').addEventListener('click', async function(){
+    if(!confirm('¿Cerrar la sesión en TODOS los dispositivos donde esté iniciada (celular, compu, etc.)? Vas a tener que volver a ingresar con tu correo y contraseña en todos ellos.')) return;
+    if(sb){ await sb.auth.signOut({ scope: 'global' }); }
+    location.reload();
+  });
+
+  /* ---------------- expiración de sesión por inactividad (30 min) ---------------- */
+  const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  let idleTimer = null;
+  let lastActivityAt = Date.now();
+
+  function resetIdleTimer(){
+    if(!entered) return;
+    lastActivityAt = Date.now();
+    if(idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(handleIdleTimeout, IDLE_TIMEOUT_MS);
+  }
+
+  async function handleIdleTimeout(){
+    if(!entered) return;
+    if(sb){ await sb.auth.signOut(); }
+    location.reload();
+  }
+
+  ['click','touchstart','keydown','mousemove','scroll'].forEach(function(evt){
+    document.addEventListener(evt, resetIdleTimer, { passive: true });
+  });
+
+  // Si el celu quedó en segundo plano (pantalla apagada, otra app abierta)
+  // el temporizador puede pausarse. Al volver a primer plano, chequeamos
+  // el tiempo real transcurrido en vez de confiar ciegamente en el timer.
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState !== 'visible' || !entered) return;
+    if(Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS){
+      handleIdleTimeout();
+    }else{
+      resetIdleTimer();
+    }
+  });
+
   /* ---------------- menú desplegable / vistas ---------------- */
-  var moreBtn = document.getElementById('moreBtn');
-  var menuDropdown = document.getElementById('menuDropdown');
+  const moreBtn = document.getElementById('moreBtn');
+  const menuDropdown = document.getElementById('menuDropdown');
 
   // Abre el desplegable anclado al botón "Más" del menú inferior,
   // calculando si conviene abrirlo hacia abajo o hacia arriba según
@@ -205,12 +244,12 @@ document.addEventListener('DOMContentLoaded', function(){
   function openMenuFrom(anchorEl){
     menuDropdown.style.visibility = 'hidden';
     menuDropdown.style.display = 'block';
-    var ddHeight = menuDropdown.offsetHeight;
+    let ddHeight = menuDropdown.offsetHeight;
     menuDropdown.style.visibility = '';
 
-    var rect = anchorEl.getBoundingClientRect();
-    var spaceBelow = window.innerHeight - rect.bottom;
-    var top = (spaceBelow >= ddHeight + 12) ? (rect.bottom + 8) : (rect.top - ddHeight - 8);
+    let rect = anchorEl.getBoundingClientRect();
+    let spaceBelow = window.innerHeight - rect.bottom;
+    let top = (spaceBelow >= ddHeight + 12) ? (rect.bottom + 8) : (rect.top - ddHeight - 8);
 
     menuDropdown.style.top = Math.max(8, top) + 'px';
     menuDropdown.style.right = (window.innerWidth - rect.right) + 'px';
@@ -237,8 +276,9 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewDashboard').style.display = (view === 'dashboard') ? 'block' : 'none';
     document.getElementById('viewClients').style.display = (view === 'clients') ? 'block' : 'none';
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
+    document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    var titles = { sales:'Registro semanal', clients:'Clientes', ranking:'Ranking de clientes' };
+    let titles = { sales:'Registro semanal', clients:'Clientes', ranking:'Ranking de clientes', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view]').forEach(function(btn){
@@ -247,6 +287,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     if(view === 'clients'){ renderClientSearch(); renderClientsFullList(); }
     if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
+    if(view === 'settings'){ syncNotifyControls(); }
   }
 
   document.querySelectorAll('[data-view]').forEach(function(btn){
@@ -264,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('sessionEmail').textContent = 'Ingresaste como ' + user.email;
     window.history.replaceState({}, document.title, window.location.pathname);
     switchView('sales');
+    resetIdleTimer();
     loadSales();
   }
 
@@ -289,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function(){
     // de recuperación válida, y el usuario entraría directo a la app
     // sin llegar a elegir una contraseña nueva (quedando con la vieja,
     // que es justo la que había olvidado).
-    var recoveryDetected = false;
+    let recoveryDetected = false;
 
     sb.auth.onAuthStateChange(function(event, newSession){
       if(event === 'PASSWORD_RECOVERY'){
@@ -303,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
 
     try{
-      var sessionRes = await sb.auth.getSession();
+      let sessionRes = await sb.auth.getSession();
       if(!recoveryDetected && sessionRes.data && sessionRes.data.session && sessionRes.data.session.user){
         enterApp(sessionRes.data.session.user);
       }
@@ -316,18 +358,20 @@ document.addEventListener('DOMContentLoaded', function(){
      REGISTRO DE VENTAS (datos persistidos en Supabase)
   ========================================================= */
 
-  var sales = [];
-  var categories = [];
-  var clients = [];
-  var weekStartDay = 1; // 0=domingo .. 6=sábado. Por defecto: lunes.
-  var sheet = document.getElementById('sheet');
-  var scrim = document.getElementById('scrim');
-  var CATEGORY_COLORS = ['#446DF6','#08A4BD','#17A897','#B23A52','#8C4A9C','#5FA8A0','#6C8EBF','#C9A15F'];
+  let sales = [];
+  let categories = [];
+  let clients = [];
+  let weekStartDay = 1; // 0=domingo .. 6=sábado. Por defecto: lunes.
+  let notifyEnabled = true;
+  let notifyDaysOverdue = 4;
+  const sheet = document.getElementById('sheet');
+  const scrim = document.getElementById('scrim');
+  const CATEGORY_COLORS = ['#446DF6','#08A4BD','#17A897','#B23A52','#8C4A9C','#5FA8A0','#6C8EBF','#C9A15F'];
 
   function categoryColor(name){
-    var str = String(name || '');
-    var hash = 0;
-    for(var i=0;i<str.length;i++){ hash = (hash * 31 + str.charCodeAt(i)) >>> 0; }
+    let str = String(name || '');
+    let hash = 0;
+    for(let i=0;i<str.length;i++){ hash = (hash * 31 + str.charCodeAt(i)) >>> 0; }
     return CATEGORY_COLORS[hash % CATEGORY_COLORS.length];
   }
 
@@ -346,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function refreshClientsDatalist(){
-    var dl = document.getElementById('clientsDatalist');
+    let dl = document.getElementById('clientsDatalist');
     if(!dl) return;
     dl.innerHTML = clients.map(function(c){
       return '<option value="' + escapeHtml(c) + '">';
@@ -354,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function persistClientIfNew(name){
-    var exists = clients.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
+    let exists = clients.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
     if(exists) return;
     clients.push(name);
     refreshClientsDatalist();
@@ -366,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function(){
   async function loadSales(){
     if(!sb) return;
     try{
-      var res = await sb.from('sales').select('*').order('fecha', { ascending:false });
+      let res = await sb.from('sales').select('*').order('fecha', { ascending:false });
       sales = (res.data || []).map(mapRowToSale);
     }catch(e){
       sales = [];
@@ -374,32 +418,36 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     try{
-      var catRes = await sb.from('categories').select('*').order('created_at', { ascending:true });
+      let catRes = await sb.from('categories').select('*').order('created_at', { ascending:true });
       categories = (catRes.data || []).map(function(c){ return c.name; });
     }catch(e){
       categories = [];
     }
 
     if(categories.length === 0){
-      var defaults = ["Remeras","Pantalones","Vestidos","Accesorios"];
-      for(var i=0;i<defaults.length;i++){
+      let defaults = ["Remeras","Pantalones","Vestidos","Accesorios"];
+      for(let i=0;i<defaults.length;i++){
         await persistNewCategory(defaults[i]);
       }
       categories = defaults;
     }
 
     try{
-      var clientsRes = await sb.from('clients').select('*').order('name', { ascending:true });
+      let clientsRes = await sb.from('clients').select('*').order('name', { ascending:true });
       clients = (clientsRes.data || []).map(function(c){ return c.name; });
     }catch(e){
       clients = [];
     }
     refreshClientsDatalist();
 
+    let lastPurgeSemester = null;
     try{
-      var settingsRes = await sb.from('user_settings').select('week_start_day').maybeSingle();
+      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue').maybeSingle();
       if(settingsRes.data){
         weekStartDay = settingsRes.data.week_start_day;
+        lastPurgeSemester = settingsRes.data.last_purge_semester;
+        notifyEnabled = settingsRes.data.notify_enabled !== false;
+        notifyDaysOverdue = settingsRes.data.notify_days_overdue || 4;
       }else{
         await sb.from('user_settings').insert([{}]); // usa los valores por defecto (lunes)
         weekStartDay = 1;
@@ -407,21 +455,25 @@ document.addEventListener('DOMContentLoaded', function(){
     }catch(e){
       weekStartDay = 1;
     }
-    var weekStartSelect = document.getElementById('weekStartSelect');
+    let weekStartSelect = document.getElementById('weekStartSelect');
     if(weekStartSelect){ weekStartSelect.value = String(weekStartDay); }
+    syncNotifyControls();
 
-    await checkSemesterCleanup();
+    await checkSemesterCleanup(lastPurgeSemester);
+    checkOverdueNotifications();
 
     render();
     resetForm();
   }
 
-  // Cada semestre (ene-jun / jul-dic), borra las ventas anteriores al
-  // mes en curso, dejando solo el mes actual. Se controla con
-  // last_purge_semester en user_settings para que corra como mucho
-  // una vez por semestre, no en cada inicio de sesión.
   function csvEscape(val){
     val = String(val === null || val === undefined ? '' : val);
+    // Protección contra "inyección de fórmulas": si el valor empieza con
+    // un carácter que Excel/Sheets interpreta como inicio de fórmula,
+    // le antepongo un apóstrofe para que se trate siempre como texto.
+    if(/^[=+\-@\t\r]/.test(val)){
+      val = "'" + val;
+    }
     if(/[",\n;]/.test(val)){
       val = '"' + val.replace(/"/g, '""') + '"';
     }
@@ -431,21 +483,21 @@ document.addEventListener('DOMContentLoaded', function(){
   function exportSalesToCSV(items, filename){
     if(!items || items.length === 0) return false;
 
-    var headers = ['Fecha','Cliente','Artículo','Categoría','Precio','Pagado','Retira','Tercero'];
-    var lines = [headers.map(csvEscape).join(',')];
+    let headers = ['Fecha','Cliente','Artículo','Categoría','Precio','Pagado','Retira','Tercero'];
+    let lines = [headers.map(csvEscape).join(',')];
 
     items.slice().sort(function(a,b){ return new Date(a.fecha) - new Date(b.fecha); }).forEach(function(s){
-      var fechaTxt = new Date(s.fecha).toLocaleDateString('es-AR') + ' ' + new Date(s.fecha).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
-      var retiraTxt = s.retira === 'otro' ? 'Otra persona' : 'El mismo cliente';
-      var row = [fechaTxt, s.cliente, s.articulo, s.categoria, s.precio, s.pagado ? 'Sí' : 'No', retiraTxt, s.tercero || ''];
+      let fechaTxt = new Date(s.fecha).toLocaleDateString('es-AR') + ' ' + new Date(s.fecha).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+      let retiraTxt = s.retira === 'otro' ? 'Otra persona' : 'El mismo cliente';
+      let row = [fechaTxt, s.cliente, s.articulo, s.categoria, s.precio, s.pagado ? 'Sí' : 'No', retiraTxt, s.tercero || ''];
       lines.push(row.map(csvEscape).join(','));
     });
 
     // \uFEFF (BOM) al principio para que Excel abra los acentos bien.
-    var csvContent = '\uFEFF' + lines.join('\r\n');
-    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
+    let csvContent = '\uFEFF' + lines.join('\r\n');
+    let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
@@ -455,17 +507,19 @@ document.addEventListener('DOMContentLoaded', function(){
     return true;
   }
 
-  async function checkSemesterCleanup(){
-    var now = new Date();
-    var currentSemester = now.getFullYear() + '-' + (now.getMonth() < 6 ? 'H1' : 'H2');
+  // Cada semestre (ene-jun / jul-dic), borra las ventas anteriores al
+  // mes en curso, dejando solo el mes actual. Se controla con
+  // last_purge_semester en user_settings para que corra como mucho
+  // una vez por semestre, no en cada inicio de sesión. Recibe el valor
+  // ya cargado por loadSales() para no volver a consultar la misma fila.
+  async function checkSemesterCleanup(stored){
+    let now = new Date();
+    let currentSemester = now.getFullYear() + '-' + (now.getMonth() < 6 ? 'H1' : 'H2');
 
     try{
-      var res = await sb.from('user_settings').select('last_purge_semester').maybeSingle();
-      var stored = res.data ? res.data.last_purge_semester : null;
-
       if(stored && stored !== currentSemester){
-        var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        var oldItems = sales.filter(function(s){ return new Date(s.fecha) < startOfMonth; });
+        let startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        let oldItems = sales.filter(function(s){ return new Date(s.fecha) < startOfMonth; });
 
         if(oldItems.length > 0){
           exportSalesToCSV(oldItems, 'feritapp-historial-' + stored + '.csv');
@@ -482,8 +536,92 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
+  /* ---------------- Configuración › Notificaciones ---------------- */
+  function syncNotifyControls(){
+    document.querySelectorAll('.notify-opt').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-notify') === (notifyEnabled ? 'on' : 'off'));
+    });
+    let daysField = document.getElementById('notifyDaysField');
+    if(daysField){ daysField.style.display = notifyEnabled ? 'block' : 'none'; }
+    let daysSelect = document.getElementById('notifyDaysSelect');
+    if(daysSelect){ daysSelect.value = String(notifyDaysOverdue); }
+    updateNotifPermStatus();
+  }
+
+  function updateNotifPermStatus(){
+    let el = document.getElementById('notifPermStatus');
+    if(!el) return;
+    if(!('Notification' in window)){
+      el.textContent = 'Tu navegador no soporta notificaciones.';
+    }else if(Notification.permission === 'granted'){
+      el.textContent = '✅ Permiso concedido — vas a recibir avisos al abrir la app.';
+    }else if(Notification.permission === 'denied'){
+      el.textContent = '🚫 Bloqueaste las notificaciones desde la configuración del navegador. Para reactivarlas, tenés que habilitarlas ahí manualmente.';
+    }else{
+      el.textContent = 'Tu navegador te va a pedir permiso una sola vez.';
+    }
+  }
+
+  document.querySelectorAll('.notify-opt').forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      notifyEnabled = btn.getAttribute('data-notify') === 'on';
+      syncNotifyControls();
+      try{ await sb.from('user_settings').upsert({ notify_enabled: notifyEnabled }, { onConflict: 'user_id' }); }catch(e){}
+      if(notifyEnabled){ checkOverdueNotifications(); }
+    });
+  });
+
+  let notifyDaysSelectEl = document.getElementById('notifyDaysSelect');
+  if(notifyDaysSelectEl){
+    notifyDaysSelectEl.addEventListener('change', async function(){
+      notifyDaysOverdue = parseInt(this.value, 10);
+      try{ await sb.from('user_settings').upsert({ notify_days_overdue: notifyDaysOverdue }, { onConflict: 'user_id' }); }catch(e){}
+      checkOverdueNotifications();
+    });
+  }
+
+  let enableNotifPermBtn = document.getElementById('enableNotifPermBtn');
+  if(enableNotifPermBtn){
+    enableNotifPermBtn.addEventListener('click', async function(){
+      if(!('Notification' in window)){ showToast('Tu navegador no soporta notificaciones.'); return; }
+      await Notification.requestPermission();
+      updateNotifPermStatus();
+      if(Notification.permission === 'granted'){ checkOverdueNotifications(); }
+    });
+  }
+
+  // Revisa pagos pendientes atrasados según lo configurado y muestra una
+  // notificación por cada uno (vía el service worker ya registrado).
+  // Importante: esto NO es un push real desde un servidor — solo se
+  // dispara mientras la app está abierta, no si está cerrada del todo.
+  let notifiedIds = {};
+  async function checkOverdueNotifications(){
+    if(!notifyEnabled) return;
+    if(!('Notification' in window) || Notification.permission !== 'granted') return;
+    if(!('serviceWorker' in navigator)) return;
+
+    let thresholdMs = notifyDaysOverdue * 24 * 60 * 60 * 1000;
+    let now = Date.now();
+    let overdue = sales.filter(function(s){
+      return !s.pagado && (now - new Date(s.fecha).getTime()) >= thresholdMs && !notifiedIds[s.id];
+    });
+    if(overdue.length === 0) return;
+
+    try{
+      let reg = await navigator.serviceWorker.ready;
+      overdue.slice(0, 8).forEach(function(s){
+        reg.showNotification('Pago atrasado', {
+          body: s.cliente + ' — ' + s.articulo + ' — ' + money(s.precio),
+          icon: 'icon-192.png',
+          tag: 'overdue-' + s.id
+        });
+        notifiedIds[s.id] = true;
+      });
+    }catch(e){ /* no crítico */ }
+  }
+
   document.getElementById('weekStartSelect').addEventListener('change', async function(){
-    var val = parseInt(this.value, 10);
+    let val = parseInt(this.value, 10);
     weekStartDay = val;
     try{
       await sb.from('user_settings').upsert({ week_start_day: val }, { onConflict: 'user_id' });
@@ -505,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function(){
   async function toggleSalePago(id, currentPagado){
     try{
       await sb.from('sales').update({ pagado: !currentPagado }).eq('id', id);
-      var item = sales.find(function(s){ return s.id === id; });
+      let item = sales.find(function(s){ return s.id === id; });
       if(item){ item.pagado = !currentPagado; }
       render();
     }catch(e){
@@ -525,42 +663,42 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- date / week helpers ---------------- */
   function startOfWeek(d){
-    var date = new Date(d);
-    var day = date.getDay(); // 0 sun .. 6 sat
-    var diff = (day - weekStartDay + 7) % 7; // días desde el inicio de semana elegido
+    let date = new Date(d);
+    let day = date.getDay(); // 0 sun .. 6 sat
+    let diff = (day - weekStartDay + 7) % 7; // días desde el inicio de semana elegido
     date.setDate(date.getDate() - diff);
     date.setHours(0,0,0,0);
     return date;
   }
   function weekKey(d){
-    var s = startOfWeek(d);
+    let s = startOfWeek(d);
     return s.getFullYear() + "-" + String(s.getMonth()+1).padStart(2,'0') + "-" + String(s.getDate()).padStart(2,'0');
   }
-  var MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  var MESES_LARGO = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const MESES_LARGO = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
   function formatRange(weekStartKey){
-    var start = new Date(weekStartKey + "T00:00:00");
-    var end = new Date(start); end.setDate(end.getDate()+6);
+    let start = new Date(weekStartKey + "T00:00:00");
+    let end = new Date(start); end.setDate(end.getDate()+6);
     return start.getDate() + " " + MESES[start.getMonth()] + " – " + end.getDate() + " " + MESES[end.getMonth()];
   }
   function money(n){
     return "$" + Number(n||0).toLocaleString('es-AR');
   }
   function monthKey(d){
-    var date = new Date(d);
+    let date = new Date(d);
     return date.getFullYear() + "-" + String(date.getMonth()+1).padStart(2,'0');
   }
   function monthLabel(key){
-    var parts = key.split("-");
-    var y = parts[0], m = parseInt(parts[1],10) - 1;
+    let parts = key.split("-");
+    let y = parts[0], m = parseInt(parts[1],10) - 1;
     return MESES_LARGO[m] + " " + y;
   }
 
   /* ---------------- rendering ---------------- */
   function groupByWeek(){
-    var groups = {};
+    let groups = {};
     sales.forEach(function(s){
-      var k = weekKey(new Date(s.fecha));
+      let k = weekKey(new Date(s.fecha));
       if(!groups[k]) groups[k] = [];
       groups[k].push(s);
     });
@@ -568,18 +706,18 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function groupByMonth(){
-    var groups = {};
+    let groups = {};
     sales.forEach(function(s){
-      var k = monthKey(s.fecha);
+      let k = monthKey(s.fecha);
       if(!groups[k]) groups[k] = [];
       groups[k].push(s);
     });
     return groups;
   }
 
-  var compareMonthA = null, compareMonthB = null;
-  var compareWeekA = null, compareWeekB = null;
-  var comparePeriodMode = 'week';
+  let compareMonthA = null, compareMonthB = null;
+  let compareWeekA = null, compareWeekB = null;
+  let comparePeriodMode = 'week';
 
   function renderPeriodComparison(){
     if(comparePeriodMode === 'week'){ renderWeekComparison(); }
@@ -600,36 +738,36 @@ document.addEventListener('DOMContentLoaded', function(){
       if(!a) return '<span class="delta flat">—</span>';
       return '<span class="delta up">▲ nuevo</span>';
     }
-    var pct = Math.round(((a - b) / b) * 100);
+    let pct = Math.round(((a - b) / b) * 100);
     if(pct === 0) return '<span class="delta flat">0%</span>';
-    var cls = pct > 0 ? 'up' : 'down';
-    var arrow = pct > 0 ? '▲' : '▼';
+    let cls = pct > 0 ? 'up' : 'down';
+    let arrow = pct > 0 ? '▲' : '▼';
     return '<span class="delta ' + cls + '">' + arrow + ' ' + Math.abs(pct) + '%</span>';
   }
 
   function renderMonthComparison(){
-    var wrap = document.getElementById('periodCompare');
+    let wrap = document.getElementById('periodCompare');
     if(!wrap) return;
 
-    var groups = groupByMonth();
-    var keys = Object.keys(groups).sort();
+    let groups = groupByMonth();
+    let keys = Object.keys(groups).sort();
 
     if(keys.length === 0){
       wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas suficientes para comparar meses.</div>';
       return;
     }
 
-    var currentMK = monthKey(new Date());
-    var monthStats = {};
+    let currentMK = monthKey(new Date());
+    let monthStats = {};
     keys.forEach(function(k){ monthStats[k] = weekStats(groups[k]); });
-    var maxTotal = Math.max.apply(null, keys.map(function(k){ return monthStats[k].total; }));
+    let maxTotal = Math.max.apply(null, keys.map(function(k){ return monthStats[k].total; }));
 
-    var chartKeys = keys.slice(-6);
-    var chartHtml = '<div class="month-chart">';
+    let chartKeys = keys.slice(-6);
+    let chartHtml = '<div class="month-chart">';
     chartKeys.forEach(function(k){
-      var st = monthStats[k];
-      var heightPct = maxTotal > 0 ? Math.max(4, Math.round((st.total / maxTotal) * 100)) : 4;
-      var monthIdx = parseInt(k.split("-")[1], 10) - 1;
+      let st = monthStats[k];
+      let heightPct = maxTotal > 0 ? Math.max(4, Math.round((st.total / maxTotal) * 100)) : 4;
+      let monthIdx = parseInt(k.split("-")[1], 10) - 1;
       chartHtml += '<div class="month-bar-col">' +
         '<div class="month-bar-value">' + money(st.total) + '</div>' +
         '<div class="month-bar' + (k === currentMK ? ' current' : '') + '" style="height:' + heightPct + '%"></div>' +
@@ -641,19 +779,19 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!compareMonthA || keys.indexOf(compareMonthA) === -1){ compareMonthA = keys[keys.length - 1]; }
     if(!compareMonthB || keys.indexOf(compareMonthB) === -1){ compareMonthB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
 
-    var optionsHtml = keys.slice().reverse().map(function(k){
+    let optionsHtml = keys.slice().reverse().map(function(k){
       return '<option value="' + k + '">' + monthLabel(k) + '</option>';
     }).join('');
 
-    var selectHtml = '<div class="compare-row">' +
+    let selectHtml = '<div class="compare-row">' +
       '<select class="compare-select" id="compareSelectA">' + optionsHtml + '</select>' +
       '<select class="compare-select" id="compareSelectB">' + optionsHtml + '</select>' +
     '</div>';
 
-    var stA = monthStats[compareMonthA] || {total:0,cobrado:0,pendiente:0,count:0};
-    var stB = monthStats[compareMonthB] || {total:0,cobrado:0,pendiente:0,count:0};
+    let stA = monthStats[compareMonthA] || {total:0,cobrado:0,pendiente:0,count:0};
+    let stB = monthStats[compareMonthB] || {total:0,cobrado:0,pendiente:0,count:0};
 
-    var tableHtml = '<div class="compare-table-card"><table class="compare-table"><tbody>' +
+    let tableHtml = '<div class="compare-table-card"><table class="compare-table"><tbody>' +
       '<tr><td class="label"></td><td class="head">' + monthLabel(compareMonthA) + '</td><td class="head">' + monthLabel(compareMonthB) + '</td></tr>' +
       '<tr><td class="label">Total vendido</td><td class="num">' + money(stA.total) + '</td><td class="num">' + money(stB.total) + deltaHtml(stA.total, stB.total) + '</td></tr>' +
       '<tr><td class="label">Cobrado</td><td class="num">' + money(stA.cobrado) + '</td><td class="num">' + money(stB.cobrado) + deltaHtml(stA.cobrado, stB.cobrado) + '</td></tr>' +
@@ -674,33 +812,33 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function formatRangeShort(weekStartKey){
-    var start = new Date(weekStartKey + "T00:00:00");
+    let start = new Date(weekStartKey + "T00:00:00");
     return start.getDate() + " " + MESES[start.getMonth()];
   }
 
   function renderWeekComparison(){
-    var wrap = document.getElementById('periodCompare');
+    let wrap = document.getElementById('periodCompare');
     if(!wrap) return;
 
-    var groups = groupByWeek();
-    var keys = Object.keys(groups).sort();
+    let groups = groupByWeek();
+    let keys = Object.keys(groups).sort();
 
     if(keys.length === 0){
       wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas suficientes para comparar semanas.</div>';
       return;
     }
 
-    var thisWeekKey = weekKey(new Date());
-    var wStats = {};
+    let thisWeekKey = weekKey(new Date());
+    let wStats = {};
     keys.forEach(function(k){ wStats[k] = weekStats(groups[k]); });
     // La comparación semanal se centra en CANTIDAD de artículos, no en dinero.
-    var maxCount = Math.max.apply(null, keys.map(function(k){ return wStats[k].count; }));
+    let maxCount = Math.max.apply(null, keys.map(function(k){ return wStats[k].count; }));
 
-    var chartKeys = keys.slice(-6);
-    var chartHtml = '<div class="month-chart">';
+    let chartKeys = keys.slice(-6);
+    let chartHtml = '<div class="month-chart">';
     chartKeys.forEach(function(k){
-      var st = wStats[k];
-      var heightPct = maxCount > 0 ? Math.max(4, Math.round((st.count / maxCount) * 100)) : 4;
+      let st = wStats[k];
+      let heightPct = maxCount > 0 ? Math.max(4, Math.round((st.count / maxCount) * 100)) : 4;
       chartHtml += '<div class="month-bar-col">' +
         '<div class="month-bar-value">' + st.count + '</div>' +
         '<div class="month-bar' + (k === thisWeekKey ? ' current' : '') + '" style="height:' + heightPct + '%"></div>' +
@@ -712,19 +850,19 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!compareWeekA || keys.indexOf(compareWeekA) === -1){ compareWeekA = keys[keys.length - 1]; }
     if(!compareWeekB || keys.indexOf(compareWeekB) === -1){ compareWeekB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
 
-    var optionsHtml = keys.slice().reverse().map(function(k){
+    let optionsHtml = keys.slice().reverse().map(function(k){
       return '<option value="' + k + '">Semana del ' + formatRange(k) + '</option>';
     }).join('');
 
-    var selectHtml = '<div class="compare-row">' +
+    let selectHtml = '<div class="compare-row">' +
       '<select class="compare-select" id="compareWeekSelectA">' + optionsHtml + '</select>' +
       '<select class="compare-select" id="compareWeekSelectB">' + optionsHtml + '</select>' +
     '</div>';
 
-    var stA = wStats[compareWeekA] || {total:0,cobrado:0,pendiente:0,count:0};
-    var stB = wStats[compareWeekB] || {total:0,cobrado:0,pendiente:0,count:0};
+    let stA = wStats[compareWeekA] || {total:0,cobrado:0,pendiente:0,count:0};
+    let stB = wStats[compareWeekB] || {total:0,cobrado:0,pendiente:0,count:0};
 
-    var tableHtml = '<div class="compare-table-card"><table class="compare-table"><tbody>' +
+    let tableHtml = '<div class="compare-table-card"><table class="compare-table"><tbody>' +
       '<tr><td class="label"></td><td class="head">' + formatRange(compareWeekA) + '</td><td class="head">' + formatRange(compareWeekB) + '</td></tr>' +
       '<tr><td class="label">Artículos vendidos</td><td class="num">' + stA.count + '</td><td class="num">' + stB.count + deltaHtml(stA.count, stB.count) + '</td></tr>' +
       '<tr><td class="label">Total vendido</td><td class="num">' + money(stA.total) + '</td><td class="num">' + money(stB.total) + deltaHtml(stA.total, stB.total) + '</td></tr>' +
@@ -744,11 +882,48 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  var showRankingMoney = false;
-  var rankingVisibleCount = 5;
+  function renderTopCategoryChart(){
+    let wrap = document.getElementById('topCategoryChart');
+    if(!wrap) return;
+
+    let currentMonthKey = monthKey(new Date());
+    let monthItems = sales.filter(function(s){ return monthKey(s.fecha) === currentMonthKey; });
+
+    if(monthItems.length === 0){
+      wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas este mes.</div>';
+      return;
+    }
+
+    let byCat = {};
+    monthItems.forEach(function(s){
+      let cat = s.categoria || 'Sin categoría';
+      byCat[cat] = (byCat[cat] || 0) + 1;
+    });
+
+    let ranked = Object.keys(byCat).map(function(k){ return { name: k, count: byCat[k] }; });
+    ranked.sort(function(a, b){ return b.count - a.count; });
+
+    let maxCount = ranked[0].count;
+
+    let html = '<div class="cat-chart">';
+    ranked.forEach(function(c){
+      let pct = Math.max(6, Math.round((c.count / maxCount) * 100));
+      let color = categoryColor(c.name);
+      html += '<div class="cat-chart-row">' +
+        '<div class="cat-chart-label"><span class="cat-dot" style="background:' + color + '"></span>' + escapeHtml(c.name) + '</div>' +
+        '<div class="cat-chart-bar-wrap"><div class="cat-chart-bar" style="width:' + pct + '%; background:' + color + '"></div></div>' +
+        '<div class="cat-chart-count">' + c.count + '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  let showRankingMoney = false;
+  let rankingVisibleCount = 5;
 
   function renderTopClients(){
-    var wrap = document.getElementById('topClients');
+    let wrap = document.getElementById('topClients');
     if(!wrap) return;
 
     if(sales.length === 0){
@@ -756,24 +931,24 @@ document.addEventListener('DOMContentLoaded', function(){
       return;
     }
 
-    var byClient = {};
+    let byClient = {};
     sales.forEach(function(s){
-      var name = s.cliente || 'Sin nombre';
+      let name = s.cliente || 'Sin nombre';
       if(!byClient[name]){ byClient[name] = { name: name, count: 0, total: 0 }; }
       byClient[name].count += 1;
       byClient[name].total += Number(s.precio) || 0;
     });
 
     // El ranking ordena por CANTIDAD de artículos comprados (no por monto).
-    var ranked = Object.keys(byClient).map(function(k){ return byClient[k]; });
+    let ranked = Object.keys(byClient).map(function(k){ return byClient[k]; });
     ranked.sort(function(a, b){ return b.count - a.count || b.total - a.total; });
 
-    var visible = ranked.slice(0, rankingVisibleCount);
+    let visible = ranked.slice(0, rankingVisibleCount);
 
-    var medals = ['🥇','🥈','🥉'];
-    var html = '<div class="rank-list">';
+    let medals = ['🥇','🥈','🥉'];
+    let html = '<div class="rank-list">';
     visible.forEach(function(c, idx){
-      var medal = medals[idx] || ('#' + (idx + 1));
+      let medal = medals[idx] || ('#' + (idx + 1));
       html += '<div class="rank-item">' +
         '<div class="rank-medal">' + medal + '</div>' +
         '<div class="rank-info">' +
@@ -791,16 +966,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
     wrap.innerHTML = html;
 
-    var moreBtn = document.getElementById('rankingShowMoreBtn');
-    if(moreBtn){
-      moreBtn.addEventListener('click', function(){
+    const rankingMoreBtn = document.getElementById('rankingShowMoreBtn');
+    if(rankingMoreBtn){
+      rankingMoreBtn.addEventListener('click', function(){
         rankingVisibleCount += 5;
         renderTopClients();
       });
     }
   }
 
-  var toggleRankingMoneyBtn = document.getElementById('toggleRankingMoney');
+  const toggleRankingMoneyBtn = document.getElementById('toggleRankingMoney');
   if(toggleRankingMoneyBtn){
     toggleRankingMoneyBtn.addEventListener('click', function(){
       showRankingMoney = !showRankingMoney;
@@ -810,7 +985,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function weekStats(items){
-    var total=0, cobrado=0, pendiente=0;
+    let total=0, cobrado=0, pendiente=0;
     items.forEach(function(i){
       total += Number(i.precio)||0;
       if(i.pagado) cobrado += Number(i.precio)||0;
@@ -823,13 +998,13 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!items.length){
       return '<div class="empty-inline">Sin artículos registrados.</div>';
     }
-    var html = '<div class="table-card"><div class="table-wrap"><table class="sales-table"><thead><tr>' +
+    let html = '<div class="table-card"><div class="table-wrap"><table class="sales-table"><thead><tr>' +
                  '<th>Artículo</th><th>Cliente</th><th class="num">Precio</th><th></th>' +
                '</tr></thead><tbody>';
     items.forEach(function(item){
-      var fechaTxt = new Date(item.fecha).toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'short'});
-      var cat = item.categoria || 'Sin categoría';
-      var retiraHtml = item.retira === 'otro'
+      let fechaTxt = new Date(item.fecha).toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'short'});
+      let cat = item.categoria || 'Sin categoría';
+      let retiraHtml = item.retira === 'otro'
         ? '<div class="retira-info other">↳ Retira: ' + escapeHtml(item.tercero) + '</div>'
         : '<div class="retira-info same">↳ Retira el mismo cliente</div>';
       html += '<tr>' +
@@ -854,8 +1029,8 @@ document.addEventListener('DOMContentLoaded', function(){
   function bindTableEvents(root){
     root.querySelectorAll('[data-toggle-pay]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        var id = btn.getAttribute('data-toggle-pay');
-        var item = sales.find(function(s){ return s.id === id; });
+        let id = btn.getAttribute('data-toggle-pay');
+        let item = sales.find(function(s){ return s.id === id; });
         if(item){ toggleSalePago(id, item.pagado); }
       });
     });
@@ -866,26 +1041,26 @@ document.addEventListener('DOMContentLoaded', function(){
     });
     root.querySelectorAll('[data-edit]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        var id = btn.getAttribute('data-edit');
-        var item = sales.find(function(s){ return s.id === id; });
+        let id = btn.getAttribute('data-edit');
+        let item = sales.find(function(s){ return s.id === id; });
         if(item){ openEditSheet(item); }
       });
     });
   }
 
   function render(){
-    var groups = groupByWeek();
-    var keys = Object.keys(groups).sort().reverse();
-    var currentKey = weekKey(new Date());
+    let groups = groupByWeek();
+    let keys = Object.keys(groups).sort().reverse();
+    let currentKey = weekKey(new Date());
 
     /* current week: table of articles (shown above the summary) — editable */
-    var curItems = (groups[currentKey] || []).slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
-    var curTableEl = document.getElementById('currentWeekTable');
+    let curItems = (groups[currentKey] || []).slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+    let curTableEl = document.getElementById('currentWeekTable');
     curTableEl.innerHTML = renderSalesTable(curItems, true);
     bindTableEvents(curTableEl);
 
     /* current week: summary ticket, below the table */
-    var curStats = weekStats(curItems);
+    let curStats = weekStats(curItems);
     document.getElementById('currentTicket').innerHTML =
       '<div class="ticket">' +
         '<div class="ticket-head"><span class="week-label">Resumen de la semana</span><span class="week-range">' + formatRange(currentKey) + '</span></div>' +
@@ -897,20 +1072,21 @@ document.addEventListener('DOMContentLoaded', function(){
       '</div>';
 
     /* previous weeks: accordion history */
-    var pastKeys = keys.filter(function(k){ return k !== currentKey; });
-    var container = document.getElementById('weeksContainer');
+    let pastKeys = keys.filter(function(k){ return k !== currentKey; });
+    let container = document.getElementById('weeksContainer');
     if(pastKeys.length === 0){
       container.innerHTML = '<div class="empty"><b>Sin historial todavía</b>Las semanas anteriores van a aparecer acá.</div>';
       renderPeriodComparison();
+      renderTopCategoryChart();
       renderTopClients();
       renderClientSearch();
       renderClientsFullList();
       return;
     }
-    var html = '';
+    let html = '';
     pastKeys.forEach(function(k){
-      var st = weekStats(groups[k]);
-      var label = "Semana del " + formatRange(k);
+      let st = weekStats(groups[k]);
+      let label = "Semana del " + formatRange(k);
       html += '<button class="week-toggle" data-week="' + k + '">' +
                 '<span><span class="lbl">' + label + '</span><br><span class="sub">' + st.count + ' art. · ' + money(st.total) + '</span></span>' +
                 '<span class="chev">▾</span>' +
@@ -925,11 +1101,11 @@ document.addEventListener('DOMContentLoaded', function(){
 
     container.querySelectorAll('.week-toggle').forEach(function(btn){
       btn.addEventListener('click', function(){
-        var wk = btn.getAttribute('data-week');
-        var itemsEl = document.getElementById('wk-' + wk);
+        let wk = btn.getAttribute('data-week');
+        let itemsEl = document.getElementById('wk-' + wk);
 
         if(itemsEl.getAttribute('data-loaded') === '0'){
-          var items = groups[wk].slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+          let items = groups[wk].slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
           itemsEl.innerHTML = renderSalesTable(items);
           bindTableEvents(itemsEl);
           itemsEl.setAttribute('data-loaded', '1');
@@ -941,20 +1117,21 @@ document.addEventListener('DOMContentLoaded', function(){
     });
 
     renderPeriodComparison();
+    renderTopCategoryChart();
     renderTopClients();
     renderClientSearch();
     renderClientsFullList();
   }
 
   function renderClientSearch(){
-    var input = document.getElementById('clientSearch');
-    var wrap = document.getElementById('clientSearchResults');
+    let input = document.getElementById('clientSearch');
+    let wrap = document.getElementById('clientSearchResults');
     if(!input || !wrap) return;
-    var query = input.value.trim().toLowerCase();
+    let query = input.value.trim().toLowerCase();
     if(!query){ wrap.innerHTML = ''; return; }
 
-    var thisWeekKey = weekKey(new Date());
-    var matches = sales.filter(function(s){
+    let thisWeekKey = weekKey(new Date());
+    let matches = sales.filter(function(s){
       return weekKey(new Date(s.fecha)) === thisWeekKey &&
              (s.cliente || '').toLowerCase().indexOf(query) !== -1;
     });
@@ -964,21 +1141,21 @@ document.addEventListener('DOMContentLoaded', function(){
       return;
     }
 
-    var st = weekStats(matches);
-    var owedClass = st.pendiente > 0 ? '' : 'zero';
-    var summaryHtml = '<div class="client-summary">' +
+    let st = weekStats(matches);
+    let owedClass = st.pendiente > 0 ? '' : 'zero';
+    let summaryHtml = '<div class="client-summary">' +
       '<div><div class="name">' + escapeHtml(query) + '</div><div class="owed-label">Debe abonar esta semana</div></div>' +
       '<div class="owed-value ' + owedClass + '">' + money(st.pendiente) + '</div>' +
     '</div>';
 
-    var sorted = matches.slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+    let sorted = matches.slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
     wrap.innerHTML = summaryHtml + renderSalesTable(sorted, false);
     bindTableEvents(wrap);
   }
 
   function renderClientsFullList(){
-    var searchInput = document.getElementById('clientSearch');
-    var wrap = document.getElementById('clientsFullList');
+    let searchInput = document.getElementById('clientSearch');
+    let wrap = document.getElementById('clientsFullList');
     if(!searchInput || !wrap) return;
 
     if(searchInput.value.trim()){ wrap.innerHTML = ''; return; }
@@ -988,8 +1165,8 @@ document.addEventListener('DOMContentLoaded', function(){
       return;
     }
 
-    var sorted = clients.slice().sort(function(a,b){ return a.localeCompare(b, 'es'); });
-    var html = '<div class="client-list">';
+    let sorted = clients.slice().sort(function(a,b){ return a.localeCompare(b, 'es'); });
+    let html = '<div class="client-list">';
     sorted.forEach(function(name){
       html += '<div class="client-row">' +
                 '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '">' + escapeHtml(name) + '</button>' +
@@ -1009,8 +1186,8 @@ document.addEventListener('DOMContentLoaded', function(){
     });
     wrap.querySelectorAll('[data-edit-client]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        var oldName = btn.getAttribute('data-edit-client');
-        var newName = prompt('Editar nombre del cliente:', oldName);
+        let oldName = btn.getAttribute('data-edit-client');
+        let newName = prompt('Editar nombre del cliente:', oldName);
         if(newName === null) return;
         newName = newName.trim();
         if(!newName || newName === oldName) return;
@@ -1019,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
     wrap.querySelectorAll('[data-del-client]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        var name = btn.getAttribute('data-del-client');
+        let name = btn.getAttribute('data-del-client');
         if(confirm('¿Eliminar a "' + name + '" de tu lista de clientes?\n\nEsto NO borra sus ventas ya registradas, solo lo saca del autocompletado y de esta lista.')){
           deleteClientEntry(name);
         }
@@ -1028,15 +1205,29 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function renameClientEntry(oldName, newName){
+    let collision = clients.some(function(c){
+      return c.toLowerCase() === newName.toLowerCase() && c.toLowerCase() !== oldName.toLowerCase();
+    });
+
     try{
-      await sb.from('clients').update({ name: newName }).eq('name', oldName);
+      if(collision){
+        // Ya existe un cliente con ese nombre: fusiono en vez de duplicar.
+        // Sus ventas pasan a quedar unificadas bajo el nombre existente,
+        // y se borra la entrada vieja de la lista de clientes.
+        await sb.from('clients').delete().eq('name', oldName);
+        clients = clients.filter(function(c){ return c.toLowerCase() !== oldName.toLowerCase(); });
+      }else{
+        await sb.from('clients').update({ name: newName }).eq('name', oldName);
+        clients = clients.map(function(c){ return c.toLowerCase() === oldName.toLowerCase() ? newName : c; });
+      }
+
       await sb.from('sales').update({ cliente: newName }).eq('cliente', oldName);
-      clients = clients.map(function(c){ return c.toLowerCase() === oldName.toLowerCase() ? newName : c; });
       sales.forEach(function(s){ if(s.cliente === oldName){ s.cliente = newName; } });
+
       refreshClientsDatalist();
       document.getElementById('clientSearch').value = '';
       render();
-      showToast('Cliente actualizado');
+      showToast(collision ? 'Cliente fusionado con "' + newName + '"' : 'Cliente actualizado');
     }catch(e){
       showToast('No se pudo actualizar el cliente.');
     }
@@ -1054,7 +1245,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
-  var clientSearchDebounce = null;
+  let clientSearchDebounce = null;
   document.getElementById('clientSearch').addEventListener('input', function(){
     clearTimeout(clientSearchDebounce);
     clientSearchDebounce = setTimeout(function(){
@@ -1064,13 +1255,13 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   function escapeHtml(str){
-    var d = document.createElement('div');
+    let d = document.createElement('div');
     d.textContent = str || '';
     return d.innerHTML;
   }
 
   function showToast(msg, duration){
-    var t = document.getElementById('toast');
+    let t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(function(){ t.classList.remove('show'); }, duration || 2200);
@@ -1088,25 +1279,25 @@ document.addEventListener('DOMContentLoaded', function(){
   scrim.addEventListener('click', closeSheet);
 
   /* ---------------- form state ---------------- */
-  var formState = { pagado: false, retira: 'cliente' };
-  var editingSaleId = null;
-  var itemRowCounter = 0;
+  let formState = { pagado: false, retira: 'cliente' };
+  let editingSaleId = null;
+  let itemRowCounter = 0;
 
   function categoryOptionsHtml(selected){
     return categories.map(function(c){
-      var sel = (c === selected) ? ' selected' : '';
+      let sel = (c === selected) ? ' selected' : '';
       return '<option value="' + escapeHtml(c) + '"' + sel + '>' + escapeHtml(c) + '</option>';
     }).join('');
   }
 
-  function addItemRow(prefill){
+  function addItemRow(prefill, isOriginal){
     itemRowCounter++;
-    var rowId = 'row' + itemRowCounter;
-    var container = document.getElementById('itemRowsContainer');
-    var defaultCat = (prefill && prefill.categoria) || (categories.length ? categories[0] : '');
+    let rowId = 'row' + itemRowCounter;
+    let container = document.getElementById('itemRowsContainer');
+    let defaultCat = (prefill && prefill.categoria) || (categories.length ? categories[0] : '');
 
-    var html =
-      '<div class="item-row" data-row-id="' + rowId + '">' +
+    let html =
+      '<div class="item-row" data-row-id="' + rowId + '"' + (isOriginal ? ' data-original="1"' : '') + '>' +
         '<div class="item-row-header">' +
           '<span class="item-row-label">Artículo</span>' +
           '<button type="button" class="item-row-del" data-del-row="' + rowId + '">✕ Quitar</button>' +
@@ -1123,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', function(){
       '</div>';
 
     container.insertAdjacentHTML('beforeend', html);
-    var rowEl = container.querySelector('[data-row-id="' + rowId + '"]');
+    let rowEl = container.querySelector('[data-row-id="' + rowId + '"]');
 
     rowEl.querySelectorAll('.mic-btn').forEach(function(btn){
       btn.addEventListener('click', function(){ startDictation(btn); });
@@ -1143,27 +1334,34 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function updateItemRowLabels(){
-    var rows = document.querySelectorAll('#itemRowsContainer .item-row');
+    let rows = document.querySelectorAll('#itemRowsContainer .item-row');
     rows.forEach(function(r, idx){
       r.querySelector('.item-row-label').textContent = 'Artículo ' + (idx + 1);
-      var del = r.querySelector('.item-row-del');
-      del.style.display = rows.length <= 1 ? 'none' : 'inline-block';
+      let del = r.querySelector('.item-row-del');
+      // La fila "original" (el artículo que se está editando) nunca se
+      // puede quitar desde acá — para eso está el botón de borrar venta
+      // en la tabla. Las demás filas sí, salvo que sea la única.
+      if(r.getAttribute('data-original') === '1'){
+        del.style.display = 'none';
+      }else{
+        del.style.display = rows.length <= 1 ? 'none' : 'inline-block';
+      }
     });
   }
 
   function updateItemsTotal(){
-    var total = 0;
+    let total = 0;
     document.querySelectorAll('#itemRowsContainer .row-precio').forEach(function(inp){
-      var v = parseFloat(inp.value);
+      let v = parseFloat(inp.value);
       if(!isNaN(v)) total += v;
     });
-    var el = document.getElementById('itemsTotalValue');
+    let el = document.getElementById('itemsTotalValue');
     if(el) el.textContent = money(total);
   }
 
   function refreshAllRowCategorySelects(){
     document.querySelectorAll('#itemRowsContainer .row-categoria').forEach(function(sel){
-      var current = sel.value;
+      let current = sel.value;
       sel.innerHTML = categoryOptionsHtml(current || (categories.length ? categories[0] : ''));
     });
   }
@@ -1202,11 +1400,13 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.retira-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === formState.retira); });
     document.getElementById('terceroField').style.display = (formState.retira === 'otro') ? 'block' : 'none';
 
-    // En modo edición solo se toca UN artículo a la vez.
+    // El artículo que se está editando queda marcado como fila "original"
+    // (no se puede quitar desde acá). Pero SÍ se pueden agregar más
+    // artículos nuevos para el mismo cliente en la misma edición.
     document.getElementById('itemRowsContainer').innerHTML = '';
     itemRowCounter = 0;
-    addItemRow({ articulo: item.articulo, precio: item.precio, categoria: item.categoria });
-    document.getElementById('addItemRowBtn').style.display = 'none';
+    addItemRow({ articulo: item.articulo, precio: item.precio, categoria: item.categoria }, true);
+    document.getElementById('addItemRowBtn').style.display = 'block';
 
     document.getElementById('sheetTitle').textContent = 'Editar artículo';
     document.getElementById('saveBtnText').textContent = 'Guardar cambios';
@@ -1215,16 +1415,16 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   document.getElementById('openNewCatBtn').addEventListener('click', function(){
-    var row = document.getElementById('newCatRow');
+    let row = document.getElementById('newCatRow');
     row.style.display = (row.style.display === 'none') ? 'flex' : 'none';
     if(row.style.display === 'flex'){ document.getElementById('fNuevaCategoria').focus(); }
   });
 
   document.getElementById('confirmNewCat').addEventListener('click', async function(){
-    var input = document.getElementById('fNuevaCategoria');
-    var name = input.value.trim();
+    let input = document.getElementById('fNuevaCategoria');
+    let name = input.value.trim();
     if(!name){ showToast('Escribí un nombre para la categoría'); return; }
-    var exists = categories.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
+    let exists = categories.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
     if(!exists){
       await persistNewCategory(name);
       categories.push(name);
@@ -1252,31 +1452,31 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.getElementById('saveBtn').addEventListener('click', async function(){
-    var cliente = document.getElementById('fCliente').value.trim();
-    var tercero = document.getElementById('fTercero').value.trim();
+    let cliente = document.getElementById('fCliente').value.trim();
+    let tercero = document.getElementById('fTercero').value.trim();
 
     if(!cliente){ showToast('Falta el nombre del cliente'); return; }
     if(formState.retira === 'otro' && !tercero){ showToast('Falta el nombre de quien retira'); return; }
 
-    var rowEls = document.querySelectorAll('#itemRowsContainer .item-row');
+    let rowEls = document.querySelectorAll('#itemRowsContainer .item-row');
     if(rowEls.length === 0){ showToast('Agregá al menos un artículo'); return; }
 
-    var items = [];
-    for(var i = 0; i < rowEls.length; i++){
-      var articulo = rowEls[i].querySelector('.row-articulo').value.trim();
-      var precio = parseFloat(rowEls[i].querySelector('.row-precio').value);
-      var categoria = rowEls[i].querySelector('.row-categoria').value || 'Sin categoría';
+    let items = [];
+    for(let i = 0; i < rowEls.length; i++){
+      let articulo = rowEls[i].querySelector('.row-articulo').value.trim();
+      let precio = parseFloat(rowEls[i].querySelector('.row-precio').value);
+      let categoria = rowEls[i].querySelector('.row-categoria').value || 'Sin categoría';
       if(!articulo){ showToast('Falta el nombre del artículo ' + (i + 1)); return; }
       if(isNaN(precio) || precio <= 0){ showToast('Precio inválido en el artículo ' + (i + 1)); return; }
       items.push({ articulo: articulo, precio: precio, categoria: categoria });
     }
 
-    var saveBtn = document.getElementById('saveBtn');
+    let saveBtn = document.getElementById('saveBtn');
     saveBtn.disabled = true;
 
     try{
       if(editingSaleId){
-        var saleData = {
+        let saleData = {
           cliente: cliente,
           articulo: items[0].articulo,
           precio: items[0].precio,
@@ -1285,16 +1485,38 @@ document.addEventListener('DOMContentLoaded', function(){
           tercero: formState.retira === 'otro' ? tercero : '',
           categoria: items[0].categoria
         };
-        var updRes = await sb.from('sales').update(saleData).eq('id', editingSaleId).select();
+        let updRes = await sb.from('sales').update(saleData).eq('id', editingSaleId).select();
         if(updRes.error) throw updRes.error;
-        var idx = sales.findIndex(function(s){ return s.id === editingSaleId; });
+        let idx = sales.findIndex(function(s){ return s.id === editingSaleId; });
         if(idx !== -1){ sales[idx] = mapRowToSale(updRes.data[0]); }
+
+        // Artículos extra agregados durante esta edición (además del que
+        // se estaba corrigiendo) se guardan como ventas nuevas del mismo cliente.
+        let extraCount = 0;
+        if(items.length > 1){
+          let extraBatch = items.slice(1).map(function(it){
+            return {
+              cliente: cliente,
+              articulo: it.articulo,
+              precio: it.precio,
+              pagado: formState.pagado,
+              retira: formState.retira,
+              tercero: formState.retira === 'otro' ? tercero : '',
+              categoria: it.categoria
+            };
+          });
+          let extraRes = await sb.from('sales').insert(extraBatch).select();
+          if(extraRes.error) throw extraRes.error;
+          extraRes.data.forEach(function(row){ sales.unshift(mapRowToSale(row)); });
+          extraCount = extraRes.data.length;
+        }
+
         await persistClientIfNew(cliente);
         render();
         closeSheet();
-        showToast('Artículo actualizado');
+        showToast(extraCount > 0 ? 'Actualizado, y ' + extraCount + ' artículo(s) nuevo(s) agregado(s)' : 'Artículo actualizado');
       }else{
-        var batch = items.map(function(it){
+        let batch = items.map(function(it){
           return {
             cliente: cliente,
             articulo: it.articulo,
@@ -1305,7 +1527,7 @@ document.addEventListener('DOMContentLoaded', function(){
             categoria: it.categoria
           };
         });
-        var res = await sb.from('sales').insert(batch).select();
+        let res = await sb.from('sales').insert(batch).select();
         if(res.error) throw res.error;
         res.data.forEach(function(row){ sales.unshift(mapRowToSale(row)); });
         await persistClientIfNew(cliente);
@@ -1323,7 +1545,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ---------------- reset all ---------------- */
   function handleManualExport(){
     if(sales.length === 0){ showToast('No hay ventas para exportar.'); return; }
-    var today = new Date().toISOString().slice(0,10);
+    let today = new Date().toISOString().slice(0,10);
     exportSalesToCSV(sales, 'feritapp-historial-completo-' + today + '.csv');
     showToast('CSV descargado');
   }
@@ -1344,15 +1566,15 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   /* ---------------- voice dictation ---------------- */
-  var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var voiceSupported = !!SpeechRec;
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const voiceSupported = !!SpeechRec;
   if(!voiceSupported){
     document.getElementById('voiceWarning').innerHTML =
       '<div class="voice-warning">El dictado por voz no está disponible en este navegador. Probá abrir la app con Chrome en Android para usar el micrófono, o cargá los datos escribiendo directamente.</div>';
     document.querySelectorAll('.mic-btn').forEach(function(b){ b.style.display = 'none'; });
   }
 
-  var NUM_WORDS = {
+  const NUM_WORDS = {
     'cero':0,'un':1,'uno':1,'una':1,'dos':2,'tres':3,'cuatro':4,'cinco':5,'seis':6,'siete':7,'ocho':8,'nueve':9,
     'diez':10,'once':11,'doce':12,'trece':13,'catorce':14,'quince':15,'dieciseis':16,'diecisiete':17,'dieciocho':18,'diecinueve':19,
     'veinte':20,'veintiun':21,'veintiuno':21,'veintidos':22,'veintitres':23,'veinticuatro':24,'veinticinco':25,'veintiseis':26,'veintisiete':27,'veintiocho':28,'veintinueve':29,
@@ -1365,11 +1587,11 @@ document.addEventListener('DOMContentLoaded', function(){
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   }
   function wordsToNumber(text){
-    var clean = stripAccents(text.toLowerCase())
+    let clean = stripAccents(text.toLowerCase())
       .replace(/pesos|peso|con\s*\d+\s*centavos?/g, ' ')
       .replace(/[^a-z0-9\s]/g,' ');
-    var words = clean.split(/\s+/).filter(Boolean);
-    var total = 0, current = 0, found = false;
+    let words = clean.split(/\s+/).filter(Boolean);
+    let total = 0, current = 0, found = false;
     words.forEach(function(w){
       if(/^\d+$/.test(w)){ current += parseInt(w,10); found = true; return; }
       if(w in NUM_WORDS){ current += NUM_WORDS[w]; found = true; return; }
@@ -1381,7 +1603,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return found ? total : null;
   }
   function extractPrice(transcript){
-    var digitMatch = transcript.replace(/[.,](?=\d{3}\b)/g,'').match(/\d+/g);
+    let digitMatch = transcript.replace(/[.,](?=\d{3}\b)/g,'').match(/\d+/g);
     if(digitMatch){
       // Tomamos solo el primer grupo de dígitos (no los concatenamos todos).
       // Si se concatenaran, un decimal accidental (ej: "1500.50" -> ["1500","50"])
@@ -1393,12 +1615,12 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function resolveDictationInput(btn){
-    var targetId = btn.getAttribute('data-target');
+    let targetId = btn.getAttribute('data-target');
     if(targetId){ return document.getElementById(targetId); }
-    var rowId = btn.getAttribute('data-row');
-    var field = btn.getAttribute('data-field');
+    let rowId = btn.getAttribute('data-row');
+    let field = btn.getAttribute('data-field');
     if(rowId && field){
-      var rowEl = document.querySelector('[data-row-id="' + rowId + '"]');
+      let rowEl = document.querySelector('[data-row-id="' + rowId + '"]');
       if(rowEl){ return rowEl.querySelector('.row-' + field); }
     }
     return null;
@@ -1406,11 +1628,11 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function startDictation(btn){
     if(!voiceSupported) return;
-    var mode = btn.getAttribute('data-mode');
-    var input = resolveDictationInput(btn);
+    let mode = btn.getAttribute('data-mode');
+    let input = resolveDictationInput(btn);
     if(!input) return;
 
-    var recognition = new SpeechRec();
+    let recognition = new SpeechRec();
     recognition.lang = 'es-AR';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -1418,16 +1640,16 @@ document.addEventListener('DOMContentLoaded', function(){
     btn.classList.add('listening');
 
     recognition.onresult = function(event){
-      var transcript = event.results[0][0].transcript;
+      let transcript = event.results[0][0].transcript;
       if(mode === 'number'){
-        var parsed = extractPrice(transcript);
+        let parsed = extractPrice(transcript);
         if(parsed !== null){
           input.value = parsed;
         }else{
           showToast('No entendí el número, escribilo manualmente');
         }
       }else{
-        var cap = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+        let cap = transcript.charAt(0).toUpperCase() + transcript.slice(1);
         input.value = cap;
       }
       input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1452,9 +1674,9 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ---------------- mostrar / ocultar contraseña ---------------- */
   document.querySelectorAll('.pw-toggle-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
-      var input = document.getElementById(btn.getAttribute('data-target'));
+      let input = document.getElementById(btn.getAttribute('data-target'));
       if(!input) return;
-      var showing = input.type === 'text';
+      let showing = input.type === 'text';
       input.type = showing ? 'password' : 'text';
       btn.textContent = showing ? '👁' : '🙈';
       btn.classList.toggle('showing', !showing);
@@ -1473,9 +1695,9 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   /* ---------------- PWA: banner propio de instalación ---------------- */
-  var installBanner = document.getElementById('installBanner');
-  var menuInstallBtn = document.getElementById('menuInstallBtn');
-  var deferredInstallPrompt = null;
+  const installBanner = document.getElementById('installBanner');
+  const menuInstallBtn = document.getElementById('menuInstallBtn');
+  let deferredInstallPrompt = null;
 
   function showInstallBanner(){
     if(localStorage.getItem('installBannerDismissed') === '1') return;
