@@ -376,6 +376,17 @@ input:focus{ border-color:var(--gold); }
 .footer-row{ display:flex; justify-content:center; padding:26px 20px 10px; }
 .reset-link{ background:none; border:none; color:var(--text-dim); font-size:11.5px; font-family:var(--mono); cursor:pointer; text-decoration:underline; padding:6px; }
 
+.danger-zone{
+  background:rgba(178,58,82,.08); border:1px solid var(--rose); border-radius:14px; padding:16px;
+}
+.danger-zone-title{ font-family:var(--body); font-size:14px; font-weight:700; color:var(--rose); margin:0; }
+.danger-btn{
+  width:100%; padding:14px; border-radius:12px; border:none;
+  background:var(--red); color:#fff; font-family:var(--body); font-weight:700; font-size:14px; cursor:pointer;
+}
+.danger-btn:hover{ background:var(--rose); }
+.danger-btn:active{ transform:scale(.98); }
+
 .toast{
   position:fixed; left:50%; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px);
   background:var(--gold); color:var(--ink); font-family:var(--body); font-weight:600; font-size:13px;

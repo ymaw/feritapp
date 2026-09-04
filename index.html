@@ -209,6 +209,45 @@
     </div>
     <p class="hint">Las notificaciones aparecen cuando abrís la app y detecta pagos atrasados según lo configurado acá — no llegan si la app está completamente cerrada.</p>
   </div>
+
+  <div class="section-block">
+    <p class="section-title">Configuración › Mi Perfil</p>
+    <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
+
+    <div class="field">
+      <label>Contraseña actual</label>
+      <div class="input-row">
+        <input type="password" id="profileCurrentPin" autocomplete="current-password">
+        <button class="pw-toggle-btn" type="button" data-target="profileCurrentPin" aria-label="Mostrar contraseña">👁</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Nueva contraseña</label>
+      <div class="input-row">
+        <input type="password" id="profileNewPin" autocomplete="new-password">
+        <button class="pw-toggle-btn" type="button" data-target="profileNewPin" aria-label="Mostrar contraseña">👁</button>
+      </div>
+      <p class="hint">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
+    </div>
+    <div class="field">
+      <label>Confirmar nueva contraseña</label>
+      <div class="input-row">
+        <input type="password" id="profileNewPinConfirm" autocomplete="new-password">
+        <button class="pw-toggle-btn" type="button" data-target="profileNewPinConfirm" aria-label="Mostrar contraseña">👁</button>
+      </div>
+    </div>
+    <p class="gate-error" id="profilePwError" style="display:none;"></p>
+    <button type="button" class="save-btn" id="changePasswordBtn">Cambiar contraseña</button>
+  </div>
+
+  <div class="section-block">
+    <p class="section-title">Zona crítica</p>
+    <div class="danger-zone">
+      <p class="danger-zone-title">⚠️ Borrar todos los datos de ventas</p>
+      <p class="hint" style="margin:6px 0 14px;">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
+      <button type="button" class="danger-btn" id="resetBtn">🗑️ Borrar todos los datos de ventas</button>
+    </div>
+  </div>
 </div>
 
 <div id="viewRanking" class="app-view" style="display:none;">
@@ -240,11 +279,6 @@
   <div class="section-block">
     <p class="section-title">Semanas anteriores</p>
     <div class="weeks" id="weeksContainer"></div>
-  </div>
-
-  <div class="footer-row">
-    <button class="reset-link" id="exportCsvBtn2" style="margin-right:14px;">⬇️ Exportar a CSV</button>
-    <button class="reset-link" id="resetBtn">Borrar todos los datos</button>
   </div>
 </div>
 

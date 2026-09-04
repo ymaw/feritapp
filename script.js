@@ -297,12 +297,16 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   });
 
+  let currentUserEmail = null;
+
   function enterApp(user){
     if(entered) return;
     entered = true;
+    currentUserEmail = user.email;
     document.getElementById('authGate').style.display = 'none';
     document.getElementById('appRoot').style.display = 'block';
     document.getElementById('sessionEmail').textContent = 'Ingresaste como ' + user.email;
+    document.getElementById('profileEmail').textContent = user.email;
     window.history.replaceState({}, document.title, window.location.pathname);
     switchView('sales');
     resetIdleTimer();
@@ -1550,7 +1554,46 @@ document.addEventListener('DOMContentLoaded', function(){
     showToast('CSV descargado');
   }
   document.getElementById('exportCsvBtn').addEventListener('click', handleManualExport);
-  document.getElementById('exportCsvBtn2').addEventListener('click', handleManualExport);
+
+  document.getElementById('changePasswordBtn').addEventListener('click', async function(){
+    let current = document.getElementById('profileCurrentPin').value;
+    let newPin = document.getElementById('profileNewPin').value;
+    let newPinConfirm = document.getElementById('profileNewPinConfirm').value;
+    let err = document.getElementById('profilePwError');
+    err.style.display = 'none';
+
+    if(!current){ err.textContent = 'Ingresá tu contraseña actual.'; err.style.display = 'block'; return; }
+    if(!isValidPassword(newPin)){ err.textContent = 'La nueva contraseña necesita mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
+    if(newPin !== newPinConfirm){ err.textContent = 'Las contraseñas nuevas no coinciden.'; err.style.display = 'block'; return; }
+    if(!currentUserEmail){ err.textContent = 'No se pudo identificar tu cuenta, volvé a iniciar sesión.'; err.style.display = 'block'; return; }
+
+    let btn = document.getElementById('changePasswordBtn');
+    btn.disabled = true;
+
+    // Antes de cambiarla, reverifico que la contraseña actual sea correcta
+    // (por si alguien deja el celu desbloqueado con la sesión abierta).
+    let verifyRes = await sb.auth.signInWithPassword({ email: currentUserEmail, password: current });
+    if(verifyRes.error){
+      err.textContent = 'La contraseña actual no es correcta.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      return;
+    }
+
+    let updRes = await sb.auth.updateUser({ password: newPin });
+    btn.disabled = false;
+
+    if(updRes.error){
+      err.textContent = 'No se pudo actualizar la contraseña: ' + updRes.error.message;
+      err.style.display = 'block';
+      return;
+    }
+
+    document.getElementById('profileCurrentPin').value = '';
+    document.getElementById('profileNewPin').value = '';
+    document.getElementById('profileNewPinConfirm').value = '';
+    showToast('Contraseña actualizada');
+  });
 
   document.getElementById('resetBtn').addEventListener('click', async function(){
     if(!confirm('¿Borrar todo el historial de ventas? Esta acción no se puede deshacer.')) return;
