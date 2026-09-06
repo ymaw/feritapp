@@ -134,7 +134,6 @@
   <button type="button" class="menu-item" data-view="settings">⚙️ Configuración</button>
   <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar app</button>
   <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
-  <button type="button" class="menu-item menu-item-danger" id="logoutAllBtn">🚪 Cerrar sesión en todos los dispositivos</button>
 </div>
 
 <datalist id="clientsDatalist"></datalist>
@@ -158,96 +157,150 @@
 </div>
 
 <div id="viewSettings" class="app-view" style="display:none;">
-  <div class="section-block">
-    <p class="section-title">Configuración</p>
-    <div class="field">
-      <label>Tu semana de ventas empieza el</label>
-      <select id="weekStartSelect" class="settings-select">
-        <option value="1">Lunes</option>
-        <option value="2">Martes</option>
-        <option value="3">Miércoles</option>
-        <option value="4">Jueves</option>
-        <option value="5">Viernes</option>
-        <option value="6">Sábado</option>
-        <option value="0">Domingo</option>
-      </select>
-      <p class="hint">Ej: si entregás los sábados, elegí "Sábado" para que tu semana vaya de sábado a viernes.</p>
-    </div>
-    <div class="field">
-      <label>Copia de seguridad</label>
-      <button type="button" class="save-btn" id="exportCsvBtn">⬇️ Exportar todo el historial a CSV</button>
-      <p class="hint">Se descarga a la carpeta de Descargas de tu dispositivo. Cada semestre se descarga uno automático antes de limpiar el historial viejo.</p>
+
+  <div id="settingsMenu">
+    <div class="section-block">
+      <p class="section-title">Configuración</p>
+      <div class="settings-menu-list">
+        <button type="button" class="settings-menu-item" data-settings="profile"><span>👤 Mi Perfil</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="notifications"><span>🔔 Notificaciones</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="week"><span>📅 Semana de ventas</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="receipt"><span>🧾 Mensaje del comprobante</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="backup"><span>💾 Copia de seguridad</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item settings-menu-danger" data-settings="danger"><span>⚠️ Zona crítica</span><span class="settings-menu-arrow">›</span></button>
+      </div>
     </div>
   </div>
 
-  <div class="section-block">
-    <p class="section-title">Configuración › Notificaciones</p>
-    <div class="field">
-      <label>Avisar pagos atrasados</label>
-      <div class="seg">
-        <button type="button" class="notify-opt active" data-notify="on">Activadas</button>
-        <button type="button" class="notify-opt" data-notify="off">Desactivadas</button>
+  <div id="settingsPanelProfile" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Mi Perfil</p>
+      <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
+
+      <div class="field">
+        <label>Contraseña actual</label>
+        <div class="input-row">
+          <input type="password" id="profileCurrentPin" autocomplete="current-password">
+          <button class="pw-toggle-btn" type="button" data-target="profileCurrentPin" aria-label="Mostrar contraseña">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <div class="input-row">
+          <input type="password" id="profileNewPin" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="profileNewPin" aria-label="Mostrar contraseña">👁</button>
+        </div>
+        <p class="hint">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
+      </div>
+      <div class="field">
+        <label>Confirmar nueva contraseña</label>
+        <div class="input-row">
+          <input type="password" id="profileNewPinConfirm" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="profileNewPinConfirm" aria-label="Mostrar contraseña">👁</button>
+        </div>
+      </div>
+      <p class="gate-error" id="profilePwError" style="display:none;"></p>
+      <button type="button" class="save-btn" id="changePasswordBtn">Cambiar contraseña</button>
+
+      <div class="field" style="margin-top:26px;">
+        <label>Sesiones</label>
+        <button type="button" class="danger-btn" id="logoutAllBtn" style="background:var(--paper-3); border:1px solid var(--rose); color:var(--rose);">🚪 Cerrar sesión en todos los dispositivos</button>
+        <p class="hint">Usalo si perdiste el celular o alguien más podría tener tu contraseña. Vas a tener que volver a ingresar en todos lados.</p>
       </div>
     </div>
-    <div class="field" id="notifyDaysField">
-      <label>Avisar cuando el atraso sea de</label>
-      <select id="notifyDaysSelect" class="settings-select">
-        <option value="1">1 día</option>
-        <option value="2">2 días</option>
-        <option value="3">3 días</option>
-        <option value="4" selected>4 días</option>
-        <option value="5">5 días</option>
-        <option value="7">7 días</option>
-        <option value="10">10 días</option>
-        <option value="15">15 días</option>
-        <option value="30">30 días</option>
-      </select>
-    </div>
-    <div class="field">
-      <button type="button" class="save-btn" id="enableNotifPermBtn">🔔 Activar permiso de notificaciones</button>
-      <p class="hint" id="notifPermStatus">Tu navegador te va a pedir permiso una sola vez.</p>
-    </div>
-    <p class="hint">Las notificaciones aparecen cuando abrís la app y detecta pagos atrasados según lo configurado acá — no llegan si la app está completamente cerrada.</p>
   </div>
 
-  <div class="section-block">
-    <p class="section-title">Configuración › Mi Perfil</p>
-    <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
-
-    <div class="field">
-      <label>Contraseña actual</label>
-      <div class="input-row">
-        <input type="password" id="profileCurrentPin" autocomplete="current-password">
-        <button class="pw-toggle-btn" type="button" data-target="profileCurrentPin" aria-label="Mostrar contraseña">👁</button>
+  <div id="settingsPanelNotifications" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Notificaciones</p>
+      <div class="field">
+        <label>Avisar pagos atrasados</label>
+        <div class="seg">
+          <button type="button" class="notify-opt active" data-notify="on">Activadas</button>
+          <button type="button" class="notify-opt" data-notify="off">Desactivadas</button>
+        </div>
       </div>
-    </div>
-    <div class="field">
-      <label>Nueva contraseña</label>
-      <div class="input-row">
-        <input type="password" id="profileNewPin" autocomplete="new-password">
-        <button class="pw-toggle-btn" type="button" data-target="profileNewPin" aria-label="Mostrar contraseña">👁</button>
+      <div class="field" id="notifyDaysField">
+        <label>Avisar cuando el atraso sea de</label>
+        <select id="notifyDaysSelect" class="settings-select">
+          <option value="1">1 día</option>
+          <option value="2">2 días</option>
+          <option value="3">3 días</option>
+          <option value="4" selected>4 días</option>
+          <option value="5">5 días</option>
+          <option value="7">7 días</option>
+          <option value="10">10 días</option>
+          <option value="15">15 días</option>
+          <option value="30">30 días</option>
+        </select>
       </div>
-      <p class="hint">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
-    </div>
-    <div class="field">
-      <label>Confirmar nueva contraseña</label>
-      <div class="input-row">
-        <input type="password" id="profileNewPinConfirm" autocomplete="new-password">
-        <button class="pw-toggle-btn" type="button" data-target="profileNewPinConfirm" aria-label="Mostrar contraseña">👁</button>
+      <div class="field">
+        <button type="button" class="save-btn" id="enableNotifPermBtn">🔔 Activar permiso de notificaciones</button>
+        <p class="hint" id="notifPermStatus">Tu navegador te va a pedir permiso una sola vez.</p>
       </div>
+      <p class="hint">Las notificaciones aparecen cuando abrís la app y detecta pagos atrasados según lo configurado acá — no llegan si la app está completamente cerrada.</p>
     </div>
-    <p class="gate-error" id="profilePwError" style="display:none;"></p>
-    <button type="button" class="save-btn" id="changePasswordBtn">Cambiar contraseña</button>
   </div>
 
-  <div class="section-block">
-    <p class="section-title">Zona crítica</p>
-    <div class="danger-zone">
-      <p class="danger-zone-title">⚠️ Borrar todos los datos de ventas</p>
-      <p class="hint" style="margin:6px 0 14px;">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
-      <button type="button" class="danger-btn" id="resetBtn">🗑️ Borrar todos los datos de ventas</button>
+  <div id="settingsPanelWeek" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Semana de ventas</p>
+      <div class="field">
+        <label>Tu semana de ventas empieza el</label>
+        <select id="weekStartSelect" class="settings-select">
+          <option value="1">Lunes</option>
+          <option value="2">Martes</option>
+          <option value="3">Miércoles</option>
+          <option value="4">Jueves</option>
+          <option value="5">Viernes</option>
+          <option value="6">Sábado</option>
+          <option value="0">Domingo</option>
+        </select>
+        <p class="hint">Ej: si entregás los sábados, elegí "Sábado" para que tu semana vaya de sábado a viernes.</p>
+      </div>
     </div>
   </div>
+
+  <div id="settingsPanelReceipt" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Mensaje del comprobante</p>
+      <div class="field">
+        <label>Mensaje que acompaña al comprobante compartido</label>
+        <textarea id="receiptMessageInput" class="settings-textarea" rows="3" placeholder="Ej: ¡Gracias por tu compra!"></textarea>
+        <p class="hint">Se envía junto a la imagen del comprobante cuando compartís la compra de un cliente.</p>
+      </div>
+      <button type="button" class="save-btn" id="saveReceiptMessageBtn">Guardar mensaje</button>
+    </div>
+  </div>
+
+  <div id="settingsPanelBackup" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Copia de seguridad</p>
+      <div class="field">
+        <label>Copia de seguridad</label>
+        <button type="button" class="save-btn" id="exportCsvBtn">⬇️ Exportar todo el historial a CSV</button>
+        <p class="hint">Se descarga a la carpeta de Descargas de tu dispositivo. Cada semestre se descarga uno automático antes de limpiar el historial viejo.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsPanelDanger" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Zona crítica</p>
+      <div class="danger-zone">
+        <p class="danger-zone-title">⚠️ Borrar todos los datos de ventas</p>
+        <p class="hint" style="margin:6px 0 14px;">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
+        <button type="button" class="danger-btn" id="resetBtn">🗑️ Borrar todos los datos de ventas</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div id="viewRanking" class="app-view" style="display:none;">
@@ -306,7 +359,7 @@
   <div id="voiceWarning"></div>
 
   <div class="field">
-    <label>Nombre del cliente</label>
+    <label>Nombre del comprador</label>
     <div class="input-row">
       <input type="text" id="fCliente" placeholder="Ej: Juan Pérez" list="clientsDatalist">
       <button class="mic-btn" data-target="fCliente" data-mode="text" aria-label="Dictar nombre del cliente">🎤</button>

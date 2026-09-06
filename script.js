@@ -287,8 +287,43 @@ document.addEventListener('DOMContentLoaded', function(){
 
     if(view === 'clients'){ renderClientSearch(); renderClientsFullList(); }
     if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
-    if(view === 'settings'){ syncNotifyControls(); }
+    if(view === 'settings'){ syncNotifyControls(); showSettingsMenu(); }
   }
+
+  /* ---------------- Configuración: menú de dos niveles ---------------- */
+  const SETTINGS_PANEL_IDS = {
+    profile: 'settingsPanelProfile',
+    notifications: 'settingsPanelNotifications',
+    week: 'settingsPanelWeek',
+    receipt: 'settingsPanelReceipt',
+    backup: 'settingsPanelBackup',
+    danger: 'settingsPanelDanger'
+  };
+
+  function showSettingsMenu(){
+    document.getElementById('settingsMenu').style.display = 'block';
+    Object.keys(SETTINGS_PANEL_IDS).forEach(function(key){
+      document.getElementById(SETTINGS_PANEL_IDS[key]).style.display = 'none';
+    });
+  }
+
+  function showSettingsPanel(key){
+    let panelId = SETTINGS_PANEL_IDS[key];
+    if(!panelId) return;
+    document.getElementById('settingsMenu').style.display = 'none';
+    Object.keys(SETTINGS_PANEL_IDS).forEach(function(k){
+      document.getElementById(SETTINGS_PANEL_IDS[k]).style.display = (k === key) ? 'block' : 'none';
+    });
+  }
+
+  document.querySelectorAll('.settings-menu-item').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      showSettingsPanel(btn.getAttribute('data-settings'));
+    });
+  });
+  document.querySelectorAll('[data-settings-back]').forEach(function(btn){
+    btn.addEventListener('click', showSettingsMenu);
+  });
 
   document.querySelectorAll('[data-view]').forEach(function(btn){
     btn.addEventListener('click', function(){
@@ -368,6 +403,7 @@ document.addEventListener('DOMContentLoaded', function(){
   let weekStartDay = 1; // 0=domingo .. 6=sábado. Por defecto: lunes.
   let notifyEnabled = true;
   let notifyDaysOverdue = 4;
+  let receiptMessage = '¡Gracias por tu compra! Te esperamos pronto de nuevo.';
   const sheet = document.getElementById('sheet');
   const scrim = document.getElementById('scrim');
   const CATEGORY_COLORS = ['#446DF6','#08A4BD','#17A897','#B23A52','#8C4A9C','#5FA8A0','#6C8EBF','#C9A15F'];
@@ -446,12 +482,13 @@ document.addEventListener('DOMContentLoaded', function(){
 
     let lastPurgeSemester = null;
     try{
-      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue').maybeSingle();
+      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue, receipt_message').maybeSingle();
       if(settingsRes.data){
         weekStartDay = settingsRes.data.week_start_day;
         lastPurgeSemester = settingsRes.data.last_purge_semester;
         notifyEnabled = settingsRes.data.notify_enabled !== false;
         notifyDaysOverdue = settingsRes.data.notify_days_overdue || 4;
+        if(settingsRes.data.receipt_message){ receiptMessage = settingsRes.data.receipt_message; }
       }else{
         await sb.from('user_settings').insert([{}]); // usa los valores por defecto (lunes)
         weekStartDay = 1;
@@ -461,6 +498,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     let weekStartSelect = document.getElementById('weekStartSelect');
     if(weekStartSelect){ weekStartSelect.value = String(weekStartDay); }
+    let receiptMessageInput = document.getElementById('receiptMessageInput');
+    if(receiptMessageInput){ receiptMessageInput.value = receiptMessage; }
     syncNotifyControls();
 
     await checkSemesterCleanup(lastPurgeSemester);
@@ -509,6 +548,176 @@ document.addEventListener('DOMContentLoaded', function(){
     document.body.removeChild(a);
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
     return true;
+  }
+
+  // ---------------- comprobante compartible (imagen, sin links) ----------------
+  function wrapCanvasText(ctx, text, maxWidth){
+    let words = text.split(' ');
+    let lines = [];
+    let current = '';
+    words.forEach(function(w){
+      let test = current ? current + ' ' + w : w;
+      if(ctx.measureText(test).width > maxWidth && current){
+        lines.push(current);
+        current = w;
+      }else{
+        current = test;
+      }
+    });
+    if(current) lines.push(current);
+    return lines;
+  }
+
+  function truncateCanvasText(ctx, text, maxWidth){
+    if(ctx.measureText(text).width <= maxWidth) return text;
+    let truncated = text;
+    while(truncated.length > 1 && ctx.measureText(truncated + '…').width > maxWidth){
+      truncated = truncated.slice(0, -1);
+    }
+    return truncated + '…';
+  }
+
+  function drawDashedLine(ctx, x1, y, x2){
+    ctx.strokeStyle = '#dddddd';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let x = x1;
+    while(x < x2){
+      ctx.moveTo(x, y);
+      ctx.lineTo(Math.min(x + 6, x2), y);
+      x += 12;
+    }
+    ctx.stroke();
+  }
+
+  function generateReceiptCanvas(compradorNombre, items, mensaje){
+    const W = 600, PADDING = 40, LINE_H = 34;
+    const NAVY = '#01172F', GRAY = '#8892a0', ACCENT = '#446DF6';
+
+    // Uso un canvas temporal solo para medir el texto del mensaje y
+    // saber cuántas líneas ocupa, antes de fijar la altura final.
+    const measureCanvas = document.createElement('canvas');
+    const measureCtx = measureCanvas.getContext('2d');
+    measureCtx.font = 'italic 13px Arial';
+    const messageLines = mensaje ? wrapCanvasText(measureCtx, mensaje, W - PADDING * 2) : [];
+
+    const headerH = 110;
+    const itemsH = items.length * LINE_H;
+    const footerH = messageLines.length ? (30 + messageLines.length * 19) : 20;
+    const H = headerH + 60 + itemsH + 70 + footerH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = ACCENT;
+    ctx.fillRect(0, 0, W, 8);
+
+    let y = 46;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = NAVY;
+    ctx.font = 'bold 22px Arial';
+    ctx.fillText('Comprobante de compra', PADDING, y);
+
+    y += 28;
+    ctx.font = '13px Arial';
+    ctx.fillStyle = GRAY;
+    ctx.fillText(new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' }), PADDING, y);
+
+    y += 24;
+    drawDashedLine(ctx, PADDING, y, W - PADDING);
+
+    y += 28;
+    ctx.font = 'bold 16px Arial';
+    ctx.fillStyle = NAVY;
+    ctx.fillText('Comprador: ' + compradorNombre, PADDING, y);
+
+    y += 20;
+    drawDashedLine(ctx, PADDING, y, W - PADDING);
+
+    y += 32;
+    ctx.font = '15px Arial';
+    let total = 0;
+    items.forEach(function(it){
+      ctx.textAlign = 'left';
+      ctx.fillStyle = NAVY;
+      ctx.fillText(truncateCanvasText(ctx, it.articulo, 340), PADDING, y);
+      ctx.textAlign = 'right';
+      let priceTxt = money(it.precio);
+      ctx.fillText(priceTxt, W - PADDING, y);
+      total += Number(it.precio) || 0;
+      y += LINE_H;
+    });
+
+    y += 6;
+    drawDashedLine(ctx, PADDING, y, W - PADDING);
+    y += 36;
+
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 19px Arial';
+    ctx.fillStyle = NAVY;
+    ctx.fillText('Total', PADDING, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = ACCENT;
+    ctx.fillText(money(total), W - PADDING, y);
+
+    if(messageLines.length){
+      y += 40;
+      ctx.textAlign = 'left';
+      ctx.font = 'italic 13px Arial';
+      ctx.fillStyle = GRAY;
+      messageLines.forEach(function(line){
+        ctx.fillText(line, PADDING, y);
+        y += 19;
+      });
+    }
+
+    return canvas;
+  }
+
+  function shareReceipt(compradorNombre, items){
+    if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
+
+    let canvas = generateReceiptCanvas(compradorNombre, items, receiptMessage);
+    canvas.toBlob(async function(blob){
+      if(!blob){ showToast('No se pudo generar el comprobante.'); return; }
+      let safeName = compradorNombre.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+      let file = new File([blob], 'comprobante-' + safeName + '.png', { type: 'image/png' });
+
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        try{
+          await navigator.share({ files: [file], text: receiptMessage || undefined });
+          return;
+        }catch(e){
+          if(e && e.name === 'AbortError') return; // el usuario canceló, no es un error
+        }
+      }
+
+      // Si no se puede compartir directo, se descarga para compartirlo a mano.
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = url; a.download = file.name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      showToast('Comprobante descargado (tu navegador no soporta compartir directo)');
+    }, 'image/png');
+  }
+
+  let saveReceiptMessageBtnEl = document.getElementById('saveReceiptMessageBtn');
+  if(saveReceiptMessageBtnEl){
+    saveReceiptMessageBtnEl.addEventListener('click', async function(){
+      let val = document.getElementById('receiptMessageInput').value.trim();
+      receiptMessage = val;
+      try{
+        await sb.from('user_settings').upsert({ receipt_message: val }, { onConflict: 'user_id' });
+        showToast('Mensaje guardado');
+      }catch(e){
+        showToast('No se pudo guardar el mensaje.');
+      }
+    });
   }
 
   // Cada semestre (ene-jun / jul-dic), borra las ventas anteriores al
@@ -1147,14 +1356,21 @@ document.addEventListener('DOMContentLoaded', function(){
 
     let st = weekStats(matches);
     let owedClass = st.pendiente > 0 ? '' : 'zero';
+    let realName = matches[0].cliente; // nombre real tal como se cargó, no lo que se tipeó buscando
     let summaryHtml = '<div class="client-summary">' +
       '<div><div class="name">' + escapeHtml(query) + '</div><div class="owed-label">Debe abonar esta semana</div></div>' +
       '<div class="owed-value ' + owedClass + '">' + money(st.pendiente) + '</div>' +
     '</div>';
 
     let sorted = matches.slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
-    wrap.innerHTML = summaryHtml + renderSalesTable(sorted, false);
+    let shareHtml = '<button type="button" class="save-btn" id="shareReceiptBtn" style="margin-bottom:12px;">📤 Compartir comprobante</button>';
+    wrap.innerHTML = summaryHtml + shareHtml + renderSalesTable(sorted, false);
     bindTableEvents(wrap);
+
+    let shareBtn = document.getElementById('shareReceiptBtn');
+    if(shareBtn){
+      shareBtn.addEventListener('click', function(){ shareReceipt(realName, sorted); });
+    }
   }
 
   function renderClientsFullList(){

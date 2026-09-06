@@ -387,6 +387,28 @@ input:focus{ border-color:var(--gold); }
 .danger-btn:hover{ background:var(--rose); }
 .danger-btn:active{ transform:scale(.98); }
 
+/* ---------- configuración: menú de dos niveles ---------- */
+.settings-menu-list{ display:flex; flex-direction:column; gap:8px; }
+.settings-menu-item{
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--table-bg); border:1px solid var(--table-border); border-radius:12px;
+  padding:15px 16px; color:var(--text); font-family:var(--body); font-size:14.5px; font-weight:600;
+  cursor:pointer;
+}
+.settings-menu-item:hover{ border-color:var(--gold); color:var(--gold-soft); }
+.settings-menu-item.settings-menu-danger{ border-color:var(--rose); color:var(--rose); }
+.settings-menu-item.settings-menu-danger:hover{ background:rgba(178,58,82,.1); }
+.settings-menu-arrow{ color:var(--text-dim); font-size:18px; }
+.settings-back-btn{
+  background:none; border:none; color:var(--gold-soft); font-family:var(--body);
+  font-size:13px; font-weight:600; cursor:pointer; padding:4px 0 16px; display:block;
+}
+.settings-textarea{
+  width:100%; background:var(--paper-2); border:1px solid var(--hairline); color:var(--text);
+  font-family:var(--body); font-size:15px; padding:12px 13px; border-radius:10px; outline:none; resize:vertical;
+}
+.settings-textarea:focus{ border-color:var(--gold); }
+
 .toast{
   position:fixed; left:50%; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px);
   background:var(--gold); color:var(--ink); font-family:var(--body); font-weight:600; font-size:13px;
