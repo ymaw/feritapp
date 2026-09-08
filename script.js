@@ -1261,6 +1261,57 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
+  // Agrupa las ventas de la semana por quién retira realmente (no por
+  // artículo), para saber a qué personas hay que entregarles algo,
+  // cuánto en total, y si ya está pago o queda debiendo.
+  function renderDeliveryList(items){
+    let wrap = document.getElementById('deliveryListWrap');
+    if(!wrap) return;
+
+    if(!items.length){
+      wrap.innerHTML = '<div class="empty-inline">Sin entregas esta semana.</div>';
+      return;
+    }
+
+    let groups = {};
+    items.forEach(function(s){
+      let key = s.cliente + '|' + s.retira + '|' + (s.tercero || '');
+      if(!groups[key]){
+        groups[key] = { cliente: s.cliente, retira: s.retira, tercero: s.tercero, total: 0, pendiente: 0 };
+      }
+      groups[key].total += Number(s.precio) || 0;
+      if(!s.pagado){ groups[key].pendiente += Number(s.precio) || 0; }
+    });
+
+    let list = Object.keys(groups).map(function(k){ return groups[k]; });
+    list.sort(function(a, b){ return a.cliente.localeCompare(b.cliente, 'es'); });
+
+    let html = '<div class="delivery-list">';
+    list.forEach(function(g){
+      let displayName = g.retira === 'otro'
+        ? escapeHtml(g.tercero) + ' <span class="delivery-forwhom">(' + escapeHtml(g.cliente) + ')</span>'
+        : escapeHtml(g.cliente);
+      let isPaid = g.pendiente === 0;
+      html += '<div class="delivery-item">' +
+        '<div class="delivery-info"><div class="delivery-name">' + displayName + '</div></div>' +
+        '<div class="delivery-total">' + money(g.total) + '</div>' +
+        '<div class="delivery-status ' + (isPaid ? 'paid' : 'pending') + '">' + (isPaid ? 'Pagado' : 'Debe ' + money(g.pendiente)) + '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  document.querySelectorAll('.salestab-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.salestab-opt').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      let tab = btn.getAttribute('data-salestab');
+      document.getElementById('currentWeekTable').style.display = (tab === 'items') ? 'block' : 'none';
+      document.getElementById('deliveryListWrap').style.display = (tab === 'delivery') ? 'block' : 'none';
+    });
+  });
+
   function render(){
     let groups = groupByWeek();
     let keys = Object.keys(groups).sort().reverse();
@@ -1271,6 +1322,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let curTableEl = document.getElementById('currentWeekTable');
     curTableEl.innerHTML = renderSalesTable(curItems, true);
     bindTableEvents(curTableEl);
+    renderDeliveryList(curItems);
 
     /* current week: summary ticket, below the table */
     let curStats = weekStats(curItems);
