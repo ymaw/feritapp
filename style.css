@@ -409,6 +409,13 @@ input:focus{ border-color:var(--gold); }
 }
 .settings-textarea:focus{ border-color:var(--gold); }
 
+.greeting-badge{
+  margin:20px 20px 4px; background:var(--paper-2); border:1px solid var(--hairline);
+  border-radius:14px; padding:14px 18px; display:flex; align-items:center; gap:10px;
+  font-family:var(--body); font-size:15px; font-weight:700; color:var(--text);
+}
+.greeting-wave{ font-size:20px; }
+
 /* ---------- listado de entregas (para entregar) ---------- */
 .delivery-list{ display:flex; flex-direction:column; gap:8px; }
 .delivery-item{
@@ -434,7 +441,7 @@ input:focus{ border-color:var(--gold); }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
 /* ---------- auth gate ---------- */
-#authGate{
+#authGate, #onboardingGate{
   min-height:100vh; min-height:100dvh; display:flex; align-items:center; justify-content:center;
   padding:calc(28px + env(safe-area-inset-top)) 24px calc(28px + env(safe-area-inset-bottom));
 }

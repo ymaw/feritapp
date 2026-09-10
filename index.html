@@ -118,6 +118,20 @@
   </div>
 </div>
 
+<div id="onboardingGate" style="display:none;">
+  <div class="gate-card">
+    <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+    <h1>¿Cómo se llama tu tienda?</h1>
+    <p class="gate-sub">Lo usamos para saludarte en la app. Lo podés cambiar cuando quieras desde Configuración › Mi Perfil.</p>
+    <div class="field">
+      <label>Nombre de tu tienda</label>
+      <input type="text" id="onboardingStoreName" placeholder="Ej: Boutique Sofía">
+    </div>
+    <p class="gate-error" id="onboardingError" style="display:none;"></p>
+    <button type="button" class="save-btn" id="onboardingSaveBtn">Continuar</button>
+  </div>
+</div>
+
 <div id="appRoot" style="display:none;">
 
 <header>
@@ -177,6 +191,12 @@
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <p class="section-title">Mi Perfil</p>
       <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
+
+      <div class="field">
+        <label>Nombre de tu tienda</label>
+        <input type="text" id="profileStoreName" placeholder="Ej: Boutique Sofía">
+      </div>
+      <button type="button" class="save-btn" id="saveStoreNameBtn" style="margin-bottom:22px;">Guardar nombre de la tienda</button>
 
       <div class="field">
         <label>Contraseña actual</label>
@@ -324,6 +344,9 @@
 </div>
 
 <div id="viewSales" class="app-view">
+  <div class="greeting-badge" id="greetingBadge" style="display:none;">
+    <span class="greeting-wave">👋</span><span id="greetingText"></span>
+  </div>
   <div class="section-block">
     <p class="section-title">Artículos de esta semana</p>
     <div class="seg" style="margin-bottom:12px;">

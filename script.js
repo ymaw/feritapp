@@ -404,6 +404,59 @@ document.addEventListener('DOMContentLoaded', function(){
   let notifyEnabled = true;
   let notifyDaysOverdue = 4;
   let receiptMessage = '¡Gracias por tu compra! Te esperamos pronto de nuevo.';
+  let storeName = '';
+
+  function updateGreeting(){
+    let el = document.getElementById('greetingBadge');
+    let txt = document.getElementById('greetingText');
+    if(!el || !txt) return;
+    if(storeName){
+      txt.textContent = '¡Hola, ' + storeName + '!';
+      el.style.display = 'flex';
+    }else{
+      el.style.display = 'none';
+    }
+  }
+
+  async function checkOnboarding(){
+    if(storeName && storeName.trim()){
+      document.getElementById('onboardingGate').style.display = 'none';
+      return;
+    }
+    document.getElementById('appRoot').style.display = 'none';
+    document.getElementById('onboardingGate').style.display = 'flex';
+  }
+
+  document.getElementById('onboardingSaveBtn').addEventListener('click', async function(){
+    let val = document.getElementById('onboardingStoreName').value.trim();
+    let err = document.getElementById('onboardingError');
+    err.style.display = 'none';
+    if(!val){ err.textContent = 'Ingresá un nombre para tu tienda.'; err.style.display = 'block'; return; }
+    try{
+      await sb.from('user_settings').upsert({ store_name: val }, { onConflict: 'user_id' });
+    }catch(e){
+      err.textContent = 'No se pudo guardar, probá de nuevo.'; err.style.display = 'block'; return;
+    }
+    storeName = val;
+    let profileInput = document.getElementById('profileStoreName');
+    if(profileInput){ profileInput.value = val; }
+    document.getElementById('onboardingGate').style.display = 'none';
+    document.getElementById('appRoot').style.display = 'block';
+    updateGreeting();
+  });
+
+  document.getElementById('saveStoreNameBtn').addEventListener('click', async function(){
+    let val = document.getElementById('profileStoreName').value.trim();
+    if(!val){ showToast('Ingresá un nombre para tu tienda.'); return; }
+    try{
+      await sb.from('user_settings').upsert({ store_name: val }, { onConflict: 'user_id' });
+      storeName = val;
+      updateGreeting();
+      showToast('Nombre de la tienda actualizado');
+    }catch(e){
+      showToast('No se pudo guardar.');
+    }
+  });
   const sheet = document.getElementById('sheet');
   const scrim = document.getElementById('scrim');
   const CATEGORY_COLORS = ['#446DF6','#08A4BD','#17A897','#B23A52','#8C4A9C','#5FA8A0','#6C8EBF','#C9A15F'];
@@ -482,13 +535,14 @@ document.addEventListener('DOMContentLoaded', function(){
 
     let lastPurgeSemester = null;
     try{
-      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue, receipt_message').maybeSingle();
+      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue, receipt_message, store_name').maybeSingle();
       if(settingsRes.data){
         weekStartDay = settingsRes.data.week_start_day;
         lastPurgeSemester = settingsRes.data.last_purge_semester;
         notifyEnabled = settingsRes.data.notify_enabled !== false;
         notifyDaysOverdue = settingsRes.data.notify_days_overdue || 4;
         if(settingsRes.data.receipt_message){ receiptMessage = settingsRes.data.receipt_message; }
+        storeName = settingsRes.data.store_name || '';
       }else{
         await sb.from('user_settings').insert([{}]); // usa los valores por defecto (lunes)
         weekStartDay = 1;
@@ -500,6 +554,10 @@ document.addEventListener('DOMContentLoaded', function(){
     if(weekStartSelect){ weekStartSelect.value = String(weekStartDay); }
     let receiptMessageInput = document.getElementById('receiptMessageInput');
     if(receiptMessageInput){ receiptMessageInput.value = receiptMessage; }
+    let profileStoreNameInput = document.getElementById('profileStoreName');
+    if(profileStoreNameInput){ profileStoreNameInput.value = storeName; }
+    updateGreeting();
+    await checkOnboarding();
     syncNotifyControls();
 
     await checkSemesterCleanup(lastPurgeSemester);
