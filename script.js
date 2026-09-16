@@ -292,6 +292,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- Configuración: menú de dos niveles ---------------- */
   const SETTINGS_PANEL_IDS = {
+    appearance: 'settingsPanelAppearance',
     profile: 'settingsPanelProfile',
     notifications: 'settingsPanelNotifications',
     week: 'settingsPanelWeek',
@@ -2054,6 +2055,48 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   /* ---------------- init ---------------- */
+  /* ---------------- tema: claro / oscuro / sistema ---------------- */
+  const THEME_KEY = 'feritapp-theme';
+
+  function resolveIsDark(choice){
+    if(choice === 'dark') return true;
+    if(choice === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function applyTheme(choice){
+    let isDark = resolveIsDark(choice);
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.querySelectorAll('.theme-opt').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === choice);
+    });
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if(themeColorMeta){ themeColorMeta.setAttribute('content', isDark ? '#14101f' : '#7c3aed'); }
+  }
+
+  function setTheme(choice){
+    try{ localStorage.setItem(THEME_KEY, choice); }catch(e){}
+    applyTheme(choice);
+  }
+
+  document.querySelectorAll('.theme-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){ setTheme(btn.getAttribute('data-theme-choice')); });
+  });
+
+  if(window.matchMedia){
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+      let current = 'system';
+      try{ current = localStorage.getItem(THEME_KEY) || 'system'; }catch(e){}
+      if(current === 'system'){ applyTheme('system'); }
+    });
+  }
+
+  (function initTheme(){
+    let saved = 'system';
+    try{ saved = localStorage.getItem(THEME_KEY) || 'system'; }catch(e){}
+    applyTheme(saved);
+  })();
+
   initGate();
 
   /* ---------------- PWA: registrar service worker ---------------- */

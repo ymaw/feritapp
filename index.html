@@ -2,6 +2,15 @@
 <html lang="es-AR">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var saved = localStorage.getItem('feritapp-theme') || 'system';
+    var isDark = saved === 'dark' || (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }catch(e){}
+})();
+</script>
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
   script-src 'self' https://cdn.jsdelivr.net;
@@ -176,12 +185,29 @@
     <div class="section-block">
       <p class="section-title">Configuración</p>
       <div class="settings-menu-list">
+        <button type="button" class="settings-menu-item" data-settings="appearance"><span>🎨 Apariencia</span><span class="settings-menu-arrow">›</span></button>
         <button type="button" class="settings-menu-item" data-settings="profile"><span>👤 Mi Perfil</span><span class="settings-menu-arrow">›</span></button>
         <button type="button" class="settings-menu-item" data-settings="notifications"><span>🔔 Notificaciones</span><span class="settings-menu-arrow">›</span></button>
         <button type="button" class="settings-menu-item" data-settings="week"><span>📅 Semana de ventas</span><span class="settings-menu-arrow">›</span></button>
         <button type="button" class="settings-menu-item" data-settings="receipt"><span>🧾 Mensaje del comprobante</span><span class="settings-menu-arrow">›</span></button>
         <button type="button" class="settings-menu-item" data-settings="backup"><span>💾 Copia de seguridad</span><span class="settings-menu-arrow">›</span></button>
         <button type="button" class="settings-menu-item settings-menu-danger" data-settings="danger"><span>⚠️ Zona crítica</span><span class="settings-menu-arrow">›</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsPanelAppearance" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Apariencia</p>
+      <div class="field">
+        <label>Elegí el tema que más te guste</label>
+        <div class="theme-options">
+          <button type="button" class="theme-opt" data-theme-choice="light">☀️<span>Claro</span></button>
+          <button type="button" class="theme-opt" data-theme-choice="dark">🌙<span>Oscuro</span></button>
+          <button type="button" class="theme-opt" data-theme-choice="system">💻<span>Sistema</span></button>
+        </div>
+        <p class="hint">"Sistema" usa el mismo modo claro/oscuro configurado en tu celular o compu, y se ajusta solo si lo cambiás ahí.</p>
       </div>
     </div>
   </div>
