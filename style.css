@@ -329,6 +329,46 @@ h1{
 .nav-fab:hover{ background:var(--primary-soft); }
 .nav-fab:active{ transform:scale(.96); }
 
+/* ---------- sidebar (desktop) ---------- */
+.sidebar{ display:none; }
+
+@media (min-width:900px){
+  .bottom-nav{ display:none; }
+  body{ padding-bottom:20px; }
+  .sidebar{
+    display:flex; flex-direction:column; gap:6px;
+    position:fixed; top:0; left:0; bottom:0; width:240px; z-index:25;
+    background:var(--surface-2); border-right:1px solid var(--border);
+    padding:24px 16px;
+  }
+  .sidebar-brand{
+    display:flex; align-items:center; gap:10px; font-family:var(--display); font-weight:600; font-size:19px;
+    color:var(--text); margin-bottom:18px;
+  }
+  .sidebar-logo{
+    width:32px; height:32px; border-radius:9px; background:var(--primary); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--body); font-weight:700;
+  }
+  .sidebar-cta{
+    background:var(--primary); color:#fff; border:none; border-radius:12px; padding:13px;
+    font-family:var(--body); font-weight:700; font-size:14px; cursor:pointer; margin-bottom:18px;
+  }
+  .sidebar-cta:hover{ background:var(--primary-soft); }
+  .sidebar-links{ display:flex; flex-direction:column; gap:4px; flex:1; }
+  .sidebar-item{
+    text-align:left; background:none; border:none; border-radius:10px; padding:11px 12px;
+    font-family:var(--body); font-size:14px; font-weight:600; color:var(--text-muted); cursor:pointer;
+  }
+  .sidebar-item:hover{ background:var(--surface-3); color:var(--text); }
+  .sidebar-item.active{ background:rgba(var(--primary-rgb),.14); color:var(--primary-soft); }
+  .sidebar-logout{ color:var(--danger); }
+  .sidebar-logout:hover{ background:rgba(var(--danger-rgb),.12); }
+
+  #authGate, #onboardingGate{ padding-left:240px; }
+  #appRoot > header, #appRoot > .app-view, #appRoot > .install-banner{ margin-left:240px; }
+  .install-banner{ left:240px; }
+}
+
 /* ---------- sheet ---------- */
 .scrim{
   position:fixed; inset:0; background:rgba(0,0,0,.55);

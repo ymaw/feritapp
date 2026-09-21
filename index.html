@@ -390,19 +390,34 @@
 </div>
 
 <nav class="bottom-nav" id="bottomNav">
-  <button type="button" class="nav-item" data-view="dashboard">
-    <span class="nav-icon">🏠</span><span class="nav-label">Inicio</span>
+  <button type="button" class="nav-item active" data-view="sales">
+    <span class="nav-icon">🧾</span><span class="nav-label">Ventas</span>
   </button>
   <button type="button" class="nav-item" data-view="clients">
     <span class="nav-icon">👥</span><span class="nav-label">Clientes</span>
   </button>
   <button class="nav-fab" id="openSheet" aria-label="Agregar venta">+</button>
-  <button type="button" class="nav-item active" data-view="sales">
-    <span class="nav-icon">🧾</span><span class="nav-label">Ventas</span>
+  <button type="button" class="nav-item" data-view="dashboard">
+    <span class="nav-icon">🏠</span><span class="nav-label">Inicio</span>
   </button>
   <button type="button" class="nav-item" id="moreBtn">
     <span class="nav-icon">⋯</span><span class="nav-label">Más</span>
   </button>
+</nav>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <span class="sidebar-logo">F</span><span>FeritApp</span>
+  </div>
+  <button type="button" class="sidebar-cta" id="sidebarOpenSheet">+ Nueva venta</button>
+  <div class="sidebar-links">
+    <button type="button" class="sidebar-item" data-view="sales">🧾 Ventas</button>
+    <button type="button" class="sidebar-item" data-view="clients">👥 Clientes</button>
+    <button type="button" class="sidebar-item" data-view="ranking">🏆 Ranking</button>
+    <button type="button" class="sidebar-item" data-view="dashboard">📊 Dashboard</button>
+    <button type="button" class="sidebar-item" data-view="settings">⚙️ Configuración</button>
+  </div>
+  <button type="button" class="sidebar-item sidebar-logout" id="sidebarLogoutBtn">🚪 Cerrar sesión</button>
 </nav>
 
 <div class="scrim" id="scrim"></div>

@@ -193,6 +193,10 @@ document.addEventListener('DOMContentLoaded', function(){
     if(sb){ await sb.auth.signOut(); }
     location.reload();
   });
+  document.getElementById('sidebarLogoutBtn').addEventListener('click', async function(){
+    if(sb){ await sb.auth.signOut(); }
+    location.reload();
+  });
 
   document.getElementById('logoutAllBtn').addEventListener('click', async function(){
     if(!confirm('¿Cerrar la sesión en TODOS los dispositivos donde esté iniciada (celular, compu, etc.)? Vas a tener que volver a ingresar con tu correo y contraseña en todos ellos.')) return;
@@ -281,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let titles = { sales:'Registro semanal', clients:'Clientes', ranking:'Ranking de clientes', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
-    document.querySelectorAll('.nav-item[data-view]').forEach(function(btn){
+    document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
       btn.classList.toggle('active', btn.getAttribute('data-view') === view);
     });
 
@@ -1607,6 +1611,7 @@ document.addEventListener('DOMContentLoaded', function(){
     resetForm();
   }
   document.getElementById('openSheet').addEventListener('click', openSheet);
+  document.getElementById('sidebarOpenSheet').addEventListener('click', openSheet);
   scrim.addEventListener('click', closeSheet);
 
   /* ---------------- form state ---------------- */
