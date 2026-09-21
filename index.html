@@ -1,8 +1,493 @@
---- index.html (original)
-+++ index.html (Concepto 4)
-@@
-   <div class="sidebar-brand">
--    <span class="sidebar-logo">F</span><span>FeritApp</span>
-+    <img class="sidebar-logo" src="icon-192.png" alt="FeritApp">
-+    <span class="sidebar-brand-name"><span class="brand-ferit">Ferit</span><span class="brand-app">App</span></span>
-   </div>
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<script>
+(function(){
+  try{
+    var saved = localStorage.getItem('feritapp-theme') || 'system';
+    var isDark = saved === 'dark' || (saved === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }catch(e){}
+})();
+</script>
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://cdn.jsdelivr.net;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data:;
+  connect-src 'self' https://tzajchnflgvdbmiwfyvj.supabase.co wss://tzajchnflgvdbmiwfyvj.supabase.co;
+  manifest-src 'self';
+  base-uri 'self';
+  form-action 'self';
+">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Registro de ventas semanal para tu local de ropa, con dictado por voz.">
+<meta name="theme-color" content="#01172f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FeritApp">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>FeritApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js"></script>
+</head>
+<body>
+
+<div id="installBanner" class="install-banner" style="display:none;">
+  <span id="installBannerText" class="install-banner-text">📲 Instalá la app para acceso rápido</span>
+  <div class="install-banner-actions">
+    <button id="installBannerBtn" class="install-banner-btn" type="button">Instalar</button>
+    <button id="installBannerClose" class="install-banner-close" type="button" aria-label="Cerrar">✕</button>
+  </div>
+</div>
+
+<div id="authGate">
+  <div class="gate-card">
+
+    <div id="gateStep1">
+      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+      <h1>Ingresá a tu cuenta</h1>
+      <p class="gate-sub">Ingresá tu correo y tu contraseña.</p>
+
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="gateEmail" placeholder="tu@correo.com" autocomplete="email" inputmode="email">
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="input-row">
+          <input type="password" id="gatePin" placeholder="••••••••" autocomplete="current-password">
+          <button class="pw-toggle-btn" type="button" data-target="gatePin" aria-label="Mostrar contraseña">👁</button>
+        </div>
+      </div>
+
+      <div class="field" id="pinConfirmField" style="display:none;">
+        <label>Confirmar contraseña</label>
+        <div class="input-row">
+          <input type="password" id="gatePinConfirm" placeholder="••••••••" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="gatePinConfirm" aria-label="Mostrar contraseña">👁</button>
+        </div>
+        <ul class="pw-requirements" id="pwRequirements">
+          <li id="reqLength" class="req-bad"><span class="req-icon">✕</span> Mínimo 6 caracteres</li>
+          <li id="reqUpper" class="req-bad"><span class="req-icon">✕</span> Una letra mayúscula</li>
+          <li id="reqNumber" class="req-bad"><span class="req-icon">✕</span> Un número</li>
+          <li id="reqSymbol" class="req-bad"><span class="req-icon">✕</span> Un símbolo (ej: ! @ # $)</li>
+        </ul>
+      </div>
+
+      <p class="gate-error" id="gateError" style="display:none;"></p>
+
+      <div class="gate-actions">
+        <button class="gate-btn gate-btn-primary" id="loginBtn" type="button">Iniciar sesión</button>
+        <button class="gate-btn gate-btn-secondary" id="signupBtn" type="button">Crear cuenta</button>
+      </div>
+
+      <div class="gate-links">
+        <button class="reset-link" id="forgotPinBtn" type="button">Olvidé mi contraseña</button>
+      </div>
+      <p class="gate-note">Tus ventas quedan guardadas en la nube: podés entrar desde cualquier dispositivo con el mismo correo y contraseña.</p>
+    </div>
+
+    <div id="gateSent" style="display:none;">
+      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+      <h1 id="gateSentTitle">Revisá tu correo</h1>
+      <p class="gate-sub" id="gateSentText"></p>
+      <button class="reset-link" id="backToEmailBtn" type="button">Volver</button>
+    </div>
+
+    <div id="gateNewPin" style="display:none;">
+      <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+      <h1>Elegí tu nueva contraseña</h1>
+      <p class="gate-sub">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <div class="input-row">
+          <input type="password" id="newPin" placeholder="••••••••" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="newPin" aria-label="Mostrar contraseña">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirmar nueva contraseña</label>
+        <div class="input-row">
+          <input type="password" id="newPinConfirm" placeholder="••••••••" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="newPinConfirm" aria-label="Mostrar contraseña">👁</button>
+        </div>
+      </div>
+      <p class="gate-error" id="newPinError" style="display:none;"></p>
+      <button class="save-btn" id="newPinSubmit">Guardar contraseña</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="onboardingGate" style="display:none;">
+  <div class="gate-card">
+    <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+    <h1>¿Cómo se llama tu tienda?</h1>
+    <p class="gate-sub">Lo usamos para saludarte en la app. Lo podés cambiar cuando quieras desde Configuración › Mi Perfil.</p>
+    <div class="field">
+      <label>Nombre de tu tienda</label>
+      <input type="text" id="onboardingStoreName" placeholder="Ej: Boutique Sofía">
+    </div>
+    <p class="gate-error" id="onboardingError" style="display:none;"></p>
+    <button type="button" class="save-btn" id="onboardingSaveBtn">Continuar</button>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none;">
+
+<header>
+  <p class="eyebrow">FeritApp · Todas tus ventas en un solo lugar</p>
+  <h1 id="viewHeading">Registro semanal</h1>
+  <p class="session-email" id="sessionEmail"></p>
+</header>
+
+<div class="menu-dropdown" id="menuDropdown" style="display:none;">
+  <button type="button" class="menu-item" data-view="dashboard">📊 Ver Dashboard</button>
+  <button type="button" class="menu-item" data-view="clients">👥 Ver clientes</button>
+  <button type="button" class="menu-item" data-view="ranking">🏆 Ranking de clientes</button>
+  <button type="button" class="menu-item" data-view="sales">🧾 Ver tabla de ventas</button>
+  <button type="button" class="menu-item" data-view="settings">⚙️ Configuración</button>
+  <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar app</button>
+  <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
+</div>
+
+<datalist id="clientsDatalist"></datalist>
+
+<div id="viewDashboard" class="app-view" style="display:none;">
+  <div class="ticket-wrap" id="currentTicket"></div>
+
+  <div class="section-block">
+    <p class="section-title">Categoría más vendida del mes</p>
+    <div id="topCategoryChart"></div>
+  </div>
+
+  <div class="section-block">
+    <p class="section-title">Comparar ventas</p>
+    <div class="seg" style="margin-bottom:12px;">
+      <button type="button" class="period-opt active" data-period="week">Semanal</button>
+      <button type="button" class="period-opt" data-period="month">Mensual</button>
+    </div>
+    <div id="periodCompare"></div>
+  </div>
+</div>
+
+<div id="viewSettings" class="app-view" style="display:none;">
+
+  <div id="settingsMenu">
+    <div class="section-block">
+      <p class="section-title">Configuración</p>
+      <div class="settings-menu-list">
+        <button type="button" class="settings-menu-item" data-settings="appearance"><span>🎨 Apariencia</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="profile"><span>👤 Mi Perfil</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="notifications"><span>🔔 Notificaciones</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="week"><span>📅 Semana de ventas</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="receipt"><span>🧾 Mensaje del comprobante</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="backup"><span>💾 Copia de seguridad</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item settings-menu-danger" data-settings="danger"><span>⚠️ Zona crítica</span><span class="settings-menu-arrow">›</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsPanelAppearance" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Apariencia</p>
+      <div class="field">
+        <label>Elegí el tema que más te guste</label>
+        <div class="theme-options">
+          <button type="button" class="theme-opt" data-theme-choice="light">☀️<span>Claro</span></button>
+          <button type="button" class="theme-opt" data-theme-choice="dark">🌙<span>Oscuro</span></button>
+          <button type="button" class="theme-opt" data-theme-choice="system">💻<span>Sistema</span></button>
+        </div>
+        <p class="hint">"Sistema" usa el mismo modo claro/oscuro configurado en tu celular o compu, y se ajusta solo si lo cambiás ahí.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsPanelProfile" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Mi Perfil</p>
+      <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
+
+      <div class="field">
+        <label>Nombre de tu tienda</label>
+        <input type="text" id="profileStoreName" placeholder="Ej: Boutique Sofía">
+      </div>
+      <button type="button" class="save-btn" id="saveStoreNameBtn" style="margin-bottom:22px;">Guardar nombre de la tienda</button>
+
+      <div class="field">
+        <label>Contraseña actual</label>
+        <div class="input-row">
+          <input type="password" id="profileCurrentPin" autocomplete="current-password">
+          <button class="pw-toggle-btn" type="button" data-target="profileCurrentPin" aria-label="Mostrar contraseña">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <div class="input-row">
+          <input type="password" id="profileNewPin" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="profileNewPin" aria-label="Mostrar contraseña">👁</button>
+        </div>
+        <p class="hint">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
+      </div>
+      <div class="field">
+        <label>Confirmar nueva contraseña</label>
+        <div class="input-row">
+          <input type="password" id="profileNewPinConfirm" autocomplete="new-password">
+          <button class="pw-toggle-btn" type="button" data-target="profileNewPinConfirm" aria-label="Mostrar contraseña">👁</button>
+        </div>
+      </div>
+      <p class="gate-error" id="profilePwError" style="display:none;"></p>
+      <button type="button" class="save-btn" id="changePasswordBtn">Cambiar contraseña</button>
+
+      <div class="field" style="margin-top:26px;">
+        <label>Sesiones</label>
+        <button type="button" class="danger-btn" id="logoutAllBtn" style="background:var(--paper-3); border:1px solid var(--rose); color:var(--rose);">🚪 Cerrar sesión en todos los dispositivos</button>
+        <p class="hint">Usalo si perdiste el celular o alguien más podría tener tu contraseña. Vas a tener que volver a ingresar en todos lados.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsPanelNotifications" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Notificaciones</p>
+      <div class="field">
+        <label>Avisar pagos atrasados</label>
+        <div class="seg">
+          <button type="button" class="notify-opt active" data-notify="on">Activadas</button>
+          <button type="button" class="notify-opt" data-notify="off">Desactivadas</button>
+        </div>
+      </div>
+      <div class="field" id="notifyDaysField">
+        <label>Avisar cuando el atraso sea de</label>
+        <select id="notifyDaysSelect" class="settings-select">
+          <option value="1">1 día</option>
+          <option value="2">2 días</option>
+          <option value="3">3 días</option>
+          <option value="4" selected>4 días</option>
+          <option value="5">5 días</option>
+          <option value="7">7 días</option>
+          <option value="10">10 días</option>
+          <option value="15">15 días</option>
+          <option value="30">30 días</option>
+        </select>
+      </div>
+      <div class="field">
+        <button type="button" class="save-btn" id="enableNotifPermBtn">🔔 Activar permiso de notificaciones</button>
+        <p class="hint" id="notifPermStatus">Tu navegador te va a pedir permiso una sola vez.</p>
+      </div>
+      <p class="hint">Las notificaciones aparecen cuando abrís la app y detecta pagos atrasados según lo configurado acá — no llegan si la app está completamente cerrada.</p>
+    </div>
+  </div>
+
+  <div id="settingsPanelWeek" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Semana de ventas</p>
+      <div class="field">
+        <label>Tu semana de ventas empieza el</label>
+        <select id="weekStartSelect" class="settings-select">
+          <option value="1">Lunes</option>
+          <option value="2">Martes</option>
+          <option value="3">Miércoles</option>
+          <option value="4">Jueves</option>
+          <option value="5">Viernes</option>
+          <option value="6">Sábado</option>
+          <option value="0">Domingo</option>
+        </select>
+        <p class="hint">Ej: si entregás los sábados, elegí "Sábado" para que tu semana vaya de sábado a viernes.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsPanelReceipt" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Mensaje del comprobante</p>
+      <div class="field">
+        <label>Mensaje que acompaña al comprobante compartido</label>
+        <textarea id="receiptMessageInput" class="settings-textarea" rows="3" placeholder="Ej: ¡Gracias por tu compra!"></textarea>
+        <p class="hint">Se envía junto a la imagen del comprobante cuando compartís la compra de un cliente.</p>
+      </div>
+      <button type="button" class="save-btn" id="saveReceiptMessageBtn">Guardar mensaje</button>
+    </div>
+  </div>
+
+  <div id="settingsPanelBackup" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Copia de seguridad</p>
+      <div class="field">
+        <label>Copia de seguridad</label>
+        <button type="button" class="save-btn" id="exportCsvBtn">⬇️ Exportar todo el historial a CSV</button>
+        <p class="hint">Se descarga a la carpeta de Descargas de tu dispositivo. Cada semestre se descarga uno automático antes de limpiar el historial viejo.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsPanelDanger" class="settings-panel app-view" style="display:none;">
+    <div class="section-block">
+      <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
+      <p class="section-title">Zona crítica</p>
+      <div class="danger-zone">
+        <p class="danger-zone-title">⚠️ Borrar todos los datos de ventas</p>
+        <p class="hint" style="margin:6px 0 14px;">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
+        <button type="button" class="danger-btn" id="resetBtn">🗑️ Borrar todos los datos de ventas</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="viewRanking" class="app-view" style="display:none;">
+  <div class="section-block">
+    <p class="section-title">Clientes que más compraron</p>
+    <button type="button" class="reset-link" id="toggleRankingMoney" style="margin-bottom:12px;">💰 Mostrar montos gastados</button>
+    <div id="topClients"></div>
+  </div>
+</div>
+
+<div id="viewClients" class="app-view" style="display:none;">
+  <div class="section-block">
+    <p class="section-title">Clientes</p>
+    <div class="input-row">
+      <input type="text" id="clientSearch" placeholder="Buscar cliente (semana en curso)…" list="clientsDatalist" autocomplete="off">
+      <button class="mic-btn" data-target="clientSearch" data-mode="text" type="button" aria-label="Dictar nombre de cliente">🎤</button>
+    </div>
+    <div id="clientSearchResults"></div>
+    <div id="clientsFullList"></div>
+  </div>
+</div>
+
+<div id="viewSales" class="app-view">
+  <div class="greeting-badge" id="greetingBadge" style="display:none;">
+    <span class="greeting-wave">👋</span><span id="greetingText"></span>
+  </div>
+  <div class="section-block">
+    <p class="section-title">Artículos de esta semana</p>
+    <div class="seg" style="margin-bottom:12px;">
+      <button type="button" class="salestab-opt active" data-salestab="items">Artículos</button>
+      <button type="button" class="salestab-opt" data-salestab="delivery">Para entregar</button>
+    </div>
+    <div id="currentWeekTable"></div>
+    <div id="deliveryListWrap" style="display:none;"></div>
+  </div>
+
+  <div class="section-block">
+    <p class="section-title">Semanas anteriores</p>
+    <div class="weeks" id="weeksContainer"></div>
+  </div>
+</div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button type="button" class="nav-item active" data-view="sales">
+    <span class="nav-icon">🧾</span><span class="nav-label">Ventas</span>
+  </button>
+  <button type="button" class="nav-item" data-view="clients">
+    <span class="nav-icon">👥</span><span class="nav-label">Clientes</span>
+  </button>
+  <button class="nav-fab" id="openSheet" aria-label="Agregar venta">+</button>
+  <button type="button" class="nav-item" data-view="dashboard">
+    <span class="nav-icon">🏠</span><span class="nav-label">Inicio</span>
+  </button>
+  <button type="button" class="nav-item" id="moreBtn">
+    <span class="nav-icon">⋯</span><span class="nav-label">Más</span>
+  </button>
+</nav>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <span class="sidebar-logo">F</span><span>FeritApp</span>
+  </div>
+  <button type="button" class="sidebar-cta" id="sidebarOpenSheet">+ Nueva venta</button>
+  <div class="sidebar-links">
+    <button type="button" class="sidebar-item" data-view="sales">🧾 Ventas</button>
+    <button type="button" class="sidebar-item" data-view="clients">👥 Clientes</button>
+    <button type="button" class="sidebar-item" data-view="ranking">🏆 Ranking</button>
+    <button type="button" class="sidebar-item" data-view="dashboard">📊 Dashboard</button>
+    <button type="button" class="sidebar-item" data-view="settings">⚙️ Configuración</button>
+  </div>
+  <button type="button" class="sidebar-item sidebar-logout" id="sidebarLogoutBtn">🚪 Cerrar sesión</button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <h2 id="sheetTitle">Nueva venta</h2>
+  <div id="voiceWarning"></div>
+
+  <div class="field">
+    <label>Nombre del comprador</label>
+    <div class="input-row">
+      <input type="text" id="fCliente" placeholder="Ej: Juan Pérez" list="clientsDatalist">
+      <button class="mic-btn" data-target="fCliente" data-mode="text" aria-label="Dictar nombre del cliente">🎤</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="field-row-head">
+      <label style="margin:0;">Artículos de esta venta</label>
+      <button type="button" class="new-cat-link" id="openNewCatBtn">+ Nueva categoría</button>
+    </div>
+    <div id="itemRowsContainer"></div>
+    <button type="button" class="add-item-btn" id="addItemRowBtn">+ Agregar otro artículo</button>
+
+    <div class="new-cat-row" id="newCatRow" style="display:none;">
+      <input type="text" id="fNuevaCategoria" placeholder="Nombre de la categoría">
+      <button class="mic-btn" data-target="fNuevaCategoria" data-mode="text" type="button" aria-label="Dictar categoría">🎤</button>
+      <button class="mini-btn" id="confirmNewCat" type="button">Crear</button>
+    </div>
+
+    <div class="items-total-row">
+      <span>Total de esta venta</span>
+      <span id="itemsTotalValue">$0</span>
+    </div>
+    <p class="hint">Escribiendo, solo se aceptan números. Usando el micrófono 🎤 podés decir el precio con palabras (ej: "tres mil quinientos") y se convierte solo.</p>
+  </div>
+
+  <div class="field">
+    <label>Estado del pago</label>
+    <div class="seg">
+      <button type="button" class="pago-opt paid" data-val="1">Pagado</button>
+      <button type="button" class="pago-opt active pending" data-val="0">Pendiente</button>
+    </div>
+    <p class="hint">Se aplica a todos los artículos de esta venta.</p>
+  </div>
+
+  <div class="field">
+    <label>Quién retira</label>
+    <div class="seg">
+      <button type="button" class="retira-opt active neutral" data-val="cliente">El mismo cliente</button>
+      <button type="button" class="retira-opt neutral" data-val="otro">Otra persona</button>
+    </div>
+  </div>
+
+  <div class="field" id="terceroField" style="display:none;">
+    <label>Nombre de quien retira</label>
+    <div class="input-row">
+      <input type="text" id="fTercero" placeholder="Ej: María Gómez">
+      <button class="mic-btn" data-target="fTercero" data-mode="text" aria-label="Dictar nombre">🎤</button>
+    </div>
+  </div>
+
+  <button class="save-btn" id="saveBtn"><span id="saveBtnText">Guardar venta</span></button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div><!-- /appRoot -->
+
+<script src="script.js"></script>
+</body>
+</html>
