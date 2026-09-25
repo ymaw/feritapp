@@ -113,42 +113,23 @@ h1{
   color:var(--text-muted); margin:0 0 12px;
 }
 
-/* ---------- weekly ticket (signature element) ---------- */
+/* ---------- resumen semanal: stat cards ---------- */
 .ticket-wrap{ padding:22px 20px 6px; }
-.ticket{
-  position:relative;
-  background:var(--surface);
-  border:1px solid var(--border);
-  padding:20px 20px 26px;
-  font-family:var(--mono);
+.stat-cards-label{ font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); margin:0 0 12px; }
+.stat-cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.stat-card{
+  display:flex; flex-direction:column; gap:6px;
+  background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px;
 }
-.ticket::after{
-  content:"";
-  position:absolute;
-  left:0;right:0;bottom:-9px;
-  height:18px;
-  background:
-    linear-gradient(135deg, var(--bg) 50%, transparent 50%) 0 0,
-    linear-gradient(-135deg, var(--bg) 50%, transparent 50%) 0 0;
-  background-size:16px 18px;
-  background-repeat:repeat-x;
-}
-.ticket-head{
-  display:flex; justify-content:space-between; align-items:baseline;
-  font-family:var(--body); margin-bottom:14px; flex-wrap:wrap; gap:4px;
-}
-.ticket-head .week-label{ font-size:13px; font-weight:600; color:var(--text);}
-.ticket-head .week-range{ font-size:11px; color:var(--text-muted);}
-.ticket-rule{
-  border:none; border-top:1px dashed var(--border); margin:10px 0;
-}
-.ticket-row{
-  display:flex; justify-content:space-between; font-size:13px; padding:3px 0; gap:8px;
-}
-.ticket-row .label{ color:var(--text-muted); }
-.ticket-row .value{ color:var(--text); text-align:right; }
-.ticket-row.total .value{ color:var(--primary-soft); font-size:20px; font-weight:600; }
-.ticket-row.total .label{ font-family:var(--body); font-size:13px; font-weight:600; color:var(--text); align-self:flex-end;}
+.stat-card-icon{ font-size:20px; }
+.stat-card-label{ font-family:var(--body); font-size:12px; font-weight:600; color:var(--text-muted); }
+.stat-card-value{ font-family:var(--mono); font-size:19px; font-weight:700; color:var(--text); }
+.stat-card.primary{ border-color:var(--primary); background:rgba(var(--primary-rgb),.08); }
+.stat-card.primary .stat-card-value{ color:var(--primary-soft); }
+.stat-card.success{ border-color:var(--success); background:rgba(var(--success-rgb),.08); }
+.stat-card.success .stat-card-value{ color:var(--success); }
+.stat-card.warning{ border-color:var(--warning); background:rgba(var(--warning-rgb),.08); }
+.stat-card.warning .stat-card-value{ color:var(--warning); }
 
 /* ---------- weeks list ---------- */
 .weeks{ padding:24px 20px 0; }
@@ -583,7 +564,7 @@ input:focus{ border-color:var(--primary); }
 /* ---------- responsive tweaks for small phones ---------- */
 @media (max-width:360px){
   h1{ font-size:23px; }
-  .ticket-row.total .value{ font-size:18px; }
+  .stat-card-value{ font-size:16px; }
   .seg button{ font-size:12px; padding:10px 4px; }
   .fab{ width:52px; height:52px; font-size:24px; right:16px; }
 }

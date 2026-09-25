@@ -1390,13 +1390,12 @@ document.addEventListener('DOMContentLoaded', function(){
     /* current week: summary ticket, below the table */
     let curStats = weekStats(curItems);
     document.getElementById('currentTicket').innerHTML =
-      '<div class="ticket">' +
-        '<div class="ticket-head"><span class="week-label">Resumen de la semana</span><span class="week-range">' + formatRange(currentKey) + '</span></div>' +
-        '<div class="ticket-row"><span class="label">Artículos vendidos</span><span class="value">' + curStats.count + '</span></div>' +
-        '<div class="ticket-row"><span class="label">Cobrado</span><span class="value">' + money(curStats.cobrado) + '</span></div>' +
-        '<div class="ticket-row"><span class="label">Pendiente de cobro</span><span class="value">' + money(curStats.pendiente) + '</span></div>' +
-        '<hr class="ticket-rule">' +
-        '<div class="ticket-row total"><span class="label">Total vendido</span><span class="value">' + money(curStats.total) + '</span></div>' +
+      '<p class="stat-cards-label">Resumen de la semana · ' + formatRange(currentKey) + '</p>' +
+      '<div class="stat-cards">' +
+        '<div class="stat-card primary"><span class="stat-card-icon">💰</span><span class="stat-card-label">Total vendido</span><span class="stat-card-value">' + money(curStats.total) + '</span></div>' +
+        '<div class="stat-card success"><span class="stat-card-icon">✅</span><span class="stat-card-label">Cobrado</span><span class="stat-card-value">' + money(curStats.cobrado) + '</span></div>' +
+        '<div class="stat-card warning"><span class="stat-card-icon">⏳</span><span class="stat-card-label">Pendiente</span><span class="stat-card-value">' + money(curStats.pendiente) + '</span></div>' +
+        '<div class="stat-card"><span class="stat-card-icon">🧾</span><span class="stat-card-label">Artículos</span><span class="stat-card-value">' + curStats.count + '</span></div>' +
       '</div>';
 
     /* previous weeks: accordion history */
