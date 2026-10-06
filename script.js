@@ -445,24 +445,28 @@ document.addEventListener('DOMContentLoaded', function(){
   function renderAvatarElement(el){
     if(!el) return;
     let path = avatarPath || getAvatarStoragePath(avatarUrl);
-    if(!path && !avatarUrl){ el.innerHTML = 'F'; return; }
+    let fallback = el.dataset.avatarFallback === 'logo'
+      ? '<img src="feritapp-logo.svg" alt="FeritApp" loading="lazy">'
+      : 'F';
+    if(!path && !avatarUrl){ el.innerHTML = fallback; return; }
     let publicUrl = avatarUrl && /^[a-z]+:\/\//i.test(avatarUrl) ? avatarUrl : '';
     if(!publicUrl && path){ publicUrl = null; }
     el.innerHTML = '<img alt="Foto de perfil" decoding="async">';
     let img = el.querySelector('img');
     img.onerror = async function(){
       let ok = await useSignedAvatar(img, path);
-      if(!ok){ el.innerHTML = 'F'; }
+      if(!ok){ el.innerHTML = fallback; }
     };
     if(publicUrl){
       img.src = publicUrl;
     }else{
-      getAvatarPublicUrl(path).then(function(url){ if(url){ img.src = url; } else { el.innerHTML = 'F'; } });
+      getAvatarPublicUrl(path).then(function(url){ if(url){ img.src = url; } else { el.innerHTML = fallback; } });
     }
   }
 
   function updateAvatarDisplay(){
     renderAvatarElement(document.getElementById('greetingAvatar'));
+    renderAvatarElement(document.getElementById('dashboardAvatar'));
     renderAvatarElement(document.getElementById('profileAvatarPreview'));
   }
 
