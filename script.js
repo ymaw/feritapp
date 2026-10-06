@@ -411,20 +411,67 @@ document.addEventListener('DOMContentLoaded', function(){
   let receiptMessage = '¡Gracias por tu compra! Te esperamos pronto de nuevo.';
   let storeName = '';
   let avatarUrl = '';
+  let avatarPath = '';
+
+  function getAvatarStoragePath(value){
+    if(!value) return '';
+    if(value.indexOf('/storage/v1/object/public/avatars/') !== -1){
+      return decodeURIComponent(value.split('/storage/v1/object/public/avatars/')[1].split('?')[0]);
+    }
+    if(value.indexOf('/storage/v1/object/sign/avatars/') !== -1){
+      return decodeURIComponent(value.split('/storage/v1/object/sign/avatars/')[1].split('?')[0]);
+    }
+    return value.indexOf('/') !== -1 && value.indexOf('://') === -1 ? value.split('?')[0] : '';
+  }
+
+  async function getAvatarPublicUrl(path){
+    if(!path || !sb) return '';
+    let res = sb.storage.from('avatars').getPublicUrl(path);
+    return res && res.data ? res.data.publicUrl + '?t=' + Date.now() : '';
+  }
+
+  async function useSignedAvatar(el, path){
+    if(!el || !path || !sb) return false;
+    try{
+      let signedRes = await sb.storage.from('avatars').createSignedUrl(path, 3600);
+      if(signedRes.data && signedRes.data.signedUrl){
+        el.src = signedRes.data.signedUrl;
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+
+  function renderAvatarElement(el){
+    if(!el) return;
+    let path = avatarPath || getAvatarStoragePath(avatarUrl);
+    if(!path && !avatarUrl){ el.innerHTML = 'F'; return; }
+    let publicUrl = avatarUrl && /^[a-z]+:\/\//i.test(avatarUrl) ? avatarUrl : '';
+    if(!publicUrl && path){ publicUrl = null; }
+    el.innerHTML = '<img alt="Foto de perfil" decoding="async">';
+    let img = el.querySelector('img');
+    img.onerror = async function(){
+      let ok = await useSignedAvatar(img, path);
+      if(!ok){ el.innerHTML = 'F'; }
+    };
+    if(publicUrl){
+      img.src = publicUrl;
+    }else{
+      getAvatarPublicUrl(path).then(function(url){ if(url){ img.src = url; } else { el.innerHTML = 'F'; } });
+    }
+  }
 
   function updateAvatarDisplay(){
-    let greetingAvatar = document.getElementById('greetingAvatar');
-    let profileAvatar = document.getElementById('profileAvatarPreview');
-    [greetingAvatar, profileAvatar].forEach(function(el){
-      if(!el) return;
-      el.innerHTML = avatarUrl ? '<img src="' + avatarUrl + '" alt="">' : 'F';
-    });
+    renderAvatarElement(document.getElementById('greetingAvatar'));
+    renderAvatarElement(document.getElementById('profileAvatarPreview'));
   }
 
   function updateGreeting(){
     let el = document.getElementById('greetingBadge');
     let txt = document.getElementById('greetingText');
     if(!el || !txt) return;
+    let dashboardStoreName = document.getElementById('dashboardStoreName');
+    if(dashboardStoreName){ dashboardStoreName.textContent = storeName || 'Tu tienda'; }
     if(storeName){
       txt.textContent = '¡Hola, ' + storeName + '!';
       el.style.display = 'flex';
@@ -493,6 +540,10 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!file) return;
     if(!file.type.startsWith('image/')){ showToast('Elegí un archivo de imagen.'); return; }
 
+    if(file.size > 5 * 1024 * 1024){ showToast('La foto no puede superar 5 MB.'); e.target.value = ''; return; }
+    let oldAvatarUrl = avatarUrl;
+    let oldAvatarPath = avatarPath;
+    let previewUrl = '';
     try{
       let blob = await resizeImageFile(file, 300);
       let sessionRes = await sb.auth.getSession();
@@ -500,17 +551,31 @@ document.addEventListener('DOMContentLoaded', function(){
       if(!uid){ showToast('No se pudo identificar tu cuenta.'); return; }
 
       let path = uid + '/avatar.jpg';
+      previewUrl = URL.createObjectURL(blob);
+      avatarUrl = previewUrl;
+      avatarPath = '';
+      updateAvatarDisplay();
+      let status = document.getElementById('avatarUploadStatus');
+      if(status){ status.textContent = 'Subiendo foto…'; }
+
       let upRes = await sb.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if(upRes.error) throw upRes.error;
 
-      let urlRes = sb.storage.from('avatars').getPublicUrl(path);
-      let publicUrl = urlRes.data.publicUrl + '?t=' + Date.now(); // evita caché vieja
-
-      await sb.from('user_settings').upsert({ avatar_url: publicUrl }, { onConflict: 'user_id' });
-      avatarUrl = publicUrl;
+      let settingsRes = await sb.from('user_settings').upsert({ avatar_url: path }, { onConflict: 'user_id' });
+      if(settingsRes.error) throw settingsRes.error;
+      avatarUrl = path;
+      avatarPath = path;
+      URL.revokeObjectURL(previewUrl);
       updateAvatarDisplay();
+      if(status){ status.textContent = 'Foto actualizada correctamente'; }
       showToast('Foto de perfil actualizada');
     }catch(err){
+      if(previewUrl){ try{ URL.revokeObjectURL(previewUrl); }catch(e){} }
+      avatarUrl = oldAvatarUrl;
+      avatarPath = oldAvatarPath;
+      updateAvatarDisplay();
+      let status = document.getElementById('avatarUploadStatus');
+      if(status){ status.textContent = 'No se pudo cargar la foto. Probá de nuevo.'; }
       showToast('No se pudo subir la foto. Probá de nuevo.');
     }finally{
       e.target.value = '';
@@ -617,6 +682,7 @@ document.addEventListener('DOMContentLoaded', function(){
         if(settingsRes.data.receipt_message){ receiptMessage = settingsRes.data.receipt_message; }
         storeName = settingsRes.data.store_name || '';
         avatarUrl = settingsRes.data.avatar_url || '';
+        avatarPath = getAvatarStoragePath(avatarUrl);
       }else{
         await sb.from('user_settings').insert([{}]); // usa los valores por defecto (lunes)
         weekStartDay = 1;
