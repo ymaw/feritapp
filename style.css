@@ -630,3 +630,201 @@ input:focus{ border-color:var(--primary); }
 .delta.up{ color:var(--success); }
 .delta.down{ color:var(--danger); }
 .delta.flat{ color:var(--text-muted); }
+
+
+/* =========================================================
+   FeritApp UI/UX refresh — visual layer only
+   Keeps the existing palette and application behavior.
+   ========================================================= */
+:root{
+  --brand-gradient:linear-gradient(110deg,var(--primary-soft) 0%,var(--primary) 48%,var(--secondary) 100%);
+  --shadow-sm:0 2px 8px rgba(30,27,46,.06);
+  --shadow-md:0 10px 28px rgba(30,27,46,.08);
+  --shadow-lg:0 18px 45px rgba(30,27,46,.12);
+}
+[data-theme="dark"]{
+  --shadow-sm:0 2px 10px rgba(0,0,0,.18);
+  --shadow-md:0 12px 30px rgba(0,0,0,.22);
+  --shadow-lg:0 20px 48px rgba(0,0,0,.28);
+}
+
+/* Brand wordmark: inspired by the supplied FeritApp reference. */
+.brand-lockup{gap:0; margin-bottom:8px;}
+.brand-word{
+  font-family:var(--body);
+  font-size:clamp(21px,2.5vw,27px);
+  line-height:1;
+  letter-spacing:-.055em;
+  font-weight:800;
+  color:var(--text);
+  text-rendering:geometricPrecision;
+}
+.brand-word b{
+  font-weight:800;
+  color:transparent;
+  background:var(--brand-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+.brand-mark{display:none;}
+
+/* Main application chrome */
+body{
+  background:
+    radial-gradient(circle at 85% -10%, rgba(var(--primary-rgb),.07), transparent 30%),
+    var(--bg);
+}
+#appRoot > header{
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(var(--primary-rgb),.10);
+  box-shadow:0 1px 0 rgba(255,255,255,.35);
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+[data-theme="dark"] #appRoot > header{
+  background:rgba(20,16,31,.78);
+  box-shadow:0 1px 0 rgba(255,255,255,.03);
+}
+#appRoot > header .eyebrow{margin-bottom:5px;}
+#appRoot > header h1{font-size:clamp(25px,3vw,32px); letter-spacing:-.035em;}
+
+/* Desktop content becomes a calm centered workspace. */
+@media (min-width:900px){
+  #appRoot > header,
+  #appRoot > .app-view{
+    width:calc(100% - 240px);
+    max-width:1480px;
+    margin-right:auto;
+  }
+  #appRoot > header{padding:24px 34px 20px;}
+  #appRoot > .app-view{padding-bottom:34px;}
+  .section-block,.ticket-wrap,.weeks{padding-left:34px;padding-right:34px;}
+  .ticket-wrap{padding-top:28px;}
+
+  .sidebar{
+    width:240px;
+    background:
+      linear-gradient(180deg,rgba(var(--primary-rgb),.055),transparent 42%),
+      var(--surface-2);
+    padding:26px 15px 18px;
+  }
+  .sidebar-brand{
+    padding:3px 10px 18px;
+    margin-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar-brand .brand-word{font-size:25px;}
+  .sidebar-cta{
+    box-shadow:0 8px 18px rgba(var(--primary-rgb),.22);
+    transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+  }
+  .sidebar-cta:hover{transform:translateY(-1px);box-shadow:0 11px 22px rgba(var(--primary-rgb),.28);}
+  .sidebar-item{transition:background .18s ease,color .18s ease,transform .18s ease;}
+  .sidebar-item:hover{transform:translateX(2px);}
+  .sidebar-item.active{box-shadow:inset 3px 0 0 var(--primary);}
+}
+
+/* Cards and lists */
+.stat-cards{gap:14px;}
+.stat-card{
+  position:relative;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:var(--shadow-sm);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.stat-card-icon{
+  width:36px;height:36px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(var(--primary-rgb),.10);
+  font-size:17px;
+}
+.stat-card.success .stat-card-icon{background:rgba(var(--success-rgb),.12);}
+.stat-card.warning .stat-card-icon{background:rgba(var(--warning-rgb),.12);}
+.stat-card-label{margin-top:2px;}
+.stat-card-value{font-size:21px;letter-spacing:-.02em;}
+
+.table-card,.client-list-item,.client-summary,.rank-item,.delivery-item,.settings-menu-item,.empty-inline{
+  box-shadow:var(--shadow-sm);
+}
+.table-card{border-radius:16px;}
+.sales-table tbody tr{transition:background .15s ease;}
+.sales-table tbody tr:hover{background:rgba(var(--primary-rgb),.055);}
+
+/* Settings feel like grouped preference cards. */
+.settings-menu-list{gap:10px;}
+.settings-menu-item{
+  min-height:58px;
+  border-radius:14px;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;
+}
+.settings-menu-item:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+
+/* Forms: clearer focus and stronger touch targets. */
+input[type=text],input[type=number],input[type=email],input[type=password],.settings-select,.settings-textarea,
+.item-row select.row-categoria,.compare-select{
+  transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+input[type=text]:focus,input[type=number]:focus,input[type=email]:focus,input[type=password]:focus,
+.settings-select:focus,.settings-textarea:focus,.item-row select.row-categoria:focus,.compare-select:focus{
+  box-shadow:0 0 0 3px rgba(var(--primary-rgb),.12);
+}
+.save-btn,.gate-btn-primary,.mini-btn{
+  box-shadow:0 8px 16px rgba(var(--primary-rgb),.18);
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.save-btn:hover:not(:disabled),.gate-btn-primary:hover:not(:disabled),.mini-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 11px 22px rgba(var(--primary-rgb),.24);
+}
+
+/* New-sale sheet: clearer hierarchy on mobile and desktop. */
+.sheet{
+  box-shadow:0 -14px 42px rgba(0,0,0,.14);
+}
+.sheet h2{letter-spacing:-.025em;}
+.item-row{box-shadow:var(--shadow-sm);}
+.add-item-btn{min-height:46px;border-width:1.5px;}
+
+/* Mobile bottom navigation: quieter, more app-like. */
+.bottom-nav{
+  background:rgba(255,255,255,.90);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  box-shadow:0 -8px 25px rgba(30,27,46,.06);
+}
+[data-theme="dark"] .bottom-nav{background:rgba(30,27,46,.92);}
+.nav-item{transition:color .15s ease,transform .15s ease;}
+.nav-item.active{font-weight:700;}
+.nav-item.active .nav-icon{transform:translateY(-1px);}
+.nav-fab{box-shadow:0 8px 22px rgba(var(--primary-rgb),.35);}
+
+/* Greeting/profile surfaces */
+.greeting-badge{
+  box-shadow:var(--shadow-sm);
+  border-radius:18px;
+}
+.greeting-title{font-family:var(--body);font-weight:750;letter-spacing:-.025em;}
+.avatar-preview,.greeting-avatar{box-shadow:0 6px 16px rgba(var(--primary-rgb),.20);}
+
+/* Empty/loading states read as intentional UI rather than missing data. */
+.empty{padding:52px 20px;}
+.empty b{font-family:var(--body);font-weight:750;letter-spacing:-.02em;}
+
+@media (min-width:620px){
+  .stat-cards{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .stat-card-value{font-size:22px;}
+}
+
+@media (max-width:899px){
+  #appRoot > header{padding-top:calc(20px + env(safe-area-inset-top));}
+  .brand-word{font-size:24px;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;}
+}
