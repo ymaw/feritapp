@@ -410,6 +410,16 @@ document.addEventListener('DOMContentLoaded', function(){
   let notifyDaysOverdue = 4;
   let receiptMessage = '¡Gracias por tu compra! Te esperamos pronto de nuevo.';
   let storeName = '';
+  let avatarUrl = '';
+
+  function updateAvatarDisplay(){
+    let greetingAvatar = document.getElementById('greetingAvatar');
+    let profileAvatar = document.getElementById('profileAvatarPreview');
+    [greetingAvatar, profileAvatar].forEach(function(el){
+      if(!el) return;
+      el.innerHTML = avatarUrl ? '<img src="' + avatarUrl + '" alt="">' : 'F';
+    });
+  }
 
   function updateGreeting(){
     let el = document.getElementById('greetingBadge');
@@ -448,6 +458,63 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('onboardingGate').style.display = 'none';
     document.getElementById('appRoot').style.display = 'block';
     updateGreeting();
+    updateAvatarDisplay();
+  });
+
+  function resizeImageFile(file, maxSize){
+    return new Promise(function(resolve, reject){
+      let reader = new FileReader();
+      reader.onload = function(e){
+        let img = new Image();
+        img.onload = function(){
+          let scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+          let canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(function(blob){
+            blob ? resolve(blob) : reject(new Error('No se pudo procesar la imagen.'));
+          }, 'image/jpeg', 0.85);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById('avatarUploadBtn').addEventListener('click', function(){
+    document.getElementById('avatarFileInput').click();
+  });
+
+  document.getElementById('avatarFileInput').addEventListener('change', async function(e){
+    let file = e.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith('image/')){ showToast('Elegí un archivo de imagen.'); return; }
+
+    try{
+      let blob = await resizeImageFile(file, 300);
+      let sessionRes = await sb.auth.getSession();
+      let uid = sessionRes.data && sessionRes.data.session ? sessionRes.data.session.user.id : null;
+      if(!uid){ showToast('No se pudo identificar tu cuenta.'); return; }
+
+      let path = uid + '/avatar.jpg';
+      let upRes = await sb.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+      if(upRes.error) throw upRes.error;
+
+      let urlRes = sb.storage.from('avatars').getPublicUrl(path);
+      let publicUrl = urlRes.data.publicUrl + '?t=' + Date.now(); // evita caché vieja
+
+      await sb.from('user_settings').upsert({ avatar_url: publicUrl }, { onConflict: 'user_id' });
+      avatarUrl = publicUrl;
+      updateAvatarDisplay();
+      showToast('Foto de perfil actualizada');
+    }catch(err){
+      showToast('No se pudo subir la foto. Probá de nuevo.');
+    }finally{
+      e.target.value = '';
+    }
   });
 
   document.getElementById('saveStoreNameBtn').addEventListener('click', async function(){
@@ -457,6 +524,7 @@ document.addEventListener('DOMContentLoaded', function(){
       await sb.from('user_settings').upsert({ store_name: val }, { onConflict: 'user_id' });
       storeName = val;
       updateGreeting();
+    updateAvatarDisplay();
       showToast('Nombre de la tienda actualizado');
     }catch(e){
       showToast('No se pudo guardar.');
@@ -540,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     let lastPurgeSemester = null;
     try{
-      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue, receipt_message, store_name').maybeSingle();
+      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue, receipt_message, store_name, avatar_url').maybeSingle();
       if(settingsRes.data){
         weekStartDay = settingsRes.data.week_start_day;
         lastPurgeSemester = settingsRes.data.last_purge_semester;
@@ -548,6 +616,7 @@ document.addEventListener('DOMContentLoaded', function(){
         notifyDaysOverdue = settingsRes.data.notify_days_overdue || 4;
         if(settingsRes.data.receipt_message){ receiptMessage = settingsRes.data.receipt_message; }
         storeName = settingsRes.data.store_name || '';
+        avatarUrl = settingsRes.data.avatar_url || '';
       }else{
         await sb.from('user_settings').insert([{}]); // usa los valores por defecto (lunes)
         weekStartDay = 1;
@@ -562,6 +631,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let profileStoreNameInput = document.getElementById('profileStoreName');
     if(profileStoreNameInput){ profileStoreNameInput.value = storeName; }
     updateGreeting();
+    updateAvatarDisplay();
     await checkOnboarding();
     syncNotifyControls();
 
