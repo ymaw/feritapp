@@ -416,9 +416,23 @@ document.addEventListener('DOMContentLoaded', function(){
     let greetingAvatar = document.getElementById('greetingAvatar');
     let profileAvatar = document.getElementById('profileAvatarPreview');
     let summaryAvatar = document.getElementById('dashboardSummaryAvatar');
-    [greetingAvatar, profileAvatar, summaryAvatar].forEach(function(el){
+    let targets = [greetingAvatar, profileAvatar, summaryAvatar];
+    targets.forEach(function(el){
       if(!el) return;
-      el.innerHTML = '<img src="' + (avatarUrl || 'feritapp-icon.png') + '" alt="Foto de perfil">';
+      let src = avatarUrl || 'feritapp-icon.png';
+      el.replaceChildren();
+      let img = document.createElement('img');
+      img.alt = 'Foto de perfil';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.src = src;
+      img.addEventListener('error', function(){
+        // Si una URL antigua/privada deja de ser accesible, no mostramos
+        // un icono roto: volvemos al logo de la app.
+        if(img.src.endsWith('feritapp-icon.png')) return;
+        img.src = 'feritapp-icon.png';
+      }, { once: true });
+      el.appendChild(img);
     });
   }
 
@@ -505,9 +519,13 @@ document.addEventListener('DOMContentLoaded', function(){
       if(upRes.error) throw upRes.error;
 
       let urlRes = sb.storage.from('avatars').getPublicUrl(path);
+      if(!urlRes || !urlRes.data || !urlRes.data.publicUrl){
+        throw new Error('No se pudo obtener la URL pública del avatar.');
+      }
       let publicUrl = urlRes.data.publicUrl + '?t=' + Date.now(); // evita caché vieja
 
-      await sb.from('user_settings').upsert({ avatar_url: publicUrl }, { onConflict: 'user_id' });
+      let settingsRes = await sb.from('user_settings').upsert({ avatar_url: publicUrl }, { onConflict: 'user_id' });
+      if(settingsRes.error) throw settingsRes.error;
       avatarUrl = publicUrl;
       updateAvatarDisplay();
       showToast('Foto de perfil actualizada');
@@ -522,7 +540,8 @@ document.addEventListener('DOMContentLoaded', function(){
     let val = document.getElementById('profileStoreName').value.trim();
     if(!val){ showToast('Ingresá un nombre para tu tienda.'); return; }
     try{
-      await sb.from('user_settings').upsert({ store_name: val }, { onConflict: 'user_id' });
+      let storeRes = await sb.from('user_settings').upsert({ store_name: val }, { onConflict: 'user_id' });
+      if(storeRes.error) throw storeRes.error;
       storeName = val;
       updateGreeting();
     updateAvatarDisplay();

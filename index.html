@@ -16,7 +16,7 @@
   script-src 'self' https://cdn.jsdelivr.net;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
-  img-src 'self' data:;
+  img-src 'self' data: blob: https://tzajchnflgvdbmiwfyvj.supabase.co;
   connect-src 'self' https://tzajchnflgvdbmiwfyvj.supabase.co wss://tzajchnflgvdbmiwfyvj.supabase.co;
   manifest-src 'self';
   base-uri 'self';
@@ -184,14 +184,37 @@
   <div id="settingsMenu">
     <div class="section-block">
       <p class="section-title">Configuración</p>
+      <div class="settings-group-label">CUENTA Y EXPERIENCIA</div>
       <div class="settings-menu-list">
-        <button type="button" class="settings-menu-item" data-settings="appearance"><span>🎨 Apariencia</span><span class="settings-menu-arrow">›</span></button>
-        <button type="button" class="settings-menu-item" data-settings="profile"><span>👤 Mi Perfil</span><span class="settings-menu-arrow">›</span></button>
-        <button type="button" class="settings-menu-item" data-settings="notifications"><span>🔔 Notificaciones</span><span class="settings-menu-arrow">›</span></button>
-        <button type="button" class="settings-menu-item" data-settings="week"><span>📅 Semana de ventas</span><span class="settings-menu-arrow">›</span></button>
-        <button type="button" class="settings-menu-item" data-settings="receipt"><span>🧾 Mensaje del comprobante</span><span class="settings-menu-arrow">›</span></button>
-        <button type="button" class="settings-menu-item" data-settings="backup"><span>💾 Copia de seguridad</span><span class="settings-menu-arrow">›</span></button>
-        <button type="button" class="settings-menu-item settings-menu-danger" data-settings="danger"><span>⚠️ Zona crítica</span><span class="settings-menu-arrow">›</span></button>
+        <button type="button" class="settings-menu-item" data-settings="profile">
+          <span class="settings-menu-main"><span class="settings-menu-icon">👤</span><span><strong>Mi Perfil</strong><small>Cuenta, tienda, foto y contraseña</small></span></span><span class="settings-menu-arrow">›</span>
+        </button>
+        <button type="button" class="settings-menu-item" data-settings="appearance">
+          <span class="settings-menu-main"><span class="settings-menu-icon">🎨</span><span><strong>Apariencia</strong><small>Tema y preferencias visuales</small></span></span><span class="settings-menu-arrow">›</span>
+        </button>
+        <button type="button" class="settings-menu-item" data-settings="notifications">
+          <span class="settings-menu-main"><span class="settings-menu-icon">🔔</span><span><strong>Notificaciones</strong><small>Avisos y pagos atrasados</small></span></span><span class="settings-menu-arrow">›</span>
+        </button>
+      </div>
+
+      <div class="settings-group-label">VENTAS Y COMPROBANTES</div>
+      <div class="settings-menu-list">
+        <button type="button" class="settings-menu-item" data-settings="week">
+          <span class="settings-menu-main"><span class="settings-menu-icon">📅</span><span><strong>Semana de ventas</strong><small>Definí cuándo empieza tu semana</small></span></span><span class="settings-menu-arrow">›</span>
+        </button>
+        <button type="button" class="settings-menu-item" data-settings="receipt">
+          <span class="settings-menu-main"><span class="settings-menu-icon">🧾</span><span><strong>Mensaje del comprobante</strong><small>Personalizá el mensaje que compartís</small></span></span><span class="settings-menu-arrow">›</span>
+        </button>
+      </div>
+
+      <div class="settings-group-label">DATOS Y SEGURIDAD</div>
+      <div class="settings-menu-list">
+        <button type="button" class="settings-menu-item" data-settings="backup">
+          <span class="settings-menu-main"><span class="settings-menu-icon">💾</span><span><strong>Copia de seguridad</strong><small>Exportá y conservá tu historial</small></span></span><span class="settings-menu-arrow">›</span>
+        </button>
+        <button type="button" class="settings-menu-item settings-menu-danger" data-settings="danger">
+          <span class="settings-menu-main"><span class="settings-menu-icon">⚠️</span><span><strong>Zona crítica</strong><small>Acciones permanentes sobre tus datos</small></span></span><span class="settings-menu-arrow">›</span>
+        </button>
       </div>
     </div>
   </div>
@@ -199,23 +222,25 @@
   <div id="settingsPanelAppearance" class="settings-panel app-view" style="display:none;">
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
-      <p class="section-title">Apariencia</p>
-      <div class="field">
+      <div class="settings-panel-heading"><div class="settings-panel-kicker">EXPERIENCIA</div><p class="section-title">Apariencia</p><p class="settings-panel-description">Personalizá el aspecto de FeritApp para que se adapte a vos.</p></div>
+      <div class="settings-card"><div class="field">
         <label>Elegí el tema que más te guste</label>
         <div class="theme-options">
           <button type="button" class="theme-opt" data-theme-choice="light">☀️<span>Claro</span></button>
           <button type="button" class="theme-opt" data-theme-choice="dark">🌙<span>Oscuro</span></button>
           <button type="button" class="theme-opt" data-theme-choice="system">💻<span>Sistema</span></button>
         </div>
-        <p class="hint">"Sistema" usa el mismo modo claro/oscuro configurado en tu celular o compu, y se ajusta solo si lo cambiás ahí.</p>
-      </div>
+        <p class="hint">"Sistema" usa el mismo modo claro/oscuro configurado en tu celular o compu.</p>
+      </div></div>
     </div>
   </div>
 
   <div id="settingsPanelProfile" class="settings-panel app-view" style="display:none;">
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
-      <p class="section-title">Mi Perfil</p>
+      <div class="settings-panel-heading"><div class="settings-panel-kicker">CUENTA</div><p class="section-title">Mi Perfil</p><p class="settings-panel-description">Administrá tu identidad, tu tienda y el acceso a tu cuenta.</p></div>
+      <div class="settings-card settings-card-profile">
+      <div class="settings-card-title">Identidad</div>
       <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
 
       <div class="field">
@@ -260,19 +285,20 @@
       <p class="gate-error" id="profilePwError" style="display:none;"></p>
       <button type="button" class="save-btn" id="changePasswordBtn">Cambiar contraseña</button>
 
-      <div class="field" style="margin-top:26px;">
+      <div class="settings-card-title settings-card-title-spaced">Seguridad de la cuenta</div>
+      <div class="field" style="margin-top:12px;">
         <label>Sesiones</label>
         <button type="button" class="danger-btn" id="logoutAllBtn" style="background:var(--paper-3); border:1px solid var(--rose); color:var(--rose);">🚪 Cerrar sesión en todos los dispositivos</button>
         <p class="hint">Usalo si perdiste el celular o alguien más podría tener tu contraseña. Vas a tener que volver a ingresar en todos lados.</p>
-      </div>
+      </div></div>
     </div>
   </div>
 
   <div id="settingsPanelNotifications" class="settings-panel app-view" style="display:none;">
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
-      <p class="section-title">Notificaciones</p>
-      <div class="field">
+      <div class="settings-panel-heading"><div class="settings-panel-kicker">AVISOS</div><p class="section-title">Notificaciones</p><p class="settings-panel-description">Elegí qué avisos querés recibir cuando haya actividad importante.</p></div>
+      <div class="settings-card"><div class="field">
         <label>Avisar pagos atrasados</label>
         <div class="seg">
           <button type="button" class="notify-opt active" data-notify="on">Activadas</button>
@@ -297,15 +323,16 @@
         <button type="button" class="save-btn" id="enableNotifPermBtn">🔔 Activar permiso de notificaciones</button>
         <p class="hint" id="notifPermStatus">Tu navegador te va a pedir permiso una sola vez.</p>
       </div>
-      <p class="hint">Las notificaciones aparecen cuando abrís la app y detecta pagos atrasados según lo configurado acá — no llegan si la app está completamente cerrada.</p>
+      <p class="hint">Las notificaciones aparecen cuando abrís la app y detecta pagos atrasados según lo configurado acá.</p>
+      </div></div>
     </div>
   </div>
 
   <div id="settingsPanelWeek" class="settings-panel app-view" style="display:none;">
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
-      <p class="section-title">Semana de ventas</p>
-      <div class="field">
+      <div class="settings-panel-heading"><div class="settings-panel-kicker">VENTAS</div><p class="section-title">Semana de ventas</p><p class="settings-panel-description">Definí el inicio de tu ciclo semanal para ordenar el resumen.</p></div>
+      <div class="settings-card"><div class="field">
         <label>Tu semana de ventas empieza el</label>
         <select id="weekStartSelect" class="settings-select">
           <option value="1">Lunes</option>
@@ -317,39 +344,40 @@
           <option value="0">Domingo</option>
         </select>
         <p class="hint">Ej: si entregás los sábados, elegí "Sábado" para que tu semana vaya de sábado a viernes.</p>
-      </div>
+      </div></div>
     </div>
   </div>
 
   <div id="settingsPanelReceipt" class="settings-panel app-view" style="display:none;">
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
-      <p class="section-title">Mensaje del comprobante</p>
-      <div class="field">
+      <div class="settings-panel-heading"><div class="settings-panel-kicker">COMPROBANTES</div><p class="section-title">Mensaje del comprobante</p><p class="settings-panel-description">Personalizá el texto que acompaña cada comprobante compartido.</p></div>
+      <div class="settings-card"><div class="field">
         <label>Mensaje que acompaña al comprobante compartido</label>
         <textarea id="receiptMessageInput" class="settings-textarea" rows="3" placeholder="Ej: ¡Gracias por tu compra!"></textarea>
         <p class="hint">Se envía junto a la imagen del comprobante cuando compartís la compra de un cliente.</p>
       </div>
       <button type="button" class="save-btn" id="saveReceiptMessageBtn">Guardar mensaje</button>
+      </div></div>
     </div>
   </div>
 
   <div id="settingsPanelBackup" class="settings-panel app-view" style="display:none;">
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
-      <p class="section-title">Copia de seguridad</p>
-      <div class="field">
+      <div class="settings-panel-heading"><div class="settings-panel-kicker">DATOS</div><p class="section-title">Copia de seguridad</p><p class="settings-panel-description">Guardá una copia de tu historial para conservarlo fuera de la aplicación.</p></div>
+      <div class="settings-card"><div class="field">
         <label>Copia de seguridad</label>
         <button type="button" class="save-btn" id="exportCsvBtn">⬇️ Exportar todo el historial a CSV</button>
         <p class="hint">Se descarga a la carpeta de Descargas de tu dispositivo. Cada semestre se descarga uno automático antes de limpiar el historial viejo.</p>
-      </div>
+      </div></div>
     </div>
   </div>
 
   <div id="settingsPanelDanger" class="settings-panel app-view" style="display:none;">
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
-      <p class="section-title">Zona crítica</p>
+      <div class="settings-panel-heading"><div class="settings-panel-kicker">IRREVERSIBLE</div><p class="section-title">Zona crítica</p><p class="settings-panel-description">Acciones que pueden eliminar información de forma permanente.</p></div>
       <div class="danger-zone">
         <p class="danger-zone-title">⚠️ Borrar todos los datos de ventas</p>
         <p class="hint" style="margin:6px 0 14px;">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
