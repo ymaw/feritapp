@@ -411,71 +411,21 @@ document.addEventListener('DOMContentLoaded', function(){
   let receiptMessage = '¡Gracias por tu compra! Te esperamos pronto de nuevo.';
   let storeName = '';
   let avatarUrl = '';
-  let avatarPath = '';
-
-  function getAvatarStoragePath(value){
-    if(!value) return '';
-    if(value.indexOf('/storage/v1/object/public/avatars/') !== -1){
-      return decodeURIComponent(value.split('/storage/v1/object/public/avatars/')[1].split('?')[0]);
-    }
-    if(value.indexOf('/storage/v1/object/sign/avatars/') !== -1){
-      return decodeURIComponent(value.split('/storage/v1/object/sign/avatars/')[1].split('?')[0]);
-    }
-    return value.indexOf('/') !== -1 && value.indexOf('://') === -1 ? value.split('?')[0] : '';
-  }
-
-  async function getAvatarPublicUrl(path){
-    if(!path || !sb) return '';
-    let res = sb.storage.from('avatars').getPublicUrl(path);
-    return res && res.data ? res.data.publicUrl + '?t=' + Date.now() : '';
-  }
-
-  async function useSignedAvatar(el, path){
-    if(!el || !path || !sb) return false;
-    try{
-      let signedRes = await sb.storage.from('avatars').createSignedUrl(path, 3600);
-      if(signedRes.data && signedRes.data.signedUrl){
-        el.src = signedRes.data.signedUrl;
-        return true;
-      }
-    }catch(e){}
-    return false;
-  }
-
-  function renderAvatarElement(el){
-    if(!el) return;
-    let path = avatarPath || getAvatarStoragePath(avatarUrl);
-    let fallback = el.dataset.avatarFallback === 'logo'
-      ? '<img src="feritapp-logo.svg" alt="FeritApp" loading="lazy">'
-      : 'F';
-    if(!path && !avatarUrl){ el.innerHTML = fallback; return; }
-    let publicUrl = avatarUrl && /^[a-z]+:\/\//i.test(avatarUrl) ? avatarUrl : '';
-    if(!publicUrl && path){ publicUrl = null; }
-    el.innerHTML = '<img alt="Foto de perfil" decoding="async">';
-    let img = el.querySelector('img');
-    img.onerror = async function(){
-      let ok = await useSignedAvatar(img, path);
-      if(!ok){ el.innerHTML = fallback; }
-    };
-    if(publicUrl){
-      img.src = publicUrl;
-    }else{
-      getAvatarPublicUrl(path).then(function(url){ if(url){ img.src = url; } else { el.innerHTML = fallback; } });
-    }
-  }
 
   function updateAvatarDisplay(){
-    renderAvatarElement(document.getElementById('greetingAvatar'));
-    renderAvatarElement(document.getElementById('dashboardAvatar'));
-    renderAvatarElement(document.getElementById('profileAvatarPreview'));
+    let greetingAvatar = document.getElementById('greetingAvatar');
+    let profileAvatar = document.getElementById('profileAvatarPreview');
+    let summaryAvatar = document.getElementById('dashboardSummaryAvatar');
+    [greetingAvatar, profileAvatar, summaryAvatar].forEach(function(el){
+      if(!el) return;
+      el.innerHTML = '<img src="' + (avatarUrl || 'feritapp-icon.png') + '" alt="Foto de perfil">';
+    });
   }
 
   function updateGreeting(){
     let el = document.getElementById('greetingBadge');
     let txt = document.getElementById('greetingText');
     if(!el || !txt) return;
-    let dashboardStoreName = document.getElementById('dashboardStoreName');
-    if(dashboardStoreName){ dashboardStoreName.textContent = storeName || 'Tu tienda'; }
     if(storeName){
       txt.textContent = '¡Hola, ' + storeName + '!';
       el.style.display = 'flex';
@@ -544,10 +494,6 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!file) return;
     if(!file.type.startsWith('image/')){ showToast('Elegí un archivo de imagen.'); return; }
 
-    if(file.size > 5 * 1024 * 1024){ showToast('La foto no puede superar 5 MB.'); e.target.value = ''; return; }
-    let oldAvatarUrl = avatarUrl;
-    let oldAvatarPath = avatarPath;
-    let previewUrl = '';
     try{
       let blob = await resizeImageFile(file, 300);
       let sessionRes = await sb.auth.getSession();
@@ -555,31 +501,17 @@ document.addEventListener('DOMContentLoaded', function(){
       if(!uid){ showToast('No se pudo identificar tu cuenta.'); return; }
 
       let path = uid + '/avatar.jpg';
-      previewUrl = URL.createObjectURL(blob);
-      avatarUrl = previewUrl;
-      avatarPath = '';
-      updateAvatarDisplay();
-      let status = document.getElementById('avatarUploadStatus');
-      if(status){ status.textContent = 'Subiendo foto…'; }
-
       let upRes = await sb.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if(upRes.error) throw upRes.error;
 
-      let settingsRes = await sb.from('user_settings').upsert({ avatar_url: path }, { onConflict: 'user_id' });
-      if(settingsRes.error) throw settingsRes.error;
-      avatarUrl = path;
-      avatarPath = path;
-      URL.revokeObjectURL(previewUrl);
+      let urlRes = sb.storage.from('avatars').getPublicUrl(path);
+      let publicUrl = urlRes.data.publicUrl + '?t=' + Date.now(); // evita caché vieja
+
+      await sb.from('user_settings').upsert({ avatar_url: publicUrl }, { onConflict: 'user_id' });
+      avatarUrl = publicUrl;
       updateAvatarDisplay();
-      if(status){ status.textContent = 'Foto actualizada correctamente'; }
       showToast('Foto de perfil actualizada');
     }catch(err){
-      if(previewUrl){ try{ URL.revokeObjectURL(previewUrl); }catch(e){} }
-      avatarUrl = oldAvatarUrl;
-      avatarPath = oldAvatarPath;
-      updateAvatarDisplay();
-      let status = document.getElementById('avatarUploadStatus');
-      if(status){ status.textContent = 'No se pudo cargar la foto. Probá de nuevo.'; }
       showToast('No se pudo subir la foto. Probá de nuevo.');
     }finally{
       e.target.value = '';
@@ -686,7 +618,6 @@ document.addEventListener('DOMContentLoaded', function(){
         if(settingsRes.data.receipt_message){ receiptMessage = settingsRes.data.receipt_message; }
         storeName = settingsRes.data.store_name || '';
         avatarUrl = settingsRes.data.avatar_url || '';
-        avatarPath = getAvatarStoragePath(avatarUrl);
       }else{
         await sb.from('user_settings').insert([{}]); // usa los valores por defecto (lunes)
         weekStartDay = 1;
@@ -1530,7 +1461,7 @@ document.addEventListener('DOMContentLoaded', function(){
     /* current week: summary ticket, below the table */
     let curStats = weekStats(curItems);
     document.getElementById('currentTicket').innerHTML =
-      '<p class="stat-cards-label">Resumen de la semana · ' + formatRange(currentKey) + '</p>' +
+      '<div class="summary-heading"><div class="summary-avatar" id="dashboardSummaryAvatar"><img src="' + (avatarUrl || 'feritapp-icon.png') + '" alt="Foto de perfil"></div><div><p class="stat-cards-label">Resumen de la semana</p><p class="summary-period">' + formatRange(currentKey) + '</p></div></div>' +
       '<div class="stat-cards">' +
         '<div class="stat-card primary"><span class="stat-card-icon">💰</span><span class="stat-card-label">Total vendido</span><span class="stat-card-value">' + money(curStats.total) + '</span></div>' +
         '<div class="stat-card success"><span class="stat-card-icon">✅</span><span class="stat-card-label">Cobrado</span><span class="stat-card-value">' + money(curStats.cobrado) + '</span></div>' +

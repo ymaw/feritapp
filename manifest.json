@@ -1,13 +1,11 @@
 {
-  "name": "FeritApp — Todas tus ventas en un solo lugar",
-  "short_name": "FeritApp",
-  "description": "Registro de ventas semanal para tu local de ropa, con dictado por voz.",
-  "start_url": "./index.html",
-  "scope": "./",
+  "name": "feritApp",
+  "short_name": "feritApp",
+  "description": "Todas tus ventas en un solo lugar",
+  "start_url": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#14101f",
-  "theme_color": "#7c3aed",
+  "background_color": "#07112f",
+  "theme_color": "#5b4bff",
   "icons": [
     {
       "src": "icon-192.png",

@@ -16,7 +16,7 @@
   script-src 'self' https://cdn.jsdelivr.net;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
-  img-src 'self' data: blob: https://tzajchnflgvdbmiwfyvj.supabase.co;
+  img-src 'self' data:;
   connect-src 'self' https://tzajchnflgvdbmiwfyvj.supabase.co wss://tzajchnflgvdbmiwfyvj.supabase.co;
   manifest-src 'self';
   base-uri 'self';
@@ -51,7 +51,7 @@
   <div class="gate-card">
 
     <div id="gateStep1">
-      <div class="brand-lockup"><img class="brand-mark" src="feritapp-logo.svg" alt="FeritApp" width="32" height="32"><span class="brand-word"><span class="brand-ferit">ferit</span><span class="brand-app">App</span></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
+      <div class="brand-lockup"><img class="brand-logo" src="feritapp-icon.png" alt="" aria-hidden="true"><span class="brand-word">ferit<b>App</b></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
       <h1>Ingresá a tu cuenta</h1>
       <p class="gate-sub">Ingresá tu correo y tu contraseña.</p>
 
@@ -96,14 +96,14 @@
     </div>
 
     <div id="gateSent" style="display:none;">
-      <div class="brand-lockup"><img class="brand-mark" src="feritapp-logo.svg" alt="FeritApp" width="32" height="32"><span class="brand-word"><span class="brand-ferit">ferit</span><span class="brand-app">App</span></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
+      <div class="brand-lockup"><img class="brand-logo" src="feritapp-icon.png" alt="" aria-hidden="true"><span class="brand-word">ferit<b>App</b></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
       <h1 id="gateSentTitle">Revisá tu correo</h1>
       <p class="gate-sub" id="gateSentText"></p>
       <button class="reset-link" id="backToEmailBtn" type="button">Volver</button>
     </div>
 
     <div id="gateNewPin" style="display:none;">
-      <div class="brand-lockup"><img class="brand-mark" src="feritapp-logo.svg" alt="FeritApp" width="32" height="32"><span class="brand-word"><span class="brand-ferit">ferit</span><span class="brand-app">App</span></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
+      <div class="brand-lockup"><img class="brand-logo" src="feritapp-icon.png" alt="" aria-hidden="true"><span class="brand-word">ferit<b>App</b></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
       <h1>Elegí tu nueva contraseña</h1>
       <p class="gate-sub">Mínimo 6 caracteres, con al menos una mayúscula, un número y un símbolo.</p>
       <div class="field">
@@ -129,7 +129,7 @@
 
 <div id="onboardingGate" style="display:none;">
   <div class="gate-card">
-    <div class="brand-lockup"><img class="brand-mark" src="feritapp-logo.svg" alt="FeritApp" width="32" height="32"><span class="brand-word"><span class="brand-ferit">ferit</span><span class="brand-app">App</span></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
+    <div class="brand-lockup"><img class="brand-logo" src="feritapp-icon.png" alt="" aria-hidden="true"><span class="brand-word">ferit<b>App</b></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
     <h1>¿Cómo se llama tu tienda?</h1>
     <p class="gate-sub">Lo usamos para saludarte en la app. Lo podés cambiar cuando quieras desde Configuración › Mi Perfil.</p>
     <div class="field">
@@ -144,7 +144,7 @@
 <div id="appRoot" style="display:none;">
 
 <header>
-  <div class="brand-lockup"><img class="brand-mark" src="feritapp-logo.svg" alt="FeritApp" width="32" height="32"><span class="brand-word"><span class="brand-ferit">ferit</span><span class="brand-app">App</span></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
+  <div class="brand-lockup"><img class="brand-logo" src="feritapp-icon.png" alt="" aria-hidden="true"><span class="brand-word">ferit<b>App</b></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
   <h1 id="viewHeading">Registro semanal</h1>
   <p class="session-email" id="sessionEmail"></p>
 </header>
@@ -162,24 +162,15 @@
 <datalist id="clientsDatalist"></datalist>
 
 <div id="viewDashboard" class="app-view" style="display:none;">
-  <div class="dashboard-hero">
-    <div class="dashboard-hero-copy">
-      <span class="dashboard-kicker">Resumen</span>
-      <h2 id="dashboardStoreName">Tu tienda</h2>
-      <p>Una vista rápida de tus ventas y actividad reciente.</p>
-    </div>
-    <div class="dashboard-hero-mark" id="dashboardAvatar" aria-label="Foto de perfil" data-avatar-fallback="logo"><img src="feritapp-logo.svg" alt="FeritApp" loading="lazy"></div>
-  </div>
-
   <div class="ticket-wrap" id="currentTicket"></div>
 
-  <div class="section-block dashboard-section">
-    <div class="section-heading"><div><p class="section-title">Categoría más vendida del mes</p><p class="section-helper">Distribución de artículos vendidos</p></div></div>
-    <div class="dashboard-card" id="topCategoryChart"></div>
+  <div class="section-block">
+    <p class="section-title">Categoría más vendida del mes</p>
+    <div id="topCategoryChart"></div>
   </div>
 
-  <div class="section-block dashboard-section">
-    <div class="section-heading"><div><p class="section-title">Comparar ventas</p><p class="section-helper">Elegí el período que querés analizar</p></div></div>
+  <div class="section-block">
+    <p class="section-title">Comparar ventas</p>
     <div class="seg" style="margin-bottom:12px;">
       <button type="button" class="period-opt active" data-period="week">Semanal</button>
       <button type="button" class="period-opt" data-period="month">Mensual</button>
@@ -229,13 +220,11 @@
 
       <div class="field">
         <label>Foto de perfil</label>
-        <div class="profile-avatar-card">
-          <div class="avatar-preview" id="profileAvatarPreview" aria-label="Vista previa de foto de perfil">F</div>
-          <div class="profile-avatar-copy">
-            <strong>Tu foto de perfil</strong>
-            <span id="avatarUploadStatus">JPG, PNG o WEBP · hasta 5 MB</span>
-            <button type="button" class="save-btn compact-btn" id="avatarUploadBtn">📷 Cambiar foto</button>
-            <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+        <div class="avatar-upload-row">
+          <div class="avatar-preview" id="profileAvatarPreview"><img src="feritapp-icon.png" alt="Foto de perfil"></div>
+          <div>
+            <button type="button" class="save-btn" id="avatarUploadBtn" style="margin:0;">📷 Cambiar foto</button>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
           </div>
         </div>
       </div>
@@ -393,7 +382,7 @@
 
 <div id="viewSales" class="app-view">
   <div class="greeting-badge" id="greetingBadge" style="display:none;">
-    <div class="greeting-avatar" id="greetingAvatar">F</div>
+    <div class="greeting-avatar" id="greetingAvatar"><img src="feritapp-icon.png" alt=""></div>
     <div class="greeting-body">
       <div class="greeting-title" id="greetingText"></div>
       <div class="greeting-sub">Hoy es un gran día para vender 🚀</div>
@@ -433,7 +422,7 @@
 
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-brand">
-    <img class="sidebar-logo" src="feritapp-logo.svg" alt="FeritApp" width="34" height="34"><span class="sidebar-word"><span class="brand-ferit">ferit</span><span class="brand-app">App</span></span>
+    <img class="sidebar-logo" src="feritapp-icon.png" alt="" aria-hidden="true"><span class="sidebar-brand-word">ferit<b>App</b></span>
   </div>
   <button type="button" class="sidebar-cta" id="sidebarOpenSheet">+ Nueva venta</button>
   <div class="sidebar-links">
