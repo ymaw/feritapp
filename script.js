@@ -1364,32 +1364,66 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!items.length){
       return '<div class="empty-inline">Sin artículos registrados.</div>';
     }
-    let html = '<div class="table-card"><div class="table-wrap"><table class="sales-table"><thead><tr>' +
-                 '<th>Artículo</th><th>Cliente</th><th class="num">Precio</th><th></th>' +
-               '</tr></thead><tbody>';
+
+    /*
+     * Desktop: keep the familiar compact table.
+     * Mobile: use one card per sale so the status and actions never fall
+     * outside the viewport. No horizontal scrolling is needed on phones.
+     */
+    let desktop = '<div class="table-card sales-table-desktop"><div class="table-wrap"><table class="sales-table"><thead><tr>' +
+      '<th>Artículo</th><th>Cliente</th><th class="num">Precio</th><th>Estado</th><th></th>' +
+      '</tr></thead><tbody>';
+
+    let mobile = '<div class="sales-cards-mobile">';
+
     items.forEach(function(item){
       let fechaTxt = new Date(item.fecha).toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'short'});
       let cat = item.categoria || 'Sin categoría';
       let retiraHtml = item.retira === 'otro'
         ? '<div class="retira-info other">↳ Retira: ' + escapeHtml(item.tercero) + '</div>'
         : '<div class="retira-info same">↳ Retira el mismo cliente</div>';
-      html += '<tr>' +
-                '<td>' +
-                  '<div class="item-name">' + escapeHtml(item.articulo) + '</div>' +
-                  '<span class="cat-badge"><span class="cat-dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) + '</span>' +
-                  '<div class="item-meta">' + fechaTxt + '</div>' +
-                '</td>' +
-                '<td><div class="client-name">' + escapeHtml(item.cliente || 'Sin nombre') + '</div>' + retiraHtml + '</td>' +
-                '<td class="num price-cell">' + money(item.precio) + '</td>' +
-                '<td><div class="row-actions">' +
-                  (editable ? '<button class="edit-btn" data-edit="' + item.id + '" aria-label="Editar">✎</button>' : '') +
-                  '<button class="pay-toggle ' + (item.pagado ? 'paid' : 'pending') + '" data-toggle-pay="' + item.id + '">' + (item.pagado ? 'Pagado' : 'Pendiente') + '</button>' +
-                  '<button class="del-btn" data-del="' + item.id + '">✕</button>' +
-                '</div></td>' +
-              '</tr>';
+      let statusClass = item.pagado ? 'paid' : 'pending';
+      let statusText = item.pagado ? 'Pagado' : 'Pendiente';
+
+      desktop += '<tr>' +
+        '<td>' +
+          '<div class="item-name">' + escapeHtml(item.articulo) + '</div>' +
+          '<span class="cat-badge"><span class="cat-dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) + '</span>' +
+          '<div class="item-meta">' + fechaTxt + '</div>' +
+        '</td>' +
+        '<td><div class="client-name">' + escapeHtml(item.cliente || 'Sin nombre') + '</div>' + retiraHtml + '</td>' +
+        '<td class="num price-cell">' + money(item.precio) + '</td>' +
+        '<td><button class="pay-toggle ' + statusClass + '" data-toggle-pay="' + item.id + '">' + statusText + '</button></td>' +
+        '<td><div class="row-actions">' +
+          (editable ? '<button class="edit-btn" data-edit="' + item.id + '" aria-label="Editar">✎</button>' : '') +
+          '<button class="del-btn" data-del="' + item.id + '" aria-label="Eliminar">✕</button>' +
+        '</div></td>' +
+      '</tr>';
+
+      mobile += '<article class="sale-card-mobile">' +
+        '<div class="sale-card-main">' +
+          '<div class="sale-card-client">' + escapeHtml(item.cliente || 'Sin nombre') + '</div>' +
+          '<div class="sale-card-item">' + escapeHtml(item.articulo) + '</div>' +
+          '<div class="sale-card-meta">' +
+            '<span class="sale-card-category"><span class="cat-dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) + '</span>' +
+            '<span>' + fechaTxt + '</span>' +
+          '</div>' +
+          retiraHtml +
+        '</div>' +
+        '<div class="sale-card-side">' +
+          '<div class="sale-card-total">' + money(item.precio) + '</div>' +
+          '<button class="pay-toggle ' + statusClass + ' sale-card-status" data-toggle-pay="' + item.id + '">' + statusText + '</button>' +
+          '<div class="sale-card-actions">' +
+            (editable ? '<button class="edit-btn" data-edit="' + item.id + '" aria-label="Editar">✎</button>' : '') +
+            '<button class="del-btn" data-del="' + item.id + '" aria-label="Eliminar">✕</button>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
     });
-    html += '</tbody></table></div></div>';
-    return html;
+
+    desktop += '</tbody></table></div></div>';
+    mobile += '</div>';
+    return desktop + mobile;
   }
 
   function bindTableEvents(root){
