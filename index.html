@@ -162,6 +162,11 @@
 <datalist id="clientsDatalist"></datalist>
 
 <div id="viewDashboard" class="app-view" style="display:none;">
+  <div class="view-hero dashboard-hero">
+    <div class="view-hero-kicker">RESUMEN</div>
+    <h2>Tu semana de ventas</h2>
+    <p>Una vista rápida de lo que vendiste, cobraste y todavía tenés pendiente.</p>
+  </div>
   <div class="ticket-wrap" id="currentTicket"></div>
 
   <div class="section-block">
@@ -184,15 +189,16 @@
   <div id="settingsMenu">
     <div class="section-block">
       <p class="section-title">Configuración</p>
+      <p class="settings-menu-intro">Personalizá tu experiencia, tu cuenta y la forma en que trabajás con tus ventas.</p>
       <div class="settings-group-label">CUENTA Y EXPERIENCIA</div>
       <div class="settings-menu-list">
-        <button type="button" class="settings-menu-item" data-settings="profile">
+        <button type="button" class="settings-menu-item settings-menu-primary" data-settings="profile">
           <span class="settings-menu-main"><span class="settings-menu-icon">👤</span><span><strong>Mi Perfil</strong><small>Cuenta, tienda, foto y contraseña</small></span></span><span class="settings-menu-arrow">›</span>
         </button>
-        <button type="button" class="settings-menu-item" data-settings="appearance">
+        <button type="button" class="settings-menu-item settings-menu-primary" data-settings="appearance">
           <span class="settings-menu-main"><span class="settings-menu-icon">🎨</span><span><strong>Apariencia</strong><small>Tema y preferencias visuales</small></span></span><span class="settings-menu-arrow">›</span>
         </button>
-        <button type="button" class="settings-menu-item" data-settings="notifications">
+        <button type="button" class="settings-menu-item settings-menu-primary" data-settings="notifications">
           <span class="settings-menu-main"><span class="settings-menu-icon">🔔</span><span><strong>Notificaciones</strong><small>Avisos y pagos atrasados</small></span></span><span class="settings-menu-arrow">›</span>
         </button>
       </div>
@@ -223,7 +229,7 @@
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <div class="settings-panel-heading"><div class="settings-panel-kicker">EXPERIENCIA</div><p class="section-title">Apariencia</p><p class="settings-panel-description">Personalizá el aspecto de FeritApp para que se adapte a vos.</p></div>
-      <div class="settings-card"><div class="field">
+      <div class="settings-card settings-card-featured"><div class="settings-card-head"><span class="settings-card-icon">🎨</span><div><strong>Estilo de la aplicación</strong><small>Elegí cómo querés ver FeritApp</small></div></div><div class="field">
         <label>Elegí el tema que más te guste</label>
         <div class="theme-options">
           <button type="button" class="theme-opt" data-theme-choice="light">☀️<span>Claro</span></button>
@@ -239,7 +245,7 @@
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <div class="settings-panel-heading"><div class="settings-panel-kicker">CUENTA</div><p class="section-title">Mi Perfil</p><p class="settings-panel-description">Administrá tu identidad, tu tienda y el acceso a tu cuenta.</p></div>
-      <div class="settings-card settings-card-profile">
+      <div class="settings-card settings-card-profile settings-card-featured">
       <div class="settings-card-title">Identidad</div>
       <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
 
@@ -298,7 +304,7 @@
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <div class="settings-panel-heading"><div class="settings-panel-kicker">AVISOS</div><p class="section-title">Notificaciones</p><p class="settings-panel-description">Elegí qué avisos querés recibir cuando haya actividad importante.</p></div>
-      <div class="settings-card"><div class="field">
+      <div class="settings-card settings-card-featured"><div class="settings-card-head"><span class="settings-card-icon">🔔</span><div><strong>Avisos de pagos</strong><small>Controlá cuándo querés recibir alertas</small></div></div><div class="field">
         <label>Avisar pagos atrasados</label>
         <div class="seg">
           <button type="button" class="notify-opt active" data-notify="on">Activadas</button>
@@ -332,7 +338,7 @@
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <div class="settings-panel-heading"><div class="settings-panel-kicker">VENTAS</div><p class="section-title">Semana de ventas</p><p class="settings-panel-description">Definí el inicio de tu ciclo semanal para ordenar el resumen.</p></div>
-      <div class="settings-card"><div class="field">
+      <div class="settings-card settings-card-featured"><div class="settings-card-head"><span class="settings-card-icon">📅</span><div><strong>Ciclo semanal</strong><small>Definí cómo se agrupan tus ventas</small></div></div><div class="field">
         <label>Tu semana de ventas empieza el</label>
         <select id="weekStartSelect" class="settings-select">
           <option value="1">Lunes</option>
@@ -352,7 +358,7 @@
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <div class="settings-panel-heading"><div class="settings-panel-kicker">COMPROBANTES</div><p class="section-title">Mensaje del comprobante</p><p class="settings-panel-description">Personalizá el texto que acompaña cada comprobante compartido.</p></div>
-      <div class="settings-card"><div class="field">
+      <div class="settings-card settings-card-featured"><div class="settings-card-head"><span class="settings-card-icon">🧾</span><div><strong>Mensaje de venta</strong><small>Un texto corto que acompaña tu comprobante</small></div></div><div class="field">
         <label>Mensaje que acompaña al comprobante compartido</label>
         <textarea id="receiptMessageInput" class="settings-textarea" rows="3" placeholder="Ej: ¡Gracias por tu compra!"></textarea>
         <p class="hint">Se envía junto a la imagen del comprobante cuando compartís la compra de un cliente.</p>
@@ -366,7 +372,7 @@
     <div class="section-block">
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <div class="settings-panel-heading"><div class="settings-panel-kicker">DATOS</div><p class="section-title">Copia de seguridad</p><p class="settings-panel-description">Guardá una copia de tu historial para conservarlo fuera de la aplicación.</p></div>
-      <div class="settings-card"><div class="field">
+      <div class="settings-card settings-card-featured"><div class="settings-card-head"><span class="settings-card-icon">💾</span><div><strong>Exportar historial</strong><small>Conservá tus ventas fuera de la aplicación</small></div></div><div class="field">
         <label>Copia de seguridad</label>
         <button type="button" class="save-btn" id="exportCsvBtn">⬇️ Exportar todo el historial a CSV</button>
         <p class="hint">Se descarga a la carpeta de Descargas de tu dispositivo. Cada semestre se descarga uno automático antes de limpiar el historial viejo.</p>
@@ -379,6 +385,7 @@
       <button type="button" class="settings-back-btn" data-settings-back>← Configuración</button>
       <div class="settings-panel-heading"><div class="settings-panel-kicker">IRREVERSIBLE</div><p class="section-title">Zona crítica</p><p class="settings-panel-description">Acciones que pueden eliminar información de forma permanente.</p></div>
       <div class="danger-zone">
+        <div class="danger-zone-head"><span class="danger-zone-icon">⚠️</span><div><strong>Acciones permanentes</strong><small>Revisá antes de continuar</small></div></div>
         <p class="danger-zone-title">⚠️ Borrar todos los datos de ventas</p>
         <p class="hint" style="margin:6px 0 14px;">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
         <button type="button" class="danger-btn" id="resetBtn">🗑️ Borrar todos los datos de ventas</button>
@@ -389,6 +396,11 @@
 </div>
 
 <div id="viewRanking" class="app-view" style="display:none;">
+  <div class="view-hero ranking-hero">
+    <div class="view-hero-kicker">RANKING</div>
+    <h2>Tus clientes destacados</h2>
+    <p>Conocé quiénes compran más y usá esta información para priorizar tus entregas y ventas.</p>
+  </div>
   <div class="section-block">
     <p class="section-title">Clientes que más compraron</p>
     <button type="button" class="reset-link" id="toggleRankingMoney" style="margin-bottom:12px;">💰 Mostrar montos gastados</button>
@@ -397,6 +409,11 @@
 </div>
 
 <div id="viewClients" class="app-view" style="display:none;">
+  <div class="view-hero clients-hero">
+    <div class="view-hero-kicker">CLIENTES</div>
+    <h2>Tu cartera de clientes</h2>
+    <p>Buscá, consultá y administrá las personas que compran en tu tienda.</p>
+  </div>
   <div class="section-block">
     <p class="section-title">Clientes</p>
     <div class="input-row">
@@ -409,6 +426,11 @@
 </div>
 
 <div id="viewSales" class="app-view">
+  <div class="view-hero sales-hero">
+    <div class="view-hero-kicker">VENTAS</div>
+    <h2>Tu registro semanal</h2>
+    <p>Gestioná tus ventas, pagos y entregas desde un solo lugar.</p>
+  </div>
   <div class="greeting-badge" id="greetingBadge" style="display:none;">
     <div class="greeting-avatar" id="greetingAvatar"><img src="feritapp-icon.png" alt=""></div>
     <div class="greeting-body">
