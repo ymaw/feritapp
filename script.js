@@ -1360,6 +1360,112 @@ document.addEventListener('DOMContentLoaded', function(){
     return {total:total, cobrado:cobrado, pendiente:pendiente, count:items.length};
   }
 
+  function renderDashboardTasks(items){
+    let wrap = document.getElementById('dashboardTasks');
+    if(!wrap) return;
+
+    let unpaid = items.filter(function(s){ return !s.pagado; }).sort(function(a,b){ return Number(b.precio||0) - Number(a.precio||0); });
+    let recipients = {};
+    items.forEach(function(s){
+      let name = s.retira === 'otro' && s.tercero ? s.tercero : (s.cliente || 'Sin nombre');
+      if(!recipients[name]) recipients[name] = {name:name, count:0, items:0, pending:0};
+      recipients[name].count += 1;
+      recipients[name].items += 1;
+      if(!s.pagado) recipients[name].pending += Number(s.precio)||0;
+    });
+    let deliveryPeople = Object.keys(recipients).map(function(k){ return recipients[k]; });
+    let recipientCount = deliveryPeople.length;
+    let unpaidTotal = unpaid.reduce(function(sum,s){ return sum + (Number(s.precio)||0); },0);
+
+    if(unpaid.length === 0 && items.length === 0){
+      wrap.innerHTML = '<div class="dashboard-task is-clear"><div class="dashboard-task-icon">✨</div><div class="dashboard-task-copy"><div class="dashboard-task-title">Todo listo por ahora</div><div class="dashboard-task-sub">Todavía no hay ventas esta semana. Podés empezar registrando una nueva venta.</div><button type="button" class="dashboard-task-action" data-dashboard-action="new-sale">+ Registrar primera venta</button></div></div>';
+      bindDashboardTaskActions(wrap);
+      return;
+    }
+
+    let html = '<div class="dashboard-task-list">';
+
+    if(unpaid.length){
+      html += '<article class="dashboard-task dashboard-task-expandable" data-dashboard-expand-card="payments" aria-expanded="false">' +
+        '<button type="button" class="dashboard-task-trigger" data-dashboard-expand="payments" aria-expanded="false">' +
+          '<span class="dashboard-task-icon">💳</span>' +
+          '<span class="dashboard-task-copy"><span class="dashboard-task-title">' + unpaid.length + ' ' + (unpaid.length === 1 ? 'venta pendiente de cobro' : 'ventas pendientes de cobro') + '</span>' +
+          '<span class="dashboard-task-sub">Tenés ' + money(unpaidTotal) + ' por cobrar.</span></span>' +
+          '<span class="dashboard-task-value">' + money(unpaidTotal) + '</span>' +
+          '<span class="dashboard-task-chevron" aria-hidden="true">⌄</span>' +
+        '</button>' +
+        '<div class="dashboard-task-details" data-dashboard-details="payments" hidden>' +
+          '<div class="dashboard-detail-heading">Quiénes deben</div>';
+      unpaid.slice(0,5).forEach(function(s){
+        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><strong>' + escapeHtml(s.cliente || 'Sin nombre') + '</strong><span>' + escapeHtml(s.articulo || 'Artículo') + '</span></span><span class="dashboard-pending-money">' + money(s.precio) + '</span></div>';
+      });
+      if(unpaid.length > 5){ html += '<div class="dashboard-detail-more">+' + (unpaid.length-5) + ' ventas más</div>'; }
+      html += '<button type="button" class="dashboard-task-action" data-dashboard-action="payments">Ver todas las ventas pendientes →</button></div></article>';
+    }else{
+      html += '<article class="dashboard-task is-clear"><div class="dashboard-task-icon">✓</div><div class="dashboard-task-copy"><div class="dashboard-task-title">No hay pagos pendientes</div><div class="dashboard-task-sub">Todas las ventas de esta semana figuran como pagadas.</div></div></article>';
+    }
+
+    if(deliveryPeople.length){
+      html += '<article class="dashboard-task dashboard-task-expandable" data-dashboard-expand-card="delivery" aria-expanded="false">' +
+        '<button type="button" class="dashboard-task-trigger" data-dashboard-expand="delivery" aria-expanded="false">' +
+          '<span class="dashboard-task-icon">📦</span>' +
+          '<span class="dashboard-task-copy"><span class="dashboard-task-title">' + recipientCount + ' ' + (recipientCount === 1 ? 'persona' : 'personas') + ' para gestionar</span>' +
+          '<span class="dashboard-task-sub">Abrí el detalle para ver quién retira cada venta.</span></span>' +
+          '<span class="dashboard-task-value">' + items.length + ' ' + (items.length === 1 ? 'art.' : 'arts.') + '</span>' +
+          '<span class="dashboard-task-chevron" aria-hidden="true">⌄</span>' +
+        '</button>' +
+        '<div class="dashboard-task-details" data-dashboard-details="delivery" hidden>' +
+          '<div class="dashboard-detail-heading">Quiénes tienen entregas</div>';
+      deliveryPeople.slice(0,5).forEach(function(person){
+        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><strong>' + escapeHtml(person.name) + '</strong><span>' + person.items + ' ' + (person.items === 1 ? 'artículo' : 'artículos') + '</span></span><span class="dashboard-pending-money">' + (person.pending ? 'Debe ' + money(person.pending) : 'Pagado') + '</span></div>';
+      });
+      if(deliveryPeople.length > 5){ html += '<div class="dashboard-detail-more">+' + (deliveryPeople.length-5) + ' personas más</div>'; }
+      html += '<button type="button" class="dashboard-task-action" data-dashboard-action="delivery">Ver todas las entregas →</button></div></article>';
+    }
+
+    html += '</div>';
+    wrap.innerHTML = html;
+    bindDashboardTaskActions(wrap);
+    bindDashboardExpanders(wrap);
+  }
+
+  function bindDashboardExpanders(root){
+    root.querySelectorAll('[data-dashboard-expand]').forEach(function(trigger){
+      trigger.addEventListener('click', function(){
+        let type = trigger.getAttribute('data-dashboard-expand');
+        let card = root.querySelector('[data-dashboard-expand-card="' + type + '"]');
+        let details = root.querySelector('[data-dashboard-details="' + type + '"]');
+        if(!card || !details) return;
+        let expanded = card.getAttribute('aria-expanded') === 'true';
+        card.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        trigger.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        details.hidden = expanded;
+      });
+    });
+  }
+
+  function bindDashboardTaskActions(root){
+    root.querySelectorAll('[data-dashboard-action]').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        let action = btn.getAttribute('data-dashboard-action');
+        if(action === 'new-sale'){ openSheet(); return; }
+        switchView('sales');
+        if(action === 'delivery'){
+          let deliveryBtn = document.querySelector('[data-salestab="delivery"]');
+          if(deliveryBtn) deliveryBtn.click();
+        }else{
+          let itemsBtn = document.querySelector('[data-salestab="items"]');
+          if(itemsBtn) itemsBtn.click();
+          setTimeout(function(){
+            let firstPending = document.querySelector('#currentWeekTable .pay-toggle.pending');
+            if(firstPending){ firstPending.scrollIntoView({behavior:'smooth',block:'center'}); }
+          }, 80);
+        }
+      });
+    });
+  }
+
   function renderSalesTable(items, editable){
     if(!items.length){
       return '<div class="empty-inline">Sin artículos registrados.</div>';
@@ -1436,7 +1542,12 @@ document.addEventListener('DOMContentLoaded', function(){
     });
     root.querySelectorAll('[data-del]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        deleteSale(btn.getAttribute('data-del'));
+        let id = btn.getAttribute('data-del');
+        let item = sales.find(function(s){ return s.id === id; });
+        if(!item) return;
+        if(confirm('¿Eliminar la venta de ' + (item.cliente || 'este cliente') + '?\n\nEsta acción no se puede deshacer.')){
+          deleteSale(id);
+        }
       });
     });
     root.querySelectorAll('[data-edit]').forEach(function(btn){
@@ -1513,6 +1624,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     /* current week: summary ticket, below the table */
     let curStats = weekStats(curItems);
+    renderDashboardTasks(curItems);
     document.getElementById('currentTicket').innerHTML =
       '<div class="summary-heading"><div class="summary-avatar" id="dashboardSummaryAvatar"><img src="' + (avatarUrl || 'feritapp-icon.png') + '" alt="Foto de perfil"></div><div><p class="stat-cards-label">Resumen de la semana</p><p class="summary-period">' + formatRange(currentKey) + '</p></div></div>' +
       '<div class="stat-cards">' +
@@ -1814,8 +1926,11 @@ document.addEventListener('DOMContentLoaded', function(){
       let v = parseFloat(inp.value);
       if(!isNaN(v)) total += v;
     });
+    let totalText = money(total);
     let el = document.getElementById('itemsTotalValue');
-    if(el) el.textContent = money(total);
+    if(el) el.textContent = totalText;
+    let footerEl = document.getElementById('sheetFooterTotal');
+    if(footerEl) footerEl.textContent = totalText;
   }
 
   function refreshAllRowCategorySelects(){

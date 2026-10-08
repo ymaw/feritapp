@@ -164,10 +164,17 @@
 <div id="viewDashboard" class="app-view" style="display:none;">
   <div class="view-hero dashboard-hero">
     <div class="view-hero-kicker">RESUMEN</div>
-    <h2>Tu semana de ventas</h2>
-    <p>Una vista rápida de lo que vendiste, cobraste y todavía tenés pendiente.</p>
+    <h2 id="dashboardGreetingTitle">Tu semana de ventas</h2>
+    <p>Una vista rápida de lo que vendiste, cobraste y, sobre todo, lo que todavía tenés pendiente.</p>
   </div>
   <div class="ticket-wrap" id="currentTicket"></div>
+
+  <div class="section-block dashboard-tasks-section">
+    <div class="section-heading-row">
+      <div><p class="section-title">Lo que requiere tu atención</p><p class="section-subtitle">Acciones rápidas para terminar tus pendientes.</p></div>
+    </div>
+    <div id="dashboardTasks"></div>
+  </div>
 
   <div class="section-block">
     <p class="section-title">Categoría más vendida del mes</p>
@@ -546,7 +553,10 @@
     </div>
   </div>
 
-  <button class="save-btn" id="saveBtn"><span id="saveBtnText">Guardar venta</span></button>
+  <div class="sheet-save-bar">
+    <div class="sheet-save-total"><span>Total</span><strong id="sheetFooterTotal">$0</strong></div>
+    <button class="save-btn" id="saveBtn"><span id="saveBtnText">Guardar venta</span></button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
