@@ -1413,6 +1413,16 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!wrap) return;
 
     let unpaid = items.filter(function(s){ return !s.pagado; }).sort(function(a,b){ return Number(b.precio||0) - Number(a.precio||0); });
+    // Agrupar los artículos pendientes por cliente para no repetir al mismo cliente una vez por producto.
+    let unpaidByClient = {};
+    unpaid.forEach(function(s){
+      let name = (s.cliente || '').trim() || 'Sin nombre';
+      if(!unpaidByClient[name]) unpaidByClient[name] = {name:name, total:0, items:0};
+      unpaidByClient[name].total += Number(s.precio)||0;
+      unpaidByClient[name].items += 1;
+    });
+    let unpaidClients = Object.keys(unpaidByClient).map(function(k){ return unpaidByClient[k]; })
+      .sort(function(a,b){ return b.total-a.total; });
     let recipients = {};
     items.forEach(function(s){
       let name = s.retira === 'otro' && s.tercero ? s.tercero : (s.cliente || 'Sin nombre');
@@ -1437,17 +1447,18 @@ document.addEventListener('DOMContentLoaded', function(){
       html += '<article class="dashboard-task dashboard-task-expandable" data-dashboard-expand-card="payments" aria-expanded="false">' +
         '<button type="button" class="dashboard-task-trigger" data-dashboard-expand="payments" aria-expanded="false">' +
           '<span class="dashboard-task-icon">💳</span>' +
-          '<span class="dashboard-task-copy"><span class="dashboard-task-title">' + unpaid.length + ' ' + (unpaid.length === 1 ? 'venta pendiente de cobro' : 'ventas pendientes de cobro') + '</span>' +
+          '<span class="dashboard-task-copy"><span class="dashboard-task-title">' + unpaidClients.length + ' ' + (unpaidClients.length === 1 ? 'cliente con cobro pendiente' : 'clientes con cobro pendiente') + '</span>' +
           '<span class="dashboard-task-sub">Tenés ' + money(unpaidTotal) + ' por cobrar.</span></span>' +
           '<span class="dashboard-task-value">' + money(unpaidTotal) + '</span>' +
           '<span class="dashboard-task-chevron" aria-hidden="true">⌄</span>' +
         '</button>' +
         '<div class="dashboard-task-details" data-dashboard-details="payments" hidden>' +
           '<div class="dashboard-detail-heading">Quiénes deben</div>';
-      unpaid.slice(0,5).forEach(function(s){
-        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><button type="button" class="dashboard-client-link" data-dashboard-client="' + escapeHtml(s.cliente || '') + '">' + escapeHtml(s.cliente || 'Sin nombre') + '</button><span>' + escapeHtml(s.articulo || 'Artículo') + '</span></span><span class="dashboard-pending-money">' + money(s.precio) + '</span></div>';
+      unpaidClients.slice(0,5).forEach(function(client){
+        let itemLabel = client.items + ' ' + (client.items === 1 ? 'artículo pendiente' : 'artículos pendientes');
+        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><button type="button" class="dashboard-client-link" data-dashboard-client="' + escapeHtml(client.name === 'Sin nombre' ? '' : client.name) + '">' + escapeHtml(client.name) + '</button><span>' + itemLabel + '</span></span><span class="dashboard-pending-money">' + money(client.total) + '</span></div>';
       });
-      if(unpaid.length > 5){ html += '<div class="dashboard-detail-more">+' + (unpaid.length-5) + ' ventas más</div>'; }
+      if(unpaidClients.length > 5){ html += '<div class="dashboard-detail-more">+' + (unpaidClients.length-5) + ' clientes más</div>'; }
       html += '<button type="button" class="dashboard-task-action" data-dashboard-action="payments">Ver todas las ventas pendientes →</button></div></article>';
     }else{
       html += '<article class="dashboard-task is-clear"><div class="dashboard-task-icon">✓</div><div class="dashboard-task-copy"><div class="dashboard-task-title">No hay pagos pendientes</div><div class="dashboard-task-sub">Todas las ventas de esta semana figuran como pagadas.</div></div></article>';
@@ -1963,7 +1974,11 @@ document.addEventListener('DOMContentLoaded', function(){
     let panel = document.getElementById('clientDetailPanel');
     if(!panel) return;
     if(!name){ panel.hidden = true; panel.innerHTML=''; return; }
-    let items = sales.filter(function(s){ return (s.cliente || '') === name; }).sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+    // La ficha de cliente muestra únicamente compras de la semana configurada como actual.
+    let thisWeekKey = weekKey(new Date());
+    let items = sales.filter(function(s){
+      return (s.cliente || '') === name && s.fecha && weekKey(new Date(s.fecha)) === thisWeekKey;
+    }).sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
     let total = items.reduce(function(sum,s){ return sum + (Number(s.precio)||0); },0);
     panel.hidden = false;
     let rows = items.map(function(s){
@@ -1972,9 +1987,9 @@ document.addEventListener('DOMContentLoaded', function(){
     }).join('');
     let target = clientMessengerUsers[name] || '';
     let messengerLabel = target ? (target.indexOf('search:')===0 ? 'Buscar en Messenger' : 'Abrir Messenger') : 'Vincular Messenger';
-    panel.innerHTML = '<div class="client-detail-head"><div><p class="view-hero-kicker">DETALLE DEL CLIENTE</p><h3>' + escapeHtml(name) + '</h3><p class="client-detail-sub">' + items.length + ' artículos registrados</p></div><button type="button" class="client-detail-close" data-close-client-detail aria-label="Cerrar detalle">×</button></div>' +
-      '<div class="client-detail-total"><span>Total de compras registradas</span><strong>' + money(total) + '</strong></div>' +
-      '<div class="client-purchase-list">' + (rows || '<div class="empty-inline">Todavía no hay compras para este cliente.</div>') + '</div>' +
+    panel.innerHTML = '<div class="client-detail-head"><div><p class="view-hero-kicker">DETALLE DEL CLIENTE</p><h3>' + escapeHtml(name) + '</h3><p class="client-detail-sub">' + items.length + ' artículos esta semana</p></div><button type="button" class="client-detail-close" data-close-client-detail aria-label="Cerrar detalle">×</button></div>' +
+      '<div class="client-detail-total"><span>Total de compras de esta semana</span><strong>' + money(total) + '</strong></div>' +
+      '<div class="client-purchase-list">' + (rows || '<div class="empty-inline">Este cliente no tiene compras registradas en la semana actual.</div>') + '</div>' +
       '<div class="client-detail-actions"><button type="button" class="messenger-action-btn" data-open-messenger="' + escapeHtml(name) + '">◉ ' + messengerLabel + '</button><button type="button" class="share-client-btn" data-share-client="' + escapeHtml(name) + '">↗ Compartir comprobante</button></div>';
     panel.querySelector('[data-close-client-detail]').addEventListener('click', function(){ activeClientDetailName=''; renderClientDetails(''); });
     panel.querySelector('[data-open-messenger]').addEventListener('click', function(){ openMessengerForClient(name); });
