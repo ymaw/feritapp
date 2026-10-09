@@ -1364,6 +1364,11 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
 .client-list-copy small{color:var(--text-muted);font-size:10.5px;}
 .client-row-chevron{font-size:24px;line-height:1;color:var(--text-muted);padding:0 4px;}
 .client-more-wrap{position:relative;flex:0 0 auto;}
+.client-messenger-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 10px;flex:0 0 auto;border:1px solid rgba(8,102,255,.20);border-radius:11px;background:rgba(8,102,255,.07);color:#0866ff;font:700 11px var(--body);cursor:pointer;white-space:nowrap;}
+.client-messenger-btn span:first-child{font-size:12px;}
+.client-messenger-btn.is-linked{background:rgba(8,102,255,.12);border-color:rgba(8,102,255,.3);}
+.client-messenger-btn:hover,.client-messenger-btn:focus-visible{background:rgba(8,102,255,.16);outline:2px solid rgba(8,102,255,.22);outline-offset:1px;}
+@media(max-width:420px){#viewClients .client-row{gap:6px;padding-left:8px;padding-right:6px}.client-messenger-btn{padding:0 7px;gap:4px;font-size:10px}.client-more-btn{width:34px;height:36px}}
 .client-more-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-size:21px;line-height:1;cursor:pointer;}
 .client-action-menu{position:absolute;z-index:30;right:0;top:44px;width:min(230px,70vw);padding:6px;border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:0 14px 35px rgba(15,23,42,.20);}
 .client-action-menu[hidden]{display:none;}

@@ -1781,7 +1781,8 @@ document.addEventListener('DOMContentLoaded', function(){
     sorted.forEach(function(name){
       html += '<div class="client-row">' +
                 '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '"><span class="client-avatar" aria-hidden="true">' + escapeHtml((name.trim().charAt(0) || 'C').toUpperCase()) + '</span><span class="client-list-copy"><strong>' + escapeHtml(name) + '</strong><small>' + (clientMessengerUsers[name] ? 'Messenger asociado' : 'Sin Messenger asociado') + '</small></span><span class="client-row-chevron">›</span></button>' +
-                '<div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-messenger-client="' + escapeHtml(name) + '">◉ Asociar Messenger</button><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div>' +
+                '<button type="button" class="client-messenger-btn' + (clientMessengerUsers[name] ? ' is-linked' : '') + '" data-messenger-client="' + escapeHtml(name) + '" aria-label="' + (clientMessengerUsers[name] ? 'Abrir Messenger para ' : 'Asociar Messenger para ') + escapeHtml(name) + '"><span aria-hidden="true">●</span><span>' + (clientMessengerUsers[name] ? 'Messenger' : 'Vincular') + '</span></button>' +
+                '<div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-messenger-client="' + escapeHtml(name) + '">' + (clientMessengerUsers[name] ? '◉ Abrir Messenger' : '◉ Asociar Messenger') + '</button><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div>' +
               '</div>';
     });
     html += '</div>';
@@ -1810,11 +1811,11 @@ document.addEventListener('DOMContentLoaded', function(){
         let name = btn.getAttribute('data-messenger-client');
         let current = clientMessengerUsers[name] || '';
         if(current){ openMessengerForClient(name); return; }
-        let entered = prompt('Ingresá el usuario o enlace de Messenger para este cliente. No incluyas la contraseña.', current);
+        let entered = prompt('Ingresá el enlace del perfil de Facebook/Messenger o el nombre de usuario de Messenger de este cliente. El nombre visible del perfil por sí solo no siempre alcanza. No incluyas contraseñas.', current);
         if(entered === null) return;
         entered = entered.trim();
         let username = normalizeMessengerTarget(entered);
-        if(!username){ showToast('Ingresá un usuario de Messenger o un enlace válido.'); return; }
+        if(!username){ showToast('Ingresá un usuario o un enlace válido de Facebook/Messenger, no solo el nombre visible.'); return; }
         saveMessengerTarget(name, username);
       });
     });
