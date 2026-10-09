@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { sales:'Registro semanal', clients:'Clientes', ranking:'Ranking de clientes', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Registro semanal', clients:'Clientes', ranking:'Ranking de clientes', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
@@ -345,10 +345,10 @@ document.addEventListener('DOMContentLoaded', function(){
     currentUserEmail = user.email;
     document.getElementById('authGate').style.display = 'none';
     document.getElementById('appRoot').style.display = 'block';
-    document.getElementById('sessionEmail').textContent = 'Ingresaste como ' + user.email;
+    document.getElementById('sessionEmail').textContent = 'Sesión iniciada';
     document.getElementById('profileEmail').textContent = user.email;
     window.history.replaceState({}, document.title, window.location.pathname);
-    switchView('sales');
+    switchView('dashboard');
     resetIdleTimer();
     loadSales();
   }
@@ -405,6 +405,10 @@ document.addEventListener('DOMContentLoaded', function(){
   let sales = [];
   let categories = [];
   let clients = [];
+  let clientMessengerUsers = {};
+  let pendingReceiptItems = [];
+  let pendingReceiptClient = '';
+  let pendingReceiptTotal = 0;
   let weekStartDay = 1; // 0=domingo .. 6=sábado. Por defecto: lunes.
   let notifyEnabled = true;
   let notifyDaysOverdue = 4;
@@ -620,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     try{
       let clientsRes = await sb.from('clients').select('*').order('name', { ascending:true });
-      clients = (clientsRes.data || []).map(function(c){ return c.name; });
+      clients = (clientsRes.data || []).map(function(c){ if(c.messenger_username) clientMessengerUsers[c.name] = c.messenger_username; return c.name; });
     }catch(e){
       clients = [];
     }
@@ -744,6 +748,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function generateReceiptCanvas(compradorNombre, items, mensaje){
+    // V12: el archivo compartido no expone nombres ni usuarios de las partes.
     const W = 600, PADDING = 40, LINE_H = 34;
     const NAVY = '#01172F', GRAY = '#8892a0', ACCENT = '#446DF6';
 
@@ -773,7 +778,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.textAlign = 'left';
     ctx.fillStyle = NAVY;
     ctx.font = 'bold 22px Arial';
-    ctx.fillText('Comprobante de compra', PADDING, y);
+    ctx.fillText('Detalle de compra', PADDING, y);
 
     y += 28;
     ctx.font = '13px Arial';
@@ -783,21 +788,19 @@ document.addEventListener('DOMContentLoaded', function(){
     y += 24;
     drawDashedLine(ctx, PADDING, y, W - PADDING);
 
-    y += 28;
-    ctx.font = 'bold 16px Arial';
-    ctx.fillStyle = NAVY;
-    ctx.fillText('Comprador: ' + compradorNombre, PADDING, y);
-
-    y += 20;
-    drawDashedLine(ctx, PADDING, y, W - PADDING);
-
     y += 32;
+    ctx.font = 'bold 12px Arial';
+    ctx.fillStyle = GRAY;
+    ctx.fillText('ARTÍCULO', PADDING, y);
+    ctx.textAlign = 'right';
+    ctx.fillText('PRECIO', W - PADDING, y);
+    y += 22;
     ctx.font = '15px Arial';
     let total = 0;
     items.forEach(function(it){
       ctx.textAlign = 'left';
       ctx.fillStyle = NAVY;
-      ctx.fillText(truncateCanvasText(ctx, it.articulo, 340), PADDING, y);
+      ctx.fillText(truncateCanvasText(ctx, it.articulo, 330), PADDING, y);
       ctx.textAlign = 'right';
       let priceTxt = money(it.precio);
       ctx.fillText(priceTxt, W - PADDING, y);
@@ -833,31 +836,69 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function shareReceipt(compradorNombre, items){
     if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
+    pendingReceiptItems = items.slice();
+    pendingReceiptClient = compradorNombre || '';
+    pendingReceiptTotal = items.reduce(function(sum, item){ return sum + (Number(item.precio)||0); }, 0);
+    let scrim = document.getElementById('receiptEditScrim');
+    let msg = document.getElementById('receiptShareMessage');
+    msg.value = receiptMessage || '';
+    document.getElementById('receiptPreviewDate').textContent = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('receiptPreviewItems').innerHTML = items.map(function(item){
+      return '<div class="receipt-preview-item"><span>' + escapeHtml(item.articulo || 'Artículo') + '</span><strong>' + money(item.precio) + '</strong></div>';
+    }).join('');
+    document.getElementById('receiptPreviewTotal').textContent = money(pendingReceiptTotal);
+    updateReceiptPreviewMessage();
+    scrim.hidden = false;
+    document.body.classList.add('receipt-modal-open');
+    msg.focus();
+  }
 
-    let canvas = generateReceiptCanvas(compradorNombre, items, receiptMessage);
+  function updateReceiptPreviewMessage(){
+    let msg = document.getElementById('receiptShareMessage');
+    let preview = document.getElementById('receiptPreviewMessage');
+    if(preview) preview.textContent = msg && msg.value.trim() ? msg.value.trim() : ' '; 
+  }
+
+  async function performReceiptShare(){
+    if(!pendingReceiptItems.length) return;
+    let msg = document.getElementById('receiptShareMessage').value.trim();
+    receiptMessage = msg;
+    // Se guarda la preferencia de mensaje si la sesión y el esquema lo permiten.
+    try{
+      let saveRes = await sb.from('user_settings').upsert({ receipt_message: msg }, { onConflict: 'user_id' });
+      if(saveRes.error) console.warn('No se pudo guardar la preferencia del mensaje del comprobante.');
+    }catch(e){ /* compartir no debe depender de que se guarde la preferencia */ }
+    closeReceiptEditor();
+    let canvas = generateReceiptCanvas('', pendingReceiptItems, msg);
     canvas.toBlob(async function(blob){
       if(!blob){ showToast('No se pudo generar el comprobante.'); return; }
-      let safeName = compradorNombre.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
-      let file = new File([blob], 'comprobante-' + safeName + '.png', { type: 'image/png' });
-
+      // El nombre del archivo también evita datos personales.
+      let file = new File([blob], 'comprobante-de-venta.png', { type: 'image/png' });
       if(navigator.canShare && navigator.canShare({ files: [file] })){
         try{
-          await navigator.share({ files: [file], text: receiptMessage || undefined });
+          await navigator.share({ files: [file], text: msg || undefined });
           return;
-        }catch(e){
-          if(e && e.name === 'AbortError') return; // el usuario canceló, no es un error
-        }
+        }catch(e){ if(e && e.name === 'AbortError') return; }
       }
-
-      // Si no se puede compartir directo, se descarga para compartirlo a mano.
       let url = URL.createObjectURL(blob);
       let a = document.createElement('a');
       a.href = url; a.download = file.name;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-      showToast('Comprobante descargado (tu navegador no soporta compartir directo)');
+      showToast('Comprobante descargado. Podés adjuntarlo desde Messenger.');
     }, 'image/png');
   }
+
+  function closeReceiptEditor(){
+    let scrim = document.getElementById('receiptEditScrim');
+    if(scrim) scrim.hidden = true;
+    document.body.classList.remove('receipt-modal-open');
+  }
+  document.getElementById('receiptShareMessage').addEventListener('input', updateReceiptPreviewMessage);
+  document.getElementById('confirmReceiptShare').addEventListener('click', performReceiptShare);
+  document.getElementById('closeReceiptEdit').addEventListener('click', closeReceiptEditor);
+  document.getElementById('cancelReceiptShare').addEventListener('click', closeReceiptEditor);
+  document.getElementById('receiptEditScrim').addEventListener('click', function(e){ if(e.target === this) closeReceiptEditor(); });
 
   let saveReceiptMessageBtnEl = document.getElementById('saveReceiptMessageBtn');
   if(saveReceiptMessageBtnEl){
@@ -1739,9 +1780,8 @@ document.addEventListener('DOMContentLoaded', function(){
     let html = '<div class="client-list">';
     sorted.forEach(function(name){
       html += '<div class="client-row">' +
-                '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '">' + escapeHtml(name) + '</button>' +
-                '<button type="button" class="client-edit-btn" data-edit-client="' + escapeHtml(name) + '" aria-label="Editar cliente">✎</button>' +
-                '<button type="button" class="client-del-btn" data-del-client="' + escapeHtml(name) + '" aria-label="Eliminar cliente">✕</button>' +
+                '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '"><span class="client-avatar" aria-hidden="true">' + escapeHtml((name.trim().charAt(0) || 'C').toUpperCase()) + '</span><span class="client-list-copy"><strong>' + escapeHtml(name) + '</strong><small>' + (clientMessengerUsers[name] ? 'Messenger asociado' : 'Sin Messenger asociado') + '</small></span><span class="client-row-chevron">›</span></button>' +
+                '<div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-messenger-client="' + escapeHtml(name) + '">◉ Asociar Messenger</button><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div>' +
               '</div>';
     });
     html += '</div>';
@@ -1752,6 +1792,30 @@ document.addEventListener('DOMContentLoaded', function(){
         searchInput.value = btn.getAttribute('data-client-name');
         renderClientSearch();
         renderClientsFullList();
+      });
+    });
+    wrap.querySelectorAll('[data-client-more]').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        let name = btn.getAttribute('data-client-more');
+        let menu = wrap.querySelector('[data-client-menu="' + CSS.escape(name) + '"]');
+        let wasOpen = menu && !menu.hidden;
+        wrap.querySelectorAll('.client-action-menu').forEach(function(m){ m.hidden = true; });
+        wrap.querySelectorAll('[data-client-more]').forEach(function(b){ b.setAttribute('aria-expanded','false'); });
+        if(menu && !wasOpen){ menu.hidden = false; btn.setAttribute('aria-expanded','true'); }
+      });
+    });
+    wrap.querySelectorAll('[data-messenger-client]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        let name = btn.getAttribute('data-messenger-client');
+        let current = clientMessengerUsers[name] || '';
+        if(current){ openMessengerForClient(name); return; }
+        let entered = prompt('Ingresá el usuario o enlace de Messenger para este cliente. No incluyas la contraseña.', current);
+        if(entered === null) return;
+        entered = entered.trim();
+        let username = normalizeMessengerTarget(entered);
+        if(!username){ showToast('Ingresá un usuario de Messenger o un enlace válido.'); return; }
+        saveMessengerTarget(name, username);
       });
     });
     wrap.querySelectorAll('[data-edit-client]').forEach(function(btn){
@@ -1772,6 +1836,34 @@ document.addEventListener('DOMContentLoaded', function(){
         }
       });
     });
+  }
+
+  function normalizeMessengerTarget(value){
+    let raw = String(value || '').trim();
+    if(!raw) return '';
+    let match = raw.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.me|messenger\.com\/t)\/([^/?#]+)/i);
+    if(match) return match[1];
+    raw = raw.replace(/^@/, '').replace(/\s+/g, '');
+    if(/^[a-zA-Z0-9._-]{3,100}$/.test(raw)) return raw;
+    return '';
+  }
+
+  async function saveMessengerTarget(name, username){
+    try{
+      let res = await sb.from('clients').update({ messenger_username: username }).eq('name', name);
+      if(res.error) throw res.error;
+      clientMessengerUsers[name] = username;
+      renderClientsFullList();
+      showToast('Messenger asociado');
+    }catch(e){
+      showToast('No se pudo guardar. Aplicá primero la migración SQL de Messenger incluida en V12.');
+    }
+  }
+
+  function openMessengerForClient(name){
+    let username = clientMessengerUsers[name];
+    if(!username){ showToast('Asociá primero el usuario de Messenger desde el menú ⋯.'); return; }
+    window.open('https://m.me/' + encodeURIComponent(username), '_blank', 'noopener,noreferrer');
   }
 
   async function renameClientEntry(oldName, newName){

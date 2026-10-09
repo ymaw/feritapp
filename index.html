@@ -150,12 +150,12 @@
 </header>
 
 <div class="menu-dropdown" id="menuDropdown" style="display:none;">
-  <button type="button" class="menu-item" data-view="dashboard">📊 Ver Dashboard</button>
+  <button type="button" class="menu-item" data-view="dashboard">⌂ Inicio</button>
   <button type="button" class="menu-item" data-view="clients">👥 Ver clientes</button>
   <button type="button" class="menu-item" data-view="ranking">🏆 Ranking de clientes</button>
   <button type="button" class="menu-item" data-view="sales">🧾 Ver tabla de ventas</button>
   <button type="button" class="menu-item" data-view="settings">⚙️ Configuración</button>
-  <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar app</button>
+  <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar feritApp</button>
   <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
 </div>
 
@@ -461,18 +461,18 @@
   </div>
 </div>
 
-<nav class="bottom-nav" id="bottomNav">
-  <button type="button" class="nav-item active" data-view="sales">
-    <span class="nav-icon">🧾</span><span class="nav-label">Ventas</span>
+<nav class="bottom-nav" id="bottomNav" aria-label="Navegación principal">
+  <button type="button" class="nav-item active" data-view="dashboard">
+    <span class="nav-icon">⌂</span><span class="nav-label">Inicio</span>
   </button>
   <button type="button" class="nav-item" data-view="clients">
-    <span class="nav-icon">👥</span><span class="nav-label">Clientes</span>
+    <span class="nav-icon">♙</span><span class="nav-label">Clientes</span>
   </button>
   <button class="nav-fab" id="openSheet" aria-label="Agregar venta">+</button>
-  <button type="button" class="nav-item" data-view="dashboard">
-    <span class="nav-icon">🏠</span><span class="nav-label">Inicio</span>
+  <button type="button" class="nav-item" data-view="sales">
+    <span class="nav-icon">▤</span><span class="nav-label">Ventas</span>
   </button>
-  <button type="button" class="nav-item" id="moreBtn">
+  <button type="button" class="nav-item" id="moreBtn" aria-expanded="false" aria-label="Más opciones">
     <span class="nav-icon">⋯</span><span class="nav-label">Más</span>
   </button>
 </nav>
@@ -483,11 +483,11 @@
   </div>
   <button type="button" class="sidebar-cta" id="sidebarOpenSheet">+ Nueva venta</button>
   <div class="sidebar-links">
-    <button type="button" class="sidebar-item" data-view="sales">🧾 Ventas</button>
-    <button type="button" class="sidebar-item" data-view="clients">👥 Clientes</button>
-    <button type="button" class="sidebar-item" data-view="ranking">🏆 Ranking</button>
-    <button type="button" class="sidebar-item" data-view="dashboard">📊 Dashboard</button>
-    <button type="button" class="sidebar-item" data-view="settings">⚙️ Configuración</button>
+    <button type="button" class="sidebar-item active" data-view="dashboard">⌂ Inicio</button>
+    <button type="button" class="sidebar-item" data-view="clients">♙ Clientes</button>
+    <button type="button" class="sidebar-item" data-view="sales">▤ Ventas</button>
+    <button type="button" class="sidebar-item" data-view="ranking">♕ Ranking</button>
+    <button type="button" class="sidebar-item" data-view="settings">⚙ Configuración</button>
   </div>
   <button type="button" class="sidebar-item sidebar-logout" id="sidebarLogoutBtn">🚪 Cerrar sesión</button>
 </nav>
@@ -559,6 +559,24 @@
   </div>
 </div>
 
+<div class="receipt-edit-scrim" id="receiptEditScrim" hidden>
+  <section class="receipt-edit-modal" role="dialog" aria-modal="true" aria-labelledby="receiptEditTitle">
+    <div class="receipt-edit-heading"><span class="receipt-edit-icon">▤</span><div><h2 id="receiptEditTitle">Comprobante de venta</h2><p>Revisá el mensaje antes de compartir.</p></div><button type="button" id="closeReceiptEdit" class="icon-close-btn" aria-label="Cerrar">×</button></div>
+    <div class="receipt-preview-card" id="receiptPreviewCard">
+      <div class="receipt-preview-brand">ferit<span>App</span></div>
+      <div class="receipt-preview-title">DETALLE DE COMPRA</div>
+      <div class="receipt-preview-date" id="receiptPreviewDate"></div>
+      <div class="receipt-preview-items" id="receiptPreviewItems"></div>
+      <div class="receipt-preview-total"><span>Total</span><strong id="receiptPreviewTotal"></strong></div>
+      <div class="receipt-preview-message-label">Mensaje</div>
+      <p class="receipt-preview-message" id="receiptPreviewMessage"></p>
+    </div>
+    <label class="receipt-message-label" for="receiptShareMessage">Mensaje incluido en el comprobante</label>
+    <textarea id="receiptShareMessage" class="settings-textarea" rows="3" maxlength="240" placeholder="Ej.: ¡Gracias por tu compra!"></textarea>
+    <p class="hint">El comprobante no incluye nombres, usuarios, método de pago ni estado de pago.</p>
+    <div class="receipt-edit-actions"><button type="button" class="secondary-btn" id="cancelReceiptShare">Cancelar</button><button type="button" class="save-btn" id="confirmReceiptShare">↗ Compartir comprobante</button></div>
+  </section>
+</div>
 <div class="toast" id="toast"></div>
 
 </div><!-- /appRoot -->
