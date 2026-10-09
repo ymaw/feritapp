@@ -1810,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', function(){
     sorted.forEach(function(name){
       html += '<div class="client-row">' +
                 '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '"><span class="client-avatar" aria-hidden="true">' + escapeHtml((name.trim().charAt(0) || 'C').toUpperCase()) + '</span><span class="client-list-copy"><strong>' + escapeHtml(name) + '</strong><small>Ver compras y opciones</small></span><span class="client-row-chevron">›</span></button>' +
-                '<div class="client-row-actions"><button type="button" class="client-inline-copy" data-copy-client="' + escapeHtml(name) + '" aria-label="Copiar nombre de ' + escapeHtml(name) + '" title="Copiar nombre"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button><button type="button" class="client-inline-share" data-share-client="' + escapeHtml(name) + '" aria-label="Compartir comprobante de ' + escapeHtml(name) + '" title="Compartir comprobante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button><div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div></div>' +
+                '<div class="client-row-actions"><button type="button" class="client-inline-copy" data-open-messenger="' + escapeHtml(name) + '" aria-label="Abrir Messenger para ' + escapeHtml(name) + '" title="Abrir Messenger"><svg viewBox="0 0 24 24" aria-hidden="true" class="messenger-brand-icon"><path d="M12 2C6.25 2 2 6.13 2 11.45c0 2.98 1.42 5.57 3.65 7.28.19.15.31.4.32.65l.06 2.02c.02.32.35.53.64.41l2.25-.99c.19-.08.39-.1.59-.04.79.22 1.63.34 2.49.34 5.75 0 10-4.13 10-9.45S17.75 2 12 2Zm1.02 12.72-2.55-2.72a.8.8 0 0 0-.96-.15l-3.05 1.63c-.32.17-.66-.2-.44-.49l3.25-4.34a1.2 1.2 0 0 1 1.83-.13l2.55 2.72a.8.8 0 0 0 .96.15l3.05-1.63c.32-.17.66.2.44.49l-3.25 4.34a1.2 1.2 0 0 1-1.83.13Z"/></svg></button><button type="button" class="client-inline-share" data-share-client="' + escapeHtml(name) + '" aria-label="Compartir comprobante de ' + escapeHtml(name) + '" title="Compartir comprobante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button><div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div></div>' +
               '</div>';
     });
     html += '</div>';
@@ -1833,8 +1833,8 @@ document.addEventListener('DOMContentLoaded', function(){
         if(menu && !wasOpen){ menu.hidden = false; btn.setAttribute('aria-expanded','true'); }
       });
     });
-    wrap.querySelectorAll('[data-copy-client]').forEach(function(btn){
-      btn.addEventListener('click', function(){ copyClientName(btn.getAttribute('data-copy-client')); });
+    wrap.querySelectorAll('[data-open-messenger]').forEach(function(btn){
+      btn.addEventListener('click', function(){ openMessengerForClientName(btn.getAttribute('data-open-messenger')); });
     });
     wrap.querySelectorAll('[data-share-client]').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -1863,23 +1863,11 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  async function copyClientName(name){
-    let copied = false;
-    try{
-      if(navigator.clipboard && window.isSecureContext){
-        await navigator.clipboard.writeText(name);
-        copied = true;
-      }else{
-        let input = document.createElement('textarea');
-        input.value = name;
-        input.setAttribute('readonly', '');
-        input.style.position = 'fixed'; input.style.opacity = '0'; input.style.pointerEvents = 'none';
-        document.body.appendChild(input); input.select();
-        copied = document.execCommand('copy');
-        document.body.removeChild(input);
-      }
-    }catch(e){ copied = false; }
-    showToast(copied ? 'Nombre copiado. Pegalo en el buscador de Messenger.' : 'No se pudo copiar automáticamente. Mantené presionado el nombre para copiarlo.');
+  function openMessengerForClientName(name){
+    // Abre la bandeja de Messenger con la sesión que el vendedor tenga iniciada.
+    // No intenta adivinar el perfil del cliente a partir de su nombre.
+    window.open('https://www.messenger.com/', '_blank', 'noopener,noreferrer');
+    showToast('Messenger abierto. Buscá a ' + name + ' en tus conversaciones.');
   }
 
   function openClientDetails(name){
@@ -1911,9 +1899,9 @@ document.addEventListener('DOMContentLoaded', function(){
     panel.innerHTML = '<div class="client-detail-head"><div><p class="view-hero-kicker">DETALLE DEL CLIENTE</p><h3>' + escapeHtml(name) + '</h3><p class="client-detail-sub">' + items.length + ' artículos esta semana</p></div><button type="button" class="client-detail-close" data-close-client-detail aria-label="Cerrar detalle">×</button></div>' +
       '<div class="client-detail-total"><span>Total de compras de esta semana</span><strong>' + money(total) + '</strong></div>' +
       '<div class="client-purchase-list">' + (rows || '<div class="empty-inline">Este cliente no tiene compras registradas en la semana actual.</div>') + '</div>' +
-      '<div class="client-detail-actions"><button type="button" class="copy-client-name-btn" data-copy-client="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg> Copiar nombre</button><button type="button" class="share-client-btn" data-share-client="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> Compartir comprobante</button></div>';
+      '<div class="client-detail-actions"><button type="button" class="copy-client-name-btn" data-open-messenger="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true" class="messenger-brand-icon"><path d="M12 2C6.25 2 2 6.13 2 11.45c0 2.98 1.42 5.57 3.65 7.28.19.15.31.4.32.65l.06 2.02c.02.32.35.53.64.41l2.25-.99c.19-.08.39-.1.59-.04.79.22 1.63.34 2.49.34 5.75 0 10-4.13 10-9.45S17.75 2 12 2Zm1.02 12.72-2.55-2.72a.8.8 0 0 0-.96-.15l-3.05 1.63c-.32.17-.66-.2-.44-.49l3.25-4.34a1.2 1.2 0 0 1 1.83-.13l2.55 2.72a.8.8 0 0 0 .96.15l3.05-1.63c.32-.17.66.2.44.49l-3.25 4.34a1.2 1.2 0 0 1-1.83.13Z"/></svg> Abrir Messenger</button><button type="button" class="share-client-btn" data-share-client="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> Compartir comprobante</button></div>';
     panel.querySelector('[data-close-client-detail]').addEventListener('click', function(){ activeClientDetailName=''; renderClientDetails(''); });
-    panel.querySelector('[data-copy-client]').addEventListener('click', function(){ copyClientName(name); });
+    panel.querySelector('[data-open-messenger]').addEventListener('click', function(){ openMessengerForClientName(name); });
     panel.querySelector('[data-share-client]').addEventListener('click', function(){ if(items.length) shareReceipt(name, items); else showToast('Este cliente todavía no tiene ventas registradas.'); });
   }
 

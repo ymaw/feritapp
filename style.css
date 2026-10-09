@@ -1508,3 +1508,7 @@ body.auth-locked{overflow:hidden;height:100%;}
 .receipt-edit-actions .save-btn{border-radius:13px;box-shadow:0 6px 15px rgba(var(--primary-rgb),.2);}
 @media(max-width:520px){.client-row-actions{gap:5px;padding-right:7px;}.client-inline-copy,.client-inline-share{width:34px;height:34px;min-height:34px;border-radius:10px;}.client-detail-actions{grid-template-columns:1fr 1fr;}.copy-client-name-btn,.share-client-btn{padding:10px 7px;font-size:11px;}.receipt-edit-scrim{padding:10px;align-items:flex-end;}.receipt-edit-modal{max-height:94dvh;padding:17px;border-radius:22px 22px 16px 16px;}.receipt-preview-card{padding:16px;}}
 @media(max-width:360px){.client-detail-actions{grid-template-columns:1fr;}.receipt-preview-badge{font-size:7px;padding:5px 6px;}.receipt-edit-actions{grid-template-columns:1fr;}.receipt-edit-actions .save-btn{order:-1;}}
+
+/* V12.6: icono de marca Messenger en acciones de cliente */
+.messenger-brand-icon{fill:#0866ff !important;stroke:none !important;width:20px;height:20px;}
+.client-inline-copy:hover .messenger-brand-icon,.copy-client-name-btn:hover .messenger-brand-icon{fill:#fff !important;}
