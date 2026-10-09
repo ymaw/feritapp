@@ -1452,3 +1452,8 @@ body.auth-locked{overflow:hidden;height:100%;}
 .messenger-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;}
 .messenger-copy-open{width:100%;margin-top:9px;padding:11px;border:0;background:transparent;color:var(--primary-soft);font:600 12px var(--body);cursor:pointer;}
 @media(max-width:520px){.client-row{align-items:center;}.client-row-actions{gap:4px;padding-right:5px;}.client-inline-messenger{padding:6px;}.client-inline-messenger span{display:none;}.client-detail-actions{grid-template-columns:1fr;}.app-modal-card{padding:20px;}#authGate{align-items:flex-start;padding-top:max(24px,env(safe-area-inset-top));}}
+
+/* V12.3: clickable customer names in dashboard attention lists */
+.dashboard-client-link{display:inline;max-width:100%;padding:0;border:0;background:transparent;color:var(--primary);font:inherit;font-weight:700;text-align:left;text-decoration:underline;text-decoration-color:rgba(var(--primary-rgb),.35);text-underline-offset:2px;cursor:pointer;overflow-wrap:anywhere;}
+.dashboard-client-link:hover{color:var(--primary-soft);text-decoration-color:currentColor;}
+.dashboard-client-link:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:3px;}

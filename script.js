@@ -1445,7 +1445,7 @@ document.addEventListener('DOMContentLoaded', function(){
         '<div class="dashboard-task-details" data-dashboard-details="payments" hidden>' +
           '<div class="dashboard-detail-heading">Quiénes deben</div>';
       unpaid.slice(0,5).forEach(function(s){
-        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><strong>' + escapeHtml(s.cliente || 'Sin nombre') + '</strong><span>' + escapeHtml(s.articulo || 'Artículo') + '</span></span><span class="dashboard-pending-money">' + money(s.precio) + '</span></div>';
+        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><button type="button" class="dashboard-client-link" data-dashboard-client="' + escapeHtml(s.cliente || '') + '">' + escapeHtml(s.cliente || 'Sin nombre') + '</button><span>' + escapeHtml(s.articulo || 'Artículo') + '</span></span><span class="dashboard-pending-money">' + money(s.precio) + '</span></div>';
       });
       if(unpaid.length > 5){ html += '<div class="dashboard-detail-more">+' + (unpaid.length-5) + ' ventas más</div>'; }
       html += '<button type="button" class="dashboard-task-action" data-dashboard-action="payments">Ver todas las ventas pendientes →</button></div></article>';
@@ -1465,7 +1465,7 @@ document.addEventListener('DOMContentLoaded', function(){
         '<div class="dashboard-task-details" data-dashboard-details="delivery" hidden>' +
           '<div class="dashboard-detail-heading">Quiénes tienen entregas</div>';
       deliveryPeople.slice(0,5).forEach(function(person){
-        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><strong>' + escapeHtml(person.name) + '</strong><span>' + person.items + ' ' + (person.items === 1 ? 'artículo' : 'artículos') + '</span></span><span class="dashboard-pending-money">' + (person.pending ? 'Debe ' + money(person.pending) : 'Pagado') + '</span></div>';
+        html += '<div class="dashboard-pending-row"><span class="dashboard-pending-name"><button type="button" class="dashboard-client-link" data-dashboard-client="' + escapeHtml(person.name) + '">' + escapeHtml(person.name) + '</button><span>' + person.items + ' ' + (person.items === 1 ? 'artículo' : 'artículos') + '</span></span><span class="dashboard-pending-money">' + (person.pending ? 'Debe ' + money(person.pending) : 'Pagado') + '</span></div>';
       });
       if(deliveryPeople.length > 5){ html += '<div class="dashboard-detail-more">+' + (deliveryPeople.length-5) + ' personas más</div>'; }
       html += '<button type="button" class="dashboard-task-action" data-dashboard-action="delivery">Ver todas las entregas →</button></div></article>';
@@ -1475,6 +1475,9 @@ document.addEventListener('DOMContentLoaded', function(){
     wrap.innerHTML = html;
     bindDashboardTaskActions(wrap);
     bindDashboardExpanders(wrap);
+    wrap.querySelectorAll('[data-dashboard-client]').forEach(function(btn){
+      btn.addEventListener('click', function(e){ e.stopPropagation(); let name = btn.getAttribute('data-dashboard-client'); if(name) openClientDetails(name); });
+    });
   }
 
   function bindDashboardExpanders(root){
@@ -1866,6 +1869,8 @@ document.addEventListener('DOMContentLoaded', function(){
     let link = current.indexOf('search:') === 0 ? '' : current;
     document.getElementById('messengerContactName').value = savedName;
     document.getElementById('messengerContactLink').value = link;
+    let removeBtn = document.getElementById('removeMessengerContact');
+    if(removeBtn) removeBtn.hidden = !current;
     document.getElementById('messengerLinkModal').hidden = false;
     setTimeout(function(){ document.getElementById('messengerContactName').focus(); }, 30);
   }
@@ -1888,6 +1893,18 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
+  async function removeMessengerTarget(){
+    let name = messengerEditingClient;
+    if(!name) return;
+    try{
+      let res = await sb.from('clients').update({ messenger_username: null }).eq('name', name);
+      if(res.error) throw res.error;
+      delete clientMessengerUsers[name];
+      renderClientsFullList(); renderClientDetails(name); closeMessengerEditor();
+      showToast('Asociación de Messenger eliminada');
+    }catch(e){ showToast('No se pudo eliminar la asociación. Verificá la conexión y los permisos.'); }
+  }
+
   async function saveMessengerEditor(copyAndOpen){
     let name = messengerEditingClient;
     if(!name) return;
@@ -1902,14 +1919,17 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function launchMessengerSearch(label){
-    let messengerWindow = window.open('https://www.messenger.com/', '_blank');
-    if(messengerWindow){ messengerWindow.opener = null; }
+    let copied = false;
+    try{ await navigator.clipboard.writeText(label); copied = true; }catch(e){}
+    // Use Meta's universal link so compatible phones can hand off to the installed Messenger app.
+    // Browsers cannot force another app to open or paste into its private search field.
+    let opened = false;
     try{
-      await navigator.clipboard.writeText(label);
-      showToast('Nombre copiado. Pegalo en el buscador de Messenger.');
-    }catch(e){
-      showToast('Messenger abierto. Copiá el nombre del cliente y buscá el contacto.');
-    }
+      let popup = window.open('https://m.me/', '_blank', 'noopener,noreferrer');
+      opened = !!popup;
+    }catch(e){}
+    if(copied){ showToast(opened ? 'Nombre copiado. Si se abre Messenger, pegalo en el buscador.' : 'Nombre copiado. Abrí Messenger y pegalo en el buscador.'); }
+    else { showToast('No se pudo copiar automáticamente. Copiá el nombre del cliente y buscálo en Messenger.'); }
   }
 
   function openMessengerForClient(name){
@@ -1923,6 +1943,8 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('closeMessengerModal').addEventListener('click', closeMessengerEditor);
   document.getElementById('cancelMessengerModal').addEventListener('click', closeMessengerEditor);
   document.getElementById('saveMessengerContact').addEventListener('click', function(){ saveMessengerEditor(false); });
+  let removeMessengerBtn = document.getElementById('removeMessengerContact');
+  if(removeMessengerBtn) removeMessengerBtn.addEventListener('click', function(){ removeMessengerTarget(); });
   document.getElementById('copyAndOpenMessenger').addEventListener('click', function(){ saveMessengerEditor(true); });
   document.getElementById('messengerLinkModal').addEventListener('click', function(e){ if(e.target.id === 'messengerLinkModal') closeMessengerEditor(); });
 
