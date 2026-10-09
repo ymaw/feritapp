@@ -1457,3 +1457,54 @@ body.auth-locked{overflow:hidden;height:100%;}
 .dashboard-client-link{display:inline;max-width:100%;padding:0;border:0;background:transparent;color:var(--primary);font:inherit;font-weight:700;text-align:left;text-decoration:underline;text-decoration-color:rgba(var(--primary-rgb),.35);text-underline-offset:2px;cursor:pointer;overflow-wrap:anywhere;}
 .dashboard-client-link:hover{color:var(--primary-soft);text-decoration-color:currentColor;}
 .dashboard-client-link:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:3px;}
+
+/* V12.5 — acciones de cliente con iconografía consistente */
+.client-row-actions{gap:7px;padding:0 10px 0 4px;}
+.client-inline-copy,.client-inline-share{display:inline-grid;place-items:center;width:38px;height:38px;min-height:38px;padding:0;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--primary-soft);cursor:pointer;transition:transform .16s ease,background .16s ease,border-color .16s ease;}
+.client-inline-copy svg,.client-inline-share svg,.copy-client-name-btn svg,.share-client-btn svg,.receipt-edit-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.client-inline-copy:hover,.client-inline-share:hover{background:var(--primary);border-color:var(--primary);color:#fff;transform:translateY(-1px);}
+.client-inline-copy:focus-visible,.client-inline-share:focus-visible,.copy-client-name-btn:focus-visible,.share-client-btn:focus-visible{outline:3px solid rgba(var(--primary-rgb),.28);outline-offset:2px;}
+.client-more-btn{width:36px;height:38px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:20px;}
+.client-detail-actions{grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr);gap:10px;}
+.copy-client-name-btn,.share-client-btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:46px;border-radius:13px;font:700 12px var(--body);transition:transform .16s ease,filter .16s ease;}
+.copy-client-name-btn{border:1px solid var(--border);background:var(--surface-2);color:var(--primary-soft);}
+.share-client-btn{display:flex;align-items:center;justify-content:center;gap:9px;}
+.copy-client-name-btn:hover,.share-client-btn:hover{filter:brightness(1.04);transform:translateY(-1px);}
+
+/* V12.5 — comprobante renovado: marca, jerarquía y total protagonista */
+.receipt-edit-modal{width:min(100%,500px);padding:22px;background:var(--surface);border-color:rgba(var(--primary-rgb),.18);}
+.receipt-edit-heading{gap:13px;margin-bottom:18px;}
+.receipt-edit-icon{width:48px;height:48px;flex-basis:48px;background:linear-gradient(145deg,rgba(var(--primary-rgb),.16),rgba(var(--primary-rgb),.06));}
+.receipt-edit-icon svg{width:23px;height:23px;}
+.receipt-eyebrow{margin:0 0 4px!important;font-size:9px!important;letter-spacing:.13em;font-weight:800;color:var(--primary-soft)!important;}
+.receipt-edit-heading h2{font-size:20px;line-height:1.2;}
+.receipt-edit-heading p:last-child{font-size:12px;}
+.receipt-preview-card{position:relative;overflow:hidden;padding:20px;border:1px solid rgba(var(--primary-rgb),.18);border-radius:20px;background:linear-gradient(155deg,#fff 0%,#fbfaff 70%,#f3f0ff 100%);color:#1b1b49;box-shadow:0 12px 28px rgba(55,38,130,.08);}
+.receipt-preview-card:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#6547f5,#9278ff,#43c7d9);}
+.receipt-preview-brand{display:flex;align-items:center;gap:9px;font-family:var(--display);font-size:20px;color:#201d54;}
+.receipt-brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(145deg,#6547f5,#8b73ff);color:#fff;font-weight:900;font-size:22px;box-shadow:0 5px 12px rgba(101,71,245,.24);}
+.receipt-brand-name{font-weight:800;letter-spacing:-.04em;}
+.receipt-brand-name strong{color:#6547f5;}
+.receipt-preview-badge{margin-left:auto;padding:6px 8px;border-radius:8px;background:#efecff;color:#6547f5;font:800 8px var(--body);letter-spacing:.08em;}
+.receipt-preview-title{margin-top:19px;font-size:16px;letter-spacing:-.025em;color:#201d54;font-weight:800;}
+.receipt-preview-date{display:inline-flex;margin-top:6px;padding:5px 8px;border-radius:7px;background:#f3f2fb;color:#777797;font-size:10px;}
+.receipt-preview-items{gap:0;margin-top:17px;padding-top:4px;border-top:1px solid #e8e5f6;}
+.receipt-preview-item{align-items:center;padding:11px 0;border-bottom:1px solid #eeecf8;font-size:12px;color:#35345e;}
+.receipt-preview-item span{display:flex;align-items:center;gap:8px;}
+.receipt-preview-item span:before{content:"";display:block;width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#8b73ff;}
+.receipt-preview-item strong{font-size:12px;color:#29265f;}
+.receipt-preview-total{align-items:center;margin-top:15px;padding:14px;border:1px solid #e6e0ff;border-radius:13px;background:#f3f0ff;color:#51458f;}
+.receipt-preview-total span{font-size:12px;font-weight:750;}
+.receipt-preview-total strong{font-size:22px;color:#6547f5;letter-spacing:-.04em;}
+.receipt-preview-message-label{display:flex;align-items:center;gap:6px;margin-top:16px;color:#777797;font-size:9px;letter-spacing:.09em;}
+.receipt-preview-message-label span{color:#6547f5;font-size:14px;}
+.receipt-preview-message{margin-top:7px;color:#555477;font-size:12px;line-height:1.6;}
+.receipt-message-editor-head{display:flex;align-items:center;gap:8px;margin-top:17px;}
+.receipt-message-editor-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--surface-2);color:var(--primary-soft);}
+.receipt-message-label{margin:0;font-size:12px;font-weight:800;}
+#receiptShareMessage{margin-top:8px;}
+.receipt-edit-modal>.hint{margin-top:8px;font-size:10px;line-height:1.5;}
+.receipt-edit-actions{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);margin-top:16px;}
+.receipt-edit-actions .save-btn{border-radius:13px;box-shadow:0 6px 15px rgba(var(--primary-rgb),.2);}
+@media(max-width:520px){.client-row-actions{gap:5px;padding-right:7px;}.client-inline-copy,.client-inline-share{width:34px;height:34px;min-height:34px;border-radius:10px;}.client-detail-actions{grid-template-columns:1fr 1fr;}.copy-client-name-btn,.share-client-btn{padding:10px 7px;font-size:11px;}.receipt-edit-scrim{padding:10px;align-items:flex-end;}.receipt-edit-modal{max-height:94dvh;padding:17px;border-radius:22px 22px 16px 16px;}.receipt-preview-card{padding:16px;}}
+@media(max-width:360px){.client-detail-actions{grid-template-columns:1fr;}.receipt-preview-badge{font-size:7px;padding:5px 6px;}.receipt-edit-actions{grid-template-columns:1fr;}.receipt-edit-actions .save-btn{order:-1;}}

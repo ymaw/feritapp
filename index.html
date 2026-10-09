@@ -560,40 +560,19 @@
   </div>
 </div>
 
-<div id="messengerLinkModal" class="app-modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="messengerModalTitle">
-  <section class="app-modal-card messenger-modal-card">
-    <button type="button" class="app-modal-close" id="closeMessengerModal" aria-label="Cerrar">×</button>
-    <div class="messenger-modal-icon" aria-hidden="true">●</div>
-    <p class="view-hero-kicker">CONTACTO DE FACEBOOK</p>
-    <h2 id="messengerModalTitle">Encontrar a tu contacto</h2>
-    <p class="hint">Ingresá el nombre con el que lo reconocés en Facebook o Messenger. FeritApp no puede leer tus contactos privados ni identificar personas solo por el nombre.</p>
-    <label for="messengerContactName">Nombre que vas a buscar</label>
-    <input id="messengerContactName" type="text" maxlength="100" placeholder="Ej.: Ana (clienta de Facebook)" autocomplete="off">
-    <label for="messengerContactLink">Enlace directo (opcional)</label>
-    <input id="messengerContactLink" type="url" maxlength="240" placeholder="https://m.me/... o enlace del perfil">
-    <p class="hint">Si no tenés un enlace directo, se copia el nombre y se abre Messenger para que lo pegues en el buscador. El navegador no permite pegarlo automáticamente dentro de Messenger.</p>
-    <div class="messenger-modal-actions">
-      <button type="button" class="secondary-btn" id="removeMessengerContact" hidden>Eliminar asociación</button>
-      <button type="button" class="secondary-btn" id="cancelMessengerModal">Cancelar</button>
-      <button type="button" class="save-btn" id="saveMessengerContact">Guardar contacto</button>
-    </div>
-    <button type="button" class="messenger-copy-open" id="copyAndOpenMessenger">Copiar nombre y abrir Messenger</button>
-  </section>
-</div>
-
 <div class="receipt-edit-scrim" id="receiptEditScrim" hidden>
   <section class="receipt-edit-modal" role="dialog" aria-modal="true" aria-labelledby="receiptEditTitle">
-    <div class="receipt-edit-heading"><span class="receipt-edit-icon">▤</span><div><h2 id="receiptEditTitle">Comprobante de venta</h2><p>Revisá el mensaje antes de compartir.</p></div><button type="button" id="closeReceiptEdit" class="icon-close-btn" aria-label="Cerrar">×</button></div>
+    <div class="receipt-edit-heading"><span class="receipt-edit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v5h5M8 13h8M8 17h8"/></svg></span><div><p class="receipt-eyebrow">VENTA LISTA PARA COMPARTIR</p><h2 id="receiptEditTitle">Comprobante de compra</h2><p>Así lo verá tu cliente.</p></div><button type="button" id="closeReceiptEdit" class="icon-close-btn" aria-label="Cerrar">×</button></div>
     <div class="receipt-preview-card" id="receiptPreviewCard">
-      <div class="receipt-preview-brand">ferit<span>App</span></div>
-      <div class="receipt-preview-title">DETALLE DE COMPRA</div>
+      <div class="receipt-preview-brand"><span class="receipt-brand-mark">f</span><span class="receipt-brand-name">ferit<strong>App</strong></span><span class="receipt-preview-badge">COMPROBANTE</span></div>
+      <div class="receipt-preview-title">Resumen de tu compra</div>
       <div class="receipt-preview-date" id="receiptPreviewDate"></div>
       <div class="receipt-preview-items" id="receiptPreviewItems"></div>
       <div class="receipt-preview-total"><span>Total</span><strong id="receiptPreviewTotal"></strong></div>
-      <div class="receipt-preview-message-label">Mensaje</div>
+      <div class="receipt-preview-message-label"><span>✦</span> Mensaje de la tienda</div>
       <p class="receipt-preview-message" id="receiptPreviewMessage"></p>
     </div>
-    <label class="receipt-message-label" for="receiptShareMessage">Mensaje incluido en el comprobante</label>
+    <div class="receipt-message-editor-head"><span class="receipt-message-editor-icon">✎</span><label class="receipt-message-label" for="receiptShareMessage">Personalizá el mensaje</label></div>
     <textarea id="receiptShareMessage" class="settings-textarea" rows="3" maxlength="240" placeholder="Ej.: ¡Gracias por tu compra!"></textarea>
     <p class="hint">El comprobante no incluye nombres, usuarios, método de pago ni estado de pago.</p>
     <div class="receipt-edit-actions"><button type="button" class="secondary-btn" id="cancelReceiptShare">Cancelar</button><button type="button" class="save-btn" id="confirmReceiptShare">↗ Compartir comprobante</button></div>

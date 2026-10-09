@@ -410,9 +410,7 @@ document.addEventListener('DOMContentLoaded', function(){
   let sales = [];
   let categories = [];
   let clients = [];
-  let clientMessengerUsers = {};
   let activeClientDetailName = '';
-  let messengerEditingClient = '';
   let pendingReceiptItems = [];
   let pendingReceiptClient = '';
   let pendingReceiptTotal = 0;
@@ -631,7 +629,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     try{
       let clientsRes = await sb.from('clients').select('*').order('name', { ascending:true });
-      clients = (clientsRes.data || []).map(function(c){ if(c.messenger_username) clientMessengerUsers[c.name] = c.messenger_username; return c.name; });
+      clients = (clientsRes.data || []).map(function(c){ return c.name; });
     }catch(e){
       clients = [];
     }
@@ -757,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function generateReceiptCanvas(compradorNombre, items, mensaje){
     // V12: el archivo compartido no expone nombres ni usuarios de las partes.
     const W = 600, PADDING = 40, LINE_H = 34;
-    const NAVY = '#01172F', GRAY = '#8892a0', ACCENT = '#446DF6';
+    const NAVY = '#17164A', GRAY = '#727A98', ACCENT = '#6547F5', PALE = '#F1EEFF', LINE = '#E4E0FA';
 
     // Uso un canvas temporal solo para medir el texto del mensaje y
     // saber cuántas líneas ocupa, antes de fijar la altura final.
@@ -766,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function(){
     measureCtx.font = 'italic 13px Arial';
     const messageLines = mensaje ? wrapCanvasText(measureCtx, mensaje, W - PADDING * 2) : [];
 
-    const headerH = 110;
+    const headerH = 142;
     const itemsH = items.length * LINE_H;
     const footerH = messageLines.length ? (30 + messageLines.length * 19) : 20;
     const H = headerH + 60 + itemsH + 70 + footerH;
@@ -776,26 +774,35 @@ document.addEventListener('DOMContentLoaded', function(){
     canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#F8F7FF';
     ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(18, 18, W - 36, H - 36);
     ctx.fillStyle = ACCENT;
-    ctx.fillRect(0, 0, W, 8);
+    ctx.fillRect(18, 18, W - 36, 8);
+    ctx.fillStyle = PALE;
+    ctx.fillRect(18, 26, W - 36, 92);
 
-    let y = 46;
+    let y = 64;
     ctx.textAlign = 'left';
+    ctx.fillStyle = ACCENT;
+    ctx.font = 'bold 27px Arial';
+    ctx.fillText('ferit', PADDING, y);
+    let brandWidth = ctx.measureText('ferit').width;
     ctx.fillStyle = NAVY;
-    ctx.font = 'bold 22px Arial';
-    ctx.fillText('Detalle de compra', PADDING, y);
-
-    y += 28;
-    ctx.font = '13px Arial';
+    ctx.fillText('App', PADDING + brandWidth, y);
+    y += 27;
+    ctx.font = 'bold 15px Arial';
+    ctx.fillStyle = NAVY;
+    ctx.fillText('COMPROBANTE DE COMPRA', PADDING, y);
+    y += 22;
+    ctx.font = '12px Arial';
     ctx.fillStyle = GRAY;
     ctx.fillText(new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' }), PADDING, y);
 
-    y += 24;
-    drawDashedLine(ctx, PADDING, y, W - PADDING);
-
-    y += 32;
+    y = 151;
+    ctx.fillStyle = GRAY;
+    ctx.font = 'bold 12px Arial';
     ctx.font = 'bold 12px Arial';
     ctx.fillStyle = GRAY;
     ctx.fillText('ARTÍCULO', PADDING, y);
@@ -813,11 +820,12 @@ document.addEventListener('DOMContentLoaded', function(){
       ctx.fillText(priceTxt, W - PADDING, y);
       total += Number(it.precio) || 0;
       y += LINE_H;
+      ctx.strokeStyle = LINE; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PADDING, y - 13); ctx.lineTo(W - PADDING, y - 13); ctx.stroke();
     });
 
     y += 6;
-    drawDashedLine(ctx, PADDING, y, W - PADDING);
-    y += 36;
+    ctx.fillStyle = PALE; ctx.fillRect(PADDING - 8, y - 15, W - PADDING * 2 + 16, 52);
+    y += 18;
 
     ctx.textAlign = 'left';
     ctx.font = 'bold 19px Arial';
@@ -1801,8 +1809,8 @@ document.addEventListener('DOMContentLoaded', function(){
     let html = '<div class="client-list">';
     sorted.forEach(function(name){
       html += '<div class="client-row">' +
-                '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '"><span class="client-avatar" aria-hidden="true">' + escapeHtml((name.trim().charAt(0) || 'C').toUpperCase()) + '</span><span class="client-list-copy"><strong>' + escapeHtml(name) + '</strong><small>' + (clientMessengerUsers[name] ? 'Contacto asociado' : 'Ver compras y opciones') + '</small></span><span class="client-row-chevron">›</span></button>' +
-                '<div class="client-row-actions"><button type="button" class="client-inline-messenger" data-messenger-client="' + escapeHtml(name) + '" aria-label="Vincular o abrir Messenger para ' + escapeHtml(name) + '">◉ <span>' + (clientMessengerUsers[name] ? 'Messenger' : 'Vincular') + '</span></button><button type="button" class="client-inline-share" data-share-client="' + escapeHtml(name) + '" aria-label="Compartir comprobante de ' + escapeHtml(name) + '">↗</button><div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div></div>' +
+                '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '"><span class="client-avatar" aria-hidden="true">' + escapeHtml((name.trim().charAt(0) || 'C').toUpperCase()) + '</span><span class="client-list-copy"><strong>' + escapeHtml(name) + '</strong><small>Ver compras y opciones</small></span><span class="client-row-chevron">›</span></button>' +
+                '<div class="client-row-actions"><button type="button" class="client-inline-copy" data-copy-client="' + escapeHtml(name) + '" aria-label="Copiar nombre de ' + escapeHtml(name) + '" title="Copiar nombre"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button><button type="button" class="client-inline-share" data-share-client="' + escapeHtml(name) + '" aria-label="Compartir comprobante de ' + escapeHtml(name) + '" title="Compartir comprobante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button><div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div></div>' +
               '</div>';
     });
     html += '</div>';
@@ -1825,11 +1833,8 @@ document.addEventListener('DOMContentLoaded', function(){
         if(menu && !wasOpen){ menu.hidden = false; btn.setAttribute('aria-expanded','true'); }
       });
     });
-    wrap.querySelectorAll('[data-messenger-client]').forEach(function(btn){
-      btn.addEventListener('click', function(){ openMessengerEditor(btn.getAttribute('data-messenger-client')); });
-    });
-    wrap.querySelectorAll('[data-open-messenger]').forEach(function(btn){
-      btn.addEventListener('click', function(){ openMessengerForClient(btn.getAttribute('data-open-messenger')); });
+    wrap.querySelectorAll('[data-copy-client]').forEach(function(btn){
+      btn.addEventListener('click', function(){ copyClientName(btn.getAttribute('data-copy-client')); });
     });
     wrap.querySelectorAll('[data-share-client]').forEach(function(btn){
       btn.addEventListener('click', function(){
@@ -1858,106 +1863,24 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  function normalizeMessengerTarget(value){
-    let raw = String(value || '').trim();
-    if(!raw) return '';
-    if(/^https?:\/\//i.test(raw)){
-      try{
-        let url = new URL(raw);
-        if(!/(^|\.)facebook\.com$/i.test(url.hostname) && !/(^|\.)messenger\.com$/i.test(url.hostname) && url.hostname !== 'm.me') return '';
-        return url.href;
-      }catch(e){ return ''; }
-    }
-    raw = raw.replace(/^@/, '').trim();
-    if(/^[a-zA-Z0-9._-]{3,100}$/.test(raw)) return raw;
-    return '';
-  }
-
-  function openMessengerEditor(name){
-    messengerEditingClient = name;
-    let current = clientMessengerUsers[name] || '';
-    let savedName = current.indexOf('search:') === 0 ? current.slice(7) : name;
-    let link = current.indexOf('search:') === 0 ? '' : current;
-    document.getElementById('messengerContactName').value = savedName;
-    document.getElementById('messengerContactLink').value = link;
-    let removeBtn = document.getElementById('removeMessengerContact');
-    if(removeBtn) removeBtn.hidden = !current;
-    document.getElementById('messengerLinkModal').hidden = false;
-    setTimeout(function(){ document.getElementById('messengerContactName').focus(); }, 30);
-  }
-
-  function closeMessengerEditor(){
-    document.getElementById('messengerLinkModal').hidden = true;
-    messengerEditingClient = '';
-  }
-
-  async function saveMessengerTarget(name, target){
-    try{
-      let res = await sb.from('clients').update({ messenger_username: target }).eq('name', name);
-      if(res.error) throw res.error;
-      clientMessengerUsers[name] = target;
-      renderClientsFullList();
-      renderClientDetails(name);
-      showToast('Contacto de Messenger guardado');
-    }catch(e){
-      showToast('No se pudo guardar el contacto. Verificá la migración Messenger de V12.');
-    }
-  }
-
-  async function removeMessengerTarget(){
-    let name = messengerEditingClient;
-    if(!name) return;
-    try{
-      let res = await sb.from('clients').update({ messenger_username: null }).eq('name', name);
-      if(res.error) throw res.error;
-      delete clientMessengerUsers[name];
-      renderClientsFullList(); renderClientDetails(name); closeMessengerEditor();
-      showToast('Asociación de Messenger eliminada');
-    }catch(e){ showToast('No se pudo eliminar la asociación. Verificá la conexión y los permisos.'); }
-  }
-
-  async function saveMessengerEditor(copyAndOpen){
-    let name = messengerEditingClient;
-    if(!name) return;
-    let label = document.getElementById('messengerContactName').value.trim();
-    let linkInput = document.getElementById('messengerContactLink').value.trim();
-    if(!label){ showToast('Ingresá el nombre con el que reconocés al contacto.'); return; }
-    let target = linkInput ? normalizeMessengerTarget(linkInput) : 'search:' + label;
-    if(linkInput && !target){ showToast('El enlace no parece ser de Facebook o Messenger.'); return; }
-    await saveMessengerTarget(name, target);
-    closeMessengerEditor();
-    if(copyAndOpen) launchMessengerSearch(label);
-  }
-
-  async function launchMessengerSearch(label){
+  async function copyClientName(name){
     let copied = false;
-    try{ await navigator.clipboard.writeText(label); copied = true; }catch(e){}
-    // Use Meta's universal link so compatible phones can hand off to the installed Messenger app.
-    // Browsers cannot force another app to open or paste into its private search field.
-    let opened = false;
     try{
-      let popup = window.open('https://m.me/', '_blank', 'noopener,noreferrer');
-      opened = !!popup;
-    }catch(e){}
-    if(copied){ showToast(opened ? 'Nombre copiado. Si se abre Messenger, pegalo en el buscador.' : 'Nombre copiado. Abrí Messenger y pegalo en el buscador.'); }
-    else { showToast('No se pudo copiar automáticamente. Copiá el nombre del cliente y buscálo en Messenger.'); }
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(name);
+        copied = true;
+      }else{
+        let input = document.createElement('textarea');
+        input.value = name;
+        input.setAttribute('readonly', '');
+        input.style.position = 'fixed'; input.style.opacity = '0'; input.style.pointerEvents = 'none';
+        document.body.appendChild(input); input.select();
+        copied = document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+    }catch(e){ copied = false; }
+    showToast(copied ? 'Nombre copiado. Pegalo en el buscador de Messenger.' : 'No se pudo copiar automáticamente. Mantené presionado el nombre para copiarlo.');
   }
-
-  function openMessengerForClient(name){
-    let target = clientMessengerUsers[name];
-    if(!target){ openMessengerEditor(name); return; }
-    if(target.indexOf('search:') === 0){ launchMessengerSearch(target.slice(7)); return; }
-    let directUrl = /^https?:\/\//i.test(target) ? target : 'https://m.me/' + encodeURIComponent(target);
-    window.open(directUrl, '_blank', 'noopener,noreferrer');
-  }
-
-  document.getElementById('closeMessengerModal').addEventListener('click', closeMessengerEditor);
-  document.getElementById('cancelMessengerModal').addEventListener('click', closeMessengerEditor);
-  document.getElementById('saveMessengerContact').addEventListener('click', function(){ saveMessengerEditor(false); });
-  let removeMessengerBtn = document.getElementById('removeMessengerContact');
-  if(removeMessengerBtn) removeMessengerBtn.addEventListener('click', function(){ removeMessengerTarget(); });
-  document.getElementById('copyAndOpenMessenger').addEventListener('click', function(){ saveMessengerEditor(true); });
-  document.getElementById('messengerLinkModal').addEventListener('click', function(e){ if(e.target.id === 'messengerLinkModal') closeMessengerEditor(); });
 
   function openClientDetails(name){
     activeClientDetailName = name;
@@ -1985,14 +1908,12 @@ document.addEventListener('DOMContentLoaded', function(){
       let date = s.fecha ? new Date(s.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'}) : '';
       return '<div class="client-purchase-row"><div class="client-purchase-main"><strong>' + escapeHtml(s.articulo || 'Artículo') + '</strong><small>' + escapeHtml(date) + '</small></div><span class="client-purchase-price">' + money(s.precio) + '</span></div>';
     }).join('');
-    let target = clientMessengerUsers[name] || '';
-    let messengerLabel = target ? (target.indexOf('search:')===0 ? 'Buscar en Messenger' : 'Abrir Messenger') : 'Vincular Messenger';
     panel.innerHTML = '<div class="client-detail-head"><div><p class="view-hero-kicker">DETALLE DEL CLIENTE</p><h3>' + escapeHtml(name) + '</h3><p class="client-detail-sub">' + items.length + ' artículos esta semana</p></div><button type="button" class="client-detail-close" data-close-client-detail aria-label="Cerrar detalle">×</button></div>' +
       '<div class="client-detail-total"><span>Total de compras de esta semana</span><strong>' + money(total) + '</strong></div>' +
       '<div class="client-purchase-list">' + (rows || '<div class="empty-inline">Este cliente no tiene compras registradas en la semana actual.</div>') + '</div>' +
-      '<div class="client-detail-actions"><button type="button" class="messenger-action-btn" data-open-messenger="' + escapeHtml(name) + '">◉ ' + messengerLabel + '</button><button type="button" class="share-client-btn" data-share-client="' + escapeHtml(name) + '">↗ Compartir comprobante</button></div>';
+      '<div class="client-detail-actions"><button type="button" class="copy-client-name-btn" data-copy-client="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg> Copiar nombre</button><button type="button" class="share-client-btn" data-share-client="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> Compartir comprobante</button></div>';
     panel.querySelector('[data-close-client-detail]').addEventListener('click', function(){ activeClientDetailName=''; renderClientDetails(''); });
-    panel.querySelector('[data-open-messenger]').addEventListener('click', function(){ openMessengerForClient(name); });
+    panel.querySelector('[data-copy-client]').addEventListener('click', function(){ copyClientName(name); });
     panel.querySelector('[data-share-client]').addEventListener('click', function(){ if(items.length) shareReceipt(name, items); else showToast('Este cliente todavía no tiene ventas registradas.'); });
   }
 
