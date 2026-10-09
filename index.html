@@ -428,6 +428,7 @@
       <button class="mic-btn" data-target="clientSearch" data-mode="text" type="button" aria-label="Dictar nombre de cliente">🎤</button>
     </div>
     <div id="clientSearchResults"></div>
+    <div id="clientDetailPanel" class="client-detail-panel" hidden></div>
     <div id="clientsFullList"></div>
   </div>
 </div>
@@ -557,6 +558,26 @@
     <div class="sheet-save-total"><span>Total</span><strong id="sheetFooterTotal">$0</strong></div>
     <button class="save-btn" id="saveBtn"><span id="saveBtnText">Guardar venta</span></button>
   </div>
+</div>
+
+<div id="messengerLinkModal" class="app-modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="messengerModalTitle">
+  <section class="app-modal-card messenger-modal-card">
+    <button type="button" class="app-modal-close" id="closeMessengerModal" aria-label="Cerrar">×</button>
+    <div class="messenger-modal-icon" aria-hidden="true">●</div>
+    <p class="view-hero-kicker">CONTACTO DE FACEBOOK</p>
+    <h2 id="messengerModalTitle">Encontrar a tu contacto</h2>
+    <p class="hint">Ingresá el nombre con el que lo reconocés en Facebook o Messenger. FeritApp no puede leer tus contactos privados ni identificar personas solo por el nombre.</p>
+    <label for="messengerContactName">Nombre que vas a buscar</label>
+    <input id="messengerContactName" type="text" maxlength="100" placeholder="Ej.: Ana (clienta de Facebook)" autocomplete="off">
+    <label for="messengerContactLink">Enlace directo (opcional)</label>
+    <input id="messengerContactLink" type="url" maxlength="240" placeholder="https://m.me/... o enlace del perfil">
+    <p class="hint">Si no tenés un enlace directo, se copia el nombre y se abre Messenger para que lo pegues en el buscador. El navegador no permite pegarlo automáticamente dentro de Messenger.</p>
+    <div class="messenger-modal-actions">
+      <button type="button" class="secondary-btn" id="cancelMessengerModal">Cancelar</button>
+      <button type="button" class="save-btn" id="saveMessengerContact">Guardar contacto</button>
+    </div>
+    <button type="button" class="messenger-copy-open" id="copyAndOpenMessenger">Copiar nombre y abrir Messenger</button>
+  </section>
 </div>
 
 <div class="receipt-edit-scrim" id="receiptEditScrim" hidden>

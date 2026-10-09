@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }) : null;
   let entered = false;
+  document.body.classList.add('auth-locked');
 
   /* =========================================================
      ACCESO: correo + contraseña con Supabase Auth
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function(){
       btn.classList.toggle('active', btn.getAttribute('data-view') === view);
     });
 
-    if(view === 'clients'){ renderClientSearch(); renderClientsFullList(); }
+    if(view === 'clients'){ renderClientSearch(); renderClientsFullList(); if(activeClientDetailName) renderClientDetails(activeClientDetailName); }
     if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
     if(view === 'settings'){ syncNotifyControls(); showSettingsMenu(); }
   }
@@ -344,6 +345,7 @@ document.addEventListener('DOMContentLoaded', function(){
     entered = true;
     currentUserEmail = user.email;
     document.getElementById('authGate').style.display = 'none';
+    document.body.classList.remove('auth-locked');
     document.getElementById('appRoot').style.display = 'block';
     document.getElementById('sessionEmail').textContent = 'Sesión iniciada';
     document.getElementById('profileEmail').textContent = user.email;
@@ -355,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function showSetNewPinPrompt(){
     document.getElementById('authGate').style.display = 'flex';
+    document.body.classList.add('auth-locked');
     document.getElementById('appRoot').style.display = 'none';
     document.getElementById('gateStep1').style.display = 'none';
     document.getElementById('gateSent').style.display = 'none';
@@ -364,10 +367,12 @@ document.addEventListener('DOMContentLoaded', function(){
   async function initGate(){
     if(!SUPABASE_READY){
       document.getElementById('authGate').style.display = 'flex';
+      document.body.classList.add('auth-locked');
       showGateError('Falta configurar Supabase (URL y clave del proyecto) para poder ingresar.');
       return;
     }
     document.getElementById('authGate').style.display = 'flex';
+    document.body.classList.add('auth-locked');
 
     // Importante: el listener se registra ANTES de consultar la sesión
     // inicial. Si no lo hiciéramos así, podría darse una condición de
@@ -406,6 +411,8 @@ document.addEventListener('DOMContentLoaded', function(){
   let categories = [];
   let clients = [];
   let clientMessengerUsers = {};
+  let activeClientDetailName = '';
+  let messengerEditingClient = '';
   let pendingReceiptItems = [];
   let pendingReceiptClient = '';
   let pendingReceiptTotal = 0;
@@ -1359,7 +1366,7 @@ document.addEventListener('DOMContentLoaded', function(){
       html += '<div class="rank-item">' +
         '<div class="rank-medal">' + medal + '</div>' +
         '<div class="rank-info">' +
-          '<div class="rank-name">' + escapeHtml(c.name) + '</div>' +
+          '<button type="button" class="rank-name client-name-link" data-client-link="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</button>' +
           '<div class="rank-sub">' + c.count + ' artículo' + (c.count === 1 ? '' : 's') + ' comprado' + (c.count === 1 ? '' : 's') + '</div>' +
         '</div>' +
         (showRankingMoney ? '<div class="rank-total">' + money(c.total) + '</div>' : '') +
@@ -1538,7 +1545,7 @@ document.addEventListener('DOMContentLoaded', function(){
           '<span class="cat-badge"><span class="cat-dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) + '</span>' +
           '<div class="item-meta">' + fechaTxt + '</div>' +
         '</td>' +
-        '<td><div class="client-name">' + escapeHtml(item.cliente || 'Sin nombre') + '</div>' + retiraHtml + '</td>' +
+        '<td><button type="button" class="client-name client-name-link" data-client-link="' + escapeHtml(item.cliente || 'Sin nombre') + '">' + escapeHtml(item.cliente || 'Sin nombre') + '</button>' + retiraHtml + '</td>' +
         '<td class="num price-cell">' + money(item.precio) + '</td>' +
         '<td><button class="pay-toggle ' + statusClass + '" data-toggle-pay="' + item.id + '">' + statusText + '</button></td>' +
         '<td><div class="row-actions">' +
@@ -1549,7 +1556,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
       mobile += '<article class="sale-card-mobile">' +
         '<div class="sale-card-main">' +
-          '<div class="sale-card-client">' + escapeHtml(item.cliente || 'Sin nombre') + '</div>' +
+          '<button type="button" class="sale-card-client client-name-link" data-client-link="' + escapeHtml(item.cliente || 'Sin nombre') + '">' + escapeHtml(item.cliente || 'Sin nombre') + '</button>' +
           '<div class="sale-card-item">' + escapeHtml(item.articulo) + '</div>' +
           '<div class="sale-card-meta">' +
             '<span class="sale-card-category"><span class="cat-dot" style="background:' + categoryColor(cat) + '"></span>' + escapeHtml(cat) + '</span>' +
@@ -1780,19 +1787,17 @@ document.addEventListener('DOMContentLoaded', function(){
     let html = '<div class="client-list">';
     sorted.forEach(function(name){
       html += '<div class="client-row">' +
-                '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '"><span class="client-avatar" aria-hidden="true">' + escapeHtml((name.trim().charAt(0) || 'C').toUpperCase()) + '</span><span class="client-list-copy"><strong>' + escapeHtml(name) + '</strong><small>' + (clientMessengerUsers[name] ? 'Messenger asociado' : 'Sin Messenger asociado') + '</small></span><span class="client-row-chevron">›</span></button>' +
-                '<button type="button" class="client-messenger-btn' + (clientMessengerUsers[name] ? ' is-linked' : '') + '" data-messenger-client="' + escapeHtml(name) + '" aria-label="' + (clientMessengerUsers[name] ? 'Abrir Messenger para ' : 'Asociar Messenger para ') + escapeHtml(name) + '"><span aria-hidden="true">●</span><span>' + (clientMessengerUsers[name] ? 'Messenger' : 'Vincular') + '</span></button>' +
-                '<div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-messenger-client="' + escapeHtml(name) + '">' + (clientMessengerUsers[name] ? '◉ Abrir Messenger' : '◉ Asociar Messenger') + '</button><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div>' +
+                '<button type="button" class="client-list-item" data-client-name="' + escapeHtml(name) + '"><span class="client-avatar" aria-hidden="true">' + escapeHtml((name.trim().charAt(0) || 'C').toUpperCase()) + '</span><span class="client-list-copy"><strong>' + escapeHtml(name) + '</strong><small>' + (clientMessengerUsers[name] ? 'Contacto asociado' : 'Ver compras y opciones') + '</small></span><span class="client-row-chevron">›</span></button>' +
+                '<div class="client-row-actions"><button type="button" class="client-inline-messenger" data-messenger-client="' + escapeHtml(name) + '" aria-label="Vincular o abrir Messenger para ' + escapeHtml(name) + '">◉ <span>' + (clientMessengerUsers[name] ? 'Messenger' : 'Vincular') + '</span></button><button type="button" class="client-inline-share" data-share-client="' + escapeHtml(name) + '" aria-label="Compartir comprobante de ' + escapeHtml(name) + '">↗</button><div class="client-more-wrap"><button type="button" class="client-more-btn" data-client-more="' + escapeHtml(name) + '" aria-label="Más opciones para ' + escapeHtml(name) + '" aria-expanded="false">⋯</button><div class="client-action-menu" data-client-menu="' + escapeHtml(name) + '" hidden><button type="button" data-edit-client="' + escapeHtml(name) + '">✎ Editar nombre</button><button type="button" class="danger" data-del-client="' + escapeHtml(name) + '">⌫ Eliminar de la lista</button></div></div></div>' +
               '</div>';
     });
     html += '</div>';
     wrap.innerHTML = html;
+    if(activeClientDetailName) renderClientDetails(activeClientDetailName);
 
     wrap.querySelectorAll('[data-client-name]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        searchInput.value = btn.getAttribute('data-client-name');
-        renderClientSearch();
-        renderClientsFullList();
+        openClientDetails(btn.getAttribute('data-client-name'));
       });
     });
     wrap.querySelectorAll('[data-client-more]').forEach(function(btn){
@@ -1807,16 +1812,16 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     });
     wrap.querySelectorAll('[data-messenger-client]').forEach(function(btn){
+      btn.addEventListener('click', function(){ openMessengerEditor(btn.getAttribute('data-messenger-client')); });
+    });
+    wrap.querySelectorAll('[data-open-messenger]').forEach(function(btn){
+      btn.addEventListener('click', function(){ openMessengerForClient(btn.getAttribute('data-open-messenger')); });
+    });
+    wrap.querySelectorAll('[data-share-client]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        let name = btn.getAttribute('data-messenger-client');
-        let current = clientMessengerUsers[name] || '';
-        if(current){ openMessengerForClient(name); return; }
-        let entered = prompt('Ingresá el enlace del perfil de Facebook/Messenger o el nombre de usuario de Messenger de este cliente. El nombre visible del perfil por sí solo no siempre alcanza. No incluyas contraseñas.', current);
-        if(entered === null) return;
-        entered = entered.trim();
-        let username = normalizeMessengerTarget(entered);
-        if(!username){ showToast('Ingresá un usuario o un enlace válido de Facebook/Messenger, no solo el nombre visible.'); return; }
-        saveMessengerTarget(name, username);
+        let name = btn.getAttribute('data-share-client');
+        let items = sales.filter(function(s){ return (s.cliente || '') === name; }).sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+        if(items.length) shareReceipt(name, items); else showToast('Este cliente todavía no tiene ventas registradas.');
       });
     });
     wrap.querySelectorAll('[data-edit-client]').forEach(function(btn){
@@ -1842,30 +1847,122 @@ document.addEventListener('DOMContentLoaded', function(){
   function normalizeMessengerTarget(value){
     let raw = String(value || '').trim();
     if(!raw) return '';
-    let match = raw.match(/(?:https?:\/\/)?(?:www\.)?(?:m\.me|messenger\.com\/t)\/([^/?#]+)/i);
-    if(match) return match[1];
-    raw = raw.replace(/^@/, '').replace(/\s+/g, '');
+    if(/^https?:\/\//i.test(raw)){
+      try{
+        let url = new URL(raw);
+        if(!/(^|\.)facebook\.com$/i.test(url.hostname) && !/(^|\.)messenger\.com$/i.test(url.hostname) && url.hostname !== 'm.me') return '';
+        return url.href;
+      }catch(e){ return ''; }
+    }
+    raw = raw.replace(/^@/, '').trim();
     if(/^[a-zA-Z0-9._-]{3,100}$/.test(raw)) return raw;
     return '';
   }
 
-  async function saveMessengerTarget(name, username){
+  function openMessengerEditor(name){
+    messengerEditingClient = name;
+    let current = clientMessengerUsers[name] || '';
+    let savedName = current.indexOf('search:') === 0 ? current.slice(7) : name;
+    let link = current.indexOf('search:') === 0 ? '' : current;
+    document.getElementById('messengerContactName').value = savedName;
+    document.getElementById('messengerContactLink').value = link;
+    document.getElementById('messengerLinkModal').hidden = false;
+    setTimeout(function(){ document.getElementById('messengerContactName').focus(); }, 30);
+  }
+
+  function closeMessengerEditor(){
+    document.getElementById('messengerLinkModal').hidden = true;
+    messengerEditingClient = '';
+  }
+
+  async function saveMessengerTarget(name, target){
     try{
-      let res = await sb.from('clients').update({ messenger_username: username }).eq('name', name);
+      let res = await sb.from('clients').update({ messenger_username: target }).eq('name', name);
       if(res.error) throw res.error;
-      clientMessengerUsers[name] = username;
+      clientMessengerUsers[name] = target;
       renderClientsFullList();
-      showToast('Messenger asociado');
+      renderClientDetails(name);
+      showToast('Contacto de Messenger guardado');
     }catch(e){
-      showToast('No se pudo guardar. Aplicá primero la migración SQL de Messenger incluida en V12.');
+      showToast('No se pudo guardar el contacto. Verificá la migración Messenger de V12.');
+    }
+  }
+
+  async function saveMessengerEditor(copyAndOpen){
+    let name = messengerEditingClient;
+    if(!name) return;
+    let label = document.getElementById('messengerContactName').value.trim();
+    let linkInput = document.getElementById('messengerContactLink').value.trim();
+    if(!label){ showToast('Ingresá el nombre con el que reconocés al contacto.'); return; }
+    let target = linkInput ? normalizeMessengerTarget(linkInput) : 'search:' + label;
+    if(linkInput && !target){ showToast('El enlace no parece ser de Facebook o Messenger.'); return; }
+    await saveMessengerTarget(name, target);
+    closeMessengerEditor();
+    if(copyAndOpen) launchMessengerSearch(label);
+  }
+
+  async function launchMessengerSearch(label){
+    let messengerWindow = window.open('https://www.messenger.com/', '_blank');
+    if(messengerWindow){ messengerWindow.opener = null; }
+    try{
+      await navigator.clipboard.writeText(label);
+      showToast('Nombre copiado. Pegalo en el buscador de Messenger.');
+    }catch(e){
+      showToast('Messenger abierto. Copiá el nombre del cliente y buscá el contacto.');
     }
   }
 
   function openMessengerForClient(name){
-    let username = clientMessengerUsers[name];
-    if(!username){ showToast('Asociá primero el usuario de Messenger desde el menú ⋯.'); return; }
-    window.open('https://m.me/' + encodeURIComponent(username), '_blank', 'noopener,noreferrer');
+    let target = clientMessengerUsers[name];
+    if(!target){ openMessengerEditor(name); return; }
+    if(target.indexOf('search:') === 0){ launchMessengerSearch(target.slice(7)); return; }
+    let directUrl = /^https?:\/\//i.test(target) ? target : 'https://m.me/' + encodeURIComponent(target);
+    window.open(directUrl, '_blank', 'noopener,noreferrer');
   }
+
+  document.getElementById('closeMessengerModal').addEventListener('click', closeMessengerEditor);
+  document.getElementById('cancelMessengerModal').addEventListener('click', closeMessengerEditor);
+  document.getElementById('saveMessengerContact').addEventListener('click', function(){ saveMessengerEditor(false); });
+  document.getElementById('copyAndOpenMessenger').addEventListener('click', function(){ saveMessengerEditor(true); });
+  document.getElementById('messengerLinkModal').addEventListener('click', function(e){ if(e.target.id === 'messengerLinkModal') closeMessengerEditor(); });
+
+  function openClientDetails(name){
+    activeClientDetailName = name;
+    switchView('clients');
+    let search = document.getElementById('clientSearch');
+    if(search) search.value = '';
+    renderClientSearch();
+    renderClientsFullList();
+    renderClientDetails(name);
+    setTimeout(function(){ let panel=document.getElementById('clientDetailPanel'); if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'}); }, 50);
+  }
+
+  function renderClientDetails(name){
+    let panel = document.getElementById('clientDetailPanel');
+    if(!panel) return;
+    if(!name){ panel.hidden = true; panel.innerHTML=''; return; }
+    let items = sales.filter(function(s){ return (s.cliente || '') === name; }).sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
+    let total = items.reduce(function(sum,s){ return sum + (Number(s.precio)||0); },0);
+    panel.hidden = false;
+    let rows = items.map(function(s){
+      let date = s.fecha ? new Date(s.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'}) : '';
+      return '<div class="client-purchase-row"><div class="client-purchase-main"><strong>' + escapeHtml(s.articulo || 'Artículo') + '</strong><small>' + escapeHtml(date) + '</small></div><span class="client-purchase-price">' + money(s.precio) + '</span></div>';
+    }).join('');
+    let target = clientMessengerUsers[name] || '';
+    let messengerLabel = target ? (target.indexOf('search:')===0 ? 'Buscar en Messenger' : 'Abrir Messenger') : 'Vincular Messenger';
+    panel.innerHTML = '<div class="client-detail-head"><div><p class="view-hero-kicker">DETALLE DEL CLIENTE</p><h3>' + escapeHtml(name) + '</h3><p class="client-detail-sub">' + items.length + ' artículos registrados</p></div><button type="button" class="client-detail-close" data-close-client-detail aria-label="Cerrar detalle">×</button></div>' +
+      '<div class="client-detail-total"><span>Total de compras registradas</span><strong>' + money(total) + '</strong></div>' +
+      '<div class="client-purchase-list">' + (rows || '<div class="empty-inline">Todavía no hay compras para este cliente.</div>') + '</div>' +
+      '<div class="client-detail-actions"><button type="button" class="messenger-action-btn" data-open-messenger="' + escapeHtml(name) + '">◉ ' + messengerLabel + '</button><button type="button" class="share-client-btn" data-share-client="' + escapeHtml(name) + '">↗ Compartir comprobante</button></div>';
+    panel.querySelector('[data-close-client-detail]').addEventListener('click', function(){ activeClientDetailName=''; renderClientDetails(''); });
+    panel.querySelector('[data-open-messenger]').addEventListener('click', function(){ openMessengerForClient(name); });
+    panel.querySelector('[data-share-client]').addEventListener('click', function(){ if(items.length) shareReceipt(name, items); else showToast('Este cliente todavía no tiene ventas registradas.'); });
+  }
+
+  document.addEventListener('click', function(e){
+    let link = e.target.closest('[data-client-link]');
+    if(link){ e.preventDefault(); openClientDetails(link.getAttribute('data-client-link')); }
+  });
 
   async function renameClientEntry(oldName, newName){
     let collision = clients.some(function(c){
