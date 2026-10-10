@@ -1482,9 +1482,8 @@ body.auth-locked{overflow:hidden;height:100%;}
 .receipt-preview-card{position:relative;overflow:hidden;padding:20px;border:1px solid rgba(var(--primary-rgb),.18);border-radius:20px;background:linear-gradient(155deg,#fff 0%,#fbfaff 70%,#f3f0ff 100%);color:#1b1b49;box-shadow:0 12px 28px rgba(55,38,130,.08);}
 .receipt-preview-card:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#6547f5,#9278ff,#43c7d9);}
 .receipt-preview-brand{display:flex;align-items:center;gap:9px;font-family:var(--display);font-size:20px;color:#201d54;}
-.receipt-brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(145deg,#6547f5,#8b73ff);color:#fff;font-weight:900;font-size:22px;box-shadow:0 5px 12px rgba(101,71,245,.24);}
-.receipt-brand-name{font-weight:800;letter-spacing:-.04em;}
-.receipt-brand-name strong{color:#6547f5;}
+.receipt-brand-logo{display:block;width:34px;height:34px;flex:0 0 34px;object-fit:cover;border-radius:10px;box-shadow:0 5px 12px rgba(101,71,245,.18);}
+.receipt-brand-name{min-width:0;overflow-wrap:anywhere;font-weight:800;letter-spacing:-.04em;color:#201d54;}
 .receipt-preview-badge{margin-left:auto;padding:6px 8px;border-radius:8px;background:#efecff;color:#6547f5;font:800 8px var(--body);letter-spacing:.08em;}
 .receipt-preview-title{margin-top:19px;font-size:16px;letter-spacing:-.025em;color:#201d54;font-weight:800;}
 .receipt-preview-date{display:inline-flex;margin-top:6px;padding:5px 8px;border-radius:7px;background:#f3f2fb;color:#777797;font-size:10px;}

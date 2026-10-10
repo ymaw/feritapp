@@ -779,7 +779,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.stroke();
   }
 
-  function generateReceiptCanvas(compradorNombre, items, mensaje){
+  async function generateReceiptCanvas(compradorNombre, items, mensaje){
     // V12: el archivo compartido no expone nombres ni usuarios de las partes.
     const W = 600, PADDING = 40, LINE_H = 34;
     const NAVY = '#17164A', GRAY = '#727A98', ACCENT = '#6547F5', PALE = '#F1EEFF', LINE = '#E4E0FA';
@@ -800,6 +800,13 @@ document.addEventListener('DOMContentLoaded', function(){
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext('2d');
+    // Cargar el logo real antes de dibujar para que quede incluido en el PNG exportado.
+    const receiptLogo = await new Promise(function(resolve){
+      const img = new Image();
+      img.onload = function(){ resolve(img); };
+      img.onerror = function(){ resolve(null); };
+      img.src = 'feritapp-icon.png';
+    });
 
     ctx.fillStyle = '#F8F7FF';
     ctx.fillRect(0, 0, W, H);
@@ -810,13 +817,15 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillStyle = PALE;
     ctx.fillRect(18, 26, W - 36, 92);
 
-    let y = 64;
+    let y = 62;
     ctx.textAlign = 'left';
     ctx.fillStyle = ACCENT;
     ctx.font = 'bold 27px Arial';
-    const receiptStoreName = (storeName || '').trim();
-    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - PADDING * 2), PADDING, y);
-    y += 27;
+    const receiptStoreName = (storeName || '').trim() || 'Mi tienda';
+    if(receiptLogo) ctx.drawImage(receiptLogo, PADDING, 38, 34, 34);
+    const nameX = PADDING + 44;
+    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - nameX - PADDING), nameX, y);
+    y += 29;
     ctx.font = 'bold 15px Arial';
     ctx.fillStyle = NAVY;
     ctx.fillText('COMPROBANTE DE COMPRA', PADDING, y);
@@ -883,6 +892,8 @@ document.addEventListener('DOMContentLoaded', function(){
     let msg = document.getElementById('receiptShareMessage');
     msg.value = receiptMessage || '';
     document.getElementById('receiptPreviewDate').textContent = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+    let previewStoreName = document.getElementById('receiptPreviewStoreName');
+    if(previewStoreName) previewStoreName.textContent = (storeName || '').trim() || 'Mi tienda';
     document.getElementById('receiptPreviewItems').innerHTML = items.map(function(item){
       return '<div class="receipt-preview-item"><span>' + escapeHtml(item.articulo || 'Artículo') + '</span><strong>' + money(item.precio) + '</strong></div>';
     }).join('');
@@ -909,7 +920,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if(saveRes.error) console.warn('No se pudo guardar la preferencia del mensaje del comprobante.');
     }catch(e){ /* compartir no debe depender de que se guarde la preferencia */ }
     closeReceiptEditor();
-    let canvas = generateReceiptCanvas('', pendingReceiptItems, msg);
+    let canvas = await generateReceiptCanvas('', pendingReceiptItems, msg);
     canvas.toBlob(async function(blob){
       if(!blob){ showToast('No se pudo generar el comprobante.'); return; }
       // El nombre del archivo también evita datos personales.
@@ -1889,11 +1900,44 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  function openMessengerForClientName(name){
-    // Intenta abrir la aplicación nativa y evita redirigir a la web de Messenger.
-    // Sin un perfil/username del cliente no es posible seleccionar una conversación concreta solo por el nombre.
-    showToast('Abriendo la app de Messenger. Buscá a ' + name + ' en tus conversaciones.');
-    window.location.href = 'fb-messenger://';
+  async function openMessengerForClientName(name){
+    // Copiar primero el nombre exacto registrado en FeritApp; luego invocar el esquema nativo.
+    // El nombre por sí solo no permite abrir una conversación específica.
+    let copied = false;
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(name || '');
+        copied = true;
+      }
+    }catch(e){ /* se intenta el método compatible debajo */ }
+    if(!copied){
+      try{
+        const field = document.createElement('textarea');
+        field.value = name || '';
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed'; field.style.opacity = '0'; field.style.pointerEvents = 'none';
+        document.body.appendChild(field); field.select();
+        copied = document.execCommand('copy');
+        document.body.removeChild(field);
+      }catch(e){ copied = false; }
+    }
+    const ua = navigator.userAgent || '';
+    showToast((copied ? 'Nombre copiado. ' : 'No se pudo copiar el nombre. ') + 'Abriendo Messenger…');
+    try{
+      if(/Android/i.test(ua)){
+        // Android intent solicita explícitamente el paquete oficial de Messenger.
+        window.location.href = 'intent://#Intent;scheme=fb-messenger;package=com.facebook.orca;end';
+      }else if(/iPhone|iPad|iPod/i.test(ua)){
+        window.location.href = 'fb-messenger://';
+      }else{
+        // En escritorio no existe un esquema nativo universal; se usa la app/web de mensajes como alternativa.
+        window.open('https://www.messenger.com/', '_blank', 'noopener');
+      }
+    }catch(e){
+      showToast('Messenger no pudo abrirse desde el navegador. Abrilo manualmente; el nombre queda copiado si el permiso lo permitió.');
+      return;
+    }
+    // No se redirige automáticamente a messenger.com en móviles: eso ocultaría fallos de apertura nativa.
   }
 
   function openClientDetails(name){
