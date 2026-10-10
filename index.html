@@ -144,19 +144,20 @@
 <div id="appRoot" style="display:none;">
 
 <header>
+  <button type="button" id="globalBackBtn" class="header-back-btn" aria-label="Volver" title="Volver" hidden><span aria-hidden="true">←</span></button>
   <div class="brand-lockup"><img class="brand-logo" src="feritapp-icon.png" alt="" aria-hidden="true"><span class="brand-word">ferit<b>App</b></span></div><p class="eyebrow">Todas tus ventas en un solo lugar</p>
   <h1 id="viewHeading">Registro semanal</h1>
   <p class="session-email" id="sessionEmail"></p>
 </header>
 
-<div class="menu-dropdown" id="menuDropdown" style="display:none;">
-  <button type="button" class="menu-item" data-view="dashboard">⌂ Inicio</button>
-  <button type="button" class="menu-item" data-view="clients">👥 Ver clientes</button>
-  <button type="button" class="menu-item" data-view="ranking">🏆 Ranking de clientes</button>
-  <button type="button" class="menu-item" data-view="sales">🧾 Ver tabla de ventas</button>
-  <button type="button" class="menu-item" data-view="settings">⚙️ Configuración</button>
-  <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;">📲 Instalar feritApp</button>
-  <button type="button" class="menu-item menu-item-danger" id="logoutBtn">🚪 Cerrar sesión</button>
+<div class="menu-dropdown" id="menuDropdown" style="display:none;" aria-label="Menú Más">
+  <div class="menu-dropdown-heading"><span class="menu-heading-icon">✦</span><div><strong>Más</strong><small>Herramientas de FeritApp</small></div></div>
+  <div class="menu-dropdown-group-label">GESTIÓN</div>
+  <button type="button" class="menu-item" data-view="ranking"><span class="menu-item-icon">♕</span><span><strong>Ranking de clientes</strong><small>Clientes destacados</small></span><span class="menu-item-arrow">›</span></button>
+  <button type="button" class="menu-item" data-view="settings"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong><small>Perfil y preferencias</small></span><span class="menu-item-arrow">›</span></button>
+  <div class="menu-dropdown-group-label">AYUDA Y ACCESO</div>
+  <button type="button" class="menu-item" id="menuInstallBtn" style="display:none;"><span class="menu-item-icon">↓</span><span><strong>Instalar FeritApp</strong><small>Acceso directo en tu dispositivo</small></span><span class="menu-item-arrow">›</span></button>
+  <button type="button" class="menu-item menu-item-danger" id="logoutBtn"><span class="menu-item-icon">↪</span><span><strong>Cerrar sesión</strong><small>Salir de tu cuenta</small></span><span class="menu-item-arrow">›</span></button>
 </div>
 
 <datalist id="clientsDatalist"></datalist>

@@ -242,6 +242,30 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ---------------- menú desplegable / vistas ---------------- */
   const moreBtn = document.getElementById('moreBtn');
   const menuDropdown = document.getElementById('menuDropdown');
+  const globalBackBtn = document.getElementById('globalBackBtn');
+  let currentView = 'dashboard';
+  let previousView = 'dashboard';
+  let ignoreNextPopstate = false;
+
+  function updateBackButton(){
+    if(!globalBackBtn) return;
+    globalBackBtn.hidden = currentView === 'dashboard';
+    globalBackBtn.setAttribute('aria-label', 'Volver a ' + ((previousView === 'clients') ? 'Clientes' : (previousView === 'sales') ? 'Ventas' : (previousView === 'settings') ? 'Más' : 'Inicio'));
+  }
+
+  function goBackInApp(){
+    if(currentView === 'clients' && activeClientDetailName){
+      activeClientDetailName = ''; renderClientDetails(''); return;
+    }
+    if(currentView === 'settings') {
+      const settingsMenu = document.getElementById('settingsMenu');
+      if(settingsMenu && settingsMenu.style.display === 'none'){ showSettingsMenu(); return; }
+    }
+    const destination = previousView && previousView !== currentView ? previousView : 'dashboard';
+    switchView(destination, false);
+  }
+  if(globalBackBtn) globalBackBtn.addEventListener('click', goBackInApp);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !document.getElementById('sheet').classList.contains('open')) goBackInApp(); });
 
   // Abre el desplegable anclado al botón "Más" del menú inferior,
   // calculando si conviene abrirlo hacia abajo o hacia arriba según
@@ -276,7 +300,10 @@ document.addEventListener('DOMContentLoaded', function(){
   menuDropdown.addEventListener('click', function(e){ e.stopPropagation(); });
   document.addEventListener('click', function(){ menuDropdown.style.display = 'none'; });
 
-  function switchView(view){
+  function switchView(view, rememberPrevious){
+    if(view !== currentView && rememberPrevious !== false){ previousView = currentView; }
+    currentView = view;
+    updateBackButton();
     document.getElementById('viewSales').style.display = (view === 'sales') ? 'block' : 'none';
     document.getElementById('viewDashboard').style.display = (view === 'dashboard') ? 'block' : 'none';
     document.getElementById('viewClients').style.display = (view === 'clients') ? 'block' : 'none';
@@ -787,10 +814,8 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.textAlign = 'left';
     ctx.fillStyle = ACCENT;
     ctx.font = 'bold 27px Arial';
-    ctx.fillText('ferit', PADDING, y);
-    let brandWidth = ctx.measureText('ferit').width;
-    ctx.fillStyle = NAVY;
-    ctx.fillText('App', PADDING + brandWidth, y);
+    const receiptStoreName = (storeName || '').trim();
+    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - PADDING * 2), PADDING, y);
     y += 27;
     ctx.font = 'bold 15px Arial';
     ctx.fillStyle = NAVY;
@@ -1371,12 +1396,13 @@ document.addEventListener('DOMContentLoaded', function(){
     let html = '<div class="rank-list">';
     visible.forEach(function(c, idx){
       let medal = medals[idx] || ('#' + (idx + 1));
-      html += '<div class="rank-item">' +
+      html += '<div class="rank-item' + (showRankingMoney ? ' has-money' : '') + '">' +
         '<div class="rank-medal">' + medal + '</div>' +
         '<div class="rank-info">' +
           '<button type="button" class="rank-name client-name-link" data-client-link="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</button>' +
           '<div class="rank-sub">' + c.count + ' artículo' + (c.count === 1 ? '' : 's') + ' comprado' + (c.count === 1 ? '' : 's') + '</div>' +
         '</div>' +
+        '<div class="rank-count" aria-label="' + c.count + ' artículos">' + c.count + '</div>' +
         (showRankingMoney ? '<div class="rank-total">' + money(c.total) + '</div>' : '') +
       '</div>';
     });
@@ -1864,10 +1890,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function openMessengerForClientName(name){
-    // Abre la bandeja de Messenger con la sesión que el vendedor tenga iniciada.
-    // No intenta adivinar el perfil del cliente a partir de su nombre.
-    window.open('https://www.messenger.com/', '_blank', 'noopener,noreferrer');
-    showToast('Messenger abierto. Buscá a ' + name + ' en tus conversaciones.');
+    // Intenta abrir la aplicación nativa y evita redirigir a la web de Messenger.
+    // Sin un perfil/username del cliente no es posible seleccionar una conversación concreta solo por el nombre.
+    showToast('Abriendo la app de Messenger. Buscá a ' + name + ' en tus conversaciones.');
+    window.location.href = 'fb-messenger://';
   }
 
   function openClientDetails(name){

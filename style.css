@@ -1512,3 +1512,35 @@ body.auth-locked{overflow:hidden;height:100%;}
 /* V12.6: icono de marca Messenger en acciones de cliente */
 .messenger-brand-icon{fill:#0866ff !important;stroke:none !important;width:20px;height:20px;}
 .client-inline-copy:hover .messenger-brand-icon,.copy-client-name-btn:hover .messenger-brand-icon{fill:#fff !important;}
+
+/* V12.7 — menú Más y navegación de retorno */
+header{position:relative;}
+.header-back-btn{position:absolute;right:20px;top:calc(30px + env(safe-area-inset-top));width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--primary-soft);font:700 25px/1 var(--body);box-shadow:0 4px 14px rgba(15,23,42,.08);cursor:pointer;z-index:2;}
+.header-back-btn[hidden]{display:none;}
+.header-back-btn:active{transform:scale(.96);}
+.menu-dropdown{min-width:260px;padding:10px;border-radius:20px;background:var(--surface);border:1px solid var(--border);box-shadow:0 18px 48px rgba(15,23,42,.20);}
+.menu-dropdown-heading{display:flex;align-items:center;gap:11px;padding:8px 8px 13px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+.menu-heading-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,var(--primary),#7c3aed);color:#fff;font-size:22px;box-shadow:0 5px 14px rgba(var(--primary-rgb),.25);}
+.menu-dropdown-heading strong{display:block;font-size:15px;font-weight:800;color:var(--text);}
+.menu-dropdown-heading small,.menu-item small{display:block;margin-top:3px;font-size:10.5px;font-weight:500;color:var(--text-muted);}
+.menu-dropdown-group-label{padding:9px 9px 5px;color:var(--text-muted);font:700 9px var(--mono);letter-spacing:.12em;}
+.menu-dropdown .menu-item{display:grid;grid-template-columns:36px minmax(0,1fr) 14px;align-items:center;gap:10px;min-height:54px;padding:8px 9px;border-radius:13px;color:var(--text);}
+.menu-item-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(var(--primary-rgb),.14);border-radius:11px;background:rgba(var(--primary-rgb),.09);color:var(--primary-soft);font-size:17px;font-weight:800;}
+.menu-dropdown .menu-item strong{display:block;font-size:12.5px;font-weight:750;}
+.menu-item-arrow{font-size:22px;color:var(--text-muted);text-align:right;}
+.menu-dropdown .menu-item:hover,.menu-dropdown .menu-item:focus-visible{background:var(--surface-2);outline:2px solid rgba(var(--primary-rgb),.16);}
+.menu-dropdown .menu-item-danger .menu-item-icon{color:var(--danger);background:rgba(var(--warning-rgb),.1);border-color:rgba(var(--warning-rgb),.2);}
+.menu-dropdown .menu-item-danger:hover{color:var(--danger);}
+#viewRanking .rank-item{grid-template-columns:42px minmax(0,1fr) 38px auto;gap:10px;}
+#viewRanking .rank-info{text-align:center;align-self:center;}
+#viewRanking .rank-name{display:block;width:100%;text-align:center;}
+#viewRanking .rank-sub{text-align:center;line-height:1.35;}
+#viewRanking .rank-count{width:34px;height:34px;display:grid;place-items:center;border-radius:12px;background:rgba(var(--primary-rgb),.10);color:var(--primary-soft);font:800 13px var(--mono);justify-self:center;}
+#viewRanking .rank-item.has-money{grid-template-columns:42px minmax(0,1fr) 38px auto;}
+@media(max-width:420px){
+  .menu-dropdown{min-width:min(280px,calc(100vw - 24px));}
+  #viewRanking .rank-item{grid-template-columns:34px minmax(0,1fr) 32px auto;gap:7px;padding:9px 8px;}
+  #viewRanking .rank-medal{width:32px;height:32px;border-radius:10px;font-size:16px;}
+  #viewRanking .rank-count{width:30px;height:30px;border-radius:10px;font-size:12px;}
+  #viewRanking .rank-total{font-size:11px;}
+}
