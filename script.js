@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.textAlign = 'left';
     ctx.fillStyle = ACCENT;
     ctx.font = 'bold 27px Arial';
-    const receiptStoreName = (storeName || '').trim() || 'Mi tienda';
+    const receiptStoreName = (storeName || document.getElementById('profileStoreName')?.value || '').trim() || 'Mi tienda';
     if(receiptLogo) ctx.drawImage(receiptLogo, PADDING, 38, 34, 34);
     const nameX = PADDING + 44;
     ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - nameX - PADDING), nameX, y);
@@ -893,7 +893,7 @@ document.addEventListener('DOMContentLoaded', function(){
     msg.value = receiptMessage || '';
     document.getElementById('receiptPreviewDate').textContent = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
     let previewStoreName = document.getElementById('receiptPreviewStoreName');
-    if(previewStoreName) previewStoreName.textContent = (storeName || '').trim() || 'Mi tienda';
+    if(previewStoreName) previewStoreName.textContent = (storeName || document.getElementById('profileStoreName')?.value || '').trim() || 'Mi tienda';
     document.getElementById('receiptPreviewItems').innerHTML = items.map(function(item){
       return '<div class="receipt-preview-item"><span>' + escapeHtml(item.articulo || 'Artículo') + '</span><strong>' + money(item.precio) + '</strong></div>';
     }).join('');
@@ -1901,15 +1901,15 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function openMessengerForClientName(name){
-    // Copiar primero el nombre exacto registrado en FeritApp; luego invocar el esquema nativo.
-    // El nombre por sí solo no permite abrir una conversación específica.
+    // Copia el nombre exacto de FeritApp y usa el enlace universal oficial de Messenger.
+    // El nombre por sí solo no identifica una conversación concreta; para eso hace falta el enlace del chat/perfil.
     let copied = false;
     try{
       if(navigator.clipboard && window.isSecureContext){
         await navigator.clipboard.writeText(name || '');
         copied = true;
       }
-    }catch(e){ /* se intenta el método compatible debajo */ }
+    }catch(e){}
     if(!copied){
       try{
         const field = document.createElement('textarea');
@@ -1922,22 +1922,17 @@ document.addEventListener('DOMContentLoaded', function(){
       }catch(e){ copied = false; }
     }
     const ua = navigator.userAgent || '';
-    showToast((copied ? 'Nombre copiado. ' : 'No se pudo copiar el nombre. ') + 'Abriendo Messenger…');
+    showToast((copied ? 'Nombre copiado. ' : 'Intentá copiar el nombre manualmente. ') + 'Abriendo Messenger…');
+    // Android Chrome: el intent incluye URL HTTPS para que el sistema resuelva la app instalada.
+    // iOS y navegadores integrados: usar el universal link oficial de Messenger.
+    const target = /Android/i.test(ua)
+      ? 'intent://m.me/#Intent;scheme=https;package=com.facebook.orca;S.browser_fallback_url=https%3A%2F%2Fm.me%2F;end'
+      : 'https://m.me/';
     try{
-      if(/Android/i.test(ua)){
-        // Android intent solicita explícitamente el paquete oficial de Messenger.
-        window.location.href = 'intent://#Intent;scheme=fb-messenger;package=com.facebook.orca;end';
-      }else if(/iPhone|iPad|iPod/i.test(ua)){
-        window.location.href = 'fb-messenger://';
-      }else{
-        // En escritorio no existe un esquema nativo universal; se usa la app/web de mensajes como alternativa.
-        window.open('https://www.messenger.com/', '_blank', 'noopener');
-      }
+      window.location.assign(target);
     }catch(e){
-      showToast('Messenger no pudo abrirse desde el navegador. Abrilo manualmente; el nombre queda copiado si el permiso lo permitió.');
-      return;
+      showToast('No se pudo abrir Messenger desde este navegador. El nombre quedó copiado si el permiso lo permitió.');
     }
-    // No se redirige automáticamente a messenger.com en móviles: eso ocultaría fallos de apertura nativa.
   }
 
   function openClientDetails(name){

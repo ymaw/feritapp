@@ -1543,3 +1543,13 @@ header{position:relative;}
   #viewRanking .rank-count{width:30px;height:30px;border-radius:10px;font-size:12px;}
   #viewRanking .rank-total{font-size:11px;}
 }
+
+/* V12.9 — menú Más compacto: una sola línea por opción, sin subtítulos multilínea */
+.menu-dropdown{width:min(300px,calc(100vw - 24px));min-width:0;padding:9px;border-radius:18px;}
+.menu-dropdown-heading{padding:6px 7px 10px;margin-bottom:5px;}
+.menu-dropdown-heading small,.menu-dropdown .menu-item small,.menu-dropdown-group-label{display:none !important;}
+.menu-dropdown .menu-item{grid-template-columns:34px minmax(0,1fr) 12px;gap:9px;min-height:48px;padding:7px 8px;white-space:nowrap;}
+.menu-dropdown .menu-item>span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.menu-dropdown .menu-item strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;line-height:1.2;}
+.menu-dropdown .menu-item-icon{width:32px;height:32px;border-radius:10px;}
+@media(max-width:420px){.menu-dropdown{width:min(280px,calc(100vw - 20px));}.menu-dropdown .menu-item{min-height:45px;}}
