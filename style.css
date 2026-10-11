@@ -750,7 +750,7 @@ header h1{font-family:var(--body);font-size:32px;font-weight:800;letter-spacing:
 #viewDashboard .stat-card-value{font-size:21px;}
 
 /* Ventas: separar mejor los dos niveles de información */
-#viewSales .greeting-badge{
+#viewDashboard .greeting-badge{
   margin:22px 20px 2px;
   padding:17px 18px;
   border-radius:18px;
@@ -1096,7 +1096,7 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
 
 /* Ventas */
 #viewSales .view-hero{margin-bottom:4px;}
-#viewSales .greeting-badge{
+#viewDashboard .greeting-badge{
   margin:18px 20px 0;
   border:1px solid rgba(var(--primary-rgb),.14);
   background:var(--surface);
@@ -1641,4 +1641,13 @@ header.has-back-button .session-email{
   header.has-back-button h1,
   header.has-back-button .session-email{margin-left:0!important;margin-right:50px!important;}
 }
-#viewSales .greeting-badge{margin-bottom:14px;}
+#viewDashboard .greeting-badge{margin-bottom:14px;}
+
+/* V12.14: Inicio recibe el saludo; Ventas agrupa el resumen actual y el historial semanal. */
+#viewDashboard .greeting-badge{margin-top:18px;}
+#viewSales .sales-hero{padding-top:8px;}
+#viewSales .ticket-wrap{padding:14px 20px 8px;}
+#viewSales .ticket-wrap .summary-heading{margin-bottom:12px;}
+#viewSales .weekly-summary-card{margin:0 20px 16px;}
+#viewSales .sales-hero .stat-cards{margin-bottom:4px;}
+@media(min-width:900px){#viewSales .ticket-wrap{padding-left:30px;padding-right:30px;}#viewSales .weekly-summary-card{margin-left:30px;margin-right:30px;}}

@@ -163,12 +163,18 @@
 <datalist id="clientsDatalist"></datalist>
 
 <div id="viewDashboard" class="app-view" style="display:none;">
+  <div class="greeting-badge" id="greetingBadge" style="display:none;">
+    <div class="greeting-avatar" id="greetingAvatar"><img src="feritapp-icon.png" alt=""></div>
+    <div class="greeting-body">
+      <div class="greeting-title" id="greetingText"></div>
+      <div class="greeting-sub">Hoy es un gran día para vender 🚀</div>
+    </div>
+  </div>
   <div class="view-hero dashboard-hero">
     <div class="view-hero-kicker">RESUMEN</div>
     <h2 id="dashboardGreetingTitle">Tu semana de ventas</h2>
     <p>Una vista rápida de lo que vendiste, cobraste y, sobre todo, lo que todavía tenés pendiente.</p>
   </div>
-  <div class="ticket-wrap" id="currentTicket"></div>
 
   <div class="section-block dashboard-tasks-section">
     <div class="section-heading-row">
@@ -436,13 +442,7 @@
 
 <div id="viewSales" class="app-view">
   <div class="view-hero sales-hero">
-  <div class="greeting-badge" id="greetingBadge" style="display:none;">
-    <div class="greeting-avatar" id="greetingAvatar"><img src="feritapp-icon.png" alt=""></div>
-    <div class="greeting-body">
-      <div class="greeting-title" id="greetingText"></div>
-      <div class="greeting-sub">Hoy es un gran día para vender 🚀</div>
-    </div>
-  </div>
+    <div class="ticket-wrap" id="currentTicket"></div>
     <div class="weekly-summary-card" id="weeklySummaryCard">
       <button type="button" class="weekly-summary-trigger" id="weeklySummaryToggle" aria-expanded="false">
         <span class="weekly-summary-copy"><strong>Resumen Semanal</strong><small id="weeklySummaryMeta">Última semana cerrada</small></span>
