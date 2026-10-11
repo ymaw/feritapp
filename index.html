@@ -436,9 +436,13 @@
 
 <div id="viewSales" class="app-view">
   <div class="view-hero sales-hero">
-    <div class="view-hero-kicker">VENTAS</div>
-    <h2>Tu registro semanal</h2>
-    <p>Gestioná tus ventas, pagos y entregas desde un solo lugar.</p>
+    <div class="weekly-summary-card" id="weeklySummaryCard">
+      <button type="button" class="weekly-summary-trigger" id="weeklySummaryToggle" aria-expanded="false">
+        <span class="weekly-summary-copy"><strong>Resumen Semanal</strong><small id="weeklySummaryMeta">Última semana cerrada</small></span>
+        <span class="weekly-summary-chevron" aria-hidden="true">⌄</span>
+      </button>
+      <div class="weekly-summary-content" id="weeklySummaryContent" hidden></div>
+    </div>
   </div>
   <div class="greeting-badge" id="greetingBadge" style="display:none;">
     <div class="greeting-avatar" id="greetingAvatar"><img src="feritapp-icon.png" alt=""></div>

@@ -1602,3 +1602,26 @@ header.has-back-button .session-email{margin-left:58px;}
 #viewClients .client-detail-panel{width:100%;min-width:0;box-sizing:border-box;flex:0 0 100%;}
 .sales-retira-label{display:block!important;margin-top:3px;color:var(--primary-soft)!important;font-weight:700;font-size:10.5px!important;white-space:normal;}
 @media(max-width:520px){header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-back-button h1,header.has-back-button .session-email{margin-left:52px;}.header-back-btn{left:12px;}}
+
+/* V12.12 — cabecera simplificada, botón atrás a la derecha y resumen semanal */
+#viewHeading{display:none!important;}
+.header-back-btn{left:auto!important;right:16px!important;top:calc(26px + env(safe-area-inset-top));width:40px;height:40px;display:grid;place-items:center;padding:0;border:1px solid rgba(var(--primary-rgb),.16);border-radius:13px;background:linear-gradient(145deg,var(--surface),var(--surface-2));color:var(--primary-soft);box-shadow:0 3px 10px rgba(61,40,120,.08);}
+.header-back-btn span{font-size:0;position:relative;width:18px;height:18px;display:block;transform:none!important;}
+.header-back-btn span:before{content:"";position:absolute;width:9px;height:9px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);left:5px;top:4px;border-radius:1px;}
+header.has-back-button .brand-lockup{margin-right:56px;}
+header.has-back-button .eyebrow,header.has-back-button .session-email{margin-right:56px;}
+.weekly-summary-card{overflow:hidden;border:1px solid var(--border);border-radius:18px;background:var(--surface);box-shadow:0 6px 18px rgba(30,20,70,.05);margin-bottom:16px;}
+.weekly-summary-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:16px;border:0;background:transparent;color:var(--text);text-align:left;cursor:pointer;}
+.weekly-summary-copy{display:flex;min-width:0;flex-direction:column;gap:5px;}
+.weekly-summary-copy strong{font-size:16px;font-weight:850;}
+.weekly-summary-copy small{font-size:11px;color:var(--text-muted);}
+.weekly-summary-chevron{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border-radius:10px;background:rgba(var(--primary-rgb),.09);color:var(--primary-soft);font-size:20px;transition:transform .18s;}
+.weekly-summary-trigger.expanded .weekly-summary-chevron{transform:rotate(180deg);}
+.weekly-summary-content{padding:0 12px 12px;border-top:1px solid var(--border);}
+.weekly-summary-content[hidden]{display:none!important;}
+.menu-dropdown .menu-item{display:grid!important;grid-template-columns:32px minmax(0,1fr) 12px!important;align-items:center!important;column-gap:9px!important;}
+.menu-dropdown .menu-item>span:nth-child(2){display:block;min-width:0;white-space:nowrap;}
+.menu-dropdown .menu-item strong{white-space:nowrap;line-height:1.25;}
+.menu-dropdown .menu-item-icon{grid-column:1;grid-row:1;align-self:center;justify-self:center;}
+.menu-dropdown .menu-item-arrow{grid-column:3;grid-row:1;align-self:center;}
+@media(max-width:520px){.header-back-btn{right:12px!important;}header.has-back-button .brand-lockup{margin-right:50px;}header.has-back-button .eyebrow,header.has-back-button .session-email{margin-right:50px;}}

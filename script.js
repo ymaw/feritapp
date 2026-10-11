@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { dashboard:'Inicio', sales:'Registro semanal', clients:'Clientes', ranking:'Ranking de clientes', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Clientes', ranking:'Ranking de clientes', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
@@ -1660,7 +1660,8 @@ document.addEventListener('DOMContentLoaded', function(){
     return desktop + mobile;
   }
 
-  function renderSalesGroupedByClient(items){
+  function renderSalesGroupedByClient(items, idPrefix){
+    idPrefix = idPrefix || "sales-current";
     if(!items.length) return '<div class="empty-inline">Sin entregas registradas esta semana.</div>';
     const groups = {};
     items.forEach(function(item){ const key = (item.cliente || 'Sin nombre').trim(); (groups[key] ||= []).push(item); });
@@ -1669,10 +1670,12 @@ document.addEventListener('DOMContentLoaded', function(){
       const list = groups[name].slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
       const total = list.reduce(function(sum,x){return sum+(Number(x.precio)||0);},0);
       const pending = list.reduce(function(sum,x){return sum+(!x.pagado?(Number(x.precio)||0):0);},0);
-      const id = 'sales-client-group-' + idx;
-      html += '<section class="sales-client-group"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small></span><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pagado':'Debe '+money(pending))+'</span><span class="sales-group-chevron">⌄</span></button><div class="sales-client-group-content" id="'+id+'" hidden>';
+      const id = idPrefix + '-client-group-' + idx;
+      const pickup = list.find(function(x){ return x.retira === 'otro' && x.tercero; });
+      const pickupLabel = pickup ? ('Retira: ' + pickup.tercero) : ('Retira: ' + name + ' (cliente)');
+      html += '<section class="sales-client-group"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pagado':'Debe '+money(pending))+'</span><span class="sales-group-chevron">⌄</span></button><div class="sales-client-group-content" id="'+id+'" hidden>';
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
-        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small>'+('<small class="sales-retira-label">Retira: '+escapeHtml(item.retira==='otro' ? (item.tercero||'Otra persona') : ((item.cliente||'El cliente')+' (cliente)'))+'</small>')+'</div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong><button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pagado':'Pendiente')+'</button><span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
+        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong><button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pagado':'Pendiente')+'</button><span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
       });
       html += '<div class="sales-group-total"><span>Total del cliente</span><strong>'+money(total)+'</strong></div></div></section>';
     });
@@ -1783,8 +1786,29 @@ document.addEventListener('DOMContentLoaded', function(){
         '<div class="stat-card"><span class="stat-card-icon">🧾</span><span class="stat-card-label">Artículos</span><span class="stat-card-value">' + curStats.count + '</span></div>' +
       '</div>';
 
-    /* previous weeks: accordion history */
+    /* Resumen Semanal: la última semana cerrada, colapsada por defecto. */
     let pastKeys = keys.filter(function(k){ return k !== currentKey; });
+    let summaryContent = document.getElementById('weeklySummaryContent');
+    let summaryMeta = document.getElementById('weeklySummaryMeta');
+    let summaryToggle = document.getElementById('weeklySummaryToggle');
+    if(summaryContent && summaryToggle){
+      summaryContent.hidden = true;
+      summaryToggle.setAttribute('aria-expanded','false');
+      summaryToggle.classList.remove('expanded');
+      if(pastKeys.length){
+        const lastClosedKey = pastKeys[0];
+        const lastClosedItems = (groups[lastClosedKey] || []).slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+        const lastStats = weekStats(lastClosedItems);
+        if(summaryMeta) summaryMeta.textContent = formatRange(lastClosedKey) + ' · ' + lastStats.count + ' artículos · ' + money(lastStats.total);
+        summaryContent.innerHTML = renderSalesGroupedByClient(lastClosedItems, 'weekly-summary');
+        bindTableEvents(summaryContent);
+        summaryToggle.onclick = function(){ const opening=summaryContent.hidden; summaryContent.hidden=!opening; summaryToggle.setAttribute('aria-expanded',String(opening)); summaryToggle.classList.toggle('expanded',opening); };
+      }else{
+        if(summaryMeta) summaryMeta.textContent = 'Todavía no hay semanas cerradas';
+        summaryContent.innerHTML = '<div class="empty-inline">Cuando termine una semana, sus ventas agrupadas por cliente aparecerán aquí.</div>';
+        summaryToggle.onclick = function(){ const opening=summaryContent.hidden; summaryContent.hidden=!opening; summaryToggle.setAttribute('aria-expanded',String(opening)); summaryToggle.classList.toggle('expanded',opening); };
+      }
+    }
     let container = document.getElementById('weeksContainer');
     if(pastKeys.length === 0){
       container.innerHTML = '<div class="empty"><b>Sin historial todavía</b>Las semanas anteriores van a aparecer acá.</div>';
@@ -1818,7 +1842,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
         if(itemsEl.getAttribute('data-loaded') === '0'){
           let items = groups[wk].slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
-          itemsEl.innerHTML = renderSalesTable(items);
+          itemsEl.innerHTML = renderSalesGroupedByClient(items, 'history-' + wk);
           bindTableEvents(itemsEl);
           itemsEl.setAttribute('data-loaded', '1');
         }
