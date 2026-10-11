@@ -1656,3 +1656,16 @@ header.has-back-button .session-email{
 .receipt-preview-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:12px;border-top:1px solid rgba(101,71,245,.12);color:#29265f;font-size:11px;font-weight:800;}
 .receipt-preview-footer img{display:block;width:76px;height:76px;flex:0 0 76px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(35,45,100,.08));}
 @media(max-width:520px){.receipt-preview-footer img{width:64px;height:64px;flex-basis:64px;}}
+
+
+/* V12.16: resumen estadístico en Inicio y hero semanal en Ventas. */
+#viewDashboard .dashboard-current-ticket{padding-top:14px;padding-bottom:10px;margin:0 auto;max-width:1180px;}
+#viewDashboard .dashboard-current-ticket .summary-heading{margin-bottom:12px;}
+#viewSales .sales-summary-hero{margin-top:8px;margin-bottom:12px;padding:16px 20px;}
+#viewSales .sales-summary-hero::after{width:90px;height:90px;right:-42px;bottom:-54px;}
+.receipt-preview-brand{position:relative;padding-right:82px;min-height:76px;flex-wrap:wrap;}
+.receipt-preview-brand .receipt-store-avatar{flex:0 0 34px;}
+.receipt-preview-ferit-logo{position:absolute;top:-3px;right:0;width:78px;height:78px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(35,45,100,.08));}
+.receipt-preview-brand .receipt-preview-badge{margin-left:0;}
+.receipt-preview-footer{display:none!important;}
+@media(max-width:520px){.receipt-preview-brand{padding-right:66px;min-height:62px;}.receipt-preview-ferit-logo{width:62px;height:62px;}}

@@ -825,6 +825,8 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillRect(18, 18, W - 36, 8);
     ctx.fillStyle = PALE;
     ctx.fillRect(18, 26, W - 36, 92);
+    // Logo FeritApp grande en el margen superior derecho, sin nombre de tienda en el pie.
+    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 88, 30, 88, 88);
 
     let y = 62;
     ctx.textAlign = 'left';
@@ -834,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const receiptAvatar = await new Promise(function(resolve){ const img=new Image(); img.crossOrigin='anonymous'; img.onload=function(){resolve(img);}; img.onerror=function(){resolve(null);}; img.src=avatarUrl || 'feritapp-icon.png'; });
     if(receiptAvatar){ ctx.save(); ctx.beginPath(); ctx.arc(PADDING+17,55,17,0,Math.PI*2); ctx.clip(); ctx.drawImage(receiptAvatar,PADDING,38,34,34); ctx.restore(); }
     const nameX = PADDING + 44;
-    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - nameX - PADDING), nameX, y);
+    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - nameX - PADDING - 100), nameX, y);
     y += 29;
     ctx.font = 'bold 15px Arial';
     ctx.fillStyle = NAVY;
@@ -890,12 +892,9 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     }
 
-    // Pie de comprobante: nombre de tienda a la izquierda y logo FeritApp a la derecha.
-    const footerY = H - 34;
-    ctx.strokeStyle = LINE; ctx.beginPath(); ctx.moveTo(PADDING, footerY - 18); ctx.lineTo(W - PADDING, footerY - 18); ctx.stroke();
-    ctx.textAlign = 'left'; ctx.fillStyle = NAVY; ctx.font = 'bold 13px Arial';
-    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, 330), PADDING, footerY);
-    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 76, footerY - 57, 76, 76);
+    // Pie limpio: sin repetir el nombre de la tienda ni el logo.
+    const footerY = H - 24;
+    ctx.strokeStyle = LINE; ctx.beginPath(); ctx.moveTo(PADDING, footerY - 10); ctx.lineTo(W - PADDING, footerY - 10); ctx.stroke();
     return canvas;
   }
 

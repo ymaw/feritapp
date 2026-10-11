@@ -170,12 +170,7 @@
       <div class="greeting-sub">Hoy es un gran día para vender 🚀</div>
     </div>
   </div>
-  <div class="view-hero dashboard-hero">
-    <div class="view-hero-kicker">RESUMEN</div>
-    <h2 id="dashboardGreetingTitle">Tu semana de ventas</h2>
-    <p>Una vista rápida de lo que vendiste, cobraste y, sobre todo, lo que todavía tenés pendiente.</p>
-  </div>
-
+  <div class="ticket-wrap dashboard-current-ticket" id="currentTicket"></div>
   <div class="section-block dashboard-tasks-section">
     <div class="section-heading-row">
       <div><p class="section-title">Lo que requiere tu atención</p><p class="section-subtitle">Acciones rápidas para terminar tus pendientes.</p></div>
@@ -442,7 +437,10 @@
 
 <div id="viewSales" class="app-view">
   <div class="view-hero sales-hero">
-    <div class="ticket-wrap" id="currentTicket"></div>
+    <div class="view-hero dashboard-hero sales-summary-hero">
+      <div class="view-hero-kicker">RESUMEN</div>
+      <h2 id="dashboardGreetingTitle">Tu semana de ventas</h2>
+    </div>
     <div class="weekly-summary-card" id="weeklySummaryCard">
       <button type="button" class="weekly-summary-trigger" id="weeklySummaryToggle" aria-expanded="false">
         <span class="weekly-summary-copy"><strong>Resumen Semanal</strong><small id="weeklySummaryMeta">Última semana cerrada</small></span>
@@ -565,14 +563,14 @@
   <section class="receipt-edit-modal" role="dialog" aria-modal="true" aria-labelledby="receiptEditTitle">
     <div class="receipt-edit-heading"><span class="receipt-edit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v5h5M8 13h8M8 17h8"/></svg></span><div><p class="receipt-eyebrow">VENTA LISTA PARA COMPARTIR</p><h2 id="receiptEditTitle">Comprobante de compra</h2><p>Así lo verá tu cliente.</p></div><button type="button" id="closeReceiptEdit" class="icon-close-btn" aria-label="Cerrar">×</button></div>
     <div class="receipt-preview-card" id="receiptPreviewCard">
-      <div class="receipt-preview-brand"><img class="receipt-store-avatar" id="receiptPreviewAvatar" src="feritapp-icon.png" alt="Foto de perfil de la tienda"><span class="receipt-brand-name" id="receiptPreviewStoreName">Mi tienda</span><span class="receipt-preview-badge">COMPROBANTE</span></div>
+      <div class="receipt-preview-brand"><img class="receipt-store-avatar" id="receiptPreviewAvatar" src="feritapp-icon.png" alt="Foto de perfil de la tienda"><span class="receipt-brand-name" id="receiptPreviewStoreName">Mi tienda</span><span class="receipt-preview-badge">COMPROBANTE</span><img class="receipt-preview-ferit-logo" src="feritapp-receipt-logo.png" alt="Logo de FeritApp"></div>
       <div class="receipt-preview-title">Resumen de tu compra</div>
       <div class="receipt-preview-date" id="receiptPreviewDate"></div>
       <div class="receipt-preview-items" id="receiptPreviewItems"></div>
       <div class="receipt-preview-total"><span>Total</span><strong id="receiptPreviewTotal"></strong></div>
       <div class="receipt-preview-message-label"><span>✦</span> Mensaje de la tienda</div>
       <p class="receipt-preview-message" id="receiptPreviewMessage"></p>
-      <div class="receipt-preview-footer"><span id="receiptPreviewFooterName">Mi tienda</span><img src="feritapp-receipt-logo.png" alt="Logo de FeritApp"></div>
+      <div class="receipt-preview-footer"></div>
     </div>
     <div class="receipt-message-editor-head"><span class="receipt-message-editor-icon">✎</span><label class="receipt-message-label" for="receiptShareMessage">Personalizá el mensaje</label></div>
     <textarea id="receiptShareMessage" class="settings-textarea" rows="3" maxlength="240" placeholder="Ej.: ¡Gracias por tu compra!"></textarea>
