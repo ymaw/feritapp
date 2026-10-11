@@ -1584,3 +1584,21 @@ header{position:relative;}
 .header-back-btn span{display:block;line-height:1;transform:translateY(-1px);}
 /* Expansión de ficha en el flujo normal de la lista */
 #clientDetailPanel{margin:8px 0 14px;}
+
+/* V12.11 — encabezado despejado, menú Más y expansión estable */
+header.has-back-button .brand-lockup,
+header.has-back-button .eyebrow,
+header.has-back-button h1,
+header.has-back-button .session-email{margin-left:58px;}
+.header-back-btn{left:16px;right:auto;top:calc(26px + env(safe-area-inset-top));width:40px;height:40px;border:1px solid rgba(var(--primary-rgb),.16);border-radius:13px;background:linear-gradient(145deg,var(--surface),var(--surface-2));color:var(--primary-soft);font-size:0;box-shadow:0 3px 10px rgba(61,40,120,.08);}
+.header-back-btn span{font-size:0;position:relative;width:18px;height:18px;transform:none!important;}
+.header-back-btn span:before{content:"";position:absolute;width:9px;height:9px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);left:5px;top:4px;border-radius:1px;}
+.header-back-btn:focus-visible,.menu-close-btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+.menu-dropdown-heading{position:relative;padding-right:42px;}
+.menu-heading-icon{width:32px;height:32px;border-radius:10px;background:rgba(var(--primary-rgb),.09);border:1px solid rgba(var(--primary-rgb),.13);box-shadow:none;color:var(--primary-soft);font-size:18px;}
+.menu-close-btn{position:absolute;right:5px;top:4px;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text-muted);font-size:23px;line-height:1;cursor:pointer;}
+.menu-close-btn:hover{background:rgba(var(--primary-rgb),.1);color:var(--primary-soft);}
+#viewClients .client-list{display:flex;flex-direction:column;}
+#viewClients .client-detail-panel{width:100%;min-width:0;box-sizing:border-box;flex:0 0 100%;}
+.sales-retira-label{display:block!important;margin-top:3px;color:var(--primary-soft)!important;font-weight:700;font-size:10.5px!important;white-space:normal;}
+@media(max-width:520px){header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-back-button h1,header.has-back-button .session-email{margin-left:52px;}.header-back-btn{left:12px;}}

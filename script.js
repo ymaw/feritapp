@@ -250,6 +250,8 @@ document.addEventListener('DOMContentLoaded', function(){
   function updateBackButton(){
     if(!globalBackBtn) return;
     globalBackBtn.hidden = currentView === 'dashboard';
+    const appHeader = document.querySelector('header');
+    if(appHeader) appHeader.classList.toggle('has-back-button', currentView !== 'dashboard');
     globalBackBtn.setAttribute('aria-label', 'Volver a ' + ((previousView === 'clients') ? 'Clientes' : (previousView === 'sales') ? 'Ventas' : (previousView === 'settings') ? 'Más' : 'Inicio'));
   }
 
@@ -293,12 +295,18 @@ document.addEventListener('DOMContentLoaded', function(){
     openMenuFrom(anchorEl);
   }
 
+  function closeMoreMenu(){ menuDropdown.style.display = 'none'; moreBtn.setAttribute('aria-expanded','false'); moreBtn.querySelector('.nav-icon').textContent = '⋯'; }
+  const menuCloseBtn = document.getElementById('menuCloseBtn');
+  if(menuCloseBtn) menuCloseBtn.addEventListener('click', function(e){ e.stopPropagation(); closeMoreMenu(); });
   moreBtn.addEventListener('click', function(e){
     e.stopPropagation();
     toggleMenuFrom(moreBtn);
+    const opened = menuDropdown.style.display === 'block';
+    moreBtn.setAttribute('aria-expanded', String(opened));
+    moreBtn.querySelector('.nav-icon').textContent = opened ? '×' : '⋯';
   });
   menuDropdown.addEventListener('click', function(e){ e.stopPropagation(); });
-  document.addEventListener('click', function(){ menuDropdown.style.display = 'none'; });
+  document.addEventListener('click', function(){ closeMoreMenu(); });
 
   function switchView(view, rememberPrevious){
     if(view !== currentView && rememberPrevious !== false){ previousView = currentView; }
@@ -1664,7 +1672,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const id = 'sales-client-group-' + idx;
       html += '<section class="sales-client-group"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small></span><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pagado':'Debe '+money(pending))+'</span><span class="sales-group-chevron">⌄</span></button><div class="sales-client-group-content" id="'+id+'" hidden>';
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
-        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small>'+(item.retira==='otro'?'<small>Retira: '+escapeHtml(item.tercero||'Otra persona')+'</small>':'')+'</div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong><button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pagado':'Pendiente')+'</button><span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
+        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small>'+('<small class="sales-retira-label">Retira: '+escapeHtml(item.retira==='otro' ? (item.tercero||'Otra persona') : ((item.cliente||'El cliente')+' (cliente)'))+'</small>')+'</div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong><button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pagado':'Pendiente')+'</button><span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
       });
       html += '<div class="sales-group-total"><span>Total del cliente</span><strong>'+money(total)+'</strong></div></div></section>';
     });
@@ -1877,6 +1885,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     let sorted = clients.slice().sort(function(a,b){ return a.localeCompare(b, 'es'); });
+    let detailPanel = document.getElementById('clientDetailPanel');
+    if(detailPanel && wrap.contains(detailPanel)) document.getElementById('viewClients').querySelector('.section-block').appendChild(detailPanel);
     let html = '<div class="client-list">';
     sorted.forEach(function(name){
       html += '<div class="client-row">' +

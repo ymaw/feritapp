@@ -151,7 +151,7 @@
 </header>
 
 <div class="menu-dropdown" id="menuDropdown" style="display:none;" aria-label="Menú Más">
-  <div class="menu-dropdown-heading"><span class="menu-heading-icon">✦</span><div><strong>Más</strong><small>Herramientas de FeritApp</small></div></div>
+  <div class="menu-dropdown-heading"><span class="menu-heading-icon" aria-hidden="true">⌘</span><div><strong>Más</strong></div><button type="button" id="menuCloseBtn" class="menu-close-btn" aria-label="Cerrar menú Más" title="Cerrar">×</button></div>
   <div class="menu-dropdown-group-label">GESTIÓN</div>
   <button type="button" class="menu-item" data-view="ranking"><span class="menu-item-icon">♕</span><span><strong>Ranking de clientes</strong><small>Clientes destacados</small></span><span class="menu-item-arrow">›</span></button>
   <button type="button" class="menu-item" data-view="settings"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong><small>Perfil y preferencias</small></span><span class="menu-item-arrow">›</span></button>
@@ -449,9 +449,6 @@
   </div>
   <div class="section-block">
     <p class="section-title">Entregas</p>
-    <div class="seg" style="margin-bottom:12px;">
-      <button type="button" class="salestab-opt active" data-salestab="items">Entregas</button>
-    </div>
     <div id="currentWeekTable"></div>
     <div id="deliveryListWrap" style="display:none;"></div>
   </div>
