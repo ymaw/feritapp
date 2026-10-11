@@ -1,6 +1,6 @@
 {
-  "name": "feritApp",
-  "short_name": "feritApp",
+  "name": "FeritApp",
+  "short_name": "FeritApp",
   "description": "Todas tus ventas en un solo lugar",
   "start_url": "./",
   "display": "standalone",

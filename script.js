@@ -814,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const img = new Image();
       img.onload = function(){ resolve(img); };
       img.onerror = function(){ resolve(null); };
-      img.src = 'feritapp-icon.png';
+      img.src = 'feritapp-receipt-logo.png';
     });
 
     ctx.fillStyle = '#F8F7FF';
@@ -895,7 +895,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.strokeStyle = LINE; ctx.beginPath(); ctx.moveTo(PADDING, footerY - 18); ctx.lineTo(W - PADDING, footerY - 18); ctx.stroke();
     ctx.textAlign = 'left'; ctx.fillStyle = NAVY; ctx.font = 'bold 13px Arial';
     ctx.fillText(truncateCanvasText(ctx, receiptStoreName, 330), PADDING, footerY);
-    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 32, footerY - 23, 32, 32);
+    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 76, footerY - 57, 76, 76);
     return canvas;
   }
 
@@ -915,6 +915,8 @@ document.addEventListener('DOMContentLoaded', function(){
       return '<div class="receipt-preview-item"><span>' + escapeHtml(item.articulo || 'Artículo') + '</span><strong>' + money(item.precio) + '</strong></div>';
     }).join('');
     document.getElementById('receiptPreviewTotal').textContent = money(pendingReceiptTotal);
+    const receiptFooterName = document.getElementById('receiptPreviewFooterName');
+    if(receiptFooterName) receiptFooterName.textContent = (storeName || document.getElementById('profileStoreName')?.value || '').trim() || 'Mi tienda';
     updateReceiptPreviewMessage();
     scrim.hidden = false;
     document.body.classList.add('receipt-modal-open');
