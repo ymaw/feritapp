@@ -788,7 +788,8 @@ document.addEventListener('DOMContentLoaded', function(){
     // saber cuántas líneas ocupa, antes de fijar la altura final.
     const measureCanvas = document.createElement('canvas');
     const measureCtx = measureCanvas.getContext('2d');
-    measureCtx.font = 'italic 13px Arial';
+    const messageFontSize = Math.max(10, Math.min(16, Number(document.getElementById('receiptMessageFontSize')?.value) || 12));
+    measureCtx.font = 'italic ' + messageFontSize + 'px Arial';
     const messageLines = mensaje ? wrapCanvasText(measureCtx, mensaje, W - PADDING * 2) : [];
 
     const headerH = 142;
@@ -822,7 +823,8 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillStyle = ACCENT;
     ctx.font = 'bold 27px Arial';
     const receiptStoreName = (storeName || document.getElementById('profileStoreName')?.value || '').trim() || 'Mi tienda';
-    if(receiptLogo) ctx.drawImage(receiptLogo, PADDING, 38, 34, 34);
+    const receiptAvatar = await new Promise(function(resolve){ const img=new Image(); img.crossOrigin='anonymous'; img.onload=function(){resolve(img);}; img.onerror=function(){resolve(null);}; img.src=avatarUrl || 'feritapp-icon.png'; });
+    if(receiptAvatar){ ctx.save(); ctx.beginPath(); ctx.arc(PADDING+17,55,17,0,Math.PI*2); ctx.clip(); ctx.drawImage(receiptAvatar,PADDING,38,34,34); ctx.restore(); }
     const nameX = PADDING + 44;
     ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - nameX - PADDING), nameX, y);
     y += 29;
@@ -872,7 +874,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(messageLines.length){
       y += 40;
       ctx.textAlign = 'left';
-      ctx.font = 'italic 13px Arial';
+      ctx.font = 'italic ' + messageFontSize + 'px Arial';
       ctx.fillStyle = GRAY;
       messageLines.forEach(function(line){
         ctx.fillText(line, PADDING, y);
@@ -880,6 +882,12 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     }
 
+    // Pie de comprobante: nombre de tienda a la izquierda y logo FeritApp a la derecha.
+    const footerY = H - 34;
+    ctx.strokeStyle = LINE; ctx.beginPath(); ctx.moveTo(PADDING, footerY - 18); ctx.lineTo(W - PADDING, footerY - 18); ctx.stroke();
+    ctx.textAlign = 'left'; ctx.fillStyle = NAVY; ctx.font = 'bold 13px Arial';
+    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, 330), PADDING, footerY);
+    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 32, footerY - 23, 32, 32);
     return canvas;
   }
 
@@ -894,6 +902,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('receiptPreviewDate').textContent = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
     let previewStoreName = document.getElementById('receiptPreviewStoreName');
     if(previewStoreName) previewStoreName.textContent = (storeName || document.getElementById('profileStoreName')?.value || '').trim() || 'Mi tienda';
+    const receiptAvatar=document.getElementById('receiptPreviewAvatar'); if(receiptAvatar) receiptAvatar.src=avatarUrl || 'feritapp-icon.png';
     document.getElementById('receiptPreviewItems').innerHTML = items.map(function(item){
       return '<div class="receipt-preview-item"><span>' + escapeHtml(item.articulo || 'Artículo') + '</span><strong>' + money(item.precio) + '</strong></div>';
     }).join('');
@@ -907,7 +916,10 @@ document.addEventListener('DOMContentLoaded', function(){
   function updateReceiptPreviewMessage(){
     let msg = document.getElementById('receiptShareMessage');
     let preview = document.getElementById('receiptPreviewMessage');
-    if(preview) preview.textContent = msg && msg.value.trim() ? msg.value.trim() : ' '; 
+    const slider=document.getElementById('receiptMessageFontSize'); const output=document.getElementById('receiptMessageFontSizeValue');
+    const size=Math.max(10,Math.min(16,Number(slider&&slider.value)||12));
+    if(preview){ preview.textContent = msg && msg.value.trim() ? msg.value.trim() : ' '; preview.style.fontSize=size+'px'; }
+    if(output) output.textContent=size+' px';
   }
 
   async function performReceiptShare(){
@@ -946,6 +958,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.body.classList.remove('receipt-modal-open');
   }
   document.getElementById('receiptShareMessage').addEventListener('input', updateReceiptPreviewMessage);
+  document.getElementById('receiptMessageFontSize').addEventListener('input', updateReceiptPreviewMessage);
   document.getElementById('confirmReceiptShare').addEventListener('click', performReceiptShare);
   document.getElementById('closeReceiptEdit').addEventListener('click', closeReceiptEditor);
   document.getElementById('cancelReceiptShare').addEventListener('click', closeReceiptEditor);
@@ -1639,7 +1652,28 @@ document.addEventListener('DOMContentLoaded', function(){
     return desktop + mobile;
   }
 
+  function renderSalesGroupedByClient(items){
+    if(!items.length) return '<div class="empty-inline">Sin entregas registradas esta semana.</div>';
+    const groups = {};
+    items.forEach(function(item){ const key = (item.cliente || 'Sin nombre').trim(); (groups[key] ||= []).push(item); });
+    let html = '<div class="sales-client-groups">';
+    Object.keys(groups).sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(name, idx){
+      const list = groups[name].slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+      const total = list.reduce(function(sum,x){return sum+(Number(x.precio)||0);},0);
+      const pending = list.reduce(function(sum,x){return sum+(!x.pagado?(Number(x.precio)||0):0);},0);
+      const id = 'sales-client-group-' + idx;
+      html += '<section class="sales-client-group"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small></span><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pagado':'Debe '+money(pending))+'</span><span class="sales-group-chevron">⌄</span></button><div class="sales-client-group-content" id="'+id+'" hidden>';
+      list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
+        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small>'+(item.retira==='otro'?'<small>Retira: '+escapeHtml(item.tercero||'Otra persona')+'</small>':'')+'</div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong><button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pagado':'Pendiente')+'</button><span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
+      });
+      html += '<div class="sales-group-total"><span>Total del cliente</span><strong>'+money(total)+'</strong></div></div></section>';
+    });
+    html += '</div>';
+    return html;
+  }
+
   function bindTableEvents(root){
+    root.querySelectorAll('[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(){ const panel=document.getElementById(btn.getAttribute('data-sales-group')); if(!panel)return; const opening=panel.hidden; panel.hidden=!opening; btn.setAttribute('aria-expanded',String(opening)); btn.classList.toggle('expanded',opening); }); });
     root.querySelectorAll('[data-toggle-pay]').forEach(function(btn){
       btn.addEventListener('click', function(){
         let id = btn.getAttribute('data-toggle-pay');
@@ -1712,8 +1746,8 @@ document.addEventListener('DOMContentLoaded', function(){
       document.querySelectorAll('.salestab-opt').forEach(function(b){ b.classList.remove('active'); });
       btn.classList.add('active');
       let tab = btn.getAttribute('data-salestab');
-      document.getElementById('currentWeekTable').style.display = (tab === 'items') ? 'block' : 'none';
-      document.getElementById('deliveryListWrap').style.display = (tab === 'delivery') ? 'block' : 'none';
+      document.getElementById('currentWeekTable').style.display = 'block';
+      document.getElementById('deliveryListWrap').style.display = 'none';
     });
   });
 
@@ -1725,9 +1759,9 @@ document.addEventListener('DOMContentLoaded', function(){
     /* current week: table of articles (shown above the summary) — editable */
     let curItems = (groups[currentKey] || []).slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
     let curTableEl = document.getElementById('currentWeekTable');
-    curTableEl.innerHTML = renderSalesTable(curItems, true);
+    curTableEl.innerHTML = renderSalesGroupedByClient(curItems);
     bindTableEvents(curTableEl);
-    renderDeliveryList(curItems);
+    let deliveryWrap = document.getElementById('deliveryListWrap'); if(deliveryWrap) deliveryWrap.style.display = 'none';
 
     /* current week: summary ticket, below the table */
     let curStats = weekStats(curItems);
@@ -1965,6 +1999,8 @@ document.addEventListener('DOMContentLoaded', function(){
       '<div class="client-detail-total"><span>Total de compras de esta semana</span><strong>' + money(total) + '</strong></div>' +
       '<div class="client-purchase-list">' + (rows || '<div class="empty-inline">Este cliente no tiene compras registradas en la semana actual.</div>') + '</div>' +
       '<div class="client-detail-actions"><button type="button" class="copy-client-name-btn" data-open-messenger="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true" class="messenger-brand-icon"><path d="M12 2C6.25 2 2 6.13 2 11.45c0 2.98 1.42 5.57 3.65 7.28.19.15.31.4.32.65l.06 2.02c.02.32.35.53.64.41l2.25-.99c.19-.08.39-.1.59-.04.79.22 1.63.34 2.49.34 5.75 0 10-4.13 10-9.45S17.75 2 12 2Zm1.02 12.72-2.55-2.72a.8.8 0 0 0-.96-.15l-3.05 1.63c-.32.17-.66-.2-.44-.49l3.25-4.34a1.2 1.2 0 0 1 1.83-.13l2.55 2.72a.8.8 0 0 0 .96.15l3.05-1.63c.32-.17.66.2.44.49l-3.25 4.34a1.2 1.2 0 0 1-1.83.13Z"/></svg> Abrir Messenger</button><button type="button" class="share-client-btn" data-share-client="' + escapeHtml(name) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> Compartir comprobante</button></div>';
+    const clientRow=document.querySelector('#clientsFullList [data-client-name=\"'+CSS.escape(name)+'\"]')?.closest('.client-row');
+    if(clientRow && panel.parentElement !== clientRow) clientRow.insertAdjacentElement('afterend', panel);
     panel.querySelector('[data-close-client-detail]').addEventListener('click', function(){ activeClientDetailName=''; renderClientDetails(''); });
     panel.querySelector('[data-open-messenger]').addEventListener('click', function(){ openMessengerForClientName(name); });
     panel.querySelector('[data-share-client]').addEventListener('click', function(){ if(items.length) shareReceipt(name, items); else showToast('Este cliente todavía no tiene ventas registradas.'); });

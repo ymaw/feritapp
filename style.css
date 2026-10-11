@@ -1553,3 +1553,34 @@ header{position:relative;}
 .menu-dropdown .menu-item strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;line-height:1.2;}
 .menu-dropdown .menu-item-icon{width:32px;height:32px;border-radius:10px;}
 @media(max-width:420px){.menu-dropdown{width:min(280px,calc(100vw - 20px));}.menu-dropdown .menu-item{min-height:45px;}}
+
+/* V12.10 — Entregas unificadas y tarjetas expansibles */
+#viewSales .salestab-opt[data-salestab="items"]{width:100%;}
+.sales-client-groups{display:flex;flex-direction:column;gap:10px;}
+.sales-client-group{border:1px solid var(--border);background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(30,20,70,.04);}
+.sales-client-group-trigger{display:flex;align-items:center;gap:11px;width:100%;padding:13px;background:transparent;border:0;text-align:left;color:var(--text);cursor:pointer;}
+.sales-client-group-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px;}
+.sales-client-group-copy strong{font-weight:800;overflow-wrap:anywhere;}
+.sales-client-group-copy small{font-size:11px;color:var(--text-muted);}
+.sales-group-chevron{font-size:20px;color:var(--primary-soft);transition:transform .2s;}
+.sales-client-group-trigger.expanded .sales-group-chevron{transform:rotate(180deg);}
+.sales-client-group-content{padding:0 12px 12px;border-top:1px solid var(--border);}
+.sales-client-group-content[hidden]{display:none!important;}
+.sales-group-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid var(--border);}
+.sales-group-item-main{display:flex;min-width:0;flex-direction:column;gap:4px;}
+.sales-group-item-main strong{font-size:13px;overflow-wrap:anywhere;}
+.sales-group-item-main small{font-size:10px;color:var(--text-muted);}
+.sales-group-item-side{display:flex;align-items:flex-end;flex-direction:column;gap:6px;flex-shrink:0;}
+.sales-group-item-side>strong{font-size:13px;white-space:nowrap;}
+.sales-group-total{display:flex;align-items:center;justify-content:space-between;padding:12px 2px 0;font-size:12px;color:var(--text-muted);}
+.sales-group-total strong{font-size:16px;color:var(--primary-soft);}
+.receipt-store-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--border);flex-shrink:0;}
+.receipt-font-control{display:flex;align-items:center;gap:10px;margin-top:10px;color:var(--text-muted);font-size:12px;}
+.receipt-font-control label{font-weight:700;}
+.receipt-font-control input{flex:1;min-width:60px;accent-color:var(--primary);}
+.receipt-font-control output{min-width:38px;text-align:right;font-weight:800;color:var(--primary-soft);}
+/* Flecha centrada geométricamente dentro del botón Atrás */
+.header-back-btn{right:auto;left:20px;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
+.header-back-btn span{display:block;line-height:1;transform:translateY(-1px);}
+/* Expansión de ficha en el flujo normal de la lista */
+#clientDetailPanel{margin:8px 0 14px;}
