@@ -1669,3 +1669,48 @@ header.has-back-button .session-email{
 .receipt-preview-brand .receipt-preview-badge{margin-left:0;}
 .receipt-preview-footer{display:none!important;}
 @media(max-width:520px){.receipt-preview-brand{padding-right:66px;min-height:62px;}.receipt-preview-ferit-logo{width:62px;height:62px;}}
+
+
+/* V12.17 — tarjetas semanales a ancho completo, ranking renovado y logo de recibo más visible */
+#viewSales .sales-summary-hero{width:100%;max-width:none;box-sizing:border-box;}
+#viewSales .weekly-summary-card{width:100%;max-width:none;box-sizing:border-box;margin:0 0 18px!important;}
+#viewSales .sales-hero{width:100%;max-width:none;}
+#viewSales .weekly-summary-content{padding:14px 16px 16px;}
+#viewSales .weekly-summary-content .sales-client-groups,
+#viewSales .weekly-summary-content .table-card,
+#viewSales .weekly-summary-content .sales-client-group{width:100%;max-width:none;box-sizing:border-box;}
+#viewSales .ticket-wrap{width:100%;max-width:none;box-sizing:border-box;padding-left:16px;padding-right:16px;}
+#viewSales .weekly-summary-trigger{padding:18px 20px;}
+.ranking-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.ranking-actions .section-title{margin:0;}
+.ranking-share-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 15px;border:0;border-radius:13px;background:linear-gradient(115deg,var(--primary),#7c5cff);color:#fff;font-weight:800;font-size:12px;white-space:nowrap;box-shadow:0 6px 16px rgba(var(--primary-rgb),.22);cursor:pointer;}
+.ranking-share-btn span{font-size:18px;line-height:1;}
+#viewRanking .rank-item{grid-template-columns:42px minmax(0,1fr) auto!important;gap:12px;padding:13px 15px;border:1px solid var(--border);border-radius:16px;background:var(--surface);}
+#viewRanking .rank-info{text-align:left;}
+#viewRanking .rank-name{text-align:left;font-size:14px;}
+#viewRanking .rank-sub{font-size:11px;color:var(--text-muted);}
+#viewRanking .rank-count{width:auto;min-width:94px;height:36px;padding:0 12px;border-radius:12px;white-space:nowrap;font:800 12px var(--display);}
+#viewRanking .rank-item.has-money{grid-template-columns:42px minmax(0,1fr) auto auto!important;}
+.receipt-preview-brand{padding-right:104px;min-height:100px;}
+.receipt-preview-ferit-logo{top:-8px;right:0;width:98px;height:98px;object-fit:contain;filter:none;}
+@media(max-width:520px){
+  #viewSales .weekly-summary-card{margin-bottom:14px!important;}
+  #viewSales .ticket-wrap{padding-left:12px;padding-right:12px;}
+  #viewSales .weekly-summary-content{padding:10px 8px 12px;}
+  .ranking-actions{align-items:flex-start;flex-direction:column;}
+  .ranking-share-btn{width:100%;}
+  #viewRanking .rank-item{grid-template-columns:34px minmax(0,1fr) auto!important;gap:8px;padding:10px 9px;}
+  #viewRanking .rank-count{min-width:78px;height:32px;padding:0 8px;font-size:11px;}
+  #viewRanking .rank-item.has-money{grid-template-columns:34px minmax(0,1fr) auto!important;}
+  #viewRanking .rank-total{grid-column:2 / -1;justify-self:end;}
+  .receipt-preview-brand{padding-right:82px;min-height:84px;}
+  .receipt-preview-ferit-logo{width:78px;height:78px;top:-4px;}
+}
+/* V12.17: el contenedor de Ventas deja de comprimir las dos tarjetas semanales */
+#viewSales .view-hero.sales-hero{margin:12px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;}
+#viewSales .view-hero.sales-hero::after{display:none;}
+#viewSales .view-hero.sales-hero .sales-summary-hero{margin:0 12px 12px;padding:16px 18px;width:auto;}
+#viewSales .weekly-summary-card{width:auto;margin:0 12px 18px!important;}
+#viewSales .weekly-summary-content .sales-client-groups{gap:10px;}
+#viewSales .weekly-summary-content .sales-client-group-trigger{flex-wrap:wrap;}
+@media(min-width:900px){#viewSales .view-hero.sales-hero .sales-summary-hero{margin-left:24px;margin-right:24px;}#viewSales .weekly-summary-card{margin-left:24px!important;margin-right:24px!important;}}

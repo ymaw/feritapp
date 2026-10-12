@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillStyle = PALE;
     ctx.fillRect(18, 26, W - 36, 92);
     // Logo FeritApp grande en el margen superior derecho, sin nombre de tienda en el pie.
-    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 88, 30, 88, 88);
+    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 110, 24, 110, 110);
 
     let y = 62;
     ctx.textAlign = 'left';
@@ -836,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const receiptAvatar = await new Promise(function(resolve){ const img=new Image(); img.crossOrigin='anonymous'; img.onload=function(){resolve(img);}; img.onerror=function(){resolve(null);}; img.src=avatarUrl || 'feritapp-icon.png'; });
     if(receiptAvatar){ ctx.save(); ctx.beginPath(); ctx.arc(PADDING+17,55,17,0,Math.PI*2); ctx.clip(); ctx.drawImage(receiptAvatar,PADDING,38,34,34); ctx.restore(); }
     const nameX = PADDING + 44;
-    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - nameX - PADDING - 100), nameX, y);
+    ctx.fillText(truncateCanvasText(ctx, receiptStoreName, W - nameX - PADDING - 122), nameX, y);
     y += 29;
     ctx.font = 'bold 15px Arial';
     ctx.fillStyle = NAVY;
@@ -1433,7 +1433,7 @@ document.addEventListener('DOMContentLoaded', function(){
         '<div class="rank-medal">' + medal + '</div>' +
         '<div class="rank-info">' +
           '<button type="button" class="rank-name client-name-link" data-client-link="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</button>' +
-          '<div class="rank-sub">' + c.count + ' artículo' + (c.count === 1 ? '' : 's') + ' comprado' + (c.count === 1 ? '' : 's') + '</div>' +
+          '<div class="rank-sub">Cliente destacado</div>' +
         '</div>' +
         '<div class="rank-count" aria-label="' + c.count + ' artículos">' + c.count + '</div>' +
         (showRankingMoney ? '<div class="rank-total">' + money(c.total) + '</div>' : '') +
@@ -1464,6 +1464,56 @@ document.addEventListener('DOMContentLoaded', function(){
       renderTopClients();
     });
   }
+
+  function getRankedClients(){
+    let byClient = {};
+    sales.forEach(function(s){
+      let name = s.cliente || 'Sin nombre';
+      if(!byClient[name]) byClient[name] = {name:name,count:0,total:0};
+      byClient[name].count += 1;
+      byClient[name].total += Number(s.precio) || 0;
+    });
+    return Object.keys(byClient).map(function(k){return byClient[k];}).sort(function(a,b){return b.count-a.count || b.total-a.total;});
+  }
+
+  async function shareCustomerRanking(){
+    const ranked = getRankedClients();
+    if(!ranked.length){ showToast('Todavía no hay ventas para compartir el ranking.'); return; }
+    const W=1080, H=1350, canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#f7f4ff'); bg.addColorStop(1,'#e9f7ff'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    const cardGrad=ctx.createLinearGradient(50,40,W-50,H-40); cardGrad.addColorStop(0,'#3216d9'); cardGrad.addColorStop(1,'#7657ff');
+    ctx.fillStyle=cardGrad; ctx.beginPath(); ctx.roundRect(48,48,W-96,H-96,44); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.12)'; ctx.beginPath(); ctx.arc(970,100,210,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ffffff'; ctx.font='800 54px Arial'; ctx.fillText('FeritApp',92,132);
+    ctx.fillStyle='#e8e2ff'; ctx.font='500 25px Arial'; ctx.fillText('Tu negocio, más simple',94,174);
+    ctx.fillStyle='#ffffff'; ctx.font='800 42px Arial'; ctx.fillText('Ranking de clientes',92,260);
+    ctx.fillStyle='#e7e2ff'; ctx.font='24px Arial'; ctx.fillText('Los clientes que más artículos compraron',92,302);
+    const medals=['🥇','🥈','🥉']; const rows=ranked.slice(0,8); let y=350;
+    rows.forEach(function(c,i){
+      ctx.fillStyle='rgba(255,255,255,.97)'; ctx.beginPath(); ctx.roundRect(82,y,W-164,94,22); ctx.fill();
+      ctx.fillStyle=['#ffcf36','#c8d1e1','#e6a06a'][i] || '#e7e9ff'; ctx.beginPath(); ctx.arc(132,y+47,29,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=i<3?'#38235b':'#30266d'; ctx.font='800 24px Arial'; ctx.textAlign='center'; ctx.fillText(medals[i] || String(i+1),132,y+56);
+      ctx.textAlign='left'; ctx.fillStyle='#211b56'; ctx.font='700 29px Arial'; let name=c.name; while(ctx.measureText(name).width>500) name=name.slice(0,-2)+'…'; ctx.fillText(name,185,y+43);
+      ctx.fillStyle='#706b9a'; ctx.font='20px Arial'; ctx.fillText((i+1)+'° puesto',185,y+72);
+      ctx.fillStyle='#f0edff'; ctx.beginPath(); ctx.roundRect(735,y+22,240,50,18); ctx.fill();
+      ctx.fillStyle='#4d35df'; ctx.font='800 23px Arial'; ctx.textAlign='center'; ctx.fillText(c.count+' artículo'+(c.count===1?'':'s'),855,y+54); ctx.textAlign='left';
+      y+=108;
+    });
+    ctx.fillStyle='#e7e2ff'; ctx.font='22px Arial'; ctx.textAlign='center'; ctx.fillText('Gracias por ser parte de nuestra comunidad 💜',W/2,H-106); ctx.textAlign='left';
+    const blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png');});
+    if(!blob){showToast('No se pudo generar la imagen del ranking.');return;}
+    const file=new File([blob],'ranking-feritapp.png',{type:'image/png'});
+    const textMsg='🏆 Ranking de clientes de mi tienda en FeritApp';
+    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      try{await navigator.share({files:[file],text:textMsg});return;}catch(e){if(e && e.name==='AbortError')return;}
+    }
+    if(navigator.share){try{await navigator.share({title:'Ranking de clientes',text:textMsg});}catch(e){if(e && e.name==='AbortError')return;}}
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},1000);
+    showToast('Ranking descargado como imagen para compartir en tus redes.');
+  }
+  const shareRankingBtn=document.getElementById('shareRankingBtn');
+  if(shareRankingBtn) shareRankingBtn.addEventListener('click',shareCustomerRanking);
 
   function weekStats(items){
     let total=0, cobrado=0, pendiente=0;
