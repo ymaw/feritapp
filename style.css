@@ -1714,3 +1714,13 @@ header.has-back-button .session-email{
 #viewSales .weekly-summary-content .sales-client-groups{gap:10px;}
 #viewSales .weekly-summary-content .sales-client-group-trigger{flex-wrap:wrap;}
 @media(min-width:900px){#viewSales .view-hero.sales-hero .sales-summary-hero{margin-left:24px;margin-right:24px;}#viewSales .weekly-summary-card{margin-left:24px!important;margin-right:24px!important;}}
+
+/* V12.18: alineación centrada del ranking */
+#viewRanking .rank-item{align-items:center!important;}
+#viewRanking .rank-medal,#viewRanking .rank-info,#viewRanking .rank-count,#viewRanking .rank-total{align-self:center;display:flex;align-items:center;justify-content:center;text-align:center;}
+#viewRanking .rank-info{flex-direction:column;min-height:42px;}
+#viewRanking .rank-name{width:100%;text-align:center!important;justify-content:center;}
+#viewRanking .rank-sub{text-align:center;width:100%;}
+#viewRanking .rank-count{min-width:90px;min-height:36px;box-sizing:border-box;}
+#viewRanking .rank-total{text-align:center;}
+@media(max-width:520px){#viewRanking .rank-count{min-width:76px;}#viewRanking .rank-info{min-width:0;}}

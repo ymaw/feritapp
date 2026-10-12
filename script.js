@@ -1479,28 +1479,40 @@ document.addEventListener('DOMContentLoaded', function(){
   async function shareCustomerRanking(){
     const ranked = getRankedClients();
     if(!ranked.length){ showToast('Todavía no hay ventas para compartir el ranking.'); return; }
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const palette = dark ? {
+      pageA:'#14101f',pageB:'#262238',cardA:'#30264a',cardB:'#1e1b2e',
+      row:'#29243b',text:'#f1f0fe',muted:'#b8b0d1',accent:'#b49aff',pill:'#393052',pillText:'#d8ccff',line:'#463b63'
+    } : {
+      pageA:'#f7f4ff',pageB:'#e9f7ff',cardA:'#3216d9',cardB:'#7657ff',
+      row:'#ffffff',text:'#211b56',muted:'#706b9a',accent:'#4d35df',pill:'#f0edff',pillText:'#4d35df',line:'#e3ddfb'
+    };
     const W=1080, H=1350, canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
     const ctx=canvas.getContext('2d');
-    const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#f7f4ff'); bg.addColorStop(1,'#e9f7ff'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-    const cardGrad=ctx.createLinearGradient(50,40,W-50,H-40); cardGrad.addColorStop(0,'#3216d9'); cardGrad.addColorStop(1,'#7657ff');
-    ctx.fillStyle=cardGrad; ctx.beginPath(); ctx.roundRect(48,48,W-96,H-96,44); ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.12)'; ctx.beginPath(); ctx.arc(970,100,210,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#ffffff'; ctx.font='800 54px Arial'; ctx.fillText('FeritApp',92,132);
-    ctx.fillStyle='#e8e2ff'; ctx.font='500 25px Arial'; ctx.fillText('Tu negocio, más simple',94,174);
+    const rr=function(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);};
+    const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,palette.pageA); bg.addColorStop(1,palette.pageB); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    const cardGrad=ctx.createLinearGradient(50,40,W-50,H-40); cardGrad.addColorStop(0,palette.cardA); cardGrad.addColorStop(1,palette.cardB);
+    ctx.fillStyle=cardGrad; rr(48,48,W-96,H-96,44); ctx.fill();
+    ctx.fillStyle=dark?'rgba(180,154,255,.09)':'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.arc(970,100,210,0,Math.PI*2); ctx.fill();
+    // El logo se dibuja junto al nombre para que la imagen compartida tenga la marca completa.
+    const logo = await new Promise(function(resolve){const img=new Image();img.onload=function(){resolve(img);};img.onerror=function(){resolve(null);};img.src='feritapp-icon.png';});
+    if(logo){ctx.save();ctx.beginPath();ctx.arc(132,125,48,0,Math.PI*2);ctx.clip();ctx.drawImage(logo,84,77,96,96);ctx.restore();}
+    ctx.fillStyle='#ffffff'; ctx.font='800 54px Arial'; ctx.textAlign='left'; ctx.fillText('FeritApp',200,126);
+    ctx.fillStyle=dark?'#d8ccff':'#e8e2ff'; ctx.font='500 25px Arial'; ctx.fillText('Tu negocio, más simple',202,168);
     ctx.fillStyle='#ffffff'; ctx.font='800 42px Arial'; ctx.fillText('Ranking de clientes',92,260);
-    ctx.fillStyle='#e7e2ff'; ctx.font='24px Arial'; ctx.fillText('Los clientes que más artículos compraron',92,302);
+    ctx.fillStyle=dark?'#e3dcf5':'#e7e2ff'; ctx.font='24px Arial'; ctx.fillText('Los clientes que más artículos compraron',92,302);
     const medals=['🥇','🥈','🥉']; const rows=ranked.slice(0,8); let y=350;
     rows.forEach(function(c,i){
-      ctx.fillStyle='rgba(255,255,255,.97)'; ctx.beginPath(); ctx.roundRect(82,y,W-164,94,22); ctx.fill();
-      ctx.fillStyle=['#ffcf36','#c8d1e1','#e6a06a'][i] || '#e7e9ff'; ctx.beginPath(); ctx.arc(132,y+47,29,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle=i<3?'#38235b':'#30266d'; ctx.font='800 24px Arial'; ctx.textAlign='center'; ctx.fillText(medals[i] || String(i+1),132,y+56);
-      ctx.textAlign='left'; ctx.fillStyle='#211b56'; ctx.font='700 29px Arial'; let name=c.name; while(ctx.measureText(name).width>500) name=name.slice(0,-2)+'…'; ctx.fillText(name,185,y+43);
-      ctx.fillStyle='#706b9a'; ctx.font='20px Arial'; ctx.fillText((i+1)+'° puesto',185,y+72);
-      ctx.fillStyle='#f0edff'; ctx.beginPath(); ctx.roundRect(735,y+22,240,50,18); ctx.fill();
-      ctx.fillStyle='#4d35df'; ctx.font='800 23px Arial'; ctx.textAlign='center'; ctx.fillText(c.count+' artículo'+(c.count===1?'':'s'),855,y+54); ctx.textAlign='left';
+      ctx.fillStyle=palette.row; rr(82,y,W-164,94,22); ctx.fill();
+      ctx.fillStyle=['#ffcf36','#c8d1e1','#e6a06a'][i] || palette.line; ctx.beginPath(); ctx.arc(132,y+47,29,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=i<3?'#38235b':palette.accent; ctx.font='800 24px Arial'; ctx.textAlign='center'; ctx.fillText(medals[i] || String(i+1),132,y+56);
+      ctx.textAlign='left'; ctx.fillStyle=palette.text; ctx.font='700 29px Arial'; let name=c.name; while(ctx.measureText(name).width>500) name=name.slice(0,-2)+'…'; ctx.fillText(name,185,y+43);
+      ctx.fillStyle=palette.muted; ctx.font='20px Arial'; ctx.fillText((i+1)+'° puesto',185,y+72);
+      ctx.fillStyle=palette.pill; rr(735,y+22,240,50,18); ctx.fill();
+      ctx.fillStyle=palette.pillText; ctx.font='800 23px Arial'; ctx.textAlign='center'; ctx.fillText(c.count+' artículo'+(c.count===1?'':'s'),855,y+54); ctx.textAlign='left';
       y+=108;
     });
-    ctx.fillStyle='#e7e2ff'; ctx.font='22px Arial'; ctx.textAlign='center'; ctx.fillText('Gracias por ser parte de nuestra comunidad 💜',W/2,H-106); ctx.textAlign='left';
+    ctx.fillStyle=dark?'#d8ccff':'#e7e2ff'; ctx.font='22px Arial'; ctx.textAlign='center'; ctx.fillText('Gracias por ser parte de nuestra comunidad 💜',W/2,H-106); ctx.textAlign='left';
     const blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png');});
     if(!blob){showToast('No se pudo generar la imagen del ranking.');return;}
     const file=new File([blob],'ranking-feritapp.png',{type:'image/png'});
