@@ -1741,7 +1741,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const pickup = list.find(function(x){ return x.retira === 'otro' && x.tercero; });
       const pickupLabel = pickup ? ('Retira: ' + pickup.tercero) : ('Retira: ' + name + ' (cliente)');
       const delivered = list.every(function(x){ return !!x.entregado; });
-      const managementActions = idPrefix === 'management' ? '<div class="management-client-actions"><button type="button" data-copy-client="'+escapeHtml(name)+'">Copiar nombre</button><button type="button" data-open-messenger="'+escapeHtml(name)+'">Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">+ Artículo</button><button type="button" data-toggle-delivery-client="'+escapeHtml(name)+'">'+(delivered?'Marcar sin entregar':'Marcar entregado')+'</button></div>' : '';
+      const managementActions = idPrefix === 'management' ? '<div class="management-client-actions"><button type="button" data-copy-client="'+escapeHtml(name)+'">Copiar nombre</button><button type="button" data-open-messenger="'+escapeHtml(name)+'">Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">+ Artículo</button></div>' : '';
       html += '<section class="sales-client-group"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span><span class="sales-group-statuses"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span><span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por entregar')+'</span></span><span class="sales-group-chevron">⌄</span></button><div class="sales-client-group-content" id="'+id+'" hidden>'+managementActions;
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
         html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong><button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pagado':'Pendiente')+'</button><span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
@@ -1779,10 +1779,11 @@ document.addEventListener('DOMContentLoaded', function(){
     root.querySelectorAll('[data-share-client]').forEach(function(btn){ btn.addEventListener('click', function(){ const name=btn.getAttribute('data-share-client'); const its=sales.filter(function(x){return x.cliente===name;}).sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);}); if(its.length) shareReceipt(name,its); else showToast('Este cliente todavía no tiene ventas.'); }); });
     root.querySelectorAll('[data-add-client-sale]').forEach(function(btn){ btn.addEventListener('click', function(){ openNewSaleForClient(btn.getAttribute('data-add-client-sale')); }); });
     root.querySelectorAll('[data-toggle-delivery-client]').forEach(function(btn){ btn.addEventListener('click', function(){ toggleDeliveryForClient(btn.getAttribute('data-toggle-delivery-client'), 'all'); }); });
+    root.querySelectorAll('[data-set-delivery]').forEach(function(btn){ btn.addEventListener('click', function(){ const name=btn.getAttribute('data-client'); const desired=btn.getAttribute('data-set-delivery')==='delivered'; setDeliveryForClient(name, desired); }); });
   }
 
   let managementFilter = 'all';
-  let deliveryFilter = 'undelivered';
+  let deliveryFilter = 'all';
   function renderManagementList(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const thisWeek = weekKey(new Date());
@@ -1796,8 +1797,6 @@ document.addEventListener('DOMContentLoaded', function(){
       const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       if(search && !hay.includes(search)) return false;
       if(managementFilter==='unpaid' && x.pagado) return false;
-      if(managementFilter==='undelivered' && x.entregado) return false;
-      if(managementFilter==='delivered' && !x.entregado) return false;
       return true;
     });
     const wrap = document.getElementById('currentWeekTable');
@@ -1816,9 +1815,22 @@ document.addEventListener('DOMContentLoaded', function(){
     const names=Object.keys(grouped).sort(function(a,b){return a.localeCompare(b,'es');});
     wrap.innerHTML = names.length ? names.map(function(name){
       const list=grouped[name]; const total=list.reduce(function(a,x){return a+(Number(x.precio)||0);},0); const pending=list.reduce(function(a,x){return a+(!x.pagado?(Number(x.precio)||0):0);},0); const delivered=list.every(function(x){return !!x.entregado;});
-      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span><span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por entregar')+'</span></div></div></div><button type="button" class="delivery-mark-btn '+(delivered?'is-delivered':'')+'" data-toggle-delivery-client="'+escapeHtml(name)+'">'+(delivered?'✓ Entregado':'Marcar entregado')+'</button></article>';
+      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
+  }
+  async function setDeliveryForClient(name, desired){
+    const items=sales.filter(function(x){return (x.cliente||'').trim()===name;});
+    if(!items.length) return;
+    if(items.every(function(x){return !!x.entregado===desired;})){ return; }
+    try{
+      const ids=items.filter(function(x){return !!x.entregado!==desired;}).map(function(x){return x.id;});
+      const res=await sb.from('sales').update({entregado:desired}).in('id',ids);
+      if(res.error) throw res.error;
+      items.forEach(function(x){x.entregado=desired;}); render();
+      if(currentView==='deliveries') renderDeliveriesView();
+      showToast(desired?'Pedido marcado como entregado':'Pedido marcado como pendiente de entrega');
+    }catch(e){ showToast('No se pudo guardar el estado. Verificá que la migración de Entregas esté aplicada.'); }
   }
   async function toggleDeliveryForClient(name, scope){
     const currentKey=weekKey(new Date());
@@ -1907,7 +1919,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let curStats = weekStats(curItems);
     renderDashboardTasks(curItems);
     document.getElementById('currentTicket').innerHTML =
-      '<div class="summary-heading"><div class="summary-avatar" id="dashboardSummaryAvatar"><img src="' + (avatarUrl || 'feritapp-icon.png') + '" alt="Foto de perfil"></div><div><p class="stat-cards-label">Resumen de la semana</p><p class="summary-period">' + formatRange(currentKey) + '</p></div></div>' +
+      '<div class="summary-heading"><div><p class="stat-cards-label">Resumen de la semana</p><p class="summary-period">' + formatRange(currentKey) + '</p></div></div>' +
       '<div class="stat-cards">' +
         '<div class="stat-card primary"><span class="stat-card-icon">💰</span><span class="stat-card-label">Total vendido</span><span class="stat-card-value">' + money(curStats.total) + '</span></div>' +
         '<div class="stat-card success"><span class="stat-card-icon">✅</span><span class="stat-card-label">Cobrado</span><span class="stat-card-value">' + money(curStats.cobrado) + '</span></div>' +
@@ -1949,10 +1961,10 @@ document.addEventListener('DOMContentLoaded', function(){
       return;
     }
     let html = '';
-    pastKeys.forEach(function(k){
+    pastKeys.slice(0,3).forEach(function(k, historyIndex){
       let st = weekStats(groups[k]);
       let label = "Semana del " + formatRange(k);
-      html += '<button class="week-toggle" data-week="' + k + '">' +
+      html += '<button class="week-toggle '+(historyIndex===0?'week-latest':'')+'" data-week="' + k + '">' +
                 '<span><span class="lbl">' + label + '</span><br><span class="sub">' + st.count + ' art. · ' + money(st.total) + '</span></span>' +
                 '<span class="chev">▾</span>' +
               '</button>';

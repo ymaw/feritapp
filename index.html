@@ -172,17 +172,14 @@
     </div>
   </div>
   <div class="ticket-wrap dashboard-current-ticket" id="currentTicket"></div>
-  <div class="weekly-summary-card dashboard-weekly-summary" id="weeklySummaryCard">
-    <button type="button" class="weekly-summary-trigger" id="weeklySummaryToggle" aria-expanded="false"><span class="weekly-summary-copy"><strong>Resumen de la última semana</strong><small id="weeklySummaryMeta">Última semana cerrada</small></span><span class="weekly-summary-chevron" aria-hidden="true">⌄</span></button>
-    <div class="weekly-summary-content" id="weeklySummaryContent" hidden></div>
-  </div>
-  <div class="section-block dashboard-history-section"><p class="section-title">Historial semanal</p><div class="weeks" id="weeksContainer"></div></div>
+
   <div class="section-block dashboard-tasks-section">
     <div class="section-heading-row">
       <div><p class="section-title">Lo que requiere tu atención</p><p class="section-subtitle">Acciones rápidas para terminar tus pendientes.</p></div>
     </div>
     <div id="dashboardTasks"></div>
   </div>
+  <div class="section-block dashboard-history-section"><p class="section-title">Historial semanal</p><div class="weeks" id="weeksContainer"></div></div>
 
   <div class="section-block">
     <p class="section-title">Categoría más vendida del mes</p>
@@ -442,7 +439,7 @@
 </div>
 
 <div id="viewSales" class="app-view">
-  <div class="view-hero sales-hero"><div class="view-hero-kicker">GESTIÓN</div><h2>Clientes y ventas</h2><p>Buscá clientes y administrá sus artículos, cobros y comprobantes desde un solo lugar.</p></div>
+  <div class="view-hero sales-hero"><div class="sales-heading-card"><span class="sales-heading-mark" aria-hidden="true">✦</span><div><h2>Clientes y Ventas</h2><p>Buscá clientes y administrá artículos, cobros y comprobantes desde un solo lugar.</p></div></div></div>
   <div class="section-block">
     <div class="management-stat-grid">
       <article class="management-stat"><span>Total de clientes</span><strong id="managementClientCount">0</strong></article>
@@ -453,8 +450,6 @@
     <div class="management-filters" id="managementFilters" role="group" aria-label="Filtrar ventas">
       <button type="button" class="management-filter active" data-management-filter="all">Todos</button>
       <button type="button" class="management-filter" data-management-filter="unpaid">Por cobrar</button>
-      <button type="button" class="management-filter" data-management-filter="undelivered">Por entregar</button>
-      <button type="button" class="management-filter" data-management-filter="delivered">Entregados</button>
     </div>
     <div id="currentWeekTable"></div>
     <div id="deliveryListWrap" style="display:none;"></div>
@@ -463,19 +458,19 @@
 
 <div id="viewDeliveries" class="app-view" style="display:none;">
   <div class="view-hero deliveries-hero"><div class="view-hero-kicker">SEGUIMIENTO</div><h2>Entregas</h2><p>Marcá cada pedido como entregado sin cambiar su estado de cobro.</p></div>
-  <div class="section-block"><div class="management-filters" id="deliveryFilters" role="group" aria-label="Filtrar entregas"><button type="button" class="management-filter active" data-delivery-filter="undelivered">Pendientes de entrega</button><button type="button" class="management-filter" data-delivery-filter="delivered">Entregados</button><button type="button" class="management-filter" data-delivery-filter="all">Todos</button></div><div id="deliveriesList"></div></div>
+  <div class="section-block"><div class="management-filters" id="deliveryFilters" role="group" aria-label="Filtrar entregas"><button type="button" class="management-filter active" data-delivery-filter="all">Todos</button><button type="button" class="management-filter" data-delivery-filter="undelivered">Pendientes de entrega</button><button type="button" class="management-filter" data-delivery-filter="delivered">Entregados</button></div><div id="deliveriesList"></div></div>
 </div>
 
 <nav class="bottom-nav" id="bottomNav" aria-label="Navegación principal">
   <button type="button" class="nav-item active" data-view="dashboard">
     <span class="nav-icon">⌂</span><span class="nav-label">Inicio</span>
   </button>
-  <button type="button" class="nav-item" data-view="deliveries">
-    <span class="nav-icon">♧</span><span class="nav-label">Entregas</span>
-  </button>
-  <button class="nav-fab" id="openSheet" aria-label="Agregar venta">+</button>
   <button type="button" class="nav-item" data-view="sales">
     <span class="nav-icon">▤</span><span class="nav-label">Ventas</span>
+  </button>
+  <button class="nav-fab" id="openSheet" aria-label="Agregar venta">+</button>
+  <button type="button" class="nav-item" data-view="deliveries">
+    <span class="nav-icon">♧</span><span class="nav-label">Entregas</span>
   </button>
   <button type="button" class="nav-item" id="moreBtn" aria-expanded="false" aria-label="Más opciones">
     <span class="nav-icon">⋯</span><span class="nav-label">Más</span>
@@ -489,8 +484,8 @@
   <button type="button" class="sidebar-cta" id="sidebarOpenSheet">+ Nueva venta</button>
   <div class="sidebar-links">
     <button type="button" class="sidebar-item active" data-view="dashboard">⌂ Inicio</button>
-    <button type="button" class="sidebar-item" data-view="deliveries">♧ Entregas</button>
     <button type="button" class="sidebar-item" data-view="sales">▤ Ventas</button>
+    <button type="button" class="sidebar-item" data-view="deliveries">♧ Entregas</button>
     <button type="button" class="sidebar-item" data-view="ranking">♕ Ranking</button>
     <button type="button" class="sidebar-item" data-view="settings">⚙ Configuración</button>
   </div>
