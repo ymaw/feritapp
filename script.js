@@ -309,23 +309,26 @@ document.addEventListener('DOMContentLoaded', function(){
   document.addEventListener('click', function(){ closeMoreMenu(); });
 
   function switchView(view, rememberPrevious){
+    if(view === 'clients') view = 'sales'; // Clientes queda integrado en Ventas.
     if(view !== currentView && rememberPrevious !== false){ previousView = currentView; }
     currentView = view;
     updateBackButton();
     document.getElementById('viewSales').style.display = (view === 'sales') ? 'block' : 'none';
     document.getElementById('viewDashboard').style.display = (view === 'dashboard') ? 'block' : 'none';
-    document.getElementById('viewClients').style.display = (view === 'clients') ? 'block' : 'none';
+    document.getElementById('viewClients').style.display = 'none';
+    document.getElementById('viewDeliveries').style.display = (view === 'deliveries') ? 'block' : 'none';
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Clientes', ranking:'Ranking de clientes', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
       btn.classList.toggle('active', btn.getAttribute('data-view') === view);
     });
 
-    if(view === 'clients'){ renderClientSearch(); renderClientsFullList(); if(activeClientDetailName) renderClientDetails(activeClientDetailName); }
+    if(view === 'sales'){ renderManagementList(); }
+    if(view === 'deliveries'){ renderDeliveriesView(); }
     if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
     if(view === 'settings'){ syncNotifyControls(); showSettingsMenu(); }
   }
@@ -372,6 +375,8 @@ document.addEventListener('DOMContentLoaded', function(){
       menuDropdown.style.display = 'none';
     });
   });
+  const headerProfileBtn = document.getElementById('headerProfileBtn');
+  if(headerProfileBtn) headerProfileBtn.addEventListener('click', function(){ switchView('settings'); showSettingsPanel('profile'); });
 
   let currentUserEmail = null;
 
@@ -460,22 +465,20 @@ document.addEventListener('DOMContentLoaded', function(){
     let greetingAvatar = document.getElementById('greetingAvatar');
     let profileAvatar = document.getElementById('profileAvatarPreview');
     let summaryAvatar = document.getElementById('dashboardSummaryAvatar');
-    let targets = [greetingAvatar, profileAvatar, summaryAvatar];
+    let headerAvatar = document.getElementById('headerProfileAvatar');
+    let targets = [greetingAvatar, profileAvatar, summaryAvatar, headerAvatar];
     targets.forEach(function(el){
       if(!el) return;
       let src = avatarUrl || 'feritapp-icon.png';
+      if(el.tagName === 'IMG'){
+        el.src = src;
+        el.onerror = function(){ this.onerror=null; this.src='feritapp-icon.png'; };
+        return;
+      }
       el.replaceChildren();
       let img = document.createElement('img');
-      img.alt = 'Foto de perfil';
-      img.loading = 'lazy';
-      img.decoding = 'async';
-      img.src = src;
-      img.addEventListener('error', function(){
-        // Si una URL antigua/privada deja de ser accesible, no mostramos
-        // un icono roto: volvemos al logo de la app.
-        if(img.src.endsWith('feritapp-icon.png')) return;
-        img.src = 'feritapp-icon.png';
-      }, { once: true });
+      img.alt = 'Foto de perfil'; img.loading = 'lazy'; img.decoding = 'async'; img.src = src;
+      img.addEventListener('error', function(){ if(img.src.endsWith('feritapp-icon.png')) return; img.src='feritapp-icon.png'; }, { once:true });
       el.appendChild(img);
     });
   }
@@ -615,7 +618,8 @@ document.addEventListener('DOMContentLoaded', function(){
       pagado: row.pagado,
       retira: row.retira,
       tercero: row.tercero || '',
-      categoria: row.categoria || 'Sin categoría'
+      categoria: row.categoria || 'Sin categoría',
+      entregado: !!row.entregado
     };
   }
 
@@ -1736,7 +1740,9 @@ document.addEventListener('DOMContentLoaded', function(){
       const id = idPrefix + '-client-group-' + idx;
       const pickup = list.find(function(x){ return x.retira === 'otro' && x.tercero; });
       const pickupLabel = pickup ? ('Retira: ' + pickup.tercero) : ('Retira: ' + name + ' (cliente)');
-      html += '<section class="sales-client-group"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pagado':'Debe '+money(pending))+'</span><span class="sales-group-chevron">⌄</span></button><div class="sales-client-group-content" id="'+id+'" hidden>';
+      const delivered = list.every(function(x){ return !!x.entregado; });
+      const managementActions = idPrefix === 'management' ? '<div class="management-client-actions"><button type="button" data-copy-client="'+escapeHtml(name)+'">Copiar nombre</button><button type="button" data-open-messenger="'+escapeHtml(name)+'">Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">+ Artículo</button><button type="button" data-toggle-delivery-client="'+escapeHtml(name)+'">'+(delivered?'Marcar sin entregar':'Marcar entregado')+'</button></div>' : '';
+      html += '<section class="sales-client-group"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span><span class="sales-group-statuses"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span><span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por entregar')+'</span></span><span class="sales-group-chevron">⌄</span></button><div class="sales-client-group-content" id="'+id+'" hidden>'+managementActions;
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
         html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong><button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pagado':'Pendiente')+'</button><span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
       });
@@ -1766,13 +1772,74 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     });
     root.querySelectorAll('[data-edit]').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        let id = btn.getAttribute('data-edit');
-        let item = sales.find(function(s){ return s.id === id; });
-        if(item){ openEditSheet(item); }
-      });
+      btn.addEventListener('click', function(){ let id=btn.getAttribute('data-edit'); let item=sales.find(function(s){return s.id===id;}); if(item) openEditSheet(item); });
     });
+    root.querySelectorAll('[data-copy-client]').forEach(function(btn){ btn.addEventListener('click', async function(){ const name=btn.getAttribute('data-copy-client'); try{ await navigator.clipboard.writeText(name); showToast('Nombre copiado'); }catch(e){ showToast('No se pudo copiar el nombre en este navegador.'); } }); });
+    root.querySelectorAll('[data-open-messenger]').forEach(function(btn){ btn.addEventListener('click', function(){ openMessengerForClientName(btn.getAttribute('data-open-messenger')); }); });
+    root.querySelectorAll('[data-share-client]').forEach(function(btn){ btn.addEventListener('click', function(){ const name=btn.getAttribute('data-share-client'); const its=sales.filter(function(x){return x.cliente===name;}).sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);}); if(its.length) shareReceipt(name,its); else showToast('Este cliente todavía no tiene ventas.'); }); });
+    root.querySelectorAll('[data-add-client-sale]').forEach(function(btn){ btn.addEventListener('click', function(){ openNewSaleForClient(btn.getAttribute('data-add-client-sale')); }); });
+    root.querySelectorAll('[data-toggle-delivery-client]').forEach(function(btn){ btn.addEventListener('click', function(){ toggleDeliveryForClient(btn.getAttribute('data-toggle-delivery-client'), 'all'); }); });
   }
+
+  let managementFilter = 'all';
+  let deliveryFilter = 'undelivered';
+  function renderManagementList(){
+    const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
+    const thisWeek = weekKey(new Date());
+    const current = sales.filter(function(x){ return weekKey(new Date(x.fecha))===thisWeek; });
+    const total = current.reduce(function(a,x){ return a+(Number(x.precio)||0); },0);
+    const owed = current.reduce(function(a,x){ return a+(!x.pagado?(Number(x.precio)||0):0); },0);
+    document.getElementById('managementClientCount').textContent = Math.max(clients.length, new Set(sales.map(function(x){return (x.cliente||'').trim().toLowerCase();}).filter(Boolean)).size);
+    document.getElementById('managementWeekTotal').textContent = money(total);
+    document.getElementById('managementOwedTotal').textContent = money(owed);
+    let filtered = sales.filter(function(x){
+      const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
+      if(search && !hay.includes(search)) return false;
+      if(managementFilter==='unpaid' && x.pagado) return false;
+      if(managementFilter==='undelivered' && x.entregado) return false;
+      if(managementFilter==='delivered' && !x.entregado) return false;
+      return true;
+    });
+    const wrap = document.getElementById('currentWeekTable');
+    wrap.innerHTML = renderSalesGroupedByClient(filtered, 'management');
+    bindTableEvents(wrap);
+  }
+  function renderDeliveriesView(){
+    const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
+    let items = sales.filter(function(x){
+      const match = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase().includes(search);
+      return match && (deliveryFilter==='all' || (deliveryFilter==='delivered' ? !!x.entregado : !x.entregado));
+    });
+    const wrap=document.getElementById('deliveriesList');
+    const grouped = {};
+    items.forEach(function(x){ const key=(x.cliente||'Sin nombre').trim(); (grouped[key] ||= []).push(x); });
+    const names=Object.keys(grouped).sort(function(a,b){return a.localeCompare(b,'es');});
+    wrap.innerHTML = names.length ? names.map(function(name){
+      const list=grouped[name]; const total=list.reduce(function(a,x){return a+(Number(x.precio)||0);},0); const pending=list.reduce(function(a,x){return a+(!x.pagado?(Number(x.precio)||0):0);},0); const delivered=list.every(function(x){return !!x.entregado;});
+      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span><span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por entregar')+'</span></div></div></div><button type="button" class="delivery-mark-btn '+(delivered?'is-delivered':'')+'" data-toggle-delivery-client="'+escapeHtml(name)+'">'+(delivered?'✓ Entregado':'Marcar entregado')+'</button></article>';
+    }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
+    bindTableEvents(wrap);
+  }
+  async function toggleDeliveryForClient(name, scope){
+    const currentKey=weekKey(new Date());
+    const items=sales.filter(function(x){return (x.cliente||'').trim()===name && (scope==='all' || weekKey(new Date(x.fecha))===currentKey);}); if(!items.length){showToast('No hay artículos de este cliente en la semana actual.');return;}
+    const next=!items.every(function(x){return !!x.entregado;});
+    try{
+      const ids=items.map(function(x){return x.id;});
+      const res=await sb.from('sales').update({entregado:next}).in('id',ids);
+      if(res.error) throw res.error;
+      items.forEach(function(x){x.entregado=next;}); render();
+      if(currentView==='deliveries') renderDeliveriesView();
+      showToast(next?'Pedido marcado como entregado':'Pedido marcado como no entregado');
+    }catch(e){ showToast('No se pudo guardar el estado de entrega. Aplicá primero la migración SQL incluida en el ZIP.'); }
+  }
+  function openNewSaleForClient(name){
+    const openBtn=document.getElementById('openSheet'); if(openBtn) openBtn.click();
+    setTimeout(function(){ const field=document.getElementById('fCliente'); if(field){field.value=name;field.dispatchEvent(new Event('input',{bubbles:true}));} },80);
+  }
+  document.getElementById('managementSearch').addEventListener('input', function(){renderManagementList(); if(currentView==='deliveries') renderDeliveriesView();});
+  document.querySelectorAll('[data-management-filter]').forEach(function(btn){btn.addEventListener('click',function(){managementFilter=btn.dataset.managementFilter;document.querySelectorAll('[data-management-filter]').forEach(function(b){b.classList.toggle('active',b===btn);});renderManagementList();});});
+  document.querySelectorAll('[data-delivery-filter]').forEach(function(btn){btn.addEventListener('click',function(){deliveryFilter=btn.dataset.deliveryFilter;document.querySelectorAll('[data-delivery-filter]').forEach(function(b){b.classList.toggle('active',b===btn);});renderDeliveriesView();});});
 
   // Agrupa las ventas de la semana por quién retira realmente (no por
   // artículo), para saber a qué personas hay que entregarles algo,
@@ -1832,9 +1899,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
     /* current week: table of articles (shown above the summary) — editable */
     let curItems = (groups[currentKey] || []).slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
-    let curTableEl = document.getElementById('currentWeekTable');
-    curTableEl.innerHTML = renderSalesGroupedByClient(curItems);
-    bindTableEvents(curTableEl);
+    renderManagementList();
+    renderDeliveriesView();
     let deliveryWrap = document.getElementById('deliveryListWrap'); if(deliveryWrap) deliveryWrap.style.display = 'none';
 
     /* current week: summary ticket, below the table */
@@ -2067,14 +2133,11 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function openClientDetails(name){
-    activeClientDetailName = name;
-    switchView('clients');
-    let search = document.getElementById('clientSearch');
-    if(search) search.value = '';
-    renderClientSearch();
-    renderClientsFullList();
-    renderClientDetails(name);
-    setTimeout(function(){ let panel=document.getElementById('clientDetailPanel'); if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'}); }, 50);
+    switchView('sales');
+    const input=document.getElementById('managementSearch'); if(input) input.value=name;
+    managementFilter='all'; document.querySelectorAll('[data-management-filter]').forEach(function(b){b.classList.toggle('active',b.dataset.managementFilter==='all');});
+    renderManagementList();
+    setTimeout(function(){ const btn=Array.from(document.querySelectorAll('#currentWeekTable [data-sales-group]')).find(function(b){return b.textContent.includes(name);}); if(btn && btn.getAttribute('aria-expanded')!=='true') btn.click(); if(btn) btn.scrollIntoView({behavior:'smooth',block:'center'}); },60);
   }
 
   function renderClientDetails(name){
