@@ -1902,3 +1902,7 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .management-client-right button:last-child{background:var(--primary);color:#fff;border-color:var(--primary);}
 .management-client-right button:hover{border-color:var(--primary);}
 @media(max-width:390px){.management-expanded-layout{grid-template-columns:minmax(0,1fr) 94px;gap:6px}.sales-client-group-header{padding:9px}.management-client-right button{font-size:9px;padding:5px 3px}.sales-group-statuses .delivery-status{padding:4px 6px}}
+
+
+/* V12.24: logo con transparencia real, sin fondo ni sombra detrás del PNG */
+.brand-logo,.sidebar-logo,.receipt-preview-ferit-logo{background:transparent!important;box-shadow:none!important;object-fit:contain!important;}
