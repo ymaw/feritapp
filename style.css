@@ -1906,3 +1906,23 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 
 /* V12.24: logo con transparencia real, sin fondo ni sombra detrás del PNG */
 .brand-logo,.sidebar-logo,.receipt-preview-ferit-logo{background:transparent!important;box-shadow:none!important;object-fit:contain!important;}
+
+/* V12.25: pulido final de Ventas y cabecera */
+.sales-client-group-header{grid-template-columns:minmax(0,1fr) auto!important;}
+.sales-client-group-trigger{grid-column:1;grid-row:1;display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;align-items:center!important;}
+.sales-group-statuses{grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:nowrap;}
+.sales-group-chevron{flex:0 0 24px;width:24px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--text-muted);font-size:18px;cursor:pointer;}
+.sales-group-chevron.expanded{transform:rotate(180deg);}
+.sales-group-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;}
+.sales-group-item-main{min-width:0;}
+.sales-group-item-side{display:flex;align-items:center;justify-content:flex-end;gap:8px;white-space:nowrap;}
+.sales-group-item-side>strong{white-space:nowrap;}
+.management-expanded-layout .sales-group-item-side{align-items:center!important;}
+.management-expanded-layout .sales-group-item-side>strong{font-size:12px!important;}
+/* Foto de perfil alineada con el lockup de marca, sin quedar elevada */
+header .header-profile-btn,header.has-back-button .header-profile-btn{top:calc(env(safe-area-inset-top) + 26px)!important;transform:none!important;}
+header .brand-lockup{min-height:48px;align-items:center!important;}
+header .brand-logo{display:block;align-self:center;}
+header .eyebrow{margin-top:5px!important;font-size:11px;letter-spacing:.025em;}
+header .session-email{margin-top:7px!important;opacity:.8;font-size:11px;}
+@media(max-width:520px){.sales-client-group-header{grid-template-columns:minmax(0,1fr) auto!important;gap:4px}.sales-group-statuses{gap:4px}.sales-group-statuses .delivery-status{font-size:9px;padding:4px 6px}.sales-group-chevron{width:18px;flex-basis:18px}.sales-group-item{gap:6px}.sales-group-item-side{gap:5px}.sales-group-item-side>strong{font-size:11px}}
