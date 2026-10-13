@@ -1926,3 +1926,40 @@ header .brand-logo{display:block;align-self:center;}
 header .eyebrow{margin-top:5px!important;font-size:11px;letter-spacing:.025em;}
 header .session-email{margin-top:7px!important;opacity:.8;font-size:11px;}
 @media(max-width:520px){.sales-client-group-header{grid-template-columns:minmax(0,1fr) auto!important;gap:4px}.sales-group-statuses{gap:4px}.sales-group-statuses .delivery-status{font-size:9px;padding:4px 6px}.sales-group-chevron{width:18px;flex-basis:18px}.sales-group-item{gap:6px}.sales-group-item-side{gap:5px}.sales-group-item-side>strong{font-size:11px}}
+
+
+/* V12.26: correcciones precisas solicitadas para Ventas y marca */
+#viewSales .sales-hero{display:block!important;}
+#viewSales .sales-hero.view-hero{padding:17px 18px!important;border:1px solid rgba(var(--primary-rgb),.22)!important;border-radius:18px!important;background:linear-gradient(135deg,rgba(var(--primary-rgb),.13),var(--surface) 72%)!important;box-shadow:0 8px 22px rgba(15,23,42,.055)!important;}
+#viewSales .sales-client-group-trigger{grid-template-columns:36px minmax(0,1fr)!important;grid-column:1!important;grid-row:1!important;}
+#viewSales .sales-group-statuses{grid-column:2!important;grid-row:1!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;}
+#viewSales .sales-group-statuses .delivery-status:not([data-set-payment]){display:none!important;}
+#viewSales .sales-group-statuses .delivery-status{font-size:10px!important;padding:5px 8px!important;white-space:nowrap!important;}
+#viewSales .sales-group-chevron{flex:0 0 20px!important;width:20px!important;height:26px!important;margin-left:2px!important;}
+#viewSales .management-expanded-layout .sales-group-item-side .pay-toggle{display:none!important;}
+#viewSales .management-expanded-layout .sales-group-item{grid-template-columns:minmax(0,1fr) auto!important;}
+#viewSales .management-expanded-layout .sales-group-item-main{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;}
+#viewSales .management-expanded-layout .sales-group-item-main strong{flex:1 1 auto!important;}
+#viewSales .management-expanded-layout .sales-group-item-main small{flex:0 0 auto!important;text-align:right!important;}
+header{display:flex!important;flex-direction:column!important;align-items:center!important;}
+header .brand-lockup{align-self:center!important;justify-content:center!important;margin:0!important;min-height:48px!important;}
+header .eyebrow{align-self:center!important;text-align:center!important;width:100%!important;margin:5px 0 0!important;}
+header .session-email{align-self:center!important;text-align:center!important;width:100%!important;margin:5px 0 0!important;}
+header .header-profile-btn,header.has-back-button .header-profile-btn{top:calc(env(safe-area-inset-top) + 26px)!important;right:16px!important;left:auto!important;transform:none!important;}
+header .header-back-btn,header.has-back-button .header-back-btn{top:calc(env(safe-area-inset-top) + 28px)!important;left:16px!important;right:auto!important;transform:none!important;}
+header.has-back-button{padding-left:0!important;}
+header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-back-button h1,header.has-back-button .session-email{margin-left:0!important;margin-right:0!important;}
+.brand-logo,.sidebar-logo,.receipt-preview-ferit-logo{background:transparent!important;box-shadow:none!important;object-fit:contain!important;}
+@media(max-width:520px){header .header-profile-btn,header.has-back-button .header-profile-btn{top:calc(env(safe-area-inset-top) + 26px)!important;right:10px!important;}header .header-back-btn,header.has-back-button .header-back-btn{top:calc(env(safe-area-inset-top) + 28px)!important;left:10px!important;}#viewSales .sales-group-statuses{gap:4px!important;}#viewSales .sales-group-statuses .delivery-status{font-size:9px!important;padding:4px 6px!important;}}
+
+
+/* V12.27: una sola flecha de expansión, ubicada después del estado de pago */
+#viewSales .sales-client-group-header{grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;}
+#viewSales .sales-client-group-trigger{display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;grid-column:1!important;grid-row:1!important;width:100%;text-align:left;}
+#viewSales .sales-group-statuses{grid-column:2!important;grid-row:1!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;min-width:0!important;max-width:none!important;}
+#viewSales .sales-group-chevron{order:2;flex:0 0 24px!important;width:24px!important;height:30px!important;margin:0!important;border:0!important;background:transparent!important;cursor:pointer!important;}
+#viewSales .sales-group-statuses .delivery-status[data-set-payment]{order:1;}
+#viewSales .management-expanded-layout .sales-group-item-side .pay-toggle{display:none!important;}
+#viewSales .management-expanded-layout .sales-group-item-side .row-actions{display:none!important;}
+#viewSales .sales-hero.ranking-hero{padding:17px 18px!important;}
+@media(max-width:520px){#viewSales .sales-group-statuses{gap:4px!important;}#viewSales .sales-group-chevron{flex-basis:20px!important;width:20px!important;}#viewSales .sales-group-statuses .delivery-status[data-set-payment]{font-size:9px!important;padding:4px 6px!important;}}
