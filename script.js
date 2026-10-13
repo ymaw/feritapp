@@ -1512,8 +1512,7 @@ document.addEventListener('DOMContentLoaded', function(){
       ctx.fillStyle=i<3?'#38235b':palette.accent; ctx.font='800 24px Arial'; ctx.textAlign='center'; ctx.fillText(medals[i] || String(i+1),132,y+56);
       ctx.textAlign='left'; ctx.fillStyle=palette.text; ctx.font='700 29px Arial'; let name=c.name; while(ctx.measureText(name).width>500) name=name.slice(0,-2)+'…'; ctx.fillText(name,185,y+43);
       ctx.fillStyle=palette.muted; ctx.font='20px Arial'; ctx.fillText((i+1)+'° puesto',185,y+72);
-      ctx.fillStyle=palette.pill; rr(735,y+22,240,50,18); ctx.fill();
-      ctx.fillStyle=palette.pillText; ctx.font='800 23px Arial'; ctx.textAlign='center'; ctx.fillText(c.count+' artículo'+(c.count===1?'':'s'),855,y+54); ctx.textAlign='left';
+      // La imagen compartida muestra los puestos y nombres, sin cantidades de artículos.
       y+=108;
     });
     ctx.fillStyle=dark?'#d8ccff':'#e7e2ff'; ctx.font='22px Arial'; ctx.textAlign='center'; ctx.fillText('Gracias por ser parte de nuestra comunidad 💜',W/2,H-106); ctx.textAlign='left';
@@ -1797,6 +1796,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       if(search && !hay.includes(search)) return false;
       if(managementFilter==='unpaid' && x.pagado) return false;
+      if(managementFilter==='paid' && !x.pagado) return false;
       return true;
     });
     const wrap = document.getElementById('currentWeekTable');
@@ -1805,9 +1805,12 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   function renderDeliveriesView(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
+    const currentKey=weekKey(new Date());
     let items = sales.filter(function(x){
       const match = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase().includes(search);
-      return match && (deliveryFilter==='all' || (deliveryFilter==='delivered' ? !!x.entregado : !x.entregado));
+      const wk=weekKey(new Date(x.fecha));
+      const inWindow=wk===currentKey || (wk<currentKey && !x.entregado && wk===Object.keys(groupByWeek()).filter(k=>k<currentKey).sort().reverse()[0]);
+      return match && inWindow && (deliveryFilter==='all' || (deliveryFilter==='delivered' ? !!x.entregado : !x.entregado));
     });
     const wrap=document.getElementById('deliveriesList');
     const grouped = {};

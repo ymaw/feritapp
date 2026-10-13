@@ -439,7 +439,7 @@
 </div>
 
 <div id="viewSales" class="app-view">
-  <div class="view-hero sales-hero"><div class="sales-heading-card"><span class="sales-heading-mark" aria-hidden="true">✦</span><div><h2>Clientes y Ventas</h2><p>Buscá clientes y administrá artículos, cobros y comprobantes desde un solo lugar.</p></div></div></div>
+  <div class="view-hero sales-hero"><div class="sales-heading-card deliveries-heading-card"><span class="sales-heading-mark" aria-hidden="true">▤</span><div><h2>Clientes y Ventas</h2><p>Ventas</p></div></div></div>
   <div class="section-block">
     <div class="management-stat-grid">
       <article class="management-stat"><span>Total de clientes</span><strong id="managementClientCount">0</strong></article>
@@ -449,7 +449,7 @@
     <div class="management-search-row"><div class="input-row"><input type="search" id="managementSearch" placeholder="Buscar cliente o artículo…" autocomplete="off"><button type="button" class="mic-btn" data-target="managementSearch" data-mode="text" aria-label="Dictar búsqueda">🎤</button></div></div>
     <div class="management-filters" id="managementFilters" role="group" aria-label="Filtrar ventas">
       <button type="button" class="management-filter active" data-management-filter="all">Todos</button>
-      <button type="button" class="management-filter" data-management-filter="unpaid">Por cobrar</button>
+      <button type="button" class="management-filter" data-management-filter="unpaid">Pendiente</button><button type="button" class="management-filter" data-management-filter="paid">Pago</button>
     </div>
     <div id="currentWeekTable"></div>
     <div id="deliveryListWrap" style="display:none;"></div>
@@ -457,8 +457,8 @@
 </div>
 
 <div id="viewDeliveries" class="app-view" style="display:none;">
-  <div class="view-hero deliveries-hero"><div class="view-hero-kicker">SEGUIMIENTO</div><h2>Entregas</h2><p>Marcá cada pedido como entregado sin cambiar su estado de cobro.</p></div>
-  <div class="section-block"><div class="management-filters" id="deliveryFilters" role="group" aria-label="Filtrar entregas"><button type="button" class="management-filter active" data-delivery-filter="all">Todos</button><button type="button" class="management-filter" data-delivery-filter="undelivered">Pendientes de entrega</button><button type="button" class="management-filter" data-delivery-filter="delivered">Entregados</button></div><div id="deliveriesList"></div></div>
+  <div class="view-hero deliveries-hero"><div class="sales-heading-card deliveries-heading-card"><span class="sales-heading-mark" aria-hidden="true">♧</span><div><h2>Entregas</h2><p>Seguimiento</p></div></div></div>
+  <div class="section-block"><div class="management-filters" id="deliveryFilters" role="group" aria-label="Filtrar entregas"><button type="button" class="management-filter active" data-delivery-filter="all">Todos</button><button type="button" class="management-filter" data-delivery-filter="undelivered">Por Entregar</button><button type="button" class="management-filter" data-delivery-filter="delivered">Entregados</button></div><div id="deliveriesList"></div></div>
 </div>
 
 <nav class="bottom-nav" id="bottomNav" aria-label="Navegación principal">
