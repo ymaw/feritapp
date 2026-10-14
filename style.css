@@ -2012,3 +2012,32 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
  #weeksContainer .week-items .sales-group-item-main small{font-size:10px;}
  #weeksContainer .week-items .sales-group-item-side>strong{font-size:11px;}
 }
+
+
+/* V12.29 — Ventas: mismo tamaño, espaciado y estilo que el hero de Ranking */
+#viewSales .view-hero.sales-hero.ranking-hero{
+  display:block!important;
+  box-sizing:border-box!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:18px 16px 0!important;
+  padding:17px 18px!important;
+  border:1px solid rgba(var(--primary-rgb),.22)!important;
+  border-radius:18px!important;
+  background:linear-gradient(135deg,rgba(var(--primary-rgb),.13),var(--surface) 72%)!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.055)!important;
+  overflow:hidden!important;
+}
+#viewSales .view-hero.sales-hero.ranking-hero::after{display:block!important;}
+#viewSales .view-hero.sales-hero.ranking-hero .view-hero-kicker{
+  font-size:10px!important;letter-spacing:.13em!important;font-weight:800!important;margin-bottom:5px!important;
+}
+#viewSales .view-hero.sales-hero.ranking-hero h2{
+  margin:0 0 5px!important;font-size:clamp(18px,2.4vw,23px)!important;line-height:1.2!important;
+}
+#viewSales .view-hero.sales-hero.ranking-hero p{
+  margin:0!important;font-size:12px!important;line-height:1.45!important;max-width:62ch!important;
+}
+@media(max-width:520px){
+  #viewSales .view-hero.sales-hero.ranking-hero{margin:18px 16px 0!important;padding:17px 18px!important;}
+}
