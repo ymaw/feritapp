@@ -188,7 +188,7 @@
 
   <div class="section-block">
     <p class="section-title">Comparar ventas</p>
-    <div class="seg" style="margin-bottom:12px;">
+    <div class="seg seg-spaced-bottom">
       <button type="button" class="period-opt active" data-period="week">Semanal</button>
       <button type="button" class="period-opt" data-period="month">Mensual</button>
     </div>
@@ -259,14 +259,14 @@
       <div class="settings-panel-heading"><div class="settings-panel-kicker">CUENTA</div><p class="section-title">Mi Perfil</p><p class="settings-panel-description">Administrá tu identidad, tu tienda y el acceso a tu cuenta.</p></div>
       <div class="settings-card settings-card-profile settings-card-featured">
       <div class="settings-card-title">Identidad</div>
-      <p class="hint" style="margin-top:-6px; margin-bottom:16px;">Correo de la cuenta: <strong id="profileEmail" style="color:var(--text); font-family:var(--body);"></strong></p>
+      <p class="hint profile-email-hint">Correo de la cuenta: <strong id="profileEmail" class="profile-email-value"></strong></p>
 
       <div class="field">
         <label>Foto de perfil</label>
         <div class="avatar-upload-row">
           <div class="avatar-preview" id="profileAvatarPreview"><img src="feritapp-icon.png" alt="Foto de perfil"></div>
           <div>
-            <button type="button" class="save-btn" id="avatarUploadBtn" style="margin:0;">📷 Cambiar foto</button>
+            <button type="button" class="save-btn avatar-upload-btn" id="avatarUploadBtn">📷 Cambiar foto</button>
             <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
           </div>
         </div>
@@ -276,7 +276,7 @@
         <label>Nombre de tu tienda</label>
         <input type="text" id="profileStoreName" placeholder="Ej: Boutique Sofía">
       </div>
-      <button type="button" class="save-btn" id="saveStoreNameBtn" style="margin-bottom:22px;">Guardar nombre de la tienda</button>
+      <button type="button" class="save-btn save-store-name-btn" id="saveStoreNameBtn">Guardar nombre de la tienda</button>
 
       <div class="field">
         <label>Contraseña actual</label>
@@ -304,9 +304,9 @@
       <button type="button" class="save-btn" id="changePasswordBtn">Cambiar contraseña</button>
 
       <div class="settings-card-title settings-card-title-spaced">Seguridad de la cuenta</div>
-      <div class="field" style="margin-top:12px;">
+      <div class="field field-spaced-top">
         <label>Sesiones</label>
-        <button type="button" class="danger-btn" id="logoutAllBtn" style="background:var(--paper-3); border:1px solid var(--rose); color:var(--rose);">🚪 Cerrar sesión en todos los dispositivos</button>
+        <button type="button" class="danger-btn logout-all-btn" id="logoutAllBtn">🚪 Cerrar sesión en todos los dispositivos</button>
         <p class="hint">Usalo si perdiste el celular o alguien más podría tener tu contraseña. Vas a tener que volver a ingresar en todos lados.</p>
       </div></div>
     </div>
@@ -399,7 +399,7 @@
       <div class="danger-zone">
         <div class="danger-zone-head"><span class="danger-zone-icon">⚠️</span><div><strong>Acciones permanentes</strong><small>Revisá antes de continuar</small></div></div>
         <p class="danger-zone-title">⚠️ Borrar todos los datos de ventas</p>
-        <p class="hint" style="margin:6px 0 14px;">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
+        <p class="hint danger-zone-description">Elimina TODO tu historial de ventas de forma permanente. No se puede deshacer. Los clientes y categorías guardados no se borran.</p>
         <button type="button" class="danger-btn" id="resetBtn">🗑️ Borrar todos los datos de ventas</button>
       </div>
     </div>
@@ -415,7 +415,7 @@
   </div>
   <div class="section-block">
     <div class="ranking-actions"><p class="section-title">Clientes que más compraron</p><button type="button" class="ranking-share-btn" id="shareRankingBtn"><span aria-hidden="true">↗</span> Compartir ranking</button></div>
-    <button type="button" class="reset-link" id="toggleRankingMoney" style="margin-bottom:12px;">💰 Mostrar montos gastados</button>
+    <button type="button" class="reset-link ranking-money-toggle" id="toggleRankingMoney">💰 Mostrar montos gastados</button>
     <div id="topClients"></div>
   </div>
 </div>
@@ -509,7 +509,7 @@
 
   <div class="field">
     <div class="field-row-head">
-      <label style="margin:0;">Artículos de esta venta</label>
+      <label class="sale-items-label">Artículos de esta venta</label>
       <button type="button" class="new-cat-link" id="openNewCatBtn">+ Nueva categoría</button>
     </div>
     <div id="itemRowsContainer"></div>
