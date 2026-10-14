@@ -1644,11 +1644,9 @@ document.addEventListener('DOMContentLoaded', function(){
         e.stopPropagation();
         let action = btn.getAttribute('data-dashboard-action');
         if(action === 'new-sale'){ openSheet(); return; }
+        if(action === 'delivery'){ switchView('deliveries'); return; }
         switchView('sales');
-        if(action === 'delivery'){
-          let deliveryBtn = document.querySelector('[data-salestab="delivery"]');
-          if(deliveryBtn) deliveryBtn.click();
-        }else{
+        if(action !== 'delivery'){
           let itemsBtn = document.querySelector('[data-salestab="items"]');
           if(itemsBtn) itemsBtn.click();
           setTimeout(function(){
@@ -1729,6 +1727,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function renderSalesGroupedByClient(items, idPrefix){
     idPrefix = idPrefix || "sales-current";
     if(!items.length) return '<div class="empty-inline">Sin entregas registradas esta semana.</div>';
+    const readOnly = idPrefix.indexOf('dashboard-history-') === 0;
     const groups = {};
     items.forEach(function(item){ const key = (item.cliente || 'Sin nombre').trim(); (groups[key] ||= []).push(item); });
     let html = '<div class="sales-client-groups">';
@@ -1741,9 +1740,10 @@ document.addEventListener('DOMContentLoaded', function(){
       const pickupLabel = pickup ? ('Retira: ' + pickup.tercero) : ('Retira: ' + name + ' (cliente)');
       const delivered = list.every(function(x){ return !!x.entregado; });
       const managementActions = idPrefix === 'management' ? '<aside class="management-client-right"><button type="button" data-open-messenger="'+escapeHtml(name)+'">● Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">▣ Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">Editar Venta</button></aside>' : '';
-      html += '<section class="sales-client-group"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+(idPrefix === 'management' ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>')+(idPrefix==='deliveries' ? '<button type="button" class="delivery-status '+(delivered?'paid':'pending')+'" data-client="'+escapeHtml(name)+'" data-set-delivery="'+(delivered?'pending':'delivered')+'">'+(delivered?'Entregado':'Por entregar')+'</button>' : '')+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div><div class="sales-client-group-content '+(idPrefix==='management'?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(idPrefix==='management'?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
+      const expandOnly = readOnly ? ' dashboard-history-client-group' : '';
+      html += '<section class="sales-client-group'+expandOnly+'"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+(idPrefix === 'management' ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>')+(idPrefix==='deliveries' ? '<button type="button" class="delivery-status '+(delivered?'paid':'pending')+'" data-client="'+escapeHtml(name)+'" data-set-delivery="'+(delivered?'pending':'delivered')+'">'+(delivered?'Entregado':'Por entregar')+'</button>' : '')+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div><div class="sales-client-group-content '+(idPrefix==='management'?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(idPrefix==='management'?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
-        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(idPrefix==='management'?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pago':'Pendiente')+'</button>')+'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span></div></article>';
+        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(idPrefix==='management'||readOnly?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pago':'Pendiente')+'</button>')+(readOnly?'':'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span>')+'</div></article>';
       });
       html += '<div class="sales-group-total"><span>Total</span><strong>'+money(total)+'</strong></div>'+(idPrefix==='management'?'</div>'+managementActions+'</div>':'')+'</div></section>';
     });
@@ -1753,7 +1753,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function bindTableEvents(root){
     root.querySelectorAll('button[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(event){ event.preventDefault(); event.stopPropagation(); const groupId=btn.getAttribute('data-sales-group'); const panel=document.getElementById(groupId); if(!panel)return; const opening=panel.hidden; panel.hidden=!opening; root.querySelectorAll('button[data-sales-group="'+groupId+'"]').forEach(function(toggle){toggle.setAttribute('aria-expanded',String(opening));toggle.classList.toggle('expanded',opening);}); }); });
-    root.querySelectorAll('[data-set-payment]').forEach(function(btn){ btn.addEventListener('click', async function(){ const name=btn.getAttribute('data-set-payment'); const expandedNames=Array.from(root.querySelectorAll('.sales-client-group')).filter(function(card){const panel=card.querySelector('.sales-client-group-content');return panel && !panel.hidden;}).map(function(card){const title=card.querySelector('.sales-client-group-copy strong');return title?title.textContent.trim():'';}); const group=sales.filter(function(x){return (x.cliente||'Sin nombre').trim()===name;}); const next=!group.every(function(x){return !!x.pagado;}); const ids=group.map(function(x){return x.id;}); try { const result=await sb.from('sales').update({pagado:next}).in('id',ids); if(result && result.error) throw result.error; group.forEach(function(x){x.pagado=next;}); render(); setTimeout(function(){document.querySelectorAll('#currentWeekTable .sales-client-group').forEach(function(card){const title=card.querySelector('.sales-client-group-copy strong');if(title && expandedNames.includes(title.textContent.trim())){const panel=card.querySelector('.sales-client-group-content');const trigger=card.querySelector('button[data-sales-group]');if(panel){panel.hidden=false;if(trigger){trigger.setAttribute('aria-expanded','true');trigger.classList.add('expanded');}}}});},0); } catch(e){showToast('No se pudo actualizar el estado de pago.');} }); });
+    root.querySelectorAll('[data-set-payment]').forEach(function(btn){ btn.addEventListener('click', async function(){ const name=btn.getAttribute('data-set-payment'); const expandedNames=Array.from(root.querySelectorAll('.sales-client-group')).filter(function(card){const panel=card.querySelector('.sales-client-group-content');return panel && !panel.hidden;}).map(function(card){const title=card.querySelector('.sales-client-group-copy strong');return title?title.textContent.trim():'';}); const currentWeekKey=weekKey(new Date()); const group=sales.filter(function(x){return (x.cliente||'Sin nombre').trim()===name && weekKey(new Date(x.fecha))===currentWeekKey;}); if(!group.length) return; const next=!group.every(function(x){return !!x.pagado;}); const ids=group.map(function(x){return x.id;}); try { const result=await sb.from('sales').update({pagado:next}).in('id',ids); if(result && result.error) throw result.error; group.forEach(function(x){x.pagado=next;}); render(); setTimeout(function(){document.querySelectorAll('#currentWeekTable .sales-client-group').forEach(function(card){const title=card.querySelector('.sales-client-group-copy strong');if(title && expandedNames.includes(title.textContent.trim())){const panel=card.querySelector('.sales-client-group-content');const trigger=card.querySelector('button[data-sales-group]');if(panel){panel.hidden=false;if(trigger){trigger.setAttribute('aria-expanded','true');trigger.classList.add('expanded');}}}});},0); } catch(e){showToast('No se pudo actualizar el estado de pago.');} }); });
     root.querySelectorAll('[data-toggle-pay]').forEach(function(btn){
       btn.addEventListener('click', function(){
         let id = btn.getAttribute('data-toggle-pay');
@@ -1793,7 +1793,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('managementClientCount').textContent = Math.max(clients.length, new Set(sales.map(function(x){return (x.cliente||'').trim().toLowerCase();}).filter(Boolean)).size);
     document.getElementById('managementWeekTotal').textContent = money(total);
     document.getElementById('managementOwedTotal').textContent = money(owed);
-    let filtered = sales.filter(function(x){
+    let filtered = current.filter(function(x){
       const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       if(search && !hay.includes(search)) return false;
       if(managementFilter==='unpaid' && x.pagado) return false;
@@ -1987,7 +1987,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
         if(itemsEl.getAttribute('data-loaded') === '0'){
           let items = groups[wk].slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
-          itemsEl.innerHTML = renderSalesGroupedByClient(items, 'history-' + wk);
+          itemsEl.innerHTML = renderSalesGroupedByClient(items, 'dashboard-history-' + wk);
           bindTableEvents(itemsEl);
           itemsEl.setAttribute('data-loaded', '1');
         }
