@@ -1158,11 +1158,6 @@ document.addEventListener('DOMContentLoaded', function(){
     let s = startOfWeek(d);
     return s.getFullYear() + "-" + String(s.getMonth()+1).padStart(2,'0') + "-" + String(s.getDate()).padStart(2,'0');
   }
-  function previousWeekKey(referenceDate){
-    const previousStart = startOfWeek(referenceDate || new Date());
-    previousStart.setDate(previousStart.getDate() - 7);
-    return weekKey(previousStart);
-  }
   // Única regla para seleccionar ventas de una semana en todas las vistas.
   function salesForWeek(items, key){
     return (items || []).filter(function(item){
@@ -1761,11 +1756,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const delivered = list.every(function(x){ return !!x.entregado; });
       const managementActions = showClientActions ? '<aside class="management-client-right"><button type="button" data-open-messenger="'+escapeHtml(name)+'">● Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">▣ Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">Editar Venta</button></aside>' : '';
       const expandOnly = isDashboardHistory ? ' dashboard-history-client-group' : (isWeeklySummary ? ' weekly-summary-client-group' : '');
-      const summaryIsPreviousWeek = isWeeklySummary && list.length > 0 && list.every(function(item){ return weekKey(new Date(item.fecha)) === previousWeekKey(); });
-      const deliveryStatus = isDeliveries
-        ? '<button type="button" class="delivery-status '+(delivered?'paid':'pending')+'" data-client="'+escapeHtml(name)+'" data-set-delivery="'+(delivered?'pending':'delivered')+'">'+(delivered?'Entregado':'Por Entregar')+'</button>'
-        : (summaryIsPreviousWeek ? '<span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span>' : '');
-      html += '<section class="sales-client-group'+expandOnly+'"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+(showPaymentControl ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>')+deliveryStatus+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div><div class="sales-client-group-content '+(isManagement?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(isManagement?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
+      html += '<section class="sales-client-group'+expandOnly+'"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+(showPaymentControl ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>')+(isDeliveries ? '<button type="button" class="delivery-status '+(delivered?'paid':'pending')+'" data-client="'+escapeHtml(name)+'" data-set-delivery="'+(delivered?'pending':'delivered')+'">'+(delivered?'Entregado':'Por entregar')+'</button>' : '')+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div><div class="sales-client-group-content '+(isManagement?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(isManagement?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
         html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(!showItemActions?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pago':'Pendiente')+'</button>')+(showItemActions?'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span>':'')+'</div></article>';
       });
@@ -1830,42 +1821,25 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   function renderDeliveriesView(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey();
-    const visibleKeys = new Set([currentKey, previousKey].filter(Boolean));
-    const items = sales.filter(function(x){
-      if(!x || !x.fecha) return false;
-      const date = new Date(x.fecha);
-      if(Number.isNaN(date.getTime()) || !visibleKeys.has(weekKey(date))) return false;
-      const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
-      return hay.includes(search);
+    const currentKey=weekKey(new Date());
+    let items = sales.filter(function(x){
+      const match = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase().includes(search);
+      const wk=weekKey(new Date(x.fecha));
+      const inWindow=wk===currentKey || (wk<currentKey && !x.entregado && wk===Object.keys(groupByWeek()).filter(k=>k<currentKey).sort().reverse()[0]);
+      return match && inWindow && (deliveryFilter==='all' || (deliveryFilter==='delivered' ? !!x.entregado : !x.entregado));
     });
+    const wrap=document.getElementById('deliveriesList');
     const grouped = {};
     items.forEach(function(x){ const key=(x.cliente||'Sin nombre').trim(); (grouped[key] ||= []).push(x); });
-    const names = Object.keys(grouped).sort(function(a,b){return a.localeCompare(b,'es');}).filter(function(name){
-      const list = grouped[name];
-      const delivered = list.length > 0 && list.every(function(x){ return !!x.entregado; });
-      return deliveryFilter === 'all' || (deliveryFilter === 'delivered' ? delivered : !delivered);
-    });
-    const wrap = document.getElementById('deliveriesList');
+    const names=Object.keys(grouped).sort(function(a,b){return a.localeCompare(b,'es');});
     wrap.innerHTML = names.length ? names.map(function(name){
-      const list = grouped[name];
-      const total = list.reduce(function(a,x){return a+(Number(x.precio)||0);},0);
-      const pending = list.reduce(function(a,x){return a+(!x.pagado?(Number(x.precio)||0):0);},0);
-      const delivered = list.length > 0 && list.every(function(x){return !!x.entregado;});
-      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span><span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
+      const list=grouped[name]; const total=list.reduce(function(a,x){return a+(Number(x.precio)||0);},0); const pending=list.reduce(function(a,x){return a+(!x.pagado?(Number(x.precio)||0):0);},0); const delivered=list.every(function(x){return !!x.entregado;});
+      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }
   async function setDeliveryForClient(name, desired){
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey();
-    const visibleKeys = new Set([currentKey, previousKey].filter(Boolean));
-    const items = sales.filter(function(x){
-      if(!x || !x.fecha || (x.cliente||'').trim() !== name) return false;
-      const date = new Date(x.fecha);
-      return !Number.isNaN(date.getTime()) && visibleKeys.has(weekKey(date));
-    });
+    const items=sales.filter(function(x){return (x.cliente||'').trim()===name;});
     if(!items.length) return;
     if(items.every(function(x){return !!x.entregado===desired;})){ return; }
     try{
