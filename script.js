@@ -1748,29 +1748,20 @@ document.addEventListener('DOMContentLoaded', function(){
     const showClientActions = isManagement && !readOnly;
     const showPaymentControl = isManagement && !readOnly;
     const showItemActions = !readOnly && !isManagement;
-    // Se calcula una sola vez por render, no una vez por cliente/artículo.
-    const previousKey = isWeeklySummary ? previousWeekKey() : null;
     const groups = {};
     items.forEach(function(item){ const key = (item.cliente || 'Sin nombre').trim(); (groups[key] ||= []).push(item); });
     let html = '<div class="sales-client-groups">';
     Object.keys(groups).sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(name, idx){
       const list = groups[name].slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
-      // Una única pasada calcula tanto el total como el pendiente del cliente.
-      const totals = list.reduce(function(acc,x){
-        const price = Number(x.precio)||0;
-        acc.total += price;
-        if(!x.pagado) acc.pending += price;
-        return acc;
-      }, {total:0,pending:0});
-      const total = totals.total;
-      const pending = totals.pending;
+      const total = list.reduce(function(sum,x){return sum+(Number(x.precio)||0);},0);
+      const pending = list.reduce(function(sum,x){return sum+(!x.pagado?(Number(x.precio)||0):0);},0);
       const id = idPrefix + '-client-group-' + idx;
       const pickup = list.find(function(x){ return x.retira === 'otro' && x.tercero; });
       const pickupLabel = pickup ? ('Retira: ' + pickup.tercero) : ('Retira: ' + name + ' (cliente)');
       const delivered = list.every(function(x){ return !!x.entregado; });
       const managementActions = showClientActions ? '<aside class="management-client-right"><button type="button" data-open-messenger="'+escapeHtml(name)+'">● Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">▣ Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">Editar Venta</button></aside>' : '';
       const expandOnly = isDashboardHistory ? ' dashboard-history-client-group' : (isWeeklySummary ? ' weekly-summary-client-group' : '');
-      const summaryIsPreviousWeek = isWeeklySummary && list.every(function(item){ return weekKey(new Date(item.fecha)) === previousKey; });
+      const summaryIsPreviousWeek = isWeeklySummary && list.every(function(item){ return weekKey(new Date(item.fecha)) === previousWeekKey(); });
       const deliveryStatus = isDeliveries
         ? '<button type="button" class="delivery-status '+(delivered?'paid':'pending')+'" data-client="'+escapeHtml(name)+'" data-set-delivery="'+(delivered?'pending':'delivered')+'">'+(delivered?'Entregado':'Por Entregar')+'</button>'
         : (summaryIsPreviousWeek ? '<span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span>' : '');
