@@ -1383,19 +1383,21 @@ document.addEventListener('DOMContentLoaded', function(){
     let wrap = document.getElementById('topCategoryChart');
     if(!wrap) return;
 
-    let currentMonthKey = monthKey(new Date());
-    let monthItems = sales.filter(function(s){ return monthKey(s.fecha) === currentMonthKey; });
+    const currentMonthKey = monthKey(new Date());
+    const byCat = {};
+    let monthCount = 0;
+    // Un solo recorrido: filtra el mes y acumula categorías a la vez.
+    sales.forEach(function(s){
+      if(monthKey(s.fecha) !== currentMonthKey) return;
+      monthCount += 1;
+      const cat = s.categoria || 'Sin categoría';
+      byCat[cat] = (byCat[cat] || 0) + 1;
+    });
 
-    if(monthItems.length === 0){
+    if(monthCount === 0){
       wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas este mes.</div>';
       return;
     }
-
-    let byCat = {};
-    monthItems.forEach(function(s){
-      let cat = s.categoria || 'Sin categoría';
-      byCat[cat] = (byCat[cat] || 0) + 1;
-    });
 
     let ranked = Object.keys(byCat).map(function(k){ return { name: k, count: byCat[k] }; });
     ranked.sort(function(a, b){ return b.count - a.count; });
@@ -1821,9 +1823,17 @@ document.addEventListener('DOMContentLoaded', function(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const thisWeek = weekKey(new Date());
     const current = salesForWeek(sales, thisWeek);
-    const total = current.reduce(function(a,x){ return a+(Number(x.precio)||0); },0);
-    const owed = current.reduce(function(a,x){ return a+(!x.pagado?(Number(x.precio)||0):0); },0);
-    document.getElementById('managementClientCount').textContent = new Set(current.map(function(x){return (x.cliente||'').trim().toLowerCase();}).filter(Boolean)).size;
+    const summary = current.reduce(function(acc, item){
+      const price = Number(item.precio) || 0;
+      acc.total += price;
+      if(!item.pagado) acc.owed += price;
+      const client = (item.cliente || '').trim().toLowerCase();
+      if(client) acc.clients.add(client);
+      return acc;
+    }, {total:0, owed:0, clients:new Set()});
+    const total = summary.total;
+    const owed = summary.owed;
+    document.getElementById('managementClientCount').textContent = summary.clients.size;
     document.getElementById('managementWeekTotal').textContent = money(total);
     document.getElementById('managementOwedTotal').textContent = money(owed);
     let filtered = current.filter(function(x){
@@ -1850,18 +1860,27 @@ document.addEventListener('DOMContentLoaded', function(){
       return hay.includes(search);
     });
     const grouped = {};
-    items.forEach(function(x){ const key=(x.cliente||'Sin nombre').trim(); (grouped[key] ||= []).push(x); });
+    items.forEach(function(item){
+      const key = (item.cliente || 'Sin nombre').trim();
+      if(!grouped[key]) grouped[key] = {items:[], total:0, pending:0, delivered:true};
+      const group = grouped[key];
+      const price = Number(item.precio) || 0;
+      group.items.push(item);
+      group.total += price;
+      if(!item.pagado) group.pending += price;
+      if(!item.entregado) group.delivered = false;
+    });
     const names = Object.keys(grouped).sort(function(a,b){return a.localeCompare(b,'es');}).filter(function(name){
-      const list = grouped[name];
-      const delivered = list.length > 0 && list.every(function(x){ return !!x.entregado; });
+      const delivered = grouped[name].items.length > 0 && grouped[name].delivered;
       return deliveryFilter === 'all' || (deliveryFilter === 'delivered' ? delivered : !delivered);
     });
     const wrap = document.getElementById('deliveriesList');
     wrap.innerHTML = names.length ? names.map(function(name){
-      const list = grouped[name];
-      const total = list.reduce(function(a,x){return a+(Number(x.precio)||0);},0);
-      const pending = list.reduce(function(a,x){return a+(!x.pagado?(Number(x.precio)||0):0);},0);
-      const delivered = list.length > 0 && list.every(function(x){return !!x.entregado;});
+      const group = grouped[name];
+      const list = group.items;
+      const total = group.total;
+      const pending = group.pending;
+      const delivered = list.length > 0 && group.delivered;
       return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
