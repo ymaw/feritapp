@@ -179,7 +179,16 @@
     </div>
     <div id="dashboardTasks"></div>
   </div>
-  <div class="section-block dashboard-history-section"><div class="dashboard-history-card"><div class="dashboard-history-heading"><div><p class="section-title">Resumen semanal</p><p class="dashboard-history-subtitle">Consultá los artículos y totales de las últimas tres semanas.</p></div><span class="dashboard-history-icon" aria-hidden="true">▦</span></div><div class="weeks" id="weeksContainer"></div></div></div>
+  <div class="section-block weekly-summary-section">
+    <div class="dashboard-history-card weekly-summary-card">
+      <button type="button" class="weekly-summary-heading" id="weeklySummaryToggle" aria-expanded="false" aria-controls="weeklySummaryContent">
+        <span class="weekly-summary-heading-copy"><span class="section-title">Resumen Semanal</span><span class="dashboard-history-subtitle" id="weeklySummaryMeta">Ventas de la semana anterior</span></span>
+        <span class="weekly-summary-chevron" aria-hidden="true">⌄</span>
+      </button>
+      <div id="weeklySummaryContent" class="weekly-summary-content" hidden></div>
+    </div>
+  </div>
+  <div class="section-block dashboard-history-section"><div class="dashboard-history-card"><div class="dashboard-history-heading"><div><p class="section-title">Historial semanal</p><p class="dashboard-history-subtitle">Consultá los artículos y totales de las últimas tres semanas.</p></div><span class="dashboard-history-icon" aria-hidden="true">▦</span></div><div class="weeks" id="weeksContainer"></div></div></div>
 
   <div class="section-block">
     <p class="section-title">Categoría más vendida del mes</p>

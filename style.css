@@ -2172,3 +2172,20 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 .danger-zone-description { margin: 6px 0 14px; }
 .ranking-money-toggle { margin-bottom: 12px; }
 .sale-items-label { margin: 0; }
+
+
+/* Resumen Semanal en Inicio: elementos requeridos por renderDashboard(). */
+.weekly-summary-section { max-width: 1180px; margin-left: auto; margin-right: auto; }
+.weekly-summary-card { overflow: hidden; }
+.weekly-summary-heading {
+  display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 18px; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer;
+}
+.weekly-summary-heading-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.weekly-summary-heading .section-title { margin: 0; font-size: 15px; font-weight: 850; }
+.weekly-summary-chevron { display: inline-flex; flex: 0 0 28px; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 50%; background: var(--surface-2, rgba(127,127,127,.10)); transition: transform .18s ease; }
+.weekly-summary-heading.expanded .weekly-summary-chevron { transform: rotate(180deg); }
+.weekly-summary-content { padding: 0 14px 14px; min-width: 0; }
+.weekly-summary-content[hidden] { display: none !important; }
+#weeklySummaryContent .weekly-summary-delivery-status { display: inline-flex !important; visibility: visible !important; opacity: 1 !important; flex: 0 0 auto; align-items: center; justify-content: center; position: relative; z-index: 1; }
+@media (max-width: 520px) { .weekly-summary-heading { padding: 14px; } .weekly-summary-content { padding: 0 8px 10px; } }
