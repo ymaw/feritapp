@@ -1770,7 +1770,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const delivered = list.every(function(x){ return !!x.entregado; });
       const managementActions = showClientActions ? '<aside class="management-client-right"><button type="button" data-open-messenger="'+escapeHtml(name)+'">● Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">▣ Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">Editar Venta</button></aside>' : '';
       const expandOnly = isDashboardHistory ? ' dashboard-history-client-group' : (isWeeklySummary ? ' weekly-summary-client-group' : '');
-      const summaryIsPreviousWeek = isWeeklySummary && list.every(function(item){ return weekKey(new Date(item.fecha)) === previousKey; });
+      const summaryIsPreviousWeek = isWeeklySummary;
       const deliveryStatus = isDeliveries
         ? '<button type="button" class="delivery-status '+(delivered?'paid':'pending')+'" data-client="'+escapeHtml(name)+'" data-set-delivery="'+(delivered?'pending':'delivered')+'">'+(delivered?'Entregado':'Por Entregar')+'</button>'
         : (summaryIsPreviousWeek ? '<span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span>' : '');
@@ -1810,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', function(){
     root.querySelectorAll('[data-copy-client]').forEach(function(btn){ btn.addEventListener('click', async function(){ const name=btn.getAttribute('data-copy-client'); try{ await navigator.clipboard.writeText(name); showToast('Nombre copiado'); }catch(e){ showToast('No se pudo copiar el nombre en este navegador.'); } }); });
     root.querySelectorAll('[data-open-messenger]').forEach(function(btn){ btn.addEventListener('click', function(){ openMessengerForClientName(btn.getAttribute('data-open-messenger')); }); });
     root.querySelectorAll('[data-share-client]').forEach(function(btn){ btn.addEventListener('click', function(){ const name=btn.getAttribute('data-share-client'); const its=sales.filter(function(x){return x.cliente===name;}).sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);}); if(its.length) shareReceipt(name,its); else showToast('Este cliente todavía no tiene ventas.'); }); });
-    root.querySelectorAll('[data-add-client-sale]').forEach(function(btn){ btn.addEventListener('click', function(){ openNewSaleForClient(btn.getAttribute('data-add-client-sale')); }); });
+    root.querySelectorAll('[data-add-client-sale]').forEach(function(btn){ btn.addEventListener('click', function(){ openClientSalesEditor(btn.getAttribute('data-add-client-sale')); }); });
     root.querySelectorAll('[data-toggle-delivery-client]').forEach(function(btn){ btn.addEventListener('click', function(){ toggleDeliveryForClient(btn.getAttribute('data-toggle-delivery-client'), 'all'); }); });
     root.querySelectorAll('[data-set-delivery]').forEach(function(btn){ btn.addEventListener('click', function(){ const name=btn.getAttribute('data-client'); const desired=btn.getAttribute('data-set-delivery')==='delivered'; setDeliveryForClient(name, desired); }); });
   }
@@ -1900,8 +1900,28 @@ document.addEventListener('DOMContentLoaded', function(){
     }catch(e){ showToast('No se pudo guardar el estado de entrega. Aplicá primero la migración SQL incluida en el ZIP.'); }
   }
   function openNewSaleForClient(name){
+    editingClientSalesIds = null;
     const openBtn=document.getElementById('openSheet'); if(openBtn) openBtn.click();
     setTimeout(function(){ const field=document.getElementById('fCliente'); if(field){field.value=name;field.dispatchEvent(new Event('input',{bubbles:true}));} },80);
+  }
+  function openClientSalesEditor(name){
+    const clientItems = salesForWeek(sales, weekKey(new Date())).filter(function(x){return (x.cliente||'Sin nombre').trim()===name;}).sort(function(a,b){return new Date(a.fecha)-new Date(b.fecha);});
+    if(!clientItems.length){ openNewSaleForClient(name); return; }
+    editingClientSalesIds = clientItems.map(function(x){return x.id;});
+    editingSaleId = null;
+    formState.pagado = clientItems.every(function(x){return !!x.pagado;});
+    formState.retira = clientItems.some(function(x){return x.retira==='otro';}) ? 'otro' : 'cliente';
+    document.getElementById('fCliente').value = name;
+    document.getElementById('fTercero').value = (clientItems.find(function(x){return x.retira==='otro' && x.tercero;})||{}).tercero || '';
+    document.querySelectorAll('.pago-opt').forEach(function(b){b.classList.toggle('active',b.dataset.val===(formState.pagado?'1':'0'));});
+    document.querySelectorAll('.retira-opt').forEach(function(b){b.classList.toggle('active',b.dataset.val===formState.retira);});
+    document.getElementById('terceroField').style.display = formState.retira==='otro' ? 'block' : 'none';
+    document.getElementById('itemRowsContainer').innerHTML=''; itemRowCounter=0;
+    clientItems.forEach(function(item){addItemRow({articulo:item.articulo,precio:item.precio,categoria:item.categoria},false,item.id);});
+    document.getElementById('addItemRowBtn').style.display='block';
+    document.getElementById('sheetTitle').textContent='Editar venta · '+name;
+    document.getElementById('saveBtnText').textContent='Guardar cambios';
+    openSheet();
   }
   document.getElementById('managementSearch').addEventListener('input', function(){renderManagementList(); if(currentView==='deliveries') renderDeliveriesView();});
   document.querySelectorAll('[data-management-filter]').forEach(function(btn){btn.addEventListener('click',function(){managementFilter=btn.dataset.managementFilter;document.querySelectorAll('[data-management-filter]').forEach(function(b){b.classList.toggle('active',b===btn);});renderManagementList();});});
@@ -2306,6 +2326,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   function closeSheet(){
     sheet.classList.remove('open'); scrim.classList.remove('open');
+    editingClientSalesIds = null;
     resetForm();
   }
   document.getElementById('openSheet').addEventListener('click', openSheet);
@@ -2315,6 +2336,7 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ---------------- form state ---------------- */
   let formState = { pagado: false, retira: 'cliente' };
   let editingSaleId = null;
+  let editingClientSalesIds = null;
   let itemRowCounter = 0;
 
   function categoryOptionsHtml(selected){
@@ -2324,14 +2346,14 @@ document.addEventListener('DOMContentLoaded', function(){
     }).join('');
   }
 
-  function addItemRow(prefill, isOriginal){
+  function addItemRow(prefill, isOriginal, existingSaleId){
     itemRowCounter++;
     let rowId = 'row' + itemRowCounter;
     let container = document.getElementById('itemRowsContainer');
     let defaultCat = (prefill && prefill.categoria) || (categories.length ? categories[0] : '');
 
     let html =
-      '<div class="item-row" data-row-id="' + rowId + '"' + (isOriginal ? ' data-original="1"' : '') + '>' +
+      '<div class="item-row" data-row-id="' + rowId + '"' + (isOriginal ? ' data-original="1"' : '') + (existingSaleId ? ' data-sale-id="' + escapeHtml(existingSaleId) + '"' : '') + '>' +
         '<div class="item-row-header">' +
           '<span class="item-row-label">Artículo</span>' +
           '<button type="button" class="item-row-del" data-del-row="' + rowId + '">✕ Quitar</button>' +
@@ -2372,14 +2394,8 @@ document.addEventListener('DOMContentLoaded', function(){
     rows.forEach(function(r, idx){
       r.querySelector('.item-row-label').textContent = 'Artículo ' + (idx + 1);
       let del = r.querySelector('.item-row-del');
-      // La fila "original" (el artículo que se está editando) nunca se
-      // puede quitar desde acá — para eso está el botón de borrar venta
-      // en la tabla. Las demás filas sí, salvo que sea la única.
-      if(r.getAttribute('data-original') === '1'){
-        del.style.display = 'none';
-      }else{
-        del.style.display = rows.length <= 1 ? 'none' : 'inline-block';
-      }
+      // En edición masiva se pueden quitar artículos existentes; al guardar se eliminan.
+      del.style.display = (rows.length <= 1 && !editingClientSalesIds) ? 'none' : 'inline-block';
     });
   }
 
@@ -2426,6 +2442,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function openEditSheet(item){
+    editingClientSalesIds = null;
     editingSaleId = item.id;
     document.getElementById('fCliente').value = item.cliente;
     document.getElementById('fTercero').value = item.tercero || '';
@@ -2512,7 +2529,35 @@ document.addEventListener('DOMContentLoaded', function(){
     saveBtn.disabled = true;
 
     try{
-      if(editingSaleId){
+      if(editingClientSalesIds){
+        const rows = Array.from(rowEls);
+        const existingIds = editingClientSalesIds.slice();
+        const keptIds = rows.map(function(row){return row.getAttribute('data-sale-id');}).filter(Boolean);
+        const removedIds = existingIds.filter(function(id){return !keptIds.includes(id);});
+        for(let i=0;i<rows.length;i++){
+          const rowId = rows[i].getAttribute('data-sale-id');
+          const it = items[i];
+          const saleData = {cliente:cliente, articulo:it.articulo, precio:it.precio, pagado:formState.pagado, retira:formState.retira, tercero:formState.retira==='otro'?tercero:'', categoria:it.categoria};
+          if(rowId){
+            const upd = await sb.from('sales').update(saleData).eq('id',rowId).select();
+            if(upd.error) throw upd.error;
+            const idx = sales.findIndex(function(x){return x.id===rowId;});
+            if(idx!==-1 && upd.data && upd.data[0]) sales[idx]=mapRowToSale(upd.data[0]);
+          }else{
+            const ins = await sb.from('sales').insert(saleData).select();
+            if(ins.error) throw ins.error;
+            ins.data.forEach(function(row){sales.unshift(mapRowToSale(row));});
+          }
+        }
+        if(removedIds.length){
+          const delRes = await sb.from('sales').delete().in('id',removedIds);
+          if(delRes.error) throw delRes.error;
+          sales = sales.filter(function(x){return !removedIds.includes(x.id);});
+        }
+        editingClientSalesIds = null;
+        await persistClientIfNew(cliente);
+        render(); closeSheet(); showToast('Venta actualizada');
+      }else if(editingSaleId){
         let saleData = {
           cliente: cliente,
           articulo: items[0].articulo,
