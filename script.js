@@ -2026,9 +2026,9 @@ document.addEventListener('DOMContentLoaded', function(){
     let summaryMeta = document.getElementById('weeklySummaryMeta');
     let summaryToggle = document.getElementById('weeklySummaryToggle');
     if(summaryContent && summaryToggle){
-      summaryContent.hidden = true;
-      summaryToggle.setAttribute('aria-expanded','false');
-      summaryToggle.classList.remove('expanded');
+      // Mantener el estado de apertura al volver a renderizar (por ejemplo,
+      // después de marcar una entrega desde la pantalla Entregas).
+      const summaryWasExpanded = !summaryContent.hidden;
       const lastClosedKey = previousWeekKey();
       const lastClosedItems = (groups[lastClosedKey] || []).slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
       if(lastClosedItems.length){
@@ -2036,10 +2036,16 @@ document.addEventListener('DOMContentLoaded', function(){
         if(summaryMeta) summaryMeta.textContent = formatRange(lastClosedKey) + ' · ' + lastStats.count + ' artículos · ' + money(lastStats.total);
         summaryContent.innerHTML = renderSalesGroupedByClient(lastClosedItems, 'weekly-summary');
         bindTableEvents(summaryContent);
+        summaryContent.hidden = !summaryWasExpanded;
+        summaryToggle.setAttribute('aria-expanded',String(summaryWasExpanded));
+        summaryToggle.classList.toggle('expanded',summaryWasExpanded);
         summaryToggle.onclick = function(){ const opening=summaryContent.hidden; summaryContent.hidden=!opening; summaryToggle.setAttribute('aria-expanded',String(opening)); summaryToggle.classList.toggle('expanded',opening); };
       }else{
         if(summaryMeta) summaryMeta.textContent = 'No hay ventas registradas en la semana anterior';
         summaryContent.innerHTML = '<div class="empty-inline">El Resumen Semanal muestra únicamente las ventas de la semana inmediatamente anterior.</div>';
+        summaryContent.hidden = !summaryWasExpanded;
+        summaryToggle.setAttribute('aria-expanded',String(summaryWasExpanded));
+        summaryToggle.classList.toggle('expanded',summaryWasExpanded);
         summaryToggle.onclick = function(){ const opening=summaryContent.hidden; summaryContent.hidden=!opening; summaryToggle.setAttribute('aria-expanded',String(opening)); summaryToggle.classList.toggle('expanded',opening); };
       }
       /* No reutilizar semanas históricas más antiguas para este resumen. */

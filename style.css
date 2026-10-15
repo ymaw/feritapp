@@ -2189,3 +2189,72 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 .weekly-summary-content[hidden] { display: none !important; }
 #weeklySummaryContent .weekly-summary-delivery-status { display: inline-flex !important; visibility: visible !important; opacity: 1 !important; flex: 0 0 auto; align-items: center; justify-content: center; position: relative; z-index: 1; }
 @media (max-width: 520px) { .weekly-summary-heading { padding: 14px; } .weekly-summary-content { padding: 0 8px 10px; } }
+
+
+/* V12.40: estados persistentes y layout legible en Inicio > Resumen Semanal. */
+#weeklySummaryContent .sales-client-group-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+#weeklySummaryContent .sales-client-group-trigger {
+  min-width: 0;
+  width: 100%;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 8px;
+}
+#weeklySummaryContent .sales-client-group-copy {
+  min-width: 0;
+  overflow: visible;
+}
+#weeklySummaryContent .sales-group-statuses {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  padding-left: 0;
+}
+#weeklySummaryContent .sales-group-statuses .delivery-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 28px;
+  padding: 5px 9px;
+  font-size: 11px;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+#weeklySummaryContent .sales-group-chevron {
+  flex: 0 0 24px;
+}
+@media (max-width: 640px) {
+  #weeklySummaryContent .sales-client-group-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 10px;
+  }
+  #weeklySummaryContent .sales-client-group-trigger {
+    grid-template-columns: 34px minmax(0, 1fr);
+    padding: 4px 0;
+  }
+  #weeklySummaryContent .sales-group-statuses {
+    justify-content: flex-start;
+    padding-left: 44px;
+  }
+  #weeklySummaryContent .sales-group-statuses .delivery-status {
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+}
