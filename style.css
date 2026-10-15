@@ -1977,6 +1977,17 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .weekly-summary-client-group [data-edit],
 .weekly-summary-client-group [data-del],
 .weekly-summary-client-group [data-toggle-pay] { display: none !important; }
+/* El estado de entrega debe ser visible exclusivamente en Inicio > Resumen Semanal. */
+#weeklySummaryContent .weekly-summary-delivery-status {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
 
 /* Encabezado de la app: marca centrada y controles laterales alineados */
 header {
