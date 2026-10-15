@@ -1862,7 +1862,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const total = list.reduce(function(a,x){return a+(Number(x.precio)||0);},0);
       const pending = list.reduce(function(a,x){return a+(!x.pagado?(Number(x.precio)||0):0);},0);
       const delivered = list.length > 0 && list.every(function(x){return !!x.entregado;});
-      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span><span class="delivery-status '+(delivered?'paid':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
+      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }
@@ -1990,19 +1990,20 @@ document.addEventListener('DOMContentLoaded', function(){
       summaryContent.hidden = true;
       summaryToggle.setAttribute('aria-expanded','false');
       summaryToggle.classList.remove('expanded');
-      if(pastKeys.length){
-        const lastClosedKey = pastKeys[0];
-        const lastClosedItems = (groups[lastClosedKey] || []).slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+      const lastClosedKey = previousWeekKey();
+      const lastClosedItems = (groups[lastClosedKey] || []).slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+      if(lastClosedItems.length){
         const lastStats = weekStats(lastClosedItems);
         if(summaryMeta) summaryMeta.textContent = formatRange(lastClosedKey) + ' · ' + lastStats.count + ' artículos · ' + money(lastStats.total);
         summaryContent.innerHTML = renderSalesGroupedByClient(lastClosedItems, 'weekly-summary');
         bindTableEvents(summaryContent);
         summaryToggle.onclick = function(){ const opening=summaryContent.hidden; summaryContent.hidden=!opening; summaryToggle.setAttribute('aria-expanded',String(opening)); summaryToggle.classList.toggle('expanded',opening); };
       }else{
-        if(summaryMeta) summaryMeta.textContent = 'Todavía no hay semanas cerradas';
-        summaryContent.innerHTML = '<div class="empty-inline">Cuando termine una semana, sus ventas agrupadas por cliente aparecerán aquí.</div>';
+        if(summaryMeta) summaryMeta.textContent = 'No hay ventas registradas en la semana anterior';
+        summaryContent.innerHTML = '<div class="empty-inline">El Resumen Semanal muestra únicamente las ventas de la semana inmediatamente anterior.</div>';
         summaryToggle.onclick = function(){ const opening=summaryContent.hidden; summaryContent.hidden=!opening; summaryToggle.setAttribute('aria-expanded',String(opening)); summaryToggle.classList.toggle('expanded',opening); };
       }
+      /* No reutilizar semanas históricas más antiguas para este resumen. */
     }
     let container = document.getElementById('weeksContainer');
     if(pastKeys.length === 0){
