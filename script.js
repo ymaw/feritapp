@@ -1826,7 +1826,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const isDashboardHistory = idPrefix.indexOf('dashboard-history-') === 0;
     const readOnly = isWeeklySummary || isDashboardHistory;
     const showClientActions = isManagement && !readOnly;
-    const showPaymentControl = isManagement && !readOnly;
+    const showPaymentControl = isManagement || isWeeklySummary;
     const showItemActions = !readOnly && !isManagement;
     // Se calcula una sola vez por render, no una vez por cliente/artículo.
     const previousKey = isWeeklySummary ? previousWeekKey() : null;
@@ -1866,7 +1866,23 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function bindTableEvents(root){
     root.querySelectorAll('button[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(event){ event.preventDefault(); event.stopPropagation(); const groupId=btn.getAttribute('data-sales-group'); const panel=document.getElementById(groupId); if(!panel)return; const opening=panel.hidden; panel.hidden=!opening; root.querySelectorAll('button[data-sales-group="'+groupId+'"]').forEach(function(toggle){toggle.setAttribute('aria-expanded',String(opening));toggle.classList.toggle('expanded',opening);}); }); });
-    root.querySelectorAll('[data-set-payment]').forEach(function(btn){ btn.addEventListener('click', async function(){ const name=btn.getAttribute('data-set-payment'); const expandedNames=Array.from(root.querySelectorAll('.sales-client-group')).filter(function(card){const panel=card.querySelector('.sales-client-group-content');return panel && !panel.hidden;}).map(function(card){const title=card.querySelector('.sales-client-group-copy strong');return title?title.textContent.trim():'';}); const currentWeekKey=weekKey(new Date()); const group=salesForWeek(sales,currentWeekKey).filter(function(x){return (x.cliente||'Sin nombre').trim()===name;}); if(!group.length) return; const next=!group.every(function(x){return !!x.pagado;}); const ids=group.map(function(x){return x.id;}); try { const result=await sb.from('sales').update({pagado:next}).in('id',ids); if(result && result.error) throw result.error; group.forEach(function(x){x.pagado=next;}); render(); setTimeout(function(){document.querySelectorAll('#currentWeekTable .sales-client-group').forEach(function(card){const title=card.querySelector('.sales-client-group-copy strong');if(title && expandedNames.includes(title.textContent.trim())){const panel=card.querySelector('.sales-client-group-content');const trigger=card.querySelector('button[data-sales-group]');if(panel){panel.hidden=false;if(trigger){trigger.setAttribute('aria-expanded','true');trigger.classList.add('expanded');}}}});},0); } catch(e){showToast('No se pudo actualizar el estado de pago.');} }); });
+    root.querySelectorAll('[data-set-payment]').forEach(function(btn){ btn.addEventListener('click', async function(){
+      const name=btn.getAttribute('data-set-payment');
+      const expandedNames=Array.from(root.querySelectorAll('.sales-client-group')).filter(function(card){const panel=card.querySelector('.sales-client-group-content');return panel && !panel.hidden;}).map(function(card){const title=card.querySelector('.sales-client-group-copy strong');return title?title.textContent.trim():'';});
+      const targetWeekKey = root.id === 'weeklySummaryContent' ? previousWeekKey() : weekKey(new Date());
+      const group=salesForWeek(sales,targetWeekKey).filter(function(x){return (x.cliente||'Sin nombre').trim()===name;});
+      if(!group.length) { showToast('No se encontraron ventas de este cliente en esa semana.'); return; }
+      const next=!group.every(function(x){return !!x.pagado;}); const ids=group.map(function(x){return x.id;});
+      try {
+        const result=await sb.from('sales').update({pagado:next}).in('id',ids); if(result && result.error) throw result.error;
+        group.forEach(function(x){x.pagado=next;}); render();
+        setTimeout(function(){
+          const targetRoot = root.id === 'weeklySummaryContent' ? document.getElementById('weeklySummaryContent') : document.getElementById('currentWeekTable');
+          if(!targetRoot) return;
+          targetRoot.querySelectorAll('.sales-client-group').forEach(function(card){const title=card.querySelector('.sales-client-group-copy strong');if(title && expandedNames.includes(title.textContent.trim())){const panel=card.querySelector('.sales-client-group-content');const trigger=card.querySelector('button[data-sales-group]');if(panel){panel.hidden=false;if(trigger){trigger.setAttribute('aria-expanded','true');trigger.classList.add('expanded');}}}});
+        },0);
+      } catch(e){showToast('No se pudo actualizar el estado de pago.');}
+    }); });
     root.querySelectorAll('[data-toggle-pay]').forEach(function(btn){
       btn.addEventListener('click', function(){
         let id = btn.getAttribute('data-toggle-pay');
@@ -1959,7 +1975,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const total = group.total;
       const pending = group.pending;
       const delivered = list.length > 0 && group.delivered;
-      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Pago':'Pendiente '+money(pending))+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
+      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' artículos · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente '+money(pending))+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }
@@ -2437,6 +2453,30 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('openSheet').addEventListener('click', openSheet);
   document.getElementById('sidebarOpenSheet').addEventListener('click', openSheet);
   scrim.addEventListener('click', closeSheet);
+  // Mobile: permitir cerrar/minimizar Nueva Venta o Editar Venta deslizando hacia abajo.
+  // Solo se activa si el gesto comienza en el borde superior del contenido, para no interferir con el scroll del formulario.
+  (function enableSheetSwipeToClose(){
+    let startX=0, startY=0, tracking=false;
+    sheet.addEventListener('touchstart', function(e){
+      if(!sheet.classList.contains('open') || !e.touches || e.touches.length!==1) return;
+      const t=e.touches[0]; startX=t.clientX; startY=t.clientY;
+      tracking = sheet.scrollTop <= 2 && startY < (sheet.getBoundingClientRect().top + 100);
+    }, {passive:true});
+    sheet.addEventListener('touchend', function(e){
+      if(!tracking || !e.changedTouches || !e.changedTouches.length) return;
+      const t=e.changedTouches[0], dy=t.clientY-startY, dx=t.clientX-startX;
+      if(dy>105 && Math.abs(dx)<85 && sheet.scrollTop<=2) closeSheet();
+      tracking=false;
+    }, {passive:true});
+    sheet.addEventListener('touchcancel', function(){tracking=false;}, {passive:true});
+  })();
+  const sheetTitle = document.getElementById('sheetTitle');
+  if(sheetTitle && !document.getElementById('closeSaleSheetBtn')){
+    const titleRow=document.createElement('div'); titleRow.className='sheet-title-row';
+    sheetTitle.parentNode.insertBefore(titleRow,sheetTitle); titleRow.appendChild(sheetTitle);
+    const closeBtn=document.createElement('button'); closeBtn.type='button'; closeBtn.id='closeSaleSheetBtn'; closeBtn.className='sheet-close-btn'; closeBtn.setAttribute('aria-label','Cerrar formulario de venta'); closeBtn.textContent='✕';
+    closeBtn.addEventListener('click',closeSheet); titleRow.appendChild(closeBtn);
+  }
 
   /* ---------------- form state ---------------- */
   let formState = { pagado: false, retira: 'cliente' };

@@ -2372,3 +2372,20 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 }
 .chart-box { overflow: hidden; border-radius: 16px; box-shadow: 0 5px 18px rgba(18, 48, 92, .035); }
 .chart-box-doughnut { border-radius: 18px; }
+
+
+/* V12.45: resumen semanal permite alternar el estado de pago y mantiene ambas etiquetas legibles. */
+#weeklySummaryContent .sales-group-statuses { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; min-width:0; max-width:100%; }
+#weeklySummaryContent .sales-group-statuses .delivery-status { display:inline-flex !important; max-width:100%; white-space:normal; text-align:center; line-height:1.25; }
+#weeklySummaryContent .sales-group-statuses [data-set-payment] { cursor:pointer; border:0; }
+#weeklySummaryContent .sales-group-statuses [data-set-payment]:focus-visible, #closeSaleSheetBtn:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
+.sheet-title-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 18px; }
+.sheet-title-row h2 { margin:0; min-width:0; }
+.sheet-close-btn { display:inline-flex; align-items:center; justify-content:center; flex:0 0 38px; width:38px; height:38px; border:1px solid var(--border); border-radius:12px; background:var(--surface-2,var(--surface)); color:var(--text); font-size:18px; cursor:pointer; }
+.sheet { touch-action:pan-y; }
+@media(max-width:520px){
+  .sheet-title-row { position:sticky; top:-10px; z-index:4; padding:10px 0 12px; margin-bottom:14px; background:var(--surface); }
+  #weeklySummaryContent .sales-client-group-trigger { grid-template-columns:36px minmax(0,1fr) 14px; }
+  #weeklySummaryContent .sales-group-statuses { grid-column:2; grid-row:2; align-items:flex-start; }
+  #weeklySummaryContent .sales-group-chevron { grid-column:3; grid-row:1; }
+}
