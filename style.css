@@ -2389,3 +2389,63 @@ header.view-dashboard .header-profile-btn { display: none !important; }
   #weeklySummaryContent .sales-group-statuses { grid-column:2; grid-row:2; align-items:flex-start; }
   #weeklySummaryContent .sales-group-chevron { grid-column:3; grid-row:1; }
 }
+
+/* V12.46 · Resumen semanal: estados debajo, alineados al mismo borde derecho del cliente */
+#weeklySummaryContent .sales-client-group-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, auto);
+  align-items: start;
+  column-gap: 12px;
+}
+#weeklySummaryContent .sales-group-statuses {
+  grid-column: 2;
+  grid-row: 1;
+  align-items: flex-end !important;
+  justify-content: flex-start !important;
+  text-align: right;
+  padding-left: 0 !important;
+  padding-top: 40px;
+  gap: 6px !important;
+}
+#weeklySummaryContent .sales-group-statuses .delivery-status {
+  align-self: flex-end !important;
+  max-width: 100%;
+  white-space: normal;
+  text-align: right;
+}
+#weeklySummaryContent .sales-group-chevron { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
+@media (max-width: 640px) {
+  #weeklySummaryContent .sales-client-group-header {
+    grid-template-columns: minmax(0, 1fr) minmax(112px, 42%);
+    column-gap: 8px;
+  }
+  #weeklySummaryContent .sales-client-group-trigger { grid-column: 1; grid-row: 1; min-width: 0; }
+  #weeklySummaryContent .sales-group-statuses {
+    grid-column: 2;
+    grid-row: 1;
+    padding-top: 39px;
+    padding-right: 26px;
+    align-items: flex-end !important;
+  }
+  #weeklySummaryContent .sales-group-statuses .delivery-status { font-size: 10px; padding: 5px 7px; }
+  #weeklySummaryContent .sales-group-chevron { grid-column: 2; grid-row: 1; justify-self: end; }
+}
+@media (max-width: 360px) {
+  #weeklySummaryContent .sales-client-group-header { grid-template-columns: minmax(0, 1fr) minmax(100px, 40%); }
+  #weeklySummaryContent .sales-group-statuses { padding-right: 23px; }
+  #weeklySummaryContent .sales-group-statuses .delivery-status { font-size: 9px; }
+}
+
+/* V12.46 · Nueva Venta: carrito más claro y cómodo en mobile, conservando colores del tema */
+@media (max-width: 520px) {
+  .sheet { padding-top: 10px; }
+  .sheet .sheet-title-row { gap: 10px; }
+  .sheet .sheet-title-row h2 { font-size: 21px; line-height: 1.2; }
+  .sheet .field label { display: block; line-height: 1.35; }
+  .sheet .input-row { gap: 8px; }
+  .sheet .input-row input, .sheet .field input, .sheet .field select,
+  .sheet #fCliente, .sheet #fTercero, .sheet #fNuevaCategoria { width: 100%; max-width: 100%; box-sizing: border-box; }
+  .sheet .item-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; }
+  .sheet .item-row .row-articulo, .sheet .item-row select.row-categoria, .sheet .item-row .row-precio { width: 100%; min-width: 0; box-sizing: border-box; }
+  .sheet .sheet-save-bar { position: sticky; bottom: 0; z-index: 5; }
+}
