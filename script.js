@@ -1274,21 +1274,31 @@ document.addEventListener('DOMContentLoaded', function(){
     let border = cssVar('--border');
 
     let colors = values.map(function(v, i){ return i === highlightIndex ? secondary : primary; });
+    let ctx2d = canvas.getContext('2d');
+    let fills = colors.map(function(color){
+      let gradient = ctx2d.createLinearGradient(0, 0, horizontal ? canvas.clientWidth : 0, horizontal ? 0 : canvas.clientHeight);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, color + 'B8');
+      return gradient;
+    });
 
-    chartInstances[canvasId] = new Chart(canvas.getContext('2d'), {
+    chartInstances[canvasId] = new Chart(ctx2d, {
       type: 'bar',
-      data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 8, borderSkipped: false, maxBarThickness: 38 }] },
+      data: { labels: labels, datasets: [{ data: values, backgroundColor: fills, hoverBackgroundColor: colors, borderRadius: 10, borderSkipped: false, maxBarThickness: 34, barPercentage: .72, categoryPercentage: .78 }] },
       options: {
         indexAxis: horizontal ? 'y' : 'x',
         responsive: true,
         maintainAspectRatio: false,
+        animation: { duration: 420, easing: 'easeOutQuart' },
+        interaction: { intersect: false, mode: 'index' },
+        layout: { padding: { top: 8, right: 8, bottom: 2, left: 2 } },
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: function(ctx){ return formatter(ctx.parsed[horizontal ? 'x' : 'y']); } } }
+          tooltip: { displayColors: false, padding: 10, cornerRadius: 10, backgroundColor: '#14263D', titleColor: '#FFFFFF', bodyColor: '#EAF2FF', callbacks: { label: function(ctx){ return formatter(ctx.parsed[horizontal ? 'x' : 'y']); } } }
         },
         scales: {
-          x: { grid: { display: horizontal, color: border }, ticks: { color: muted, font: { size: 11 } }, border: { display: false } },
-          y: { grid: { display: !horizontal, color: border }, ticks: { color: muted, font: { size: 11 } }, border: { display: false }, beginAtZero: true }
+          x: { grid: { display: horizontal, color: border, drawTicks: false }, ticks: { color: muted, font: { size: 11 }, padding: 7, maxRotation: 0 }, border: { display: false } },
+          y: { grid: { display: !horizontal, color: border, drawTicks: false }, ticks: { color: muted, font: { size: 11 }, padding: 8 }, border: { display: false }, beginAtZero: true }
         }
       }
     });
@@ -1465,13 +1475,17 @@ document.addEventListener('DOMContentLoaded', function(){
             data: ranked.map(function(c){ return c.count; }),
             backgroundColor: ranked.map(function(c){ return categoryColor(c.name); }),
             borderColor: cssVar('--surface'),
-            borderWidth: 3,
-            hoverOffset: 6
+            borderWidth: 4,
+            borderRadius: 5,
+            hoverOffset: 8,
+            spacing: 2
           }]
         },
         options: {
-          cutout: '68%',
+          cutout: '72%',
           maintainAspectRatio: false,
+          animation: { animateRotate: true, animateScale: true, duration: 500, easing: 'easeOutQuart' },
+          layout: { padding: 6 },
           plugins: {
             legend: { display: false },
             tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + ctx.parsed + ' art.'; } } }
@@ -1842,7 +1856,7 @@ document.addEventListener('DOMContentLoaded', function(){
         : (summaryIsPreviousWeek ? '<span class="delivery-status weekly-summary-delivery-status '+(delivered?'paid':'pending')+'" data-weekly-delivery-status="'+(delivered?'delivered':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span>' : '');
       html += '<section class="sales-client-group'+expandOnly+'"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+(showPaymentControl ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>')+deliveryStatus+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div><div class="sales-client-group-content '+(isManagement?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(isManagement?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
-        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(!showItemActions?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pago':'Pendiente')+'</button>')+(showItemActions?'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span>':'')+'</div></article>';
+        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(!showItemActions?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Abonado':'Pendiente de Pago')+'</button>')+(showItemActions?'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span>':'')+'</div></article>';
       });
       html += '<div class="sales-group-total"><span>Total</span><strong>'+money(total)+'</strong></div>'+(isManagement?'</div>'+managementActions+'</div>':'')+'</div></section>';
     });

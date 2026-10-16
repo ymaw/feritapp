@@ -2345,3 +2345,30 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 .doughnut-total{font-size:27px;font-weight:800;color:var(--text);line-height:1.1;}
 .doughnut-label{font-size:11px;color:var(--text-muted);}
 @media(max-width:420px){.chart-box{height:175px;padding:8px;}.chart-box-doughnut{height:200px;}.cat-legend-row{font-size:12px;}}
+
+
+/* V12.44 · Fase 2 Nueva Venta: carrito mobile, sin alterar controles ni lógica */
+.sheet { overscroll-behavior: contain; scrollbar-gutter: stable; }
+.sheet .field { padding: 2px 0; }
+.sheet .input-row input:focus, .sheet .item-row input:focus, .sheet .item-row select:focus {
+  outline: 3px solid rgba(var(--primary-rgb), .12); outline-offset: 0;
+}
+.sheet .mic-btn { width: 46px; height: 46px; border-radius: 14px; }
+.sheet .seg { gap: 9px; }
+.sheet .pago-opt, .sheet .retira-opt { transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+.sheet .pago-opt:active, .sheet .retira-opt:active, .sheet .add-item-btn:active { transform: scale(.985); }
+.sheet .sheet-save-bar { box-shadow: 0 -8px 22px rgba(18, 48, 92, .045); }
+.sheet .sheet-save-total strong { font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) {
+  .sheet { max-height: 94dvh; padding-left: 16px; padding-right: 16px; border-radius: 24px 24px 0 0; }
+  .sheet h2 { font-size: 22px; margin-bottom: 17px; }
+  .sheet .field { margin-bottom: 15px; }
+  .sheet .item-row { padding: 12px; }
+  .sheet .sheet-save-bar { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
+  .sheet .sheet-save-total { min-width: 70px; }
+  .sheet .sheet-save-total strong { font-size: 16px; }
+  .sheet .sheet-save-bar .save-btn { min-height: 50px; }
+  .chart-box { border-radius: 16px; background: linear-gradient(180deg, var(--surface-2), var(--table-bg)); }
+}
+.chart-box { overflow: hidden; border-radius: 16px; box-shadow: 0 5px 18px rgba(18, 48, 92, .035); }
+.chart-box-doughnut { border-radius: 18px; }
