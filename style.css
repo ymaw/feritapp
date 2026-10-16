@@ -2449,3 +2449,130 @@ header.view-dashboard .header-profile-btn { display: none !important; }
   .sheet .item-row .row-articulo, .sheet .item-row select.row-categoria, .sheet .item-row .row-precio { width: 100%; min-width: 0; box-sizing: border-box; }
   .sheet .sheet-save-bar { position: sticky; bottom: 0; z-index: 5; }
 }
+
+
+/* V12.47 · Resumen semanal: estados a la misma altura que el nombre del cliente */
+#weeklySummaryContent .sales-client-group-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(112px, 42%) 14px;
+  align-items: center;
+  column-gap: 8px;
+}
+#weeklySummaryContent .sales-client-group-trigger { grid-column: 1; grid-row: 1; min-width: 0; }
+#weeklySummaryContent .sales-group-statuses {
+  grid-column: 2; grid-row: 1;
+  align-self: center !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: 0 0 0 0 !important;
+  margin: 0 !important;
+  gap: 5px !important;
+}
+#weeklySummaryContent .sales-group-statuses .delivery-status {
+  align-self: flex-end !important;
+  max-width: 100%;
+  white-space: normal;
+  text-align: right;
+  line-height: 1.15;
+}
+#weeklySummaryContent .sales-group-chevron { grid-column: 3; grid-row: 1; justify-self: end; align-self: center; }
+@media (max-width: 360px) {
+  #weeklySummaryContent .sales-client-group-header { grid-template-columns: minmax(0, 1fr) minmax(90px, 40%) 12px; column-gap: 5px; }
+  #weeklySummaryContent .sales-group-statuses .delivery-status { font-size: 9px; padding: 4px 6px; }
+}
+
+/* V12.47 · Nueva Venta: jerarquía visual más evidente sin cambiar la paleta del tema */
+#sheet .field {
+  padding: 14px;
+  margin: 0 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2, var(--surface));
+}
+#sheet .field > label, #sheet .field-row-head > label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  margin-bottom: 9px;
+}
+#sheet .input-row input, #sheet .field input:not([type=checkbox]), #sheet .field select {
+  min-height: 46px;
+  border-radius: 12px;
+}
+#sheet .item-row {
+  padding: 13px;
+  margin: 0 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  gap: 10px;
+}
+#sheet .add-item-btn {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 13px;
+  font-weight: 700;
+}
+#sheet .items-total-row {
+  margin-top: 14px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+#sheet .items-total-row span:last-child { font-size: 21px; font-weight: 800; }
+#sheet .seg { gap: 8px; }
+#sheet .seg button { min-height: 44px; border-radius: 12px; }
+@media (max-width: 520px) {
+  #sheet .field { padding: 12px; border-radius: 14px; }
+  #sheet .item-row { padding: 11px; }
+  #sheet .items-total-row span:last-child { font-size: 20px; }
+}
+
+/* V12.48 · Gráficos modernos para comparación semanal y estado de cobros */
+.comparison-chart-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:16px 2px 9px;color:var(--text);}
+.comparison-chart-heading strong{font-size:14px;font-weight:800;}
+.comparison-chart-heading span{font-size:11px;color:var(--text-muted);text-align:right;}
+.chart-box-modern{height:220px;border-radius:18px!important;border:1px solid var(--border)!important;background:linear-gradient(180deg,var(--surface-2,var(--surface)),var(--table-bg))!important;padding:14px 12px 10px!important;}
+.payment-chart-heading{margin-top:22px;}
+.payment-chart-layout{display:grid;grid-template-columns:minmax(150px, .9fr) minmax(0,1.1fr);gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2,var(--surface));}
+.payment-doughnut{height:178px!important;min-height:150px!important;max-width:none!important;margin:0!important;padding:8px!important;position:relative;border:0!important;border-radius:14px!important;background:transparent!important;}
+.payment-chart-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:3px;}
+.payment-chart-center small{font-size:10px;color:var(--text-muted);}
+.payment-chart-center strong{font-size:15px;line-height:1.2;color:var(--text);text-align:center;}
+.payment-chart-legend{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.payment-chart-legend>div{display:grid;grid-template-columns:10px minmax(0,1fr);gap:4px 8px;align-items:center;}
+.payment-chart-legend>div strong{grid-column:2;font-size:15px;line-height:1.25;overflow-wrap:anywhere;color:var(--text);}
+.payment-chart-legend>div span:nth-child(2){font-size:12px;color:var(--text-muted);}
+.payment-legend-dot{width:9px;height:9px;border-radius:50%;grid-row:span 2;}
+.payment-legend-dot.collected{background:var(--secondary,var(--primary));}
+.payment-legend-dot.outstanding{background:var(--warning,#E7A23B);}
+@media(max-width:420px){.chart-box-modern{height:190px!important}.payment-chart-layout{grid-template-columns:minmax(0,1fr);gap:6px}.payment-doughnut{height:174px!important;max-width:220px!important;margin:0 auto!important;width:100%!important}.payment-chart-legend{display:grid;grid-template-columns:1fr 1fr;gap:8px}.payment-chart-legend>div strong{font-size:13px}.comparison-chart-heading span{max-width:42%;}}
+
+/* V12.48 · Nueva Venta se distingue de Editar Venta y guía el alta por etapas */
+#sheet.new-sale-mode{background:var(--surface);}
+#sheet.new-sale-mode .sheet-title-row{padding:6px 2px 14px;margin-bottom:5px;border-bottom:1px solid var(--border);}
+#sheet.new-sale-mode .sheet-title-row h2{font-size:24px;letter-spacing:-.035em;font-weight:850;}
+#sheet.new-sale-mode .sheet-title-row h2::after{content:'Cargá la compra en pocos pasos';display:block;margin-top:5px;font-size:12px;font-weight:500;letter-spacing:0;color:var(--text-muted);}
+#sheet.new-sale-mode .field{position:relative;padding:16px;margin-bottom:12px;border-radius:18px;border-color:var(--border);background:var(--surface-2,var(--surface));box-shadow:0 3px 12px rgba(18,48,92,.035);}
+#sheet.new-sale-mode .field:first-of-type{border-left:3px solid var(--primary);}
+#sheet.new-sale-mode .field:nth-of-type(2){border-left:3px solid var(--secondary,var(--primary));}
+#sheet.new-sale-mode .field:nth-of-type(3),#sheet.new-sale-mode .field:nth-of-type(4){border-left:3px solid var(--border);}
+#sheet.new-sale-mode .field>label,#sheet.new-sale-mode .field-row-head>label{font-size:14px;letter-spacing:-.01em;margin-bottom:10px;}
+#sheet.new-sale-mode .input-row{gap:8px;}
+#sheet.new-sale-mode .input-row input,#sheet.new-sale-mode .field input:not([type=checkbox]),#sheet.new-sale-mode .field select{min-height:50px;border-radius:13px;padding-left:13px;font-size:15px;}
+#sheet.new-sale-mode .mic-btn{width:46px;min-width:46px;height:46px;border-radius:13px;}
+#sheet.new-sale-mode #itemRowsContainer{display:grid;gap:9px;}
+#sheet.new-sale-mode .item-row{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;padding:13px;border-radius:15px;background:var(--surface);border:1px solid var(--border);}
+#sheet.new-sale-mode .item-row input,#sheet.new-sale-mode .item-row select{min-height:46px;border-radius:12px;}
+#sheet.new-sale-mode .items-total-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;margin-top:13px;border-radius:16px;background:var(--surface);border:1px solid var(--border);}
+#sheet.new-sale-mode .items-total-row span:first-child{font-size:12px;color:var(--text-muted);}
+#sheet.new-sale-mode .items-total-row span:last-child{font-size:24px;font-weight:850;letter-spacing:-.03em;color:var(--text);}
+#sheet.new-sale-mode .seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+#sheet.new-sale-mode .seg button{min-height:48px;padding:10px 8px;font-size:13px;font-weight:750;border-radius:13px;}
+#sheet.new-sale-mode .hint{font-size:11px;line-height:1.45;margin-top:9px;}
+#sheet.new-sale-mode .sheet-save-bar{padding:12px 0 max(10px,env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);}
+#sheet.new-sale-mode .sheet-save-total span{font-size:12px;color:var(--text-muted);}
+#sheet.new-sale-mode .sheet-save-total strong{font-size:22px;font-weight:850;}
+#sheet.new-sale-mode .save-btn{min-height:50px;border-radius:14px;font-size:15px;font-weight:800;box-shadow:0 5px 14px rgba(18,48,92,.12);}
+@media(min-width:521px){#sheet.new-sale-mode .item-row{grid-template-columns:minmax(0,1.5fr) minmax(110px,.8fr) minmax(100px,.7fr);align-items:center}}

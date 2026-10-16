@@ -1304,6 +1304,19 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
+  function drawWeeklyPaymentChart(collected, outstanding){
+    destroyChart('weeklyPaymentChartCanvas');
+    let canvas = document.getElementById('weeklyPaymentChartCanvas');
+    if(!canvas || typeof Chart === 'undefined') return;
+    let primary = cssVar('--secondary') || cssVar('--primary') || '#2BAE83';
+    let warning = cssVar('--warning') || '#E7A23B';
+    chartInstances['weeklyPaymentChartCanvas'] = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: ['Cobrado', 'Pendiente'], datasets: [{ data: [Math.max(0, Number(collected)||0), Math.max(0, Number(outstanding)||0)], backgroundColor: [primary, warning], borderColor: cssVar('--surface') || '#FFFFFF', borderWidth: 4, hoverOffset: 5, borderRadius: 5 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '76%', animation: { duration: 500, easing: 'easeOutQuart' }, plugins: { legend: { display: false }, tooltip: { displayColors: true, padding: 10, cornerRadius: 10, callbacks: { label: function(ctx){ let total = ctx.dataset.data.reduce(function(a,b){return a+b;},0); let value = Number(ctx.parsed)||0; let pct = total ? Math.round(value/total*100) : 0; return ' ' + ctx.label + ': ' + money(value) + ' (' + pct + '%)'; } } } } }
+    });
+  }
+
   function renderMonthComparison(){
     let wrap = document.getElementById('periodCompare');
     if(!wrap) return;
@@ -1382,13 +1395,17 @@ document.addEventListener('DOMContentLoaded', function(){
     let thisWeekKey = weekKey(new Date());
     let wStats = {};
     keys.forEach(function(k){ wStats[k] = weekStats(groups[k]); });
-    // La comparación semanal se centra en CANTIDAD de artículos, no en dinero.
+    // La comparación principal mide importe vendido; el conteo de artículos queda en la tabla.
 
     let chartKeys = keys.slice(-6);
     let chartLabels = chartKeys.map(formatRangeShort);
-    let chartValues = chartKeys.map(function(k){ return wStats[k].count; });
+    let chartValues = chartKeys.map(function(k){ return wStats[k].total; });
     let chartHighlight = chartKeys.indexOf(thisWeekKey);
-    let chartHtml = '<div class="chart-box"><canvas id="periodChartCanvas"></canvas></div>';
+    let latestStats = wStats[chartKeys[chartKeys.length - 1]] || {cobrado:0,pendiente:0};
+    let chartHtml = '<div class="comparison-chart-heading"><strong>Importe vendido por semana</strong><span>Últimas 6 semanas</span></div><div class="chart-box chart-box-modern"><canvas id="periodChartCanvas"></canvas></div>' +
+      '<div class="comparison-chart-heading payment-chart-heading"><strong>Cobrado vs. pendiente</strong><span>Semana más reciente con ventas</span></div>' +
+      '<div class="payment-chart-layout"><div class="chart-box chart-box-doughnut payment-doughnut"><canvas id="weeklyPaymentChartCanvas"></canvas><div class="payment-chart-center"><small>Total vendido</small><strong id="weeklyPaymentTotal">'+money(latestStats.cobrado+latestStats.pendiente)+'</strong></div></div>' +
+      '<div class="payment-chart-legend"><div><span class="payment-legend-dot collected"></span><span>Cobrado</span><strong>'+money(latestStats.cobrado)+'</strong></div><div><span class="payment-legend-dot outstanding"></span><span>Pendiente</span><strong>'+money(latestStats.pendiente)+'</strong></div></div></div>';
 
     if(!compareWeekA || keys.indexOf(compareWeekA) === -1){ compareWeekA = keys[keys.length - 1]; }
     if(!compareWeekB || keys.indexOf(compareWeekB) === -1){ compareWeekB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
@@ -1414,7 +1431,8 @@ document.addEventListener('DOMContentLoaded', function(){
     '</tbody></table></div>';
 
     wrap.innerHTML = chartHtml + selectHtml + tableHtml;
-    drawBarChart('periodChartCanvas', chartLabels, chartValues, chartHighlight, function(v){ return v + ' art.'; }, false);
+    drawBarChart('periodChartCanvas', chartLabels, chartValues, chartHighlight, money, false);
+    drawWeeklyPaymentChart(latestStats.cobrado, latestStats.pendiente);
 
     document.getElementById('compareWeekSelectA').value = compareWeekA;
     document.getElementById('compareWeekSelectB').value = compareWeekB;
@@ -2443,6 +2461,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- sheet open/close ---------------- */
   function openSheet(){
+    const title = document.getElementById('sheetTitle');
+    sheet.classList.toggle('new-sale-mode', !!title && title.textContent.trim().toLowerCase() === 'nueva venta');
     sheet.classList.add('open'); scrim.classList.add('open');
   }
   function closeSheet(){
@@ -2583,6 +2603,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     editingSaleId = null;
     document.getElementById('sheetTitle').textContent = 'Nueva venta';
+    sheet.classList.add('new-sale-mode');
     document.getElementById('saveBtnText').textContent = 'Guardar venta';
   }
 
@@ -2608,6 +2629,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('addItemRowBtn').style.display = 'block';
 
     document.getElementById('sheetTitle').textContent = 'Editar artículo';
+    sheet.classList.remove('new-sale-mode');
     document.getElementById('saveBtnText').textContent = 'Guardar cambios';
 
     openSheet();
