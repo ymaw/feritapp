@@ -464,6 +464,8 @@ document.addEventListener('DOMContentLoaded', function(){
   let pendingReceiptItems = [];
   let pendingReceiptClient = '';
   let pendingReceiptTotal = 0;
+  let pendingReceiptForceThankYou = false;
+  const PAID_RECEIPT_THANK_YOU = 'Muchas Gracias por tu compra!, espero que lo disfrutes! ❤️';
   let weekStartDay = 1; // 0=domingo .. 6=sábado. Por defecto: lunes.
   let notifyEnabled = true;
   let notifyDaysOverdue = 4;
@@ -914,17 +916,31 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function shareReceipt(compradorNombre, items){
     if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
-    pendingReceiptItems = items.slice();
-    pendingReceiptClient = compradorNombre || '';
-    pendingReceiptTotal = items.reduce(function(sum, item){ return sum + (Number(item.precio)||0); }, 0);
+    const clientName = (compradorNombre || '').trim();
+    const currentKey = weekKey(new Date());
+    const previousKey = previousWeekKey();
+    // El comprobante nunca incluye ventas anteriores a estas dos semanas.
+    const eligibleItems = sales.filter(function(item){
+      return (item.cliente || '').trim() === clientName && item.fecha &&
+        (weekKey(new Date(item.fecha)) === currentKey || weekKey(new Date(item.fecha)) === previousKey);
+    }).sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
+    if(!eligibleItems.length){ showToast('Este cliente no tiene artículos de la semana actual ni de la semana anterior.'); return; }
+    pendingReceiptItems = eligibleItems;
+    pendingReceiptClient = clientName;
+    pendingReceiptTotal = eligibleItems.reduce(function(sum, item){ return sum + (Number(item.precio)||0); }, 0);
+    // Si queda algún importe pendiente en las dos semanas incluidas, se conserva el mensaje configurable.
+    // Si todo está abonado, el comprobante lleva el agradecimiento fijo solo para este envío.
+    pendingReceiptForceThankYou = eligibleItems.every(function(item){ return !!item.pagado; });
     let scrim = document.getElementById('receiptEditScrim');
     let msg = document.getElementById('receiptShareMessage');
-    msg.value = receiptMessage || '';
+    msg.value = pendingReceiptForceThankYou ? PAID_RECEIPT_THANK_YOU : (receiptMessage || '');
+    msg.readOnly = pendingReceiptForceThankYou;
+    msg.setAttribute('aria-readonly', String(pendingReceiptForceThankYou));
     document.getElementById('receiptPreviewDate').textContent = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
     let previewStoreName = document.getElementById('receiptPreviewStoreName');
     if(previewStoreName) previewStoreName.textContent = (storeName || document.getElementById('profileStoreName')?.value || '').trim() || 'Mi tienda';
     const receiptAvatar=document.getElementById('receiptPreviewAvatar'); if(receiptAvatar) receiptAvatar.src=avatarUrl || 'feritapp-icon.png';
-    document.getElementById('receiptPreviewItems').innerHTML = items.map(function(item){
+    document.getElementById('receiptPreviewItems').innerHTML = eligibleItems.map(function(item){
       return '<div class="receipt-preview-item"><span>' + escapeHtml(item.articulo || 'Artículo') + '</span><strong>' + money(item.precio) + '</strong></div>';
     }).join('');
     document.getElementById('receiptPreviewTotal').textContent = money(pendingReceiptTotal);
@@ -948,12 +964,15 @@ document.addEventListener('DOMContentLoaded', function(){
   async function performReceiptShare(){
     if(!pendingReceiptItems.length) return;
     let msg = document.getElementById('receiptShareMessage').value.trim();
-    receiptMessage = msg;
-    // Se guarda la preferencia de mensaje si la sesión y el esquema lo permiten.
-    try{
-      let saveRes = await sb.from('user_settings').upsert({ receipt_message: msg }, { onConflict: 'user_id' });
-      if(saveRes.error) console.warn('No se pudo guardar la preferencia del mensaje del comprobante.');
-    }catch(e){ /* compartir no debe depender de que se guarde la preferencia */ }
+    const forceThankYou = pendingReceiptForceThankYou;
+    // El mensaje de agradecimiento para abonados es puntual y no pisa la preferencia personalizada.
+    if(!forceThankYou){
+      receiptMessage = msg;
+      try{
+        let saveRes = await sb.from('user_settings').upsert({ receipt_message: msg }, { onConflict: 'user_id' });
+        if(saveRes.error) console.warn('No se pudo guardar la preferencia del mensaje del comprobante.');
+      }catch(e){ /* compartir no debe depender de que se guarde la preferencia */ }
+    }
     closeReceiptEditor();
     let canvas = await generateReceiptCanvas('', pendingReceiptItems, msg);
     canvas.toBlob(async function(blob){
