@@ -312,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(view === 'clients') view = 'sales'; // Clientes queda integrado en Ventas.
     if(view !== currentView && rememberPrevious !== false){ previousView = currentView; }
     currentView = view;
+    document.querySelector('#appRoot > header')?.classList.toggle('view-dashboard', view === 'dashboard');
     updateBackButton();
     document.getElementById('viewSales').style.display = (view === 'sales') ? 'block' : 'none';
     document.getElementById('viewDashboard').style.display = (view === 'dashboard') ? 'block' : 'none';
@@ -376,7 +377,16 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   });
   const headerProfileBtn = document.getElementById('headerProfileBtn');
-  if(headerProfileBtn) headerProfileBtn.addEventListener('click', function(){ switchView('settings'); showSettingsPanel('profile'); });
+  function openProfile(){ switchView('settings'); showSettingsPanel('profile'); }
+  if(headerProfileBtn) headerProfileBtn.addEventListener('click', openProfile);
+  const greetingAvatarBtn = document.getElementById('greetingAvatar');
+  if(greetingAvatarBtn){
+    greetingAvatarBtn.setAttribute('role','button');
+    greetingAvatarBtn.setAttribute('tabindex','0');
+    greetingAvatarBtn.setAttribute('aria-label','Abrir mi perfil');
+    greetingAvatarBtn.addEventListener('click', openProfile);
+    greetingAvatarBtn.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openProfile(); } });
+  }
 
   let currentUserEmail = null;
 
@@ -1242,6 +1252,48 @@ document.addEventListener('DOMContentLoaded', function(){
     return '<span class="delta ' + cls + '">' + arrow + ' ' + Math.abs(pct) + '%</span>';
   }
 
+  // ---------------- gráficos (Chart.js) ----------------
+  const chartInstances = {};
+
+  function cssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function destroyChart(id){
+    if(chartInstances[id]){ chartInstances[id].destroy(); delete chartInstances[id]; }
+  }
+
+  function drawBarChart(canvasId, labels, values, highlightIndex, formatter, horizontal){
+    destroyChart(canvasId);
+    let canvas = document.getElementById(canvasId);
+    if(!canvas || typeof Chart === 'undefined') return;
+
+    let primary = cssVar('--primary');
+    let secondary = cssVar('--secondary');
+    let muted = cssVar('--text-muted');
+    let border = cssVar('--border');
+
+    let colors = values.map(function(v, i){ return i === highlightIndex ? secondary : primary; });
+
+    chartInstances[canvasId] = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 8, borderSkipped: false, maxBarThickness: 38 }] },
+      options: {
+        indexAxis: horizontal ? 'y' : 'x',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx){ return formatter(ctx.parsed[horizontal ? 'x' : 'y']); } } }
+        },
+        scales: {
+          x: { grid: { display: horizontal, color: border }, ticks: { color: muted, font: { size: 11 } }, border: { display: false } },
+          y: { grid: { display: !horizontal, color: border }, ticks: { color: muted, font: { size: 11 } }, border: { display: false }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
   function renderMonthComparison(){
     let wrap = document.getElementById('periodCompare');
     if(!wrap) return;
@@ -1257,21 +1309,12 @@ document.addEventListener('DOMContentLoaded', function(){
     let currentMK = monthKey(new Date());
     let monthStats = {};
     keys.forEach(function(k){ monthStats[k] = weekStats(groups[k]); });
-    let maxTotal = Math.max.apply(null, keys.map(function(k){ return monthStats[k].total; }));
 
     let chartKeys = keys.slice(-6);
-    let chartHtml = '<div class="month-chart">';
-    chartKeys.forEach(function(k){
-      let st = monthStats[k];
-      let heightPct = maxTotal > 0 ? Math.max(4, Math.round((st.total / maxTotal) * 100)) : 4;
-      let monthIdx = parseInt(k.split("-")[1], 10) - 1;
-      chartHtml += '<div class="month-bar-col">' +
-        '<div class="month-bar-value">' + money(st.total) + '</div>' +
-        '<div class="month-bar' + (k === currentMK ? ' current' : '') + '" style="height:' + heightPct + '%"></div>' +
-        '<div class="month-bar-label">' + MESES[monthIdx] + '</div>' +
-      '</div>';
-    });
-    chartHtml += '</div>';
+    let chartLabels = chartKeys.map(function(k){ return MESES[parseInt(k.split("-")[1], 10) - 1]; });
+    let chartValues = chartKeys.map(function(k){ return monthStats[k].total; });
+    let chartHighlight = chartKeys.indexOf(currentMK);
+    let chartHtml = '<div class="chart-box"><canvas id="periodChartCanvas"></canvas></div>';
 
     if(!compareMonthA || keys.indexOf(compareMonthA) === -1){ compareMonthA = keys[keys.length - 1]; }
     if(!compareMonthB || keys.indexOf(compareMonthB) === -1){ compareMonthB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
@@ -1297,6 +1340,7 @@ document.addEventListener('DOMContentLoaded', function(){
     '</tbody></table></div>';
 
     wrap.innerHTML = chartHtml + selectHtml + tableHtml;
+    drawBarChart('periodChartCanvas', chartLabels, chartValues, chartHighlight, money, false);
 
     document.getElementById('compareSelectA').value = compareMonthA;
     document.getElementById('compareSelectB').value = compareMonthB;
@@ -1329,20 +1373,12 @@ document.addEventListener('DOMContentLoaded', function(){
     let wStats = {};
     keys.forEach(function(k){ wStats[k] = weekStats(groups[k]); });
     // La comparación semanal se centra en CANTIDAD de artículos, no en dinero.
-    let maxCount = Math.max.apply(null, keys.map(function(k){ return wStats[k].count; }));
 
     let chartKeys = keys.slice(-6);
-    let chartHtml = '<div class="month-chart">';
-    chartKeys.forEach(function(k){
-      let st = wStats[k];
-      let heightPct = maxCount > 0 ? Math.max(4, Math.round((st.count / maxCount) * 100)) : 4;
-      chartHtml += '<div class="month-bar-col">' +
-        '<div class="month-bar-value">' + st.count + '</div>' +
-        '<div class="month-bar' + (k === thisWeekKey ? ' current' : '') + '" style="height:' + heightPct + '%"></div>' +
-        '<div class="month-bar-label">' + formatRangeShort(k) + '</div>' +
-      '</div>';
-    });
-    chartHtml += '</div>';
+    let chartLabels = chartKeys.map(formatRangeShort);
+    let chartValues = chartKeys.map(function(k){ return wStats[k].count; });
+    let chartHighlight = chartKeys.indexOf(thisWeekKey);
+    let chartHtml = '<div class="chart-box"><canvas id="periodChartCanvas"></canvas></div>';
 
     if(!compareWeekA || keys.indexOf(compareWeekA) === -1){ compareWeekA = keys[keys.length - 1]; }
     if(!compareWeekB || keys.indexOf(compareWeekB) === -1){ compareWeekB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
@@ -1368,6 +1404,7 @@ document.addEventListener('DOMContentLoaded', function(){
     '</tbody></table></div>';
 
     wrap.innerHTML = chartHtml + selectHtml + tableHtml;
+    drawBarChart('periodChartCanvas', chartLabels, chartValues, chartHighlight, function(v){ return v + ' art.'; }, false);
 
     document.getElementById('compareWeekSelectA').value = compareWeekA;
     document.getElementById('compareWeekSelectB').value = compareWeekB;
@@ -1383,40 +1420,67 @@ document.addEventListener('DOMContentLoaded', function(){
     let wrap = document.getElementById('topCategoryChart');
     if(!wrap) return;
 
-    const currentMonthKey = monthKey(new Date());
-    const byCat = {};
-    let monthCount = 0;
-    // Un solo recorrido: filtra el mes y acumula categorías a la vez.
-    sales.forEach(function(s){
-      if(monthKey(s.fecha) !== currentMonthKey) return;
-      monthCount += 1;
-      const cat = s.categoria || 'Sin categoría';
-      byCat[cat] = (byCat[cat] || 0) + 1;
-    });
+    let currentMonthKey = monthKey(new Date());
+    let monthItems = sales.filter(function(s){ return monthKey(s.fecha) === currentMonthKey; });
 
-    if(monthCount === 0){
+    if(monthItems.length === 0){
       wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas este mes.</div>';
       return;
     }
 
+    let byCat = {};
+    monthItems.forEach(function(s){
+      let cat = s.categoria || 'Sin categoría';
+      byCat[cat] = (byCat[cat] || 0) + 1;
+    });
+
     let ranked = Object.keys(byCat).map(function(k){ return { name: k, count: byCat[k] }; });
     ranked.sort(function(a, b){ return b.count - a.count; });
 
-    let maxCount = ranked[0].count;
+    let totalCount = ranked.reduce(function(sum, c){ return sum + c.count; }, 0);
 
-    let html = '<div class="cat-chart">';
+    let html = '<div class="chart-box chart-box-doughnut">' +
+      '<canvas id="categoryChartCanvas"></canvas>' +
+      '<div class="doughnut-center"><div class="doughnut-total">' + totalCount + '</div><div class="doughnut-label">artículos</div></div>' +
+    '</div><div class="cat-legend">';
     ranked.forEach(function(c){
-      let pct = Math.max(6, Math.round((c.count / maxCount) * 100));
-      let color = categoryColor(c.name);
-      html += '<div class="cat-chart-row">' +
-        '<div class="cat-chart-label"><span class="cat-dot" style="background:' + color + '"></span>' + escapeHtml(c.name) + '</div>' +
-        '<div class="cat-chart-bar-wrap"><div class="cat-chart-bar" style="width:' + pct + '%; background:' + color + '"></div></div>' +
-        '<div class="cat-chart-count">' + c.count + '</div>' +
+      let pct = Math.round((c.count / totalCount) * 100);
+      html += '<div class="cat-legend-row">' +
+        '<span class="cat-dot" style="background:' + categoryColor(c.name) + '"></span>' +
+        '<span class="cat-legend-name">' + escapeHtml(c.name) + '</span>' +
+        '<span class="cat-legend-count">' + c.count + ' · ' + pct + '%</span>' +
       '</div>';
     });
     html += '</div>';
     wrap.innerHTML = html;
+
+    destroyChart('categoryChartCanvas');
+    let canvas = document.getElementById('categoryChartCanvas');
+    if(canvas && typeof Chart !== 'undefined'){
+      chartInstances['categoryChartCanvas'] = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ranked.map(function(c){ return c.name; }),
+          datasets: [{
+            data: ranked.map(function(c){ return c.count; }),
+            backgroundColor: ranked.map(function(c){ return categoryColor(c.name); }),
+            borderColor: cssVar('--surface'),
+            borderWidth: 3,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          cutout: '68%',
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + ctx.parsed + ' art.'; } } }
+          }
+        }
+      });
+    }
   }
+
 
   let showRankingMoney = false;
   let rankingVisibleCount = 5;
@@ -1776,8 +1840,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const deliveryStatus = isDeliveries
         ? '<button type="button" class="delivery-status '+(delivered?'paid':'pending')+'" data-client="'+escapeHtml(name)+'" data-set-delivery="'+(delivered?'pending':'delivered')+'">'+(delivered?'Entregado':'Por Entregar')+'</button>'
         : (summaryIsPreviousWeek ? '<span class="delivery-status weekly-summary-delivery-status '+(delivered?'paid':'pending')+'" data-weekly-delivery-status="'+(delivered?'delivered':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span>' : '');
-      const paymentStatus = (showPaymentControl ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>');
-      html += '<section class="sales-client-group'+expandOnly+'"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+paymentStatus+(isWeeklySummary?'':deliveryStatus)+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div>'+(isWeeklySummary?'<div class="weekly-summary-delivery-row">'+deliveryStatus+'</div>':'')+'<div class="sales-client-group-content '+(isManagement?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(isManagement?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
+      html += '<section class="sales-client-group'+expandOnly+'"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+(showPaymentControl ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>')+deliveryStatus+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div><div class="sales-client-group-content '+(isManagement?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(isManagement?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
         html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(!showItemActions?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Pago':'Pendiente')+'</button>')+(showItemActions?'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span>':'')+'</div></article>';
       });
@@ -2022,7 +2085,9 @@ document.addEventListener('DOMContentLoaded', function(){
       '</div>';
 
     /* Resumen Semanal: la última semana cerrada, colapsada por defecto. */
-    let pastKeys = keys.filter(function(k){ return k !== currentKey; });
+    // La semana inmediatamente anterior ya se muestra en Resumen Semanal.
+    const summaryWeekKey = previousWeekKey();
+    let pastKeys = keys.filter(function(k){ return k !== currentKey && k !== summaryWeekKey; });
     let summaryContent = document.getElementById('weeklySummaryContent');
     let summaryMeta = document.getElementById('weeklySummaryMeta');
     let summaryToggle = document.getElementById('weeklySummaryToggle');
