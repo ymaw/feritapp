@@ -3022,3 +3022,101 @@ header.view-dashboard .header-profile-btn { display: none !important; }
   #sheet.new-sale-mode .sheet-save-total strong { font-size: 20px !important; }
   #sheet.new-sale-mode .save-btn { font-size: 13px !important; padding: 0 10px !important; }
 }
+
+
+/* V12.53 — dictado discreto y coherente con los iconos de FeritApp */
+.mic-btn{
+  background:transparent; border:1px solid var(--border); color:var(--text-muted);
+  border-radius:11px; transition:background .16s ease,border-color .16s ease,color .16s ease;
+}
+.mic-btn .mic-icon{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.mic-btn:hover{background:rgba(var(--primary-rgb),.08);border-color:rgba(var(--primary-rgb),.42);color:var(--primary-soft);}
+.mic-btn.listening{background:rgba(var(--primary-rgb),.13);border-color:var(--primary);color:var(--primary-soft);animation:pulse 1.1s infinite;}
+#sheet.new-sale-mode .mic-btn .mic-icon{width:17px;height:17px;}
+@media (prefers-reduced-motion:reduce){.mic-btn,.nav-item{transition:none!important;animation:none!important;}}
+
+/* V12.53 — navegación por gestos entre las tres vistas principales */
+
+/* V12.54 — centrar valores de las métricas de Ventas */
+#viewSales .management-stat{
+  align-items:center !important;
+  text-align:center !important;
+}
+#viewSales .management-stat span{
+  width:100%;
+  text-align:center !important;
+  text-wrap:balance;
+}
+#viewSales .management-stat strong{
+  display:block;
+  width:100%;
+  text-align:center !important;
+  font-variant-numeric:tabular-nums;
+}
+
+/* V12.54 — mejora funcional/visual de la lista de artículos en Nueva venta */
+#sheet.new-sale-mode #itemRowsContainer{
+  counter-reset:saleItem;
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+#sheet.new-sale-mode #itemRowsContainer .item-row{
+  counter-increment:saleItem;
+}
+#sheet.new-sale-mode .item-row-label::before{
+  content:counter(saleItem) !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  color:var(--primary-soft) !important;
+  font-size:11px !important;
+  line-height:1 !important;
+  font-weight:850 !important;
+  background:rgba(var(--primary-rgb),.12) !important;
+  border:1px solid rgba(var(--primary-rgb),.14) !important;
+  border-radius:7px !important;
+  width:22px !important;
+  height:22px !important;
+  flex:0 0 22px !important;
+}
+#sheet.new-sale-mode .field:has(.pago-opt),
+#sheet.new-sale-mode .field:has(.retira-opt){
+  padding-top:15px !important;
+}
+#sheet.new-sale-mode .sheet-save-bar{
+  position:sticky;
+  bottom:0;
+  z-index:3;
+  background:var(--surface);
+  padding-bottom:max(10px, env(safe-area-inset-bottom)) !important;
+}
+
+
+/* V12.55 — icono reconocible de Messenger en las acciones de Ventas */
+.management-client-right .management-messenger-btn{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.management-client-right .management-messenger-btn .messenger-brand-icon{
+  width:15px;height:15px;flex:0 0 15px;fill:currentColor !important;
+}
+.management-client-right .management-messenger-btn span{line-height:1.1;}
+@media(max-width:390px){
+  .management-client-right .management-messenger-btn{gap:3px;}
+  .management-client-right .management-messenger-btn .messenger-brand-icon{width:13px;height:13px;flex-basis:13px;}
+}
+
+/* V12.55 — ajuste final de legibilidad en Nueva venta */
+#sheet.new-sale-mode .field > label,
+#sheet.new-sale-mode .field-row-head > label{
+  line-height:1.35;
+}
+#sheet.new-sale-mode .item-row:focus-within{
+  border-color:rgba(var(--primary-rgb),.42) !important;
+  box-shadow:0 0 0 2px rgba(var(--primary-rgb),.07);
+}
+#sheet.new-sale-mode .add-item-btn:focus-visible,
+#sheet.new-sale-mode .save-btn:focus-visible,
+#sheet.new-sale-mode .pago-opt:focus-visible,
+#sheet.new-sale-mode .retira-opt:focus-visible{
+  outline:2px solid var(--primary-soft);outline-offset:2px;
+}

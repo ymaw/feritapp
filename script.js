@@ -263,10 +263,27 @@ document.addEventListener('DOMContentLoaded', function(){
       const settingsMenu = document.getElementById('settingsMenu');
       if(settingsMenu && settingsMenu.style.display === 'none'){ showSettingsMenu(); return; }
     }
+    // Si hay una vista interna en el historial, usar la misma pila que el
+    // botón Atrás del teléfono. En Inicio, quedarse dentro de la aplicación.
+    if(entered && currentView !== 'dashboard' && window.history.state && window.history.state.feritAppView === currentView){
+      window.history.back();
+      return;
+    }
     const destination = previousView && previousView !== currentView ? previousView : 'dashboard';
     switchView(destination, false);
   }
   if(globalBackBtn) globalBackBtn.addEventListener('click', goBackInApp);
+  window.addEventListener('popstate', function(event){
+    if(!entered) return;
+    const target = event.state && event.state.feritAppView;
+    if(target){
+      switchView(target, false);
+    }else{
+      // En Inicio no dejamos que Atrás salga accidentalmente de la app.
+      try { window.history.pushState({feritAppView:'dashboard'}, '', window.location.pathname); } catch(e) {}
+      switchView('dashboard', false);
+    }
+  });
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !document.getElementById('sheet').classList.contains('open')) goBackInApp(); });
 
   // Abre el desplegable anclado al botón "Más" del menú inferior,
@@ -311,6 +328,11 @@ document.addEventListener('DOMContentLoaded', function(){
   function switchView(view, rememberPrevious){
     if(view === 'clients') view = 'sales'; // Clientes queda integrado en Ventas.
     if(view !== currentView && rememberPrevious !== false){ previousView = currentView; }
+    // Mantener el historial dentro de la app para que Atrás del teléfono
+    // vuelva a la vista anterior en lugar de abandonar la aplicación.
+    if(entered && view !== currentView && rememberPrevious !== false){
+      try { window.history.pushState({ feritAppView: view }, '', window.location.pathname); } catch(e) {}
+    }
     currentView = view;
     document.querySelector('#appRoot > header')?.classList.toggle('view-dashboard', view === 'dashboard');
     updateBackButton();
@@ -333,6 +355,31 @@ document.addEventListener('DOMContentLoaded', function(){
     if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
     if(view === 'settings'){ syncNotifyControls(); showSettingsMenu(); }
   }
+
+  /* Navegación lateral móvil: Inicio ↔ Ventas ↔ Entregas. */
+  (function enableMainViewSwipe(){
+    const order = ['dashboard','sales','deliveries'];
+    const surfaces = [document.getElementById('viewDashboard'), document.getElementById('viewSales'), document.getElementById('viewDeliveries')].filter(Boolean);
+    let sx=0, sy=0, started=false;
+    surfaces.forEach(function(surface){
+      surface.addEventListener('touchstart', function(e){
+        if(!entered || !e.touches || e.touches.length!==1) { started=false; return; }
+        if(document.getElementById('sheet').classList.contains('open') || menuDropdown.style.display==='block') { started=false; return; }
+        const target=e.target;
+        if(target.closest('input,textarea,select,button,a,[contenteditable="true"],.item-row,.sales-client-group-trigger,.delivery-client-card')) { started=false; return; }
+        sx=e.touches[0].clientX; sy=e.touches[0].clientY; started=true;
+      }, {passive:true});
+      surface.addEventListener('touchend', function(e){
+        if(!started || !e.changedTouches || !e.changedTouches.length) return;
+        started=false;
+        const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+        if(Math.abs(dx)<75 || Math.abs(dx)<Math.abs(dy)*1.35) return;
+        const idx=order.indexOf(currentView); if(idx<0) return;
+        const next=order[idx+(dx<0?1:-1)]; if(next) switchView(next);
+      }, {passive:true});
+      surface.addEventListener('touchcancel', function(){started=false;},{passive:true});
+    });
+  })();
 
   /* ---------------- Configuración: menú de dos niveles ---------------- */
   const SETTINGS_PANEL_IDS = {
@@ -399,8 +446,8 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('appRoot').style.display = 'block';
     document.getElementById('sessionEmail').textContent = 'Sesión iniciada';
     document.getElementById('profileEmail').textContent = user.email;
-    window.history.replaceState({}, document.title, window.location.pathname);
-    switchView('dashboard');
+    window.history.replaceState({feritAppView:'dashboard'}, document.title, window.location.pathname);
+    switchView('dashboard', false);
     resetIdleTimer();
     loadSales();
   }
@@ -1885,7 +1932,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const pickup = list.find(function(x){ return x.retira === 'otro' && x.tercero; });
       const pickupLabel = pickup ? ('Retira: ' + pickup.tercero) : ('Retira: ' + name + ' (cliente)');
       const delivered = list.every(function(x){ return !!x.entregado; });
-      const managementActions = showClientActions ? '<aside class="management-client-right"><button type="button" data-open-messenger="'+escapeHtml(name)+'">● Messenger</button><button type="button" data-share-client="'+escapeHtml(name)+'">▣ Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">Editar Venta</button></aside>' : '';
+      const managementActions = showClientActions ? '<aside class="management-client-right"><button type="button" class="management-messenger-btn" data-open-messenger="'+escapeHtml(name)+'" aria-label="Abrir Messenger para '+escapeHtml(name)+'"><svg viewBox="0 0 24 24" aria-hidden="true" class="messenger-brand-icon"><path d="M12 2C6.25 2 2 6.13 2 11.45c0 2.98 1.42 5.57 3.65 7.28.19.15.31.4.32.65l.06 2.02c.02.32.35.53.64.41l2.25-.99c.19-.08.39-.1.59-.04.79.22 1.63.34 2.49.34 5.75 0 10-4.13 10-9.45S17.75 2 12 2Zm1.02 12.72-2.55-2.72a.8.8 0 0 0-.96-.15l-3.05 1.63c-.32.17-.66-.2-.44-.49l3.25-4.34a1.2 1.2 0 0 1 1.83-.13l2.55 2.72a.8.8 0 0 0 .96.15l3.05-1.63c.32-.17.66.2.44.49l-3.25 4.34a1.2 1.2 0 0 1-1.83.13Z"/></svg><span>Messenger</span></button><button type="button" data-share-client="'+escapeHtml(name)+'">▣ Comprobante</button><button type="button" data-add-client-sale="'+escapeHtml(name)+'">Editar Venta</button></aside>' : '';
       const expandOnly = isDashboardHistory ? ' dashboard-history-client-group' : (isWeeklySummary ? ' weekly-summary-client-group' : '');
       const summaryIsPreviousWeek = isWeeklySummary;
       const deliveryStatus = isDeliveries
@@ -2544,11 +2591,11 @@ document.addEventListener('DOMContentLoaded', function(){
         '</div>' +
         '<label class="item-field item-field-name"><span>Nombre del artículo</span><div class="input-row">' +
           '<input type="text" class="row-articulo" aria-label="Nombre del artículo" placeholder="Ej: remera azul talle M" value="' + (prefill ? escapeHtml(prefill.articulo) : '') + '">' +
-          '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="articulo" data-mode="text" aria-label="Dictar artículo">🎤</button>' +
+          '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="articulo" data-mode="text" aria-label="Dictar artículo"><svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/></svg></button>' +
         '</div></label>' +
         '<label class="item-field item-field-price"><span>Precio</span><div class="input-row">' +
           '<input type="number" class="row-precio" aria-label="Precio del artículo" placeholder="$ 0" inputmode="decimal" value="' + (prefill ? prefill.precio : '') + '">' +
-          '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="precio" data-mode="number" aria-label="Dictar precio">🎤</button>' +
+          '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="precio" data-mode="number" aria-label="Dictar precio"><svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/></svg></button>' +
         '</div></label>' +
         '<label class="item-field item-field-category"><span>Categoría</span><select class="row-categoria" aria-label="Categoría del artículo">' + categoryOptionsHtml(defaultCat) + '</select></label>' +
       '</div>';
