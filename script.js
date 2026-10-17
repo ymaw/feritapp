@@ -2542,15 +2542,15 @@ document.addEventListener('DOMContentLoaded', function(){
           '<span class="item-row-label">Artículo</span>' +
           '<button type="button" class="item-row-del" data-del-row="' + rowId + '">✕ Quitar</button>' +
         '</div>' +
-        '<div class="input-row">' +
-          '<input type="text" class="row-articulo" placeholder="Ej: remera azul talle M" value="' + (prefill ? escapeHtml(prefill.articulo) : '') + '">' +
+        '<label class="item-field item-field-name"><span>Nombre del artículo</span><div class="input-row">' +
+          '<input type="text" class="row-articulo" aria-label="Nombre del artículo" placeholder="Ej: remera azul talle M" value="' + (prefill ? escapeHtml(prefill.articulo) : '') + '">' +
           '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="articulo" data-mode="text" aria-label="Dictar artículo">🎤</button>' +
-        '</div>' +
-        '<div class="input-row">' +
-          '<input type="number" class="row-precio" placeholder="0" inputmode="decimal" value="' + (prefill ? prefill.precio : '') + '">' +
+        '</div></label>' +
+        '<label class="item-field item-field-price"><span>Precio</span><div class="input-row">' +
+          '<input type="number" class="row-precio" aria-label="Precio del artículo" placeholder="$ 0" inputmode="decimal" value="' + (prefill ? prefill.precio : '') + '">' +
           '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="precio" data-mode="number" aria-label="Dictar precio">🎤</button>' +
-        '</div>' +
-        '<select class="row-categoria">' + categoryOptionsHtml(defaultCat) + '</select>' +
+        '</div></label>' +
+        '<label class="item-field item-field-category"><span>Categoría</span><select class="row-categoria" aria-label="Categoría del artículo">' + categoryOptionsHtml(defaultCat) + '</select></label>' +
       '</div>';
 
     container.insertAdjacentHTML('beforeend', html);

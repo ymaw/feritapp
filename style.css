@@ -2748,3 +2748,277 @@ header.view-dashboard .header-profile-btn { display: none !important; }
   #sheet.new-sale-mode .item-row { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) !important; padding: 9px !important; }
   #sheet.new-sale-mode .sheet-save-bar { margin-left: -12px !important; margin-right: -12px !important; padding-left: 12px !important; padding-right: 12px !important; }
 }
+
+/* V12.51 · Entregas: iconografía coherente con paquetes y pedidos */
+#viewDeliveries .deliveries-heading-card .sales-heading-mark,
+#viewDeliveries .deliveries-heading-mark {
+  display: grid !important; place-items: center !important;
+  background: rgba(var(--primary-rgb), .12) !important;
+}
+#viewDeliveries .deliveries-heading-mark svg,
+.delivery-nav-icon svg,
+.sidebar-delivery-icon svg {
+  display: block !important; width: 24px !important; height: 24px !important;
+  fill: none !important; stroke: currentColor !important; stroke-width: 1.8 !important;
+  stroke-linecap: round !important; stroke-linejoin: round !important;
+}
+.delivery-nav-icon { display: inline-grid !important; place-items: center !important; }
+.delivery-nav-icon svg { width: 21px !important; height: 21px !important; }
+.sidebar-delivery-icon { display: inline-flex; width: 22px; height: 22px; align-items: center; justify-content: center; vertical-align: middle; margin-right: 5px; }
+.sidebar-delivery-icon svg { width: 18px !important; height: 18px !important; }
+
+/* V12.51 · Nueva venta: campos explícitos y jerarquía visual real por artículo */
+#sheet.new-sale-mode .item-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, .88fr) !important;
+  align-items: start !important;
+  column-gap: 10px !important;
+  row-gap: 12px !important;
+  padding: 13px !important;
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border)) !important;
+  box-shadow: 0 3px 12px rgba(30, 45, 80, .035) !important;
+}
+#sheet.new-sale-mode .item-row-header { margin: 0 !important; }
+#sheet.new-sale-mode .item-field {
+  display: flex !important; flex-direction: column !important; gap: 6px !important;
+  min-width: 0 !important; margin: 0 !important; color: var(--text-muted) !important;
+  font-size: 10px !important; line-height: 1.3 !important; font-weight: 750 !important;
+  letter-spacing: .015em !important;
+}
+#sheet.new-sale-mode .item-field-name { grid-column: 1 / -1 !important; }
+#sheet.new-sale-mode .item-field-price { grid-column: 1 !important; }
+#sheet.new-sale-mode .item-field-category { grid-column: 2 !important; }
+#sheet.new-sale-mode .item-field .input-row { width: 100% !important; align-items: center !important; gap: 5px !important; }
+#sheet.new-sale-mode .item-field .row-articulo,
+#sheet.new-sale-mode .item-field .row-precio,
+#sheet.new-sale-mode .item-field .row-categoria {
+  width: 100% !important; min-width: 0 !important; min-height: 44px !important;
+  padding: 0 9px !important; border-radius: 10px !important; font-size: 13px !important;
+  color: var(--text) !important; background: var(--surface-2, var(--surface)) !important;
+}
+#sheet.new-sale-mode .item-field .mic-btn {
+  flex: 0 0 35px !important; width: 35px !important; min-width: 35px !important;
+  height: 35px !important; border-radius: 10px !important;
+}
+#sheet.new-sale-mode .item-field-price .row-precio { font-weight: 800 !important; }
+#sheet.new-sale-mode .item-field-category select { padding-right: 20px !important; }
+#sheet.new-sale-mode .item-row-label { display: inline-flex; align-items: center; gap: 7px; }
+#sheet.new-sale-mode .item-row-label::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; flex: 0 0 7px;
+  border-radius: 50%; background: var(--primary-soft);
+}
+#sheet.new-sale-mode .field:has(#fCliente) { border-top: 3px solid var(--primary-soft) !important; }
+#sheet.new-sale-mode .field:has(#itemRowsContainer) { border-top: 3px solid color-mix(in srgb, var(--primary) 68%, var(--border)) !important; }
+#sheet.new-sale-mode .field:has(.pago-opt) { border-top: 3px solid color-mix(in srgb, #24a16b 65%, var(--border)) !important; }
+#sheet.new-sale-mode .field:has(.retira-opt) { border-top: 3px solid color-mix(in srgb, #d49a2a 65%, var(--border)) !important; }
+#sheet.new-sale-mode .seg button { transition: border-color .16s ease, background .16s ease, transform .16s ease !important; }
+#sheet.new-sale-mode .pago-opt.active { box-shadow: inset 0 0 0 1px currentColor !important; }
+#sheet.new-sale-mode .retira-opt.active { box-shadow: inset 0 0 0 1px currentColor !important; }
+#sheet.new-sale-mode .sheet-save-bar { border-top: 1px solid var(--border) !important; }
+#sheet.new-sale-mode .save-btn { letter-spacing: .01em !important; }
+@media (max-width: 360px) {
+  #sheet.new-sale-mode .item-row { column-gap: 7px !important; padding: 10px !important; }
+  #sheet.new-sale-mode .item-field .row-articulo,
+  #sheet.new-sale-mode .item-field .row-precio,
+  #sheet.new-sale-mode .item-field .row-categoria { font-size: 12px !important; padding-left: 7px !important; }
+  #sheet.new-sale-mode .item-field .mic-btn { flex-basis: 31px !important; width: 31px !important; min-width: 31px !important; }
+}
+
+/* V12.52 · Nueva venta: segunda pasada visual, foco, ritmo y acciones */
+#sheet.new-sale-mode {
+  --sale-accent: var(--primary);
+  --sale-card: var(--surface-2, var(--surface));
+  gap: 0 !important;
+}
+#sheet.new-sale-mode .sheet-title-row {
+  position: relative !important;
+  align-items: center !important;
+  padding: 5px 0 17px !important;
+  margin-bottom: 16px !important;
+}
+#sheet.new-sale-mode .sheet-title-row::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  bottom: -1px !important;
+  width: 74px !important;
+  height: 3px !important;
+  border-radius: 4px !important;
+  background: var(--primary) !important;
+}
+#sheet.new-sale-mode .sheet-title-row h2 { font-size: clamp(25px, 6vw, 30px) !important; }
+#sheet.new-sale-mode .sheet-close-btn {
+  display: grid !important; place-items: center !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text-muted) !important;
+  font-size: 17px !important;
+}
+#sheet.new-sale-mode .field {
+  overflow: hidden !important;
+  padding: 16px !important;
+  border-radius: 17px !important;
+  background: var(--surface) !important;
+  transition: border-color .16s ease, box-shadow .16s ease !important;
+}
+#sheet.new-sale-mode .field::before {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 13px !important;
+  letter-spacing: .09em !important;
+}
+#sheet.new-sale-mode .field:has(#fCliente)::before,
+#sheet.new-sale-mode .field:has(#itemRowsContainer)::before,
+#sheet.new-sale-mode .field:has(.pago-opt)::before,
+#sheet.new-sale-mode .field:has(.retira-opt)::before {
+  padding-bottom: 9px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+#sheet.new-sale-mode .field:has(#fCliente) #fCliente {
+  min-height: 54px !important;
+  border-width: 1.5px !important;
+  background: var(--surface-2, var(--surface)) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+#sheet.new-sale-mode .field:has(#fCliente) .mic-btn {
+  height: 46px !important; width: 46px !important; flex-basis: 46px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface-2, var(--surface)) !important;
+}
+#sheet.new-sale-mode .field input:focus-visible,
+#sheet.new-sale-mode .field select:focus-visible {
+  outline: 3px solid rgba(var(--primary-rgb), .18) !important;
+  outline-offset: 1px !important;
+  border-color: var(--primary) !important;
+}
+#sheet.new-sale-mode .field:has(#itemRowsContainer) .field-row-head {
+  align-items: flex-start !important;
+  margin-bottom: 12px !important;
+}
+#sheet.new-sale-mode .field:has(#itemRowsContainer) .field-row-head > label {
+  margin-top: 4px !important;
+  margin-bottom: 0 !important;
+}
+#sheet.new-sale-mode .new-cat-link {
+  max-width: 48% !important;
+  white-space: normal !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+  border: 1px solid rgba(var(--primary-rgb), .18) !important;
+}
+#sheet.new-sale-mode .item-row {
+  position: relative !important;
+  overflow: hidden !important;
+  gap: 12px 10px !important;
+  padding: 14px !important;
+  border-radius: 15px !important;
+  background: var(--sale-card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 8px rgba(25, 35, 65, .035) !important;
+}
+#sheet.new-sale-mode .item-row-header {
+  padding-bottom: 10px !important;
+  margin-bottom: 1px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+#sheet.new-sale-mode .item-row-label {
+  font-size: 12px !important;
+  font-weight: 850 !important;
+}
+#sheet.new-sale-mode .item-row-label::before {
+  width: 22px !important; height: 22px !important; flex-basis: 22px !important;
+  content: "" !important;
+  background: rgba(var(--primary-rgb), .12) !important;
+  border-radius: 7px !important;
+}
+#sheet.new-sale-mode .item-field { gap: 7px !important; font-size: 11px !important; }
+#sheet.new-sale-mode .item-field > span { color: var(--text-muted) !important; }
+#sheet.new-sale-mode .item-field .row-articulo,
+#sheet.new-sale-mode .item-field .row-precio,
+#sheet.new-sale-mode .item-field .row-categoria {
+  min-height: 47px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+}
+#sheet.new-sale-mode .item-field .row-precio { font-size: 14px !important; }
+#sheet.new-sale-mode .item-field .mic-btn {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+}
+#sheet.new-sale-mode .item-row-del {
+  min-height: 30px !important;
+  padding: 5px 9px !important;
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
+}
+#sheet.new-sale-mode .add-item-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 1px dashed var(--primary) !important;
+  background: rgba(var(--primary-rgb), .045) !important;
+  color: var(--primary-soft) !important;
+  font-weight: 800 !important;
+}
+#sheet.new-sale-mode .items-total-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 72px !important;
+  border: 1px solid rgba(var(--primary-rgb), .16) !important;
+  background: rgba(var(--primary-rgb), .07) !important;
+}
+#sheet.new-sale-mode .items-total-row span:last-child { white-space: nowrap !important; }
+#sheet.new-sale-mode .field:has(.pago-opt) .seg,
+#sheet.new-sale-mode .field:has(.retira-opt) .seg { gap: 9px !important; }
+#sheet.new-sale-mode .field:has(.pago-opt) .seg button,
+#sheet.new-sale-mode .field:has(.retira-opt) .seg button {
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  min-width: 0 !important; padding: 11px 8px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface-2, var(--surface)) !important;
+  line-height: 1.25 !important;
+}
+#sheet.new-sale-mode .field:has(.pago-opt) .pago-opt.active.paid {
+  border-color: #2b9a68 !important; background: rgba(43,154,104,.10) !important;
+}
+#sheet.new-sale-mode .field:has(.pago-opt) .pago-opt.active.pending {
+  border-color: #d49a2a !important; background: rgba(212,154,42,.12) !important;
+}
+#sheet.new-sale-mode .field:has(.retira-opt) .retira-opt.active {
+  border-color: var(--primary) !important;
+  background: rgba(var(--primary-rgb), .10) !important;
+}
+#sheet.new-sale-mode .sheet-save-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid var(--border) !important;
+}
+#sheet.new-sale-mode .sheet-save-total { min-width: 0 !important; }
+#sheet.new-sale-mode .sheet-save-total strong { display: block !important; white-space: nowrap !important; }
+#sheet.new-sale-mode .save-btn {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  background: var(--primary) !important;
+  color: white !important;
+  border: 0 !important;
+  letter-spacing: 0 !important;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode .field { padding: 13px 11px !important; }
+  #sheet.new-sale-mode .item-row { padding: 11px !important; gap: 10px 7px !important; }
+  #sheet.new-sale-mode .item-field .input-row { gap: 4px !important; }
+  #sheet.new-sale-mode .item-field .mic-btn { flex-basis: 30px !important; width: 30px !important; min-width: 30px !important; height: 34px !important; }
+  #sheet.new-sale-mode .item-field .row-articulo,
+  #sheet.new-sale-mode .item-field .row-precio,
+  #sheet.new-sale-mode .item-field .row-categoria { font-size: 12px !important; padding-left: 7px !important; }
+  #sheet.new-sale-mode .sheet-save-total span { font-size: 10px !important; }
+  #sheet.new-sale-mode .sheet-save-total strong { font-size: 20px !important; }
+  #sheet.new-sale-mode .save-btn { font-size: 13px !important; padding: 0 10px !important; }
+}
