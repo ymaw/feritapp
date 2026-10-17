@@ -3614,3 +3614,162 @@ textarea,
   #sheet.edit-sale-mode .sheet-save-bar { gap: 8px !important; }
   #sheet.edit-sale-mode .sheet-save-total strong { font-size: 18px !important; }
 }
+
+/* V12.62 — el total tiene prioridad sobre Guardar Venta; flecha de categoría con margen visual. */
+#sheet.new-sale-mode .sheet-save-bar {
+  display: flex !important;
+  gap: 12px !important;
+  justify-content: space-between !important;
+  min-width: 0 !important;
+}
+#sheet.new-sale-mode .sheet-save-total {
+  flex: 1 1 58% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+#sheet.new-sale-mode .sheet-save-total strong {
+  display: block !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+  font-size: clamp(15px, 4.2vw, 20px) !important;
+  line-height: 1.2 !important;
+}
+#sheet.new-sale-mode .sheet-save-bar .save-btn {
+  flex: 0 1 40% !important;
+  min-width: 112px !important;
+  max-width: 40% !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  font-size: 13px !important;
+  white-space: normal !important;
+}
+#sheet.new-sale-mode .item-field .row-categoria {
+  padding-right: 40px !important;
+  background-position: right 16px center !important;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode .sheet-save-bar { gap: 8px !important; }
+  #sheet.new-sale-mode .sheet-save-total { flex-basis: 60% !important; }
+  #sheet.new-sale-mode .sheet-save-bar .save-btn {
+    flex-basis: 36% !important;
+    max-width: 36% !important;
+    min-width: 104px !important;
+    font-size: 12px !important;
+  }
+  #sheet.new-sale-mode .item-field .row-categoria {
+    padding-right: 40px !important;
+    background-position: right 16px center !important;
+  }
+}
+
+/* V12.63 — correcciones de regresión en Nueva venta y Editar venta.
+   Este bloque final prevalece sobre las reglas históricas acumuladas arriba.
+   Los colores usan variables del tema para funcionar en claro y oscuro. */
+#sheet.new-sale-mode .items-total-row,
+#sheet.edit-sale-mode .items-total-row {
+  display: none !important;
+}
+
+/* El total se muestra una sola vez, en la barra fija inferior de ambos formularios. */
+#sheet.new-sale-mode .sheet-save-total,
+#sheet.edit-sale-mode .sheet-save-total {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+#sheet.new-sale-mode .sheet-save-total strong,
+#sheet.edit-sale-mode .sheet-save-total strong {
+  display: block !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere !important;
+  font-variant-numeric: tabular-nums !important;
+  color: var(--text) !important;
+}
+#sheet.new-sale-mode .sheet-save-bar,
+#sheet.edit-sale-mode .sheet-save-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+#sheet.new-sale-mode .sheet-save-bar .save-btn,
+#sheet.edit-sale-mode .sheet-save-bar .save-btn {
+  flex: 0 1 38% !important;
+  width: auto !important;
+  min-width: 96px !important;
+  max-width: 42% !important;
+  box-sizing: border-box !important;
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+}
+
+/* Fix transversal: los dos micrófonos dinámicos de cada artículo (nombre y precio)
+   conservan una caja y un SVG estables también al editar ventas y en ambos temas. */
+#sheet.new-sale-mode .item-row .item-field .mic-btn,
+#sheet.edit-sale-mode .item-row .item-field .mic-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  color: var(--text-muted) !important;
+}
+#sheet.new-sale-mode .item-row .item-field .mic-btn .mic-icon,
+#sheet.edit-sale-mode .item-row .item-field .mic-btn .mic-icon {
+  display: block !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  max-width: 15px !important;
+  max-height: 15px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  flex: 0 0 15px !important;
+}
+#sheet.new-sale-mode .item-row .item-field .mic-btn.listening,
+#sheet.edit-sale-mode .item-row .item-field .mic-btn.listening {
+  color: var(--primary-soft) !important;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode .item-row .item-field .mic-btn,
+  #sheet.edit-sale-mode .item-row .item-field .mic-btn {
+    flex-basis: 30px !important;
+    width: 30px !important;
+    min-width: 30px !important;
+    max-width: 30px !important;
+  }
+  #sheet.new-sale-mode .sheet-save-bar,
+  #sheet.edit-sale-mode .sheet-save-bar {
+    gap: 8px !important;
+  }
+  #sheet.new-sale-mode .sheet-save-bar .save-btn,
+  #sheet.edit-sale-mode .sheet-save-bar .save-btn {
+    flex-basis: 36% !important;
+    min-width: 92px !important;
+    max-width: 40% !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    font-size: 12px !important;
+  }
+}
