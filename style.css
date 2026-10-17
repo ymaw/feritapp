@@ -3120,3 +3120,206 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 #sheet.new-sale-mode .retira-opt:focus-visible{
   outline:2px solid var(--primary-soft);outline-offset:2px;
 }
+
+/* V12.57 — se corrige exclusivamente el micrófono del campo Precio. */
+#sheet.new-sale-mode .item-field-price .mic-btn{
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  flex:0 0 30px !important;width:30px !important;min-width:30px !important;
+  height:32px !important;min-height:32px !important;padding:0 !important;
+  color:var(--primary-soft) !important;stroke:currentColor !important;line-height:1 !important;
+}
+#sheet.new-sale-mode .item-field-price .mic-btn .mic-icon{
+  width:14px !important;height:14px !important;max-width:14px !important;max-height:14px !important;
+  fill:none !important;stroke:currentColor !important;stroke-width:1.8 !important;
+}
+/* Mantener el desplazamiento nativo vertical y evitar animaciones costosas en el gesto. */
+#viewDashboard,#viewSales,#viewDeliveries{touch-action:pan-y;}
+#sheet{touch-action:pan-y;overscroll-behavior-y:contain;}
+@media(prefers-reduced-motion:reduce){#sheet,.sheet,.scrim{transition:none !important;}}
+
+/* V12.58 — cierre del rediseño de Nueva Venta: jerarquía, legibilidad y mobile-first */
+#sheet.new-sale-mode {
+  max-height: min(94dvh, 920px) !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: thin;
+  padding-top: 10px !important;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom)) !important;
+}
+#sheet.new-sale-mode .sheet-handle {
+  width: 42px !important;
+  height: 5px !important;
+  margin: 4px auto 13px !important;
+  background: color-mix(in srgb, var(--text-muted) 35%, var(--border)) !important;
+}
+#sheet.new-sale-mode .sheet-title-row {
+  position: sticky !important;
+  top: -10px !important;
+  z-index: 5 !important;
+  margin: 0 -2px 14px !important;
+  padding: 9px 2px 14px !important;
+  background: var(--surface) !important;
+}
+#sheet.new-sale-mode .sheet-title-row h2 {
+  min-width: 0 !important;
+  font-size: clamp(23px, 5.8vw, 29px) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -.035em !important;
+}
+#sheet.new-sale-mode .sheet-close-btn {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 13px !important;
+  font-size: 17px !important;
+}
+#sheet.new-sale-mode #voiceWarning:empty { display: none !important; }
+#sheet.new-sale-mode #voiceWarning:not(:empty) {
+  margin: 0 0 13px !important;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  background: rgba(var(--primary-rgb), .08) !important;
+  color: var(--text) !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+#sheet.new-sale-mode .field {
+  margin-bottom: 13px !important;
+  padding: 14px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 3px 12px rgba(20, 35, 70, .025) !important;
+}
+#sheet.new-sale-mode .field > label,
+#sheet.new-sale-mode .field-row-head > label {
+  font-size: 13px !important;
+  font-weight: 750 !important;
+  letter-spacing: -.01em !important;
+}
+#sheet.new-sale-mode .field:has(#fCliente) .input-row { gap: 7px !important; }
+#sheet.new-sale-mode .field:has(#fCliente) #fCliente {
+  min-width: 0 !important;
+  min-height: 50px !important;
+  border-radius: 13px !important;
+}
+#sheet.new-sale-mode .field:has(#fCliente) .mic-btn {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+}
+#sheet.new-sale-mode #itemRowsContainer { gap: 10px !important; }
+#sheet.new-sale-mode #itemRowsContainer .item-row {
+  padding: 12px !important;
+  border-radius: 15px !important;
+  box-shadow: 0 2px 8px rgba(20, 35, 70, .035) !important;
+}
+#sheet.new-sale-mode .item-row-header { align-items: center !important; }
+#sheet.new-sale-mode .item-row-label { font-size: 12px !important; }
+#sheet.new-sale-mode .item-row-del {
+  min-height: 32px !important;
+  border-radius: 10px !important;
+  font-size: 11px !important;
+}
+#sheet.new-sale-mode .item-field { min-width: 0 !important; }
+#sheet.new-sale-mode .item-field > span {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+#sheet.new-sale-mode .item-field .row-articulo,
+#sheet.new-sale-mode .item-field .row-precio,
+#sheet.new-sale-mode .item-field .row-categoria {
+  min-width: 0 !important;
+  min-height: 44px !important;
+  border-radius: 11px !important;
+  font-size: 14px !important;
+}
+/* El tamaño/color del micrófono de Precio sigue siendo exclusivo de ese control. */
+#sheet.new-sale-mode .item-field-price .mic-btn {
+  color: var(--primary-soft) !important;
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+#sheet.new-sale-mode .add-item-btn {
+  width: 100% !important;
+  min-height: 46px !important;
+  margin-top: 10px !important;
+  border-radius: 13px !important;
+}
+#sheet.new-sale-mode .items-total-row {
+  min-height: 62px !important;
+  margin-top: 12px !important;
+  padding: 13px 14px !important;
+  border-radius: 14px !important;
+}
+#sheet.new-sale-mode .items-total-row span:first-child { font-size: 12px !important; }
+#sheet.new-sale-mode .items-total-row span:last-child {
+  font-size: clamp(19px, 5vw, 23px) !important;
+  font-variant-numeric: tabular-nums !important;
+}
+#sheet.new-sale-mode .field:has(.pago-opt) .seg,
+#sheet.new-sale-mode .field:has(.retira-opt) .seg { gap: 8px !important; }
+#sheet.new-sale-mode .field:has(.pago-opt) .seg button,
+#sheet.new-sale-mode .field:has(.retira-opt) .seg button {
+  min-height: 44px !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+}
+#sheet.new-sale-mode .hint {
+  margin-top: 9px !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+#sheet.new-sale-mode .hint .mic-icon { width: 13px !important; height: 13px !important; vertical-align: -2px !important; }
+#sheet.new-sale-mode #newCatRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+#sheet.new-sale-mode #newCatRow input { min-width: 0; flex: 1 1 140px; }
+#sheet.new-sale-mode #newCatRow .mic-btn { flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; }
+#sheet.new-sale-mode .sheet-save-bar {
+  margin-left: -14px !important;
+  margin-right: -14px !important;
+  margin-bottom: -18px !important;
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom)) !important;
+  gap: 12px !important;
+  border-radius: 16px 16px 0 0 !important;
+  box-shadow: 0 -7px 20px rgba(18, 48, 92, .07) !important;
+}
+#sheet.new-sale-mode .sheet-save-total span { font-size: 10px !important; }
+#sheet.new-sale-mode .sheet-save-total strong {
+  font-size: clamp(18px, 4.8vw, 22px) !important;
+  line-height: 1.2 !important;
+}
+#sheet.new-sale-mode .sheet-save-bar .save-btn {
+  min-height: 48px !important;
+  border-radius: 13px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+#sheet.new-sale-mode input:focus-visible,
+#sheet.new-sale-mode select:focus-visible,
+#sheet.new-sale-mode button:focus-visible {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px !important;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode { padding-left: 12px !important; padding-right: 12px !important; }
+  #sheet.new-sale-mode .field { padding: 11px !important; }
+  #sheet.new-sale-mode .item-row { padding: 10px !important; }
+  #sheet.new-sale-mode .item-field .input-row { gap: 4px !important; }
+  #sheet.new-sale-mode .item-field-price .mic-btn { flex-basis: 30px !important; width: 30px !important; min-width: 30px !important; }
+  #sheet.new-sale-mode .sheet-save-bar { margin-left: -11px !important; margin-right: -11px !important; padding-left: 11px !important; padding-right: 11px !important; }
+}
+@media (min-width: 700px) {
+  #sheet.new-sale-mode { max-height: min(90dvh, 920px) !important; }
+  #sheet.new-sale-mode .field { padding: 16px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #sheet.new-sale-mode *, #sheet.new-sale-mode *::before, #sheet.new-sale-mode *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

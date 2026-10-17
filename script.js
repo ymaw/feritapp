@@ -356,28 +356,35 @@ document.addEventListener('DOMContentLoaded', function(){
     if(view === 'settings'){ syncNotifyControls(); showSettingsMenu(); }
   }
 
-  /* Navegación lateral móvil: Inicio ↔ Ventas ↔ Entregas. */
+  /* V12.56 — swipe horizontal más ágil, con detección temprana de dirección. */
   (function enableMainViewSwipe(){
     const order = ['dashboard','sales','deliveries'];
     const surfaces = [document.getElementById('viewDashboard'), document.getElementById('viewSales'), document.getElementById('viewDeliveries')].filter(Boolean);
-    let sx=0, sy=0, started=false;
+    let sx=0, sy=0, started=false, horizontal=false, startAt=0, lastSwipeAt=0;
+    const ignored = 'input,textarea,select,button,a,[contenteditable="true"],.item-row,.sales-client-group-trigger,.delivery-client-card,[data-no-swipe]';
     surfaces.forEach(function(surface){
       surface.addEventListener('touchstart', function(e){
-        if(!entered || !e.touches || e.touches.length!==1) { started=false; return; }
-        if(document.getElementById('sheet').classList.contains('open') || menuDropdown.style.display==='block') { started=false; return; }
-        const target=e.target;
-        if(target.closest('input,textarea,select,button,a,[contenteditable="true"],.item-row,.sales-client-group-trigger,.delivery-client-card')) { started=false; return; }
-        sx=e.touches[0].clientX; sy=e.touches[0].clientY; started=true;
+        if(!entered || !e.touches || e.touches.length!==1 || document.getElementById('sheet').classList.contains('open') || menuDropdown.style.display==='block') { started=false; return; }
+        if(e.target.closest(ignored)) { started=false; return; }
+        const t=e.touches[0]; sx=t.clientX; sy=t.clientY; startAt=performance.now(); started=true; horizontal=false;
+      }, {passive:true});
+      surface.addEventListener('touchmove', function(e){
+        if(!started || !e.touches || !e.touches.length) return;
+        const t=e.touches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+        if(Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)*1.25) horizontal=true;
+        else if(Math.abs(dy)>12 && Math.abs(dy)>Math.abs(dx)*1.15) started=false;
       }, {passive:true});
       surface.addEventListener('touchend', function(e){
         if(!started || !e.changedTouches || !e.changedTouches.length) return;
         started=false;
-        const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
-        if(Math.abs(dx)<75 || Math.abs(dx)<Math.abs(dy)*1.35) return;
+        const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+        const elapsed=Math.max(1,performance.now()-startAt), velocity=Math.abs(dx)/elapsed;
+        if(!horizontal || Math.abs(dx)<48 || Math.abs(dx)<Math.abs(dy)*1.25 || (Math.abs(dx)<75 && velocity<0.42)) return;
+        if(performance.now()-lastSwipeAt<320) return;
         const idx=order.indexOf(currentView); if(idx<0) return;
-        const next=order[idx+(dx<0?1:-1)]; if(next) switchView(next);
+        const next=order[idx+(dx<0?1:-1)]; if(next){ lastSwipeAt=performance.now(); switchView(next); }
       }, {passive:true});
-      surface.addEventListener('touchcancel', function(){started=false;},{passive:true});
+      surface.addEventListener('touchcancel', function(){started=false;horizontal=false;},{passive:true});
     });
   })();
 
@@ -2539,23 +2546,37 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('openSheet').addEventListener('click', openSheet);
   document.getElementById('sidebarOpenSheet').addEventListener('click', openSheet);
   scrim.addEventListener('click', closeSheet);
-  // Mobile: permitir cerrar/minimizar Nueva Venta o Editar Venta deslizando hacia abajo.
-  // Solo se activa si el gesto comienza en el borde superior del contenido, para no interferir con el scroll del formulario.
+  // V12.56 — cerrar Nueva/Editar Venta con un gesto vertical corto y controlado.
   (function enableSheetSwipeToClose(){
-    let startX=0, startY=0, tracking=false;
-    sheet.addEventListener('touchstart', function(e){
-      if(!sheet.classList.contains('open') || !e.touches || e.touches.length!==1) return;
-      const t=e.touches[0]; startX=t.clientX; startY=t.clientY;
-      tracking = sheet.scrollTop <= 2 && startY < (sheet.getBoundingClientRect().top + 100);
-    }, {passive:true});
-    sheet.addEventListener('touchend', function(e){
-      if(!tracking || !e.changedTouches || !e.changedTouches.length) return;
-      const t=e.changedTouches[0], dy=t.clientY-startY, dx=t.clientX-startX;
-      if(dy>105 && Math.abs(dx)<85 && sheet.scrollTop<=2) closeSheet();
-      tracking=false;
-    }, {passive:true});
-    sheet.addEventListener('touchcancel', function(){tracking=false;}, {passive:true});
+    let startX=0,startY=0,lastY=0,tracking=false,dragging=false;
+    const handle=sheet.querySelector('.sheet-handle');
+    function onStart(e){
+      if(!sheet.classList.contains('open') || !e.touches || e.touches.length!==1) { tracking=false; return; }
+      const t=e.touches[0], rect=sheet.getBoundingClientRect();
+      const inGrip=(handle && handle.contains(e.target)) || (t.clientY < rect.top+64 && !e.target.closest('input,textarea,select,button'));
+      tracking=!!inGrip && sheet.scrollTop<=2; dragging=false;
+      startX=t.clientX; startY=t.clientY; lastY=t.clientY;
+    }
+    function onMove(e){
+      if(!tracking || !e.touches || !e.touches.length) return;
+      const t=e.touches[0],dx=t.clientX-startX,dy=t.clientY-startY; lastY=t.clientY;
+      if(Math.abs(dx)>Math.abs(dy)*1.1){tracking=false;return;}
+      if(dy>12 && sheet.scrollTop<=2) dragging=true;
+    }
+    function onEnd(e){
+      if(!tracking){dragging=false;return;}
+      const t=e.changedTouches&&e.changedTouches[0];
+      if(t){const dx=t.clientX-startX,dy=t.clientY-startY;
+        if(dragging && dy>68 && Math.abs(dx)<70 && sheet.scrollTop<=2) closeSheet();
+      }
+      tracking=false;dragging=false;
+    }
+    sheet.addEventListener('touchstart',onStart,{passive:true});
+    sheet.addEventListener('touchmove',onMove,{passive:true});
+    sheet.addEventListener('touchend',onEnd,{passive:true});
+    sheet.addEventListener('touchcancel',function(){tracking=false;dragging=false;},{passive:true});
   })();
+
   const sheetTitle = document.getElementById('sheetTitle');
   if(sheetTitle && !document.getElementById('closeSaleSheetBtn')){
     const titleRow=document.createElement('div'); titleRow.className='sheet-title-row';
