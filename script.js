@@ -2535,7 +2535,11 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ---------------- sheet open/close ---------------- */
   function openSheet(){
     const title = document.getElementById('sheetTitle');
-    sheet.classList.toggle('new-sale-mode', !!title && title.textContent.trim().toLowerCase() === 'nueva venta');
+    const titleText = title ? title.textContent.trim().toLowerCase() : '';
+    sheet.classList.toggle('new-sale-mode', titleText === 'nueva venta');
+    // V12.61: reutiliza la presentación de formulario en la edición agrupada
+    // de una venta del cliente, sin afectar la edición individual de artículos.
+    sheet.classList.toggle('edit-sale-mode', titleText.indexOf('editar venta') === 0);
     sheet.classList.add('open'); scrim.classList.add('open');
   }
   function closeSheet(){
@@ -2691,6 +2695,7 @@ document.addEventListener('DOMContentLoaded', function(){
     editingSaleId = null;
     document.getElementById('sheetTitle').textContent = 'Nueva venta';
     sheet.classList.add('new-sale-mode');
+    sheet.classList.remove('edit-sale-mode');
     document.getElementById('saveBtnText').textContent = 'Guardar venta';
   }
 

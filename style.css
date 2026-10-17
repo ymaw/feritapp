@@ -3323,3 +3323,294 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   #sheet.new-sale-mode *, #sheet.new-sale-mode *::before, #sheet.new-sale-mode *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* V12.59 — auditoría de alineación transversal: iconos, flechas, selectores y controles */
+/* Normaliza la caja de iconos dentro de botones sin alterar su tamaño visual. */
+button > svg,
+button > .icon,
+button > .nav-icon,
+button > .menu-item-icon,
+button > .messenger-brand-icon {
+  flex: 0 0 auto;
+  align-self: center;
+  vertical-align: middle;
+}
+button:has(> svg),
+button:has(> .icon),
+button:has(> .nav-icon) {
+  align-items: center;
+}
+/* Los controles expandir/contraer conservan un área clicable estable y centran el glifo. */
+.sales-group-chevron,
+.weekly-summary-chevron,
+.dashboard-task-chevron {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+}
+.sales-group-chevron {
+  flex: 0 0 30px !important;
+  width: 30px !important;
+  min-width: 30px !important;
+  height: 34px !important;
+}
+.weekly-summary-chevron {
+  flex: 0 0 30px !important;
+  width: 30px !important;
+  min-width: 30px !important;
+  height: 30px !important;
+}
+.dashboard-task-chevron {
+  flex: 0 0 24px !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+}
+/* Flechas laterales y de menú alineadas al centro del renglón. */
+.client-row-chevron,
+.menu-item-arrow,
+.settings-menu-arrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: center !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+.menu-item-arrow { min-width: 12px; min-height: 20px; }
+.client-row-chevron { min-width: 24px; min-height: 32px; }
+/* Selectores: misma altura, caja de borde consistente y espacio para la flecha nativa. */
+select,
+.settings-select,
+.compare-select,
+.sheet .item-row select.row-categoria {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  padding-right: 34px;
+  background-position: right 12px center;
+  vertical-align: middle;
+}
+#sheet.new-sale-mode select,
+#sheet.new-sale-mode .settings-select,
+#sheet.new-sale-mode .compare-select {
+  min-height: 44px;
+  line-height: 1.25;
+}
+/* Campos con icono a la derecha no deben encoger ni descentrar el botón. */
+.input-row,
+.item-field .input-row,
+.field-row-head,
+.sheet-title-row,
+.sheet-save-bar,
+.sales-client-group-header,
+.sales-group-statuses {
+  align-items: center;
+}
+.input-row > input,
+.input-row > select,
+.item-field .input-row > input,
+.item-field .input-row > select {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+/* Accesibilidad y consistencia de cajas: evita pequeños desplazamientos por box sizing. */
+button,
+input,
+select,
+textarea,
+[role="button"] {
+  box-sizing: border-box;
+}
+@media (max-width: 420px) {
+  .sales-group-chevron { flex-basis: 28px !important; width: 28px !important; min-width: 28px !important; }
+  select, .settings-select, .compare-select { padding-right: 30px; }
+}
+
+/* V12.60 — refinamiento final de flujo en Nueva Venta (sin tocar los micrófonos). */
+#sheet.new-sale-mode .field:has(#itemRowsContainer) {
+  min-width: 0 !important;
+}
+#sheet.new-sale-mode .field-row-head {
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+#sheet.new-sale-mode .field-row-head > label {
+  flex: 1 1 150px !important;
+  min-width: 0 !important;
+}
+#sheet.new-sale-mode .new-cat-link {
+  flex: 0 1 auto !important;
+  max-width: 100% !important;
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+}
+#sheet.new-sale-mode .item-row-header {
+  min-width: 0 !important;
+}
+#sheet.new-sale-mode .item-row-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+  line-height: 1.25 !important;
+}
+#sheet.new-sale-mode .item-row-del {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+#sheet.new-sale-mode .item-field .input-row {
+  min-width: 0 !important;
+  align-items: center !important;
+}
+#sheet.new-sale-mode .item-field .row-articulo,
+#sheet.new-sale-mode .item-field .row-precio,
+#sheet.new-sale-mode .item-field .row-categoria {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+#sheet.new-sale-mode .item-field .row-categoria {
+  padding-right: 32px !important;
+  background-position: right 10px center !important;
+  text-overflow: ellipsis !important;
+}
+#sheet.new-sale-mode .items-total-row {
+  gap: 12px !important;
+}
+#sheet.new-sale-mode .items-total-row span:first-child {
+  min-width: 0 !important;
+  line-height: 1.35 !important;
+}
+#sheet.new-sale-mode .items-total-row span:last-child {
+  flex: 0 0 auto !important;
+  text-align: right !important;
+}
+#sheet.new-sale-mode .sheet-save-bar {
+  box-sizing: border-box !important;
+  width: auto !important;
+  max-width: none !important;
+  align-items: center !important;
+}
+#sheet.new-sale-mode .sheet-save-total {
+  flex: 0 1 auto !important;
+  overflow: hidden !important;
+}
+#sheet.new-sale-mode .sheet-save-total span {
+  display: block !important;
+  line-height: 1.3 !important;
+}
+#sheet.new-sale-mode .sheet-save-total strong {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-variant-numeric: tabular-nums !important;
+}
+#sheet.new-sale-mode .sheet-save-bar .save-btn {
+  flex: 1 1 48% !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode .field-row-head { align-items: flex-start !important; }
+  #sheet.new-sale-mode .new-cat-link { font-size: 11px !important; }
+  #sheet.new-sale-mode .item-row-del { padding: 5px 7px !important; font-size: 10px !important; }
+  #sheet.new-sale-mode .sheet-save-bar { gap: 8px !important; }
+  #sheet.new-sale-mode .sheet-save-total strong { font-size: 18px !important; }
+}
+@media (min-width: 700px) {
+  #sheet.new-sale-mode .item-row-header { grid-column: 1 / -1 !important; }
+  #sheet.new-sale-mode .item-field-name { min-width: 0 !important; }
+}
+
+/* V12.61 — consistencia visual para Editar venta agrupada.
+   Se excluye Editar artículo para no cambiar su flujo ni el tamaño de sus micrófonos. */
+#sheet.edit-sale-mode .field:has(#itemRowsContainer) { min-width: 0 !important; }
+#sheet.edit-sale-mode .field-row-head {
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+}
+#sheet.edit-sale-mode .field-row-head > label {
+  flex: 1 1 150px !important;
+  min-width: 0 !important;
+}
+#sheet.edit-sale-mode .item-row-header {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+#sheet.edit-sale-mode .item-row-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+  line-height: 1.25 !important;
+}
+#sheet.edit-sale-mode .item-row-del {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+#sheet.edit-sale-mode .item-field,
+#sheet.edit-sale-mode .item-field .input-row { min-width: 0 !important; }
+#sheet.edit-sale-mode .item-field .input-row { align-items: center !important; }
+#sheet.edit-sale-mode .item-field .row-articulo,
+#sheet.edit-sale-mode .item-field .row-precio,
+#sheet.edit-sale-mode .item-field .row-categoria {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+#sheet.edit-sale-mode .item-field .row-categoria {
+  padding-right: 32px !important;
+  background-position: right 10px center !important;
+  text-overflow: ellipsis !important;
+}
+#sheet.edit-sale-mode .items-total-row { gap: 12px !important; }
+#sheet.edit-sale-mode .items-total-row span:first-child {
+  min-width: 0 !important;
+  line-height: 1.35 !important;
+}
+#sheet.edit-sale-mode .items-total-row span:last-child {
+  flex: 0 0 auto !important;
+  text-align: right !important;
+  font-variant-numeric: tabular-nums !important;
+}
+#sheet.edit-sale-mode .sheet-save-bar {
+  box-sizing: border-box !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+#sheet.edit-sale-mode .sheet-save-total { flex: 0 1 auto !important; min-width: 0 !important; }
+#sheet.edit-sale-mode .sheet-save-total span { display: block !important; line-height: 1.3 !important; }
+#sheet.edit-sale-mode .sheet-save-total strong {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-variant-numeric: tabular-nums !important;
+}
+#sheet.edit-sale-mode .sheet-save-bar .save-btn {
+  flex: 1 1 48% !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+}
+@media (max-width: 380px) {
+  #sheet.edit-sale-mode .field-row-head { align-items: flex-start !important; }
+  #sheet.edit-sale-mode .item-row-del { padding: 5px 7px !important; font-size: 10px !important; }
+  #sheet.edit-sale-mode .sheet-save-bar { gap: 8px !important; }
+  #sheet.edit-sale-mode .sheet-save-total strong { font-size: 18px !important; }
+}
