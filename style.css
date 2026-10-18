@@ -3859,42 +3859,146 @@ textarea,
   #sheet .sheet-save-bar .save-btn { min-width: 104px; padding-left: 10px; padding-right: 10px; font-size: 11px; }
 }
 
-/* V12.67 — selector de categoría compacto y flecha con margen real.
-   Último bloque intencional: prevalece sobre las reglas históricas del selector
-   en Nueva Venta y Editar Venta, sin alterar otros dropdowns de la aplicación. */
-#sheet.new-sale-mode .item-field-category,
-#sheet.edit-sale-mode .item-field-category {
+
+/* V12.68 — ajuste final de alineación y selector de categoría.
+   Bloque único y autoritativo para ambos modos; sustituye el parche V12.67. */
+#sheet.new-sale-mode .item-row,
+#sheet.edit-sale-mode .item-row {
+  align-items: start;
+}
+#sheet.new-sale-mode .item-field,
+#sheet.edit-sale-mode .item-field {
+  display: block;
+  align-self: start;
   min-width: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  gap: 5px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.35;
 }
-#sheet.new-sale-mode .item-field-category > span,
-#sheet.edit-sale-mode .item-field-category > span {
-  margin-bottom: 5px;
-  line-height: 1.25;
+#sheet.new-sale-mode .item-field > span,
+#sheet.edit-sale-mode .item-field > span {
+  display: block;
+  width: 100%;
+  min-height: 1.35em;
+  margin: 0 0 8px;
+  padding: 0;
+  line-height: 1.35;
+  text-align: left;
+  box-sizing: border-box;
 }
-#sheet.new-sale-mode .item-field-category select.row-categoria,
-#sheet.edit-sale-mode .item-field-category select.row-categoria {
+#sheet.new-sale-mode .item-field .input-row,
+#sheet.edit-sale-mode .item-field .input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+}
+#sheet.new-sale-mode .item-field .row-articulo,
+#sheet.new-sale-mode .item-field .row-precio,
+#sheet.new-sale-mode .item-field .row-categoria,
+#sheet.edit-sale-mode .item-field .row-articulo,
+#sheet.edit-sale-mode .item-field .row-precio,
+#sheet.edit-sale-mode .item-field .row-categoria {
   display: block;
   width: 100%;
   min-width: 0;
-  min-height: 38px !important;
-  height: 38px;
-  padding: 7px 42px 7px 12px !important;
-  border-radius: 10px;
-  line-height: 1.2;
-  font-size: 13px !important;
-  background-position: right 15px center !important;
+  max-width: 100%;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
   box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background-color: var(--surface);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.25;
+}
+#sheet.new-sale-mode .item-field .row-articulo,
+#sheet.new-sale-mode .item-field .row-precio,
+#sheet.edit-sale-mode .item-field .row-articulo,
+#sheet.edit-sale-mode .item-field .row-precio {
+  padding: 10px 12px;
+}
+#sheet.new-sale-mode .item-field-category,
+#sheet.edit-sale-mode .item-field-category {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+#sheet.new-sale-mode .item-field-category select.row-categoria,
+#sheet.edit-sale-mode .item-field-category select.row-categoria {
+  height: 44px;
+  min-height: 44px;
+  padding: 10px 44px 10px 12px;
+  font-size: 14px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  background-position: right 16px center;
+  background-origin: padding-box;
+  background-repeat: no-repeat;
+}
+#sheet.new-sale-mode .item-field .mic-btn,
+#sheet.edit-sale-mode .item-field .mic-btn {
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+  max-width: 34px;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+}
+#sheet.new-sale-mode .item-field .mic-btn > svg,
+#sheet.edit-sale-mode .item-field .mic-btn > svg,
+#sheet.new-sale-mode .item-field .mic-btn .mic-icon,
+#sheet.edit-sale-mode .item-field .mic-btn .mic-icon {
+  display: block;
+  flex: 0 0 15px;
+  width: 15px;
+  min-width: 15px;
+  max-width: 15px;
+  height: 15px;
+  min-height: 15px;
+  max-height: 15px;
+  transform: none;
+  scale: 1;
+}
+/* Aire entre el título de la ventana y el primer control del formulario. */
+#sheet.new-sale-mode .sheet-title-row,
+#sheet.edit-sale-mode .sheet-title-row {
+  margin-bottom: 18px;
+}
+#sheet.new-sale-mode > .field:has(#itemRowsContainer),
+#sheet.edit-sale-mode > .field:has(#itemRowsContainer) {
+  padding-top: 16px;
+}
+#sheet.new-sale-mode .field-row-head,
+#sheet.edit-sale-mode .field-row-head {
+  margin-bottom: 14px;
+  align-items: center;
 }
 @media (max-width: 380px) {
+  #sheet.new-sale-mode .item-field > span,
+  #sheet.edit-sale-mode .item-field > span {
+    margin-bottom: 8px;
+  }
+  #sheet.new-sale-mode .item-field .row-articulo,
+  #sheet.new-sale-mode .item-field .row-precio,
+  #sheet.new-sale-mode .item-field .row-categoria,
+  #sheet.edit-sale-mode .item-field .row-articulo,
+  #sheet.edit-sale-mode .item-field .row-precio,
+  #sheet.edit-sale-mode .item-field .row-categoria {
+    font-size: 13px;
+  }
   #sheet.new-sale-mode .item-field-category select.row-categoria,
   #sheet.edit-sale-mode .item-field-category select.row-categoria {
-    min-height: 36px !important;
-    height: 36px;
-    padding-right: 40px !important;
-    padding-left: 10px !important;
-    background-position: right 14px center !important;
+    padding-left: 10px;
+    padding-right: 42px;
+    background-position: right 15px center;
   }
 }
