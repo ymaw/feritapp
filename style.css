@@ -3858,3 +3858,43 @@ textarea,
   #sheet .sheet-save-bar { gap: 9px; margin-left: -10px; margin-right: -10px; padding-left: 10px; padding-right: 10px; }
   #sheet .sheet-save-bar .save-btn { min-width: 104px; padding-left: 10px; padding-right: 10px; font-size: 11px; }
 }
+
+/* V12.67 — selector de categoría compacto y flecha con margen real.
+   Último bloque intencional: prevalece sobre las reglas históricas del selector
+   en Nueva Venta y Editar Venta, sin alterar otros dropdowns de la aplicación. */
+#sheet.new-sale-mode .item-field-category,
+#sheet.edit-sale-mode .item-field-category {
+  min-width: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  gap: 5px;
+}
+#sheet.new-sale-mode .item-field-category > span,
+#sheet.edit-sale-mode .item-field-category > span {
+  margin-bottom: 5px;
+  line-height: 1.25;
+}
+#sheet.new-sale-mode .item-field-category select.row-categoria,
+#sheet.edit-sale-mode .item-field-category select.row-categoria {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px !important;
+  height: 38px;
+  padding: 7px 42px 7px 12px !important;
+  border-radius: 10px;
+  line-height: 1.2;
+  font-size: 13px !important;
+  background-position: right 15px center !important;
+  box-sizing: border-box;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode .item-field-category select.row-categoria,
+  #sheet.edit-sale-mode .item-field-category select.row-categoria {
+    min-height: 36px !important;
+    height: 36px;
+    padding-right: 40px !important;
+    padding-left: 10px !important;
+    background-position: right 14px center !important;
+  }
+}
