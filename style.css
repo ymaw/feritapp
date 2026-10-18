@@ -3674,3 +3674,187 @@ textarea,
     align-items: center;
   }
 }
+
+
+/* V12.66 — corrección real del SVG inline de ayuda y rediseño móvil de Nueva Venta.
+   La pista de dictado contiene un SVG fuera de .mic-btn; debe tener tamaño explícito. */
+#sheet .hint .mic-icon,
+#sheet .voice-warning .mic-icon {
+  display: inline-block;
+  width: 13px;
+  min-width: 13px;
+  max-width: 13px;
+  height: 13px;
+  min-height: 13px;
+  max-height: 13px;
+  vertical-align: -2px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+/* Barra discreta: aparece solo cuando hay al menos un artículo con nombre y precio. */
+#sheet .sheet-save-bar.is-empty { display: none !important; }
+#sheet .sheet-save-bar {
+  position: sticky;
+  bottom: calc(-1 * env(safe-area-inset-bottom));
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px -14px calc(-10px - env(safe-area-inset-bottom));
+  padding: 9px 14px calc(9px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 13px 13px 0 0;
+  box-shadow: 0 -4px 12px rgba(0,0,0,.06);
+}
+#sheet .sheet-save-total {
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+}
+#sheet .sheet-save-total span {
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1.1;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+}
+#sheet .sheet-save-total strong {
+  font-size: clamp(16px, 4.5vw, 20px);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#sheet .sheet-save-bar .save-btn {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 112px;
+  max-width: 42%;
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.2;
+  box-shadow: none;
+}
+
+/* Nueva Venta: jerarquía más clara, tarjetas más limpias y controles consistentes. */
+#sheet.new-sale-mode {
+  padding: 12px 16px calc(18px + env(safe-area-inset-bottom));
+  border-radius: 22px 22px 0 0;
+}
+#sheet.new-sale-mode .sheet-handle { margin-bottom: 12px; }
+#sheet.new-sale-mode .sheet-title-row { margin-bottom: 16px; align-items: center; }
+#sheet.new-sale-mode h2 {
+  margin: 0;
+  font-size: clamp(21px, 5.4vw, 25px);
+  line-height: 1.12;
+  letter-spacing: -.025em;
+}
+#sheet.new-sale-mode > .field {
+  margin: 0 0 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+#sheet.new-sale-mode > .field > label,
+#sheet.new-sale-mode .item-field > span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text-muted);
+  font-family: var(--body);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .025em;
+  text-transform: none;
+}
+#sheet.new-sale-mode #fCliente,
+#sheet.new-sale-mode .row-articulo,
+#sheet.new-sale-mode .row-precio,
+#sheet.new-sale-mode .row-categoria,
+#sheet.new-sale-mode #fTercero {
+  min-height: 44px;
+  border-radius: 11px;
+  background: var(--surface);
+  font-size: 14px;
+}
+#sheet.new-sale-mode #itemRowsContainer { display: grid; gap: 10px; }
+#sheet.new-sale-mode .item-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 12px 10px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: none;
+}
+#sheet.new-sale-mode .item-row-header,
+#sheet.new-sale-mode .item-field-category { grid-column: 1 / -1; }
+#sheet.new-sale-mode .item-row-header {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+#sheet.new-sale-mode .item-row-label { font-size: 12px; font-weight: 800; color: var(--text); }
+#sheet.new-sale-mode .item-row-del {
+  min-height: 29px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  font-size: 10px;
+}
+#sheet.new-sale-mode .item-field { min-width: 0; margin: 0; }
+#sheet.new-sale-mode .item-field .input-row { gap: 5px; }
+#sheet.new-sale-mode .item-field .mic-btn {
+  flex: 0 0 32px;
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  height: 34px;
+  min-height: 34px;
+  max-height: 34px;
+  padding: 0;
+  border-radius: 10px;
+}
+#sheet.new-sale-mode .item-field .mic-btn .mic-icon {
+  width: 15px;
+  min-width: 15px;
+  max-width: 15px;
+  height: 15px;
+  min-height: 15px;
+  max-height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+#sheet.new-sale-mode .add-item-btn {
+  min-height: 43px;
+  margin-top: 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 750;
+}
+#sheet.new-sale-mode .items-total-row { display: none !important; }
+#sheet.new-sale-mode .hint { margin: 9px 1px 0; font-size: 11px; line-height: 1.45; }
+#sheet.new-sale-mode .field:has(.pago-opt) .seg,
+#sheet.new-sale-mode .field:has(.retira-opt) .seg { gap: 8px; }
+#sheet.new-sale-mode .field:has(.pago-opt) .seg button,
+#sheet.new-sale-mode .field:has(.retira-opt) .seg button {
+  min-height: 42px;
+  padding: 9px 7px;
+  border-radius: 11px;
+  font-size: 12px;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode { padding-left: 12px; padding-right: 12px; }
+  #sheet.new-sale-mode > .field { padding: 11px; }
+  #sheet.new-sale-mode .item-row { padding: 10px; gap: 10px 7px; }
+  #sheet .sheet-save-bar { gap: 9px; margin-left: -10px; margin-right: -10px; padding-left: 10px; padding-right: 10px; }
+  #sheet .sheet-save-bar .save-btn { min-width: 104px; padding-left: 10px; padding-right: 10px; font-size: 11px; }
+}

@@ -2635,6 +2635,7 @@ document.addEventListener('DOMContentLoaded', function(){
       rowEl.querySelectorAll('.mic-btn').forEach(function(b){ b.style.display = 'none'; });
     }
     rowEl.querySelector('.row-precio').addEventListener('input', updateItemsTotal);
+    rowEl.querySelector('.row-articulo').addEventListener('input', updateItemsTotal);
     rowEl.querySelector('.item-row-del').addEventListener('click', function(){
       rowEl.remove();
       updateItemsTotal();
@@ -2666,6 +2667,17 @@ document.addEventListener('DOMContentLoaded', function(){
     if(el) el.textContent = totalText;
     let footerEl = document.getElementById('sheetFooterTotal');
     if(footerEl) footerEl.textContent = totalText;
+    const footerBar = document.querySelector('#sheet .sheet-save-bar');
+    if(footerBar){
+      const hasCompleteItem = Array.from(document.querySelectorAll('#itemRowsContainer .item-row')).some(function(row){
+        const name = (row.querySelector('.row-articulo') || {}).value || '';
+        const rawPrice = (row.querySelector('.row-precio') || {}).value;
+        const price = parseFloat(rawPrice);
+        return name.trim().length > 0 && Number.isFinite(price) && price > 0;
+      });
+      footerBar.classList.toggle('is-empty', !hasCompleteItem);
+      footerBar.setAttribute('aria-hidden', hasCompleteItem ? 'false' : 'true');
+    }
   }
 
   function refreshAllRowCategorySelects(){
