@@ -1218,6 +1218,39 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
+  function confirmDeleteClientSales(clientName, count){
+    return new Promise(function(resolve){
+      let overlay=document.getElementById('saleGroupDeleteDialog');
+      if(!overlay){
+        overlay=document.createElement('div'); overlay.id='saleGroupDeleteDialog'; overlay.className='fa-dialog-backdrop'; overlay.hidden=true;
+        overlay.innerHTML='<section class="fa-dialog" role="dialog" aria-modal="true" aria-labelledby="saleDeleteTitle" aria-describedby="saleDeleteDescription"><div class="fa-dialog-icon" aria-hidden="true">✕</div><h2 id="saleDeleteTitle">Eliminar ventas</h2><p id="saleDeleteDescription"></p><div class="fa-dialog-actions"><button type="button" class="fa-dialog-cancel">Cancelar</button><button type="button" class="fa-dialog-confirm">Eliminar ventas</button></div></section>';
+        document.body.appendChild(overlay);
+      }
+      overlay.querySelector('#saleDeleteTitle').textContent='Eliminar ventas';
+      overlay.querySelector('.fa-dialog-confirm').textContent='Eliminar ventas';
+      overlay.querySelector('#saleDeleteDescription').textContent='¿Querés eliminar las '+count+' '+(count===1?'venta':'ventas')+' de '+clientName+'? Esta acción no se puede deshacer.';
+      const cancel=overlay.querySelector('.fa-dialog-cancel'), confirm=overlay.querySelector('.fa-dialog-confirm');
+      const onCancel=function(){finish(false);}, onConfirm=function(){finish(true);}, onBackdrop=function(event){if(event.target===overlay)finish(false);}, onKeydown=function(event){if(event.key==='Escape'){event.preventDefault();finish(false);}};
+      let finished=false;
+      function finish(value){if(finished)return;finished=true;overlay.hidden=true;document.body.classList.remove('fa-dialog-open');cancel.removeEventListener('click',onCancel);confirm.removeEventListener('click',onConfirm);overlay.removeEventListener('click',onBackdrop);document.removeEventListener('keydown',onKeydown);resolve(value);}
+      overlay.hidden=false;document.body.classList.add('fa-dialog-open');cancel.addEventListener('click',onCancel);confirm.addEventListener('click',onConfirm);overlay.addEventListener('click',onBackdrop);document.addEventListener('keydown',onKeydown);window.requestAnimationFrame(function(){cancel.focus();});
+    });
+  }
+
+  async function deleteSalesGroup(ids){
+    const uniqueIds=Array.from(new Set(ids.map(String)));
+    if(!uniqueIds.length)return;
+    try{
+      const result=await sb.from('sales').delete().in('id',uniqueIds).select('id');
+      if(result.error)throw result.error;
+      const deletedIds=new Set((result.data||[]).map(function(item){return String(item.id);}));
+      if(!deletedIds.size)throw new Error('No se eliminó ninguna venta.');
+      sales=sales.filter(function(item){return !deletedIds.has(String(item.id));});
+      render();
+      showToast(deletedIds.size===1?'Venta eliminada':'Ventas eliminadas: '+deletedIds.size);
+    }catch(error){showToast('No se pudieron eliminar las ventas. Verificá tus permisos e intentá nuevamente.');}
+  }
+
   function confirmDeleteSale(item){
     return new Promise(function(resolve){
       let overlay = document.getElementById('saleDeleteDialog');
@@ -2005,75 +2038,67 @@ document.addEventListener('DOMContentLoaded', function(){
   function bindTableEvents(root){
     function resetDeleteSelection(card){
       if(!card) return;
-      card.querySelectorAll('.sales-group-item.is-delete-target').forEach(function(item){item.classList.remove('is-delete-target');});
       const toggle=card.querySelector('.sales-group-chevron');
-      if(toggle){toggle.removeAttribute('data-delete-target-id');toggle.textContent='⌄';toggle.classList.remove('delete-selected');toggle.setAttribute('aria-label','Expandir o contraer');}
+      if(toggle){toggle.removeAttribute('data-delete-target-ids');toggle.textContent='⌄';toggle.classList.remove('delete-selected');toggle.setAttribute('aria-label','Expandir o contraer');}
     }
-    function selectDeleteTarget(item){
-      const card=item.closest('.sales-client-group');
+    function selectDeleteTarget(card){
       if(!card) return;
       root.querySelectorAll('.sales-client-group').forEach(function(other){if(other!==card) resetDeleteSelection(other);});
       resetDeleteSelection(card);
-      // No se marca visualmente el artículo: la pulsación prolongada habilita la X del encabezado.
+      const ids=Array.from(card.querySelectorAll('.sales-group-item[data-sale-id]')).map(function(item){return item.getAttribute('data-sale-id');}).filter(Boolean);
       const toggle=card.querySelector('.sales-group-chevron');
-      if(toggle){toggle.setAttribute('data-delete-target-id',item.getAttribute('data-sale-id'));toggle.textContent='✕';toggle.classList.add('delete-selected');toggle.setAttribute('aria-label','Eliminar venta seleccionada: '+(item.querySelector('.sales-group-item-main strong')?.textContent||'venta'));}
+      if(toggle && ids.length){
+        toggle.setAttribute('data-delete-target-ids',ids.join(','));
+        toggle.textContent='✕';
+        toggle.classList.add('delete-selected');
+        const title=card.querySelector('.sales-client-group-copy strong');
+        toggle.setAttribute('aria-label','Eliminar las ventas de '+(title?title.textContent.trim():'este cliente'));
+        card.dataset.deleteSelectionTriggered='true';
+        showToast('Tarjeta seleccionada. Tocá la X roja para eliminar las ventas de este cliente.',2600);
+      }
     }
     root.querySelectorAll('button[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(event){
       event.preventDefault(); event.stopPropagation();
-      const selectedId=btn.getAttribute('data-delete-target-id');
-      if(selectedId){
-        const item=sales.find(function(s){return String(s.id)===String(selectedId);});
-        if(!item){resetDeleteSelection(btn.closest('.sales-client-group'));return;}
-        resetDeleteSelection(btn.closest('.sales-client-group'));
-        confirmDeleteSale(item).then(function(confirmed){if(confirmed) deleteSale(selectedId);});
+      const idsValue=btn.getAttribute('data-delete-target-ids');
+      if(idsValue){
+        const ids=idsValue.split(',').filter(Boolean);
+        const card=btn.closest('.sales-client-group');
+        const title=card && card.querySelector('.sales-client-group-copy strong');
+        const clientName=title?title.textContent.trim():'este cliente';
+        const matching=sales.filter(function(item){return ids.includes(String(item.id));});
+        resetDeleteSelection(card);
+        if(!matching.length) return;
+        confirmDeleteClientSales(clientName,matching.length).then(function(confirmed){if(confirmed) deleteSalesGroup(ids);});
         return;
       }
       const groupId=btn.getAttribute('data-sales-group'); const panel=document.getElementById(groupId); if(!panel)return; const opening=panel.hidden; panel.hidden=!opening; root.querySelectorAll('button[data-sales-group="'+groupId+'"]').forEach(function(toggle){toggle.setAttribute('aria-expanded',String(opening));toggle.classList.toggle('expanded',opening);});
     }); });
-    root.querySelectorAll('.sales-group-item[data-sale-id]').forEach(function(item){
-      let pressTimer=null;
-      let startX=0;
-      let startY=0;
-      let longPressTriggered=false;
-      const clearPress=function(){
-        if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}
-      };
-      const beginPress=function(x,y){
-        clearPress(); startX=x; startY=y; longPressTriggered=false;
-        pressTimer=window.setTimeout(function(){
-          pressTimer=null;
-          longPressTriggered=true;
-          item.dataset.longpressTriggered='true';
-          selectDeleteTarget(item);
-          showToast('Tocá la X roja del encabezado para eliminar esta venta.', 2200);
-        },600);
-      };
-      const movePress=function(x,y){
-        if(pressTimer!==null && (Math.abs(x-startX)>20 || Math.abs(y-startY)>20)) clearPress();
-      };
-      // Pointer Events cubre mouse, lápiz y táctil con un único temporizador.
-      // touch-action:pan-y permite desplazarse verticalmente sin activar borrados.
-      item.addEventListener('pointerdown',function(event){
-        if(event.target && event.target.closest('button,a,input,select,textarea,[contenteditable="true"]')) return;
+    // La pulsación se registra en la cabecera principal de la tarjeta del cliente,
+    // no sobre los artículos del detalle expandido.
+    root.querySelectorAll('.sales-client-group-header').forEach(function(header){
+      const card=header.closest('.sales-client-group');
+      if(!card || !card.querySelector('.sales-group-item[data-sale-id]')) return;
+      let pressTimer=null, startX=0, startY=0, longPressTriggered=false;
+      const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
+      header.addEventListener('pointerdown',function(event){
+        if(event.target && event.target.closest('.sales-group-chevron,[data-set-payment],[data-open-messenger],[data-share-client],[data-add-client-sale]')) return;
         if(event.isPrimary===false || (event.button!==undefined && event.button!==0)) return;
-        beginPress(event.clientX,event.clientY);
+        clearPress(); startX=event.clientX; startY=event.clientY; longPressTriggered=false;
+        pressTimer=window.setTimeout(function(){
+          pressTimer=null; longPressTriggered=true;
+          selectDeleteTarget(card);
+        },650);
       });
-      item.addEventListener('pointermove',function(event){movePress(event.clientX,event.clientY);});
-      item.addEventListener('pointerup',function(){clearPress();});
-      item.addEventListener('pointercancel',function(){clearPress();});
-      item.addEventListener('lostpointercapture',function(){clearPress();});
-      item.addEventListener('contextmenu',function(event){event.preventDefault();});
-      item.addEventListener('click',function(event){
-        if(item.dataset.longpressTriggered==='true'){
-          delete item.dataset.longpressTriggered;
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      });
-      item.addEventListener('keydown',function(event){
-        if(event.key==='Enter' || event.key===' '){event.preventDefault();selectDeleteTarget(item);}
-        else if(event.key==='Escape'){event.preventDefault();resetDeleteSelection(item.closest('.sales-client-group'));}
-      });
+      header.addEventListener('pointermove',function(event){if(pressTimer!==null && (Math.abs(event.clientX-startX)>18 || Math.abs(event.clientY-startY)>18)) clearPress();});
+      header.addEventListener('pointerup',function(){clearPress();});
+      header.addEventListener('pointercancel',function(){clearPress();});
+      header.addEventListener('lostpointercapture',function(){clearPress();});
+      header.addEventListener('contextmenu',function(event){event.preventDefault();});
+      header.addEventListener('click',function(event){
+        if(longPressTriggered){longPressTriggered=false;event.preventDefault();event.stopPropagation();}
+        if(card.dataset.deleteSelectionTriggered==='true' && event.target.closest('.sales-client-group-trigger')){delete card.dataset.deleteSelectionTriggered;event.preventDefault();event.stopPropagation();}
+      },true);
+      header.addEventListener('keydown',function(event){if(event.key==='Escape'){resetDeleteSelection(card);}});
     });
     root.querySelectorAll('[data-toggle-delivery-card]').forEach(function(btn){
       btn.addEventListener('click',function(){
@@ -2082,8 +2107,10 @@ document.addEventListener('DOMContentLoaded', function(){
         if(!panel) return;
         const opening=panel.hidden;
         panel.hidden=!opening;
-        btn.setAttribute('aria-expanded',String(opening));
-        btn.classList.toggle('expanded',opening);
+        root.querySelectorAll('[data-toggle-delivery-card="' + panelId + '"]').forEach(function(toggle){
+          toggle.setAttribute('aria-expanded',String(opening));
+          toggle.classList.toggle('expanded',opening);
+        });
       });
     });
     root.querySelectorAll('[data-set-payment]').forEach(function(btn){ btn.addEventListener('click', async function(){
@@ -2126,6 +2153,12 @@ document.addEventListener('DOMContentLoaded', function(){
     root.querySelectorAll('[data-share-client]').forEach(function(btn){ btn.addEventListener('click', function(){ const name=btn.getAttribute('data-share-client'); const its=sales.filter(function(x){return x.cliente===name;}).sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);}); if(its.length) shareReceipt(name,its); else showToast('Este cliente todavía no tiene ventas.'); }); });
     root.querySelectorAll('[data-add-client-sale]').forEach(function(btn){ btn.addEventListener('click', function(){ openClientSalesEditor(btn.getAttribute('data-add-client-sale')); }); });
     root.querySelectorAll('[data-toggle-delivery-client]').forEach(function(btn){ btn.addEventListener('click', function(){ toggleDeliveryForClient(btn.getAttribute('data-toggle-delivery-client'), 'all'); }); });
+    root.querySelectorAll('[data-set-delivery-client]').forEach(function(btn){ btn.addEventListener('click', function(event){
+      event.preventDefault(); event.stopPropagation();
+      const name=btn.getAttribute('data-set-delivery-client');
+      const desired=btn.getAttribute('data-next-delivery')==='delivered';
+      setDeliveryForVisibleClient(name, desired);
+    }); });
     root.querySelectorAll('[data-set-delivery]').forEach(function(btn){ btn.addEventListener('click', function(){ const name=btn.getAttribute('data-client'); const desired=btn.getAttribute('data-set-delivery')==='delivered'; const targetWeekKey=btn.getAttribute('data-week-key'); setDeliveryForClient(name, desired, targetWeekKey); }); });
   }
 
@@ -2213,16 +2246,46 @@ document.addEventListener('DOMContentLoaded', function(){
         return '<section class="delivery-week-row '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'">'+
           '<div class="delivery-week-summary"><span class="delivery-week-label">'+escapeHtml(label)+'</span><small>'+escapeHtml(formatRange(group.weekKey))+' · '+group.items.length+' '+(group.items.length===1?'artículo':'artículos')+' · '+money(group.total)+'</small></div></section>';
       }).join('');
-      const statusBadges=client.weekGroups.map(function(group){
-        const delivered=group.items.length>0 && group.delivered;
-        const label=weekLabel(group.weekKey);
-        return '<button type="button" class="delivery-client-status '+(delivered?'is-delivered':'is-pending')+' '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'" data-set-delivery="'+(delivered?'pending':'delivered')+'" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-label="'+escapeHtml(label+': '+(delivered?'Entregado':'Por Entregar')+'. Cambiar estado')+'" title="'+escapeHtml(label)+'">'+
-          '<span class="delivery-client-status-week">'+escapeHtml(label)+'</span><strong>'+(delivered?'Entregado':'Por Entregar')+'</strong></button>';
-      }).join('');
-      return '<article class="delivery-client-card"><button type="button" class="delivery-client-trigger" data-toggle-delivery-card="'+weeksPanelId+'" aria-expanded="false" aria-controls="'+weeksPanelId+'"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><span class="delivery-client-heading-copy"><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></span><span class="delivery-client-chevron" aria-hidden="true">⌄</span></button><div class="delivery-client-statuses">'+statusBadges+'</div><div class="delivery-client-weeks" id="'+weeksPanelId+'" hidden>'+weekRows+'</div></article>';
+      // Un único estado resume las entregas visibles del cliente; el detalle por semana
+      // muestra artículos y totales, sin duplicar estados dentro de cada semana.
+      const clientItems=client.weekGroups.reduce(function(all,group){return all.concat(group.items);},[]);
+      const delivered=clientItems.length>0 && clientItems.every(function(item){return !!item.entregado;});
+      const statusButton='<button type="button" class="delivery-client-status '+(delivered?'is-delivered':'is-pending')+'" data-set-delivery-client="'+escapeHtml(client.name)+'" data-next-delivery="'+(delivered?'pending':'delivered')+'" aria-label="Cambiar estado de entrega de '+escapeHtml(client.name)+' a '+(delivered?'Por Entregar':'Entregado')+'">'+(delivered?'Entregado':'Por Entregar')+'</button>';
+      return '<article class="delivery-client-card"><div class="delivery-client-header"><button type="button" class="delivery-client-trigger" data-toggle-delivery-card="'+weeksPanelId+'" aria-expanded="false" aria-controls="'+weeksPanelId+'"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><span class="delivery-client-heading-copy"><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></span></button>'+statusButton+'<button type="button" class="delivery-client-chevron-toggle" data-toggle-delivery-card="'+weeksPanelId+'" aria-label="Expandir o contraer semanas de '+escapeHtml(client.name)+'" aria-expanded="false" aria-controls="'+weeksPanelId+'">⌄</button></div><div class="delivery-client-weeks" id="'+weeksPanelId+'" hidden>'+weekRows+'</div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }
+  async function setDeliveryForVisibleClient(name, desired){
+    const currentKey=weekKey(new Date());
+    const previousKey=previousWeekKey();
+    const twoWeeksAgoDate=startOfWeek(new Date());
+    twoWeeksAgoDate.setDate(twoWeeksAgoDate.getDate()-14);
+    const twoWeeksAgoKey=weekKey(twoWeeksAgoDate);
+    const visibleKeys=new Set([currentKey,previousKey,twoWeeksAgoKey].filter(Boolean));
+    const items=sales.filter(function(item){
+      if(!item || !item.fecha || (item.cliente||'Sin nombre').trim()!==name) return false;
+      const date=new Date(item.fecha);
+      if(Number.isNaN(date.getTime())) return false;
+      const key=weekKey(date);
+      if(!visibleKeys.has(key)) return false;
+      // Igual que la lista: las semanas anteriores solo contienen pendientes.
+      return key===currentKey || !item.entregado;
+    });
+    if(!items.length) return;
+    const changed=items.filter(function(item){return !!item.entregado!==desired;});
+    if(!changed.length) return;
+    try{
+      const ids=changed.map(function(item){return item.id;});
+      const result=await sb.from('sales').update({entregado:desired}).in('id',ids);
+      if(result.error) throw result.error;
+      changed.forEach(function(item){item.entregado=desired;});
+      render();
+      showToast(desired?'Entregas marcadas como entregadas':'Entregas marcadas como pendientes');
+    }catch(error){
+      showToast('No se pudo actualizar el estado de entrega.');
+    }
+  }
+
   async function setDeliveryForClient(name, desired, targetWeekKey){
     const currentKey = weekKey(new Date());
     const previousKey = previousWeekKey();
