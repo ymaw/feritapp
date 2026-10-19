@@ -3136,6 +3136,39 @@ document.addEventListener('DOMContentLoaded', function(){
     applyTheme(saved);
   })();
 
+  /* ---------------- accesibilidad: tamaño global de letra ---------------- */
+  const FONT_SCALE_KEY = 'feritapp-font-scale';
+  const FONT_SCALE_PRESETS = ['0.9','1','1.15','1.3','1.5'];
+
+  function applyFontScale(value){
+    const scale = FONT_SCALE_PRESETS.includes(String(value)) ? String(value) : '1';
+    document.documentElement.style.setProperty('--font-scale', scale);
+    document.querySelectorAll('[data-font-scale]').forEach(function(btn){
+      const selected = btn.getAttribute('data-font-scale') === scale;
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+    const label = document.getElementById('fontScaleLabel');
+    if(label) label.textContent = 'Tamaño actual: ' + Math.round(Number(scale) * 100) + '%';
+  }
+
+  function setFontScale(value){
+    const scale = FONT_SCALE_PRESETS.includes(String(value)) ? String(value) : '1';
+    try{ localStorage.setItem(FONT_SCALE_KEY, scale); }catch(e){}
+    applyFontScale(scale);
+  }
+
+  document.querySelectorAll('.font-scale-option').forEach(function(btn){
+    btn.addEventListener('click', function(){ setFontScale(btn.getAttribute('data-font-scale')); });
+  });
+  const resetFontScaleBtn = document.getElementById('resetFontScale');
+  if(resetFontScaleBtn) resetFontScaleBtn.addEventListener('click', function(){ setFontScale('1'); });
+  (function initFontScale(){
+    let saved = '1';
+    try{ saved = localStorage.getItem(FONT_SCALE_KEY) || '1'; }catch(e){}
+    applyFontScale(saved);
+  })();
+
   initGate();
 
   /* ---------------- PWA: registrar service worker ---------------- */
