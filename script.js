@@ -2034,48 +2034,56 @@ document.addEventListener('DOMContentLoaded', function(){
       let pressTimer=null;
       let startX=0;
       let startY=0;
-      let touchStarted=false;
-      const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
+      let longPressTriggered=false;
+      const clearPress=function(){
+        if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}
+      };
       const beginPress=function(x,y){
-        clearPress(); startX=x; startY=y;
+        clearPress(); startX=x; startY=y; longPressTriggered=false;
         pressTimer=window.setTimeout(function(){
           pressTimer=null;
+          longPressTriggered=true;
           item.dataset.longpressTriggered='true';
           selectDeleteTarget(item);
-          showToast('Venta seleccionada. Tocá la X roja para eliminarla.', 2200);
-        },700);
+          showToast('Venta seleccionada. Tocá la X roja del encabezado para eliminarla.', 2200);
+        },600);
       };
-      // Touch explícito: evita que pointercancel/pointerleave del navegador móvil
-      // interrumpa la pulsación prolongada sin que el dedo se haya desplazado.
-      item.addEventListener('touchstart',function(event){
-        if(event.target && event.target.closest('button')) return;
-        if(!event.touches || event.touches.length!==1) return;
-        touchStarted=true;
-        beginPress(event.touches[0].clientX,event.touches[0].clientY);
-      },{passive:true});
-      item.addEventListener('touchmove',function(event){
-        if(!pressTimer || !event.touches || !event.touches.length) return;
-        const touch=event.touches[0];
-        if(Math.abs(touch.clientX-startX)>12 || Math.abs(touch.clientY-startY)>12) clearPress();
-      },{passive:true});
-      item.addEventListener('touchend',function(){clearPress();touchStarted=false;},{passive:true});
-      item.addEventListener('touchcancel',function(){clearPress();touchStarted=false;},{passive:true});
+      const movePress=function(x,y){
+        if(pressTimer!==null && (Math.abs(x-startX)>20 || Math.abs(y-startY)>20)) clearPress();
+      };
+      // Pointer Events cubre mouse, lápiz y táctil con un único temporizador.
+      // touch-action:pan-y permite desplazarse verticalmente sin activar borrados.
       item.addEventListener('pointerdown',function(event){
-        if(event.target && event.target.closest('button')) return;
-        if(event.pointerType==='touch' || touchStarted) return;
-        if(event.button!==undefined && event.button!==0) return;
+        if(event.target && event.target.closest('button,a,input,select,textarea,[contenteditable="true"]')) return;
+        if(event.isPrimary===false || (event.button!==undefined && event.button!==0)) return;
         beginPress(event.clientX,event.clientY);
       });
-      item.addEventListener('pointermove',function(event){
-        if(pressTimer!==null && (Math.abs(event.clientX-startX)>12 || Math.abs(event.clientY-startY)>12)) clearPress();
-      });
-      ['pointerup','pointercancel','blur'].forEach(function(type){item.addEventListener(type,function(event){if(event.type==='blur' || event.pointerType!=='touch') clearPress();});});
+      item.addEventListener('pointermove',function(event){movePress(event.clientX,event.clientY);});
+      item.addEventListener('pointerup',function(){clearPress();});
+      item.addEventListener('pointercancel',function(){clearPress();});
+      item.addEventListener('lostpointercapture',function(){clearPress();});
+      item.addEventListener('contextmenu',function(event){event.preventDefault();});
       item.addEventListener('click',function(event){
-        if(item.dataset.longpressTriggered==='true'){delete item.dataset.longpressTriggered;event.preventDefault();event.stopPropagation();}
+        if(item.dataset.longpressTriggered==='true'){
+          delete item.dataset.longpressTriggered;
+          event.preventDefault();
+          event.stopPropagation();
+        }
       });
       item.addEventListener('keydown',function(event){
         if(event.key==='Enter' || event.key===' '){event.preventDefault();selectDeleteTarget(item);}
         else if(event.key==='Escape'){event.preventDefault();resetDeleteSelection(item.closest('.sales-client-group'));}
+      });
+    });
+    root.querySelectorAll('[data-toggle-delivery-card]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        const panelId=btn.getAttribute('data-toggle-delivery-card');
+        const panel=document.getElementById(panelId);
+        if(!panel) return;
+        const opening=panel.hidden;
+        panel.hidden=!opening;
+        btn.setAttribute('aria-expanded',String(opening));
+        btn.classList.toggle('expanded',opening);
       });
     });
     root.querySelectorAll('[data-set-payment]').forEach(function(btn){ btn.addEventListener('click', async function(){
@@ -2198,7 +2206,8 @@ document.addEventListener('DOMContentLoaded', function(){
       return client;
     }).sort(function(a,b){return a.name.localeCompare(b.name,'es');});
     const wrap = document.getElementById('deliveriesList');
-    wrap.innerHTML = clientGroups.length ? clientGroups.map(function(client){
+    wrap.innerHTML = clientGroups.length ? clientGroups.map(function(client, clientIndex){
+      const weeksPanelId='delivery-client-weeks-'+clientIndex;
       const weekRows=client.weekGroups.map(function(group){
         const delivered=group.items.length>0 && group.delivered;
         const label=weekLabel(group.weekKey);
@@ -2211,7 +2220,7 @@ document.addEventListener('DOMContentLoaded', function(){
           '<button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button>'+
           '<button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></section>';
       }).join('');
-      return '<article class="delivery-client-card"><header class="delivery-client-heading"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></div></header><div class="delivery-client-weeks">'+weekRows+'</div></article>';
+      return '<article class="delivery-client-card"><button type="button" class="delivery-client-trigger" data-toggle-delivery-card="'+weeksPanelId+'" aria-expanded="false" aria-controls="'+weeksPanelId+'"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><span class="delivery-client-heading-copy"><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></span><span class="delivery-client-chevron" aria-hidden="true">⌄</span></button><div class="delivery-client-weeks" id="'+weeksPanelId+'" hidden>'+weekRows+'</div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }
