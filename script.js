@@ -1218,6 +1218,48 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
+  function confirmDeleteSale(item){
+    return new Promise(function(resolve){
+      let overlay = document.getElementById('saleDeleteDialog');
+      if(!overlay){
+        overlay = document.createElement('div');
+        overlay.id = 'saleDeleteDialog';
+        overlay.className = 'fa-dialog-backdrop';
+        overlay.hidden = true;
+        overlay.innerHTML = '<section class="fa-dialog" role="dialog" aria-modal="true" aria-labelledby="saleDeleteTitle" aria-describedby="saleDeleteDescription"><div class="fa-dialog-icon" aria-hidden="true">✕</div><h2 id="saleDeleteTitle">Eliminar venta</h2><p id="saleDeleteDescription"></p><div class="fa-dialog-actions"><button type="button" class="fa-dialog-cancel">Cancelar</button><button type="button" class="fa-dialog-confirm">Eliminar venta</button></div></section>';
+        document.body.appendChild(overlay);
+      }
+      const description = overlay.querySelector('#saleDeleteDescription');
+      const cancel = overlay.querySelector('.fa-dialog-cancel');
+      const confirm = overlay.querySelector('.fa-dialog-confirm');
+      const dialog = overlay.querySelector('.fa-dialog');
+      description.textContent = '¿Querés eliminar “' + (item.articulo || 'este artículo') + '” de ' + (item.cliente || 'este cliente') + '? Esta acción no se puede deshacer.';
+      overlay.hidden = false;
+      document.body.classList.add('fa-dialog-open');
+      let finished = false;
+      function finish(value){
+        if(finished) return;
+        finished = true;
+        overlay.hidden = true;
+        document.body.classList.remove('fa-dialog-open');
+        cancel.removeEventListener('click', onCancel);
+        confirm.removeEventListener('click', onConfirm);
+        overlay.removeEventListener('click', onBackdrop);
+        document.removeEventListener('keydown', onKeydown);
+        resolve(value);
+      }
+      function onCancel(){finish(false);}
+      function onConfirm(){finish(true);}
+      function onBackdrop(event){if(event.target === overlay) finish(false);}
+      function onKeydown(event){if(event.key === 'Escape'){event.preventDefault();finish(false);}}
+      cancel.addEventListener('click', onCancel);
+      confirm.addEventListener('click', onConfirm);
+      overlay.addEventListener('click', onBackdrop);
+      document.addEventListener('keydown', onKeydown);
+      window.requestAnimationFrame(function(){confirm.focus();});
+    });
+  }
+
   async function deleteSale(id){
     try{
       const result = await sb.from('sales').delete().eq('id', id).select('id');
@@ -1982,21 +2024,52 @@ document.addEventListener('DOMContentLoaded', function(){
       if(selectedId){
         const item=sales.find(function(s){return String(s.id)===String(selectedId);});
         if(!item){resetDeleteSelection(btn.closest('.sales-client-group'));return;}
-        if(confirm('¿Eliminar la venta de '+(item.articulo||'este artículo')+' para '+(item.cliente||'este cliente')+'?\n\nEsta acción no se puede deshacer.')) deleteSale(selectedId);
         resetDeleteSelection(btn.closest('.sales-client-group'));
+        confirmDeleteSale(item).then(function(confirmed){if(confirmed) deleteSale(selectedId);});
         return;
       }
       const groupId=btn.getAttribute('data-sales-group'); const panel=document.getElementById(groupId); if(!panel)return; const opening=panel.hidden; panel.hidden=!opening; root.querySelectorAll('button[data-sales-group="'+groupId+'"]').forEach(function(toggle){toggle.setAttribute('aria-expanded',String(opening));toggle.classList.toggle('expanded',opening);});
     }); });
     root.querySelectorAll('.sales-group-item[data-sale-id]').forEach(function(item){
       let pressTimer=null;
+      let startX=0;
+      let startY=0;
+      let touchStarted=false;
       const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
+      const beginPress=function(x,y){
+        clearPress(); startX=x; startY=y;
+        pressTimer=window.setTimeout(function(){
+          pressTimer=null;
+          item.dataset.longpressTriggered='true';
+          selectDeleteTarget(item);
+          showToast('Venta seleccionada. Tocá la X roja para eliminarla.', 2200);
+        },700);
+      };
+      // Touch explícito: evita que pointercancel/pointerleave del navegador móvil
+      // interrumpa la pulsación prolongada sin que el dedo se haya desplazado.
+      item.addEventListener('touchstart',function(event){
+        if(event.target && event.target.closest('button')) return;
+        if(!event.touches || event.touches.length!==1) return;
+        touchStarted=true;
+        beginPress(event.touches[0].clientX,event.touches[0].clientY);
+      },{passive:true});
+      item.addEventListener('touchmove',function(event){
+        if(!pressTimer || !event.touches || !event.touches.length) return;
+        const touch=event.touches[0];
+        if(Math.abs(touch.clientX-startX)>12 || Math.abs(touch.clientY-startY)>12) clearPress();
+      },{passive:true});
+      item.addEventListener('touchend',function(){clearPress();touchStarted=false;},{passive:true});
+      item.addEventListener('touchcancel',function(){clearPress();touchStarted=false;},{passive:true});
       item.addEventListener('pointerdown',function(event){
+        if(event.target && event.target.closest('button')) return;
+        if(event.pointerType==='touch' || touchStarted) return;
         if(event.button!==undefined && event.button!==0) return;
-        clearPress();
-        pressTimer=window.setTimeout(function(){pressTimer=null;item.dataset.longpressTriggered='true';selectDeleteTarget(item);},650);
+        beginPress(event.clientX,event.clientY);
       });
-      ['pointerup','pointercancel','pointerleave','blur'].forEach(function(type){item.addEventListener(type,clearPress);});
+      item.addEventListener('pointermove',function(event){
+        if(pressTimer!==null && (Math.abs(event.clientX-startX)>12 || Math.abs(event.clientY-startY)>12)) clearPress();
+      });
+      ['pointerup','pointercancel','blur'].forEach(function(type){item.addEventListener(type,function(event){if(event.type==='blur' || event.pointerType!=='touch') clearPress();});});
       item.addEventListener('click',function(event){
         if(item.dataset.longpressTriggered==='true'){delete item.dataset.longpressTriggered;event.preventDefault();event.stopPropagation();}
       });
@@ -2034,9 +2107,7 @@ document.addEventListener('DOMContentLoaded', function(){
         let id = btn.getAttribute('data-del');
         let item = sales.find(function(s){ return s.id === id; });
         if(!item) return;
-        if(confirm('¿Eliminar la venta de ' + (item.cliente || 'este cliente') + '?\n\nEsta acción no se puede deshacer.')){
-          deleteSale(id);
-        }
+        confirmDeleteSale(item).then(function(confirmed){if(confirmed) deleteSale(id);});
       });
     });
     root.querySelectorAll('[data-edit]').forEach(function(btn){
@@ -2087,52 +2158,60 @@ document.addEventListener('DOMContentLoaded', function(){
     twoWeeksAgoDate.setDate(twoWeeksAgoDate.getDate() - 14);
     const twoWeeksAgoKey = weekKey(twoWeeksAgoDate);
     const visibleKeys = [currentKey, previousKey, twoWeeksAgoKey].filter(Boolean);
+    const weekLabel = function(key){
+      if(key===currentKey) return 'Semana actual';
+      if(key===previousKey) return 'Semana anterior';
+      return 'Hace 2 semanas';
+    };
     const items = sales.filter(function(x){
       if(!x || !x.fecha) return false;
       const date = new Date(x.fecha);
       if(Number.isNaN(date.getTime())) return false;
       const itemWeekKey = weekKey(date);
       if(!visibleKeys.includes(itemWeekKey)) return false;
-      // La semana actual es una lista de seguimiento: conservar tanto entregados
-      // como pendientes durante toda la semana. En las dos semanas anteriores,
-      // mostrar únicamente los artículos que sigan pendientes.
+      // La semana actual conserva entregados y pendientes. En las dos anteriores,
+      // solo se muestran las ventas que aún están pendientes de entrega.
       if(itemWeekKey !== currentKey && x.entregado) return false;
       const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       return hay.includes(search);
     });
-    // Cada cliente se agrupa por semana para que el estado de una semana no
-    // oculte ni modifique el estado de la otra semana visible.
-    const grouped = {};
+    // Primero se agrupa por cliente y dentro de cada cliente por semana. Así un
+    // cliente aparece una sola vez, pero mantiene estados independientes por semana.
+    const clients = {};
     items.forEach(function(item){
-      const itemWeekKey = weekKey(new Date(item.fecha));
       const name = (item.cliente || 'Sin nombre').trim();
-      const key = itemWeekKey + '::' + name;
-      if(!grouped[key]) grouped[key] = {name:name, weekKey:itemWeekKey, items:[], total:0, pending:0, delivered:true};
-      const group = grouped[key];
-      const price = Number(item.precio) || 0;
+      const itemWeekKey = weekKey(new Date(item.fecha));
+      if(!clients[name]) clients[name] = {name:name, weeks:{}, total:0};
+      const client = clients[name];
+      if(!client.weeks[itemWeekKey]) client.weeks[itemWeekKey] = {weekKey:itemWeekKey,items:[],total:0,pendingPayment:0,delivered:true};
+      const group = client.weeks[itemWeekKey];
+      const price = Number(item.precio)||0;
       group.items.push(item);
       group.total += price;
-      if(!item.pagado) group.pending += price;
+      client.total += price;
+      if(!item.pagado) group.pendingPayment += price;
       if(!item.entregado) group.delivered = false;
     });
-    const groups = Object.keys(grouped).map(function(key){return grouped[key];}).sort(function(a,b){
-      if(a.weekKey !== b.weekKey) return a.weekKey.localeCompare(b.weekKey) * -1;
-      return a.name.localeCompare(b.name,'es');
-    }).filter(function(group){
-      // Durante la semana actual se conservan todos los grupos para validar
-      // entregas repetidamente. En semanas anteriores solo siguen visibles
-      // grupos que aún tengan artículos pendientes.
-      if(group.weekKey === currentKey) return true;
-      return group.items.some(function(item){return !item.entregado;});
-    });
+    const clientGroups = Object.keys(clients).map(function(name){
+      const client=clients[name];
+      client.weekGroups=Object.keys(client.weeks).map(function(key){return client.weeks[key];}).sort(function(a,b){return b.weekKey.localeCompare(a.weekKey);});
+      return client;
+    }).sort(function(a,b){return a.name.localeCompare(b.name,'es');});
     const wrap = document.getElementById('deliveriesList');
-    wrap.innerHTML = groups.length ? groups.map(function(group){
-      const name = group.name;
-      const list = group.items;
-      const total = group.total;
-      const pending = group.pending;
-      const delivered = list.length > 0 && group.delivered;
-      return '<article class="delivery-management-card"><div class="delivery-management-main"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(name)+'</strong><small>'+escapeHtml(formatRange(group.weekKey))+' · '+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><div class="delivery-management-badges"><span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente '+money(pending))+'</span></div></div></div><div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(name)+' · '+escapeHtml(formatRange(group.weekKey))+'"><button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button><button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></article>';
+    wrap.innerHTML = clientGroups.length ? clientGroups.map(function(client){
+      const weekRows=client.weekGroups.map(function(group){
+        const delivered=group.items.length>0 && group.delivered;
+        const label=weekLabel(group.weekKey);
+        const paymentBadge=group.pendingPayment===0
+          ? '<span class="delivery-status paid">Abonado</span>'
+          : '<span class="delivery-status pending">Pendiente '+money(group.pendingPayment)+'</span>';
+        return '<section class="delivery-week-row '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'">'+
+          '<div class="delivery-week-summary"><span class="delivery-week-label">'+escapeHtml(label)+'</span><small>'+escapeHtml(formatRange(group.weekKey))+' · '+group.items.length+' '+(group.items.length===1?'artículo':'artículos')+' · '+money(group.total)+'</small><div class="delivery-management-badges">'+paymentBadge+'</div></div>'+
+          '<div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(client.name)+' · '+escapeHtml(label)+'">'+
+          '<button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button>'+
+          '<button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></section>';
+      }).join('');
+      return '<article class="delivery-client-card"><header class="delivery-client-heading"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><div><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></div></header><div class="delivery-client-weeks">'+weekRows+'</div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }
