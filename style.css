@@ -4057,3 +4057,10 @@ textarea,
 #viewSales .management-expanded-layout .sales-group-item-side .row-actions .del-btn{display:inline-flex!important;align-items:center;justify-content:center;min-width:30px;min-height:30px;padding:4px 8px;border:1px solid rgba(var(--danger-rgb),.3);border-radius:8px;color:var(--danger);background:rgba(var(--danger-rgb),.07);font-size:calc((15px) * var(--font-scale, 1));line-height:1;}
 #viewSales .management-expanded-layout .sales-group-item-side .row-actions .del-btn:hover{background:rgba(var(--danger-rgb),.15);border-color:var(--danger);}
 @media(max-width:520px){.font-scale-options{grid-template-columns:repeat(3,minmax(0,1fr));}.font-scale-option{min-height:54px;}}
+
+
+/* V12.72: eliminación de venta mediante pulsación prolongada */
+#viewSales .sales-group-item[data-sale-id] { cursor: pointer; border-radius: 8px; transition: background-color .15s ease, outline-color .15s ease; }
+#viewSales .sales-group-item[data-sale-id]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+#viewSales .sales-group-item[data-sale-id].is-delete-target { background: rgba(var(--danger-rgb), .08); outline: 1px solid rgba(var(--danger-rgb), .42); }
+#viewSales .sales-group-chevron.delete-selected { color: var(--danger) !important; background: rgba(var(--danger-rgb), .1); border: 1px solid rgba(var(--danger-rgb), .35); border-radius: 8px; font-size: calc((18px) * var(--font-scale, 1)); font-weight: 800; transform: none !important; }

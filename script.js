@@ -1924,7 +1924,6 @@ document.addEventListener('DOMContentLoaded', function(){
     const showClientActions = isManagement && !readOnly;
     const showPaymentControl = isManagement || isWeeklySummary;
     const showItemActions = !readOnly && !isManagement;
-    const showManagementDelete = isManagement && !readOnly;
     // Se calcula una sola vez por render, no una vez por cliente/artículo.
     const previousKey = isWeeklySummary ? previousWeekKey() : null;
     const groups = {};
@@ -1953,7 +1952,7 @@ document.addEventListener('DOMContentLoaded', function(){
         : (summaryIsPreviousWeek ? '<span class="delivery-status weekly-summary-delivery-status '+(delivered?'paid':'pending')+'" data-weekly-delivery-status="'+(delivered?'delivered':'pending')+'">'+(delivered?'Entregado':'Por Entregar')+'</span>' : '');
       html += '<section class="sales-client-group'+expandOnly+'"><div class="sales-client-group-header"><button type="button" class="sales-client-group-trigger" data-sales-group="'+id+'" aria-expanded="false" aria-label="Ver compras de '+escapeHtml(name)+'"><span class="client-avatar">'+escapeHtml((name.charAt(0)||'C').toUpperCase())+'</span><span class="sales-client-group-copy"><strong>'+escapeHtml(name)+'</strong><small>'+list.length+' '+(list.length===1?'artículo':'artículos')+' · '+money(total)+'</small><small class="sales-retira-label">'+escapeHtml(pickupLabel)+'</small></span></button><div class="sales-group-statuses">'+(showPaymentControl ? '<button type="button" class="delivery-status '+(pending===0?'paid':'pending')+'" data-set-payment="'+escapeHtml(name)+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</button>' : '<span class="delivery-status '+(pending===0?'paid':'pending')+'">'+(pending===0?'Abonado':'Pendiente de Pago')+'</span>')+deliveryStatus+'<button type="button" class="sales-group-chevron" data-sales-group="'+id+'" aria-label="Expandir o contraer" aria-expanded="false">⌄</button></div></div><div class="sales-client-group-content '+(isManagement?'management-expanded-layout':'')+'" id="'+id+'" hidden>'+(isManagement?'<div class="management-items-column"><div class="management-last-purchase"><strong>Última compra</strong><span>'+ (list[0].fecha ? new Date(list[0].fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : 'Sin fecha') +'</span></div>':'');
       list.forEach(function(item){ const cat=item.categoria||'Sin categoría'; const date=item.fecha?new Date(item.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'';
-        html += '<article class="sales-group-item"><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(!showItemActions?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Abonado':'Pendiente de Pago')+'</button>')+(showItemActions?'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar artículo">✕</button></span>':(showManagementDelete?'<span class="row-actions"><button class="del-btn" data-del="'+item.id+'" aria-label="Eliminar venta de '+escapeHtml(item.articulo||'artículo')+'" title="Eliminar venta">✕</button></span>':''))+'</div></article>';
+        html += '<article class="sales-group-item"'+(isManagement?' data-sale-id="'+escapeHtml(item.id)+'" tabindex="0" role="button" aria-label="Venta de '+escapeHtml(item.articulo||'artículo')+'. Mantener presionado o pulsar Enter para habilitar eliminar"':'')+'><div class="sales-group-item-main"><strong>'+escapeHtml(item.articulo||'Artículo')+'</strong><small>'+escapeHtml(cat)+' · '+date+'</small></div><div class="sales-group-item-side"><strong>'+money(item.precio)+'</strong>'+(!showItemActions?'':'<button class="pay-toggle '+(item.pagado?'paid':'pending')+'" data-toggle-pay="'+item.id+'">'+(item.pagado?'Abonado':'Pendiente de Pago')+'</button>')+(showItemActions?'<span class="row-actions"><button class="edit-btn" data-edit="'+item.id+'" aria-label="Editar artículo">✎</button></span>':'')+'</div></article>';
       });
       html += '<div class="sales-group-total"><span>Total</span><strong>'+money(total)+'</strong></div>'+(isManagement?'</div>'+managementActions+'</div>':'')+'</div></section>';
     });
@@ -1962,7 +1961,50 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function bindTableEvents(root){
-    root.querySelectorAll('button[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(event){ event.preventDefault(); event.stopPropagation(); const groupId=btn.getAttribute('data-sales-group'); const panel=document.getElementById(groupId); if(!panel)return; const opening=panel.hidden; panel.hidden=!opening; root.querySelectorAll('button[data-sales-group="'+groupId+'"]').forEach(function(toggle){toggle.setAttribute('aria-expanded',String(opening));toggle.classList.toggle('expanded',opening);}); }); });
+    function resetDeleteSelection(card){
+      if(!card) return;
+      card.querySelectorAll('.sales-group-item.is-delete-target').forEach(function(item){item.classList.remove('is-delete-target');});
+      const toggle=card.querySelector('.sales-group-chevron');
+      if(toggle){toggle.removeAttribute('data-delete-target-id');toggle.textContent='⌄';toggle.classList.remove('delete-selected');toggle.setAttribute('aria-label','Expandir o contraer');}
+    }
+    function selectDeleteTarget(item){
+      const card=item.closest('.sales-client-group');
+      if(!card) return;
+      root.querySelectorAll('.sales-client-group').forEach(function(other){if(other!==card) resetDeleteSelection(other);});
+      resetDeleteSelection(card);
+      item.classList.add('is-delete-target');
+      const toggle=card.querySelector('.sales-group-chevron');
+      if(toggle){toggle.setAttribute('data-delete-target-id',item.getAttribute('data-sale-id'));toggle.textContent='✕';toggle.classList.add('delete-selected');toggle.setAttribute('aria-label','Eliminar venta seleccionada: '+(item.querySelector('.sales-group-item-main strong')?.textContent||'venta'));}
+    }
+    root.querySelectorAll('button[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(event){
+      event.preventDefault(); event.stopPropagation();
+      const selectedId=btn.getAttribute('data-delete-target-id');
+      if(selectedId){
+        const item=sales.find(function(s){return String(s.id)===String(selectedId);});
+        if(!item){resetDeleteSelection(btn.closest('.sales-client-group'));return;}
+        if(confirm('¿Eliminar la venta de '+(item.articulo||'este artículo')+' para '+(item.cliente||'este cliente')+'?\n\nEsta acción no se puede deshacer.')) deleteSale(selectedId);
+        resetDeleteSelection(btn.closest('.sales-client-group'));
+        return;
+      }
+      const groupId=btn.getAttribute('data-sales-group'); const panel=document.getElementById(groupId); if(!panel)return; const opening=panel.hidden; panel.hidden=!opening; root.querySelectorAll('button[data-sales-group="'+groupId+'"]').forEach(function(toggle){toggle.setAttribute('aria-expanded',String(opening));toggle.classList.toggle('expanded',opening);});
+    }); });
+    root.querySelectorAll('.sales-group-item[data-sale-id]').forEach(function(item){
+      let pressTimer=null;
+      const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
+      item.addEventListener('pointerdown',function(event){
+        if(event.button!==undefined && event.button!==0) return;
+        clearPress();
+        pressTimer=window.setTimeout(function(){pressTimer=null;item.dataset.longpressTriggered='true';selectDeleteTarget(item);},650);
+      });
+      ['pointerup','pointercancel','pointerleave','blur'].forEach(function(type){item.addEventListener(type,clearPress);});
+      item.addEventListener('click',function(event){
+        if(item.dataset.longpressTriggered==='true'){delete item.dataset.longpressTriggered;event.preventDefault();event.stopPropagation();}
+      });
+      item.addEventListener('keydown',function(event){
+        if(event.key==='Enter' || event.key===' '){event.preventDefault();selectDeleteTarget(item);}
+        else if(event.key==='Escape'){event.preventDefault();resetDeleteSelection(item.closest('.sales-client-group'));}
+      });
+    });
     root.querySelectorAll('[data-set-payment]').forEach(function(btn){ btn.addEventListener('click', async function(){
       const name=btn.getAttribute('data-set-payment');
       const expandedNames=Array.from(root.querySelectorAll('.sales-client-group')).filter(function(card){const panel=card.querySelector('.sales-client-group-content');return panel && !panel.hidden;}).map(function(card){const title=card.querySelector('.sales-client-group-copy strong');return title?title.textContent.trim():'';});
@@ -2009,7 +2051,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   let managementFilter = 'all';
-  let deliveryFilter = 'all';
   function renderManagementList(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const thisWeek = weekKey(new Date());
@@ -2042,11 +2083,20 @@ document.addEventListener('DOMContentLoaded', function(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const currentKey = weekKey(new Date());
     const previousKey = previousWeekKey();
-    const visibleKeys = [currentKey, previousKey].filter(Boolean);
+    const twoWeeksAgoDate = startOfWeek(new Date());
+    twoWeeksAgoDate.setDate(twoWeeksAgoDate.getDate() - 14);
+    const twoWeeksAgoKey = weekKey(twoWeeksAgoDate);
+    const visibleKeys = [currentKey, previousKey, twoWeeksAgoKey].filter(Boolean);
     const items = sales.filter(function(x){
       if(!x || !x.fecha) return false;
       const date = new Date(x.fecha);
-      if(Number.isNaN(date.getTime()) || !visibleKeys.includes(weekKey(date))) return false;
+      if(Number.isNaN(date.getTime())) return false;
+      const itemWeekKey = weekKey(date);
+      if(!visibleKeys.includes(itemWeekKey)) return false;
+      // La semana actual es una lista de seguimiento: conservar tanto entregados
+      // como pendientes durante toda la semana. En las dos semanas anteriores,
+      // mostrar únicamente los artículos que sigan pendientes.
+      if(itemWeekKey !== currentKey && x.entregado) return false;
       const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       return hay.includes(search);
     });
@@ -2069,8 +2119,11 @@ document.addEventListener('DOMContentLoaded', function(){
       if(a.weekKey !== b.weekKey) return a.weekKey.localeCompare(b.weekKey) * -1;
       return a.name.localeCompare(b.name,'es');
     }).filter(function(group){
-      const delivered = group.items.length > 0 && group.delivered;
-      return deliveryFilter === 'all' || (deliveryFilter === 'delivered' ? delivered : !delivered);
+      // Durante la semana actual se conservan todos los grupos para validar
+      // entregas repetidamente. En semanas anteriores solo siguen visibles
+      // grupos que aún tengan artículos pendientes.
+      if(group.weekKey === currentKey) return true;
+      return group.items.some(function(item){return !item.entregado;});
     });
     const wrap = document.getElementById('deliveriesList');
     wrap.innerHTML = groups.length ? groups.map(function(group){
@@ -2086,7 +2139,10 @@ document.addEventListener('DOMContentLoaded', function(){
   async function setDeliveryForClient(name, desired, targetWeekKey){
     const currentKey = weekKey(new Date());
     const previousKey = previousWeekKey();
-    const visibleKeys = new Set([currentKey, previousKey].filter(Boolean));
+    const twoWeeksAgoDate = startOfWeek(new Date());
+    twoWeeksAgoDate.setDate(twoWeeksAgoDate.getDate() - 14);
+    const twoWeeksAgoKey = weekKey(twoWeeksAgoDate);
+    const visibleKeys = new Set([currentKey, previousKey, twoWeeksAgoKey].filter(Boolean));
     if(!targetWeekKey || !visibleKeys.has(targetWeekKey)) return;
     const items = sales.filter(function(x){
       if(!x || !x.fecha || (x.cliente||'').trim() !== name) return false;
@@ -2144,7 +2200,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   document.getElementById('managementSearch').addEventListener('input', function(){renderManagementList(); if(currentView==='deliveries') renderDeliveriesView();});
   document.querySelectorAll('[data-management-filter]').forEach(function(btn){btn.addEventListener('click',function(){managementFilter=btn.dataset.managementFilter;document.querySelectorAll('[data-management-filter]').forEach(function(b){b.classList.toggle('active',b===btn);});renderManagementList();});});
-  document.querySelectorAll('[data-delivery-filter]').forEach(function(btn){btn.addEventListener('click',function(){deliveryFilter=btn.dataset.deliveryFilter;document.querySelectorAll('[data-delivery-filter]').forEach(function(b){b.classList.toggle('active',b===btn);});renderDeliveriesView();});});
 
   // Agrupa las ventas de la semana por quién retira realmente (no por
   // artículo), para saber a qué personas hay que entregarles algo,
