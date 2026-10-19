@@ -2789,18 +2789,25 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 #sheet.new-sale-mode .item-field-category { grid-column: 2 !important; }
 #sheet.new-sale-mode .item-field .input-row { width: 100% !important; align-items: center !important; gap: 5px !important; }
 #sheet.new-sale-mode .item-field .row-articulo,
-#sheet.new-sale-mode .item-field .row-precio,
-#sheet.new-sale-mode .item-field .row-categoria {
+#sheet.new-sale-mode .item-field .row-precio {
   width: 100% !important; min-width: 0 !important; min-height: 44px !important;
   padding: 0 9px !important; border-radius: 10px !important; font-size: 13px !important;
   color: var(--text) !important; background: var(--surface-2, var(--surface)) !important;
+}
+#sheet.new-sale-mode .item-field .row-categoria {
+  width: 100% !important; min-width: 0 !important; min-height: 44px !important;
+  padding: 0 42px 0 9px !important; border-radius: 10px !important; font-size: 13px !important;
+  color: var(--text) !important; background-color: var(--surface-2, var(--surface)) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2370788A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right 15px center !important; background-size: 16px 16px !important;
+  -webkit-appearance: none !important; appearance: none !important;
 }
 #sheet.new-sale-mode .item-field .mic-btn {
   flex: 0 0 35px !important; width: 35px !important; min-width: 35px !important;
   height: 35px !important; border-radius: 10px !important;
 }
 #sheet.new-sale-mode .item-field-price .row-precio { font-weight: 800 !important; }
-#sheet.new-sale-mode .item-field-category select { padding-right: 20px !important; }
+
 #sheet.new-sale-mode .item-row-label { display: inline-flex; align-items: center; gap: 7px; }
 #sheet.new-sale-mode .item-row-label::before {
   content: ""; display: inline-block; width: 7px; height: 7px; flex: 0 0 7px;
@@ -3998,6 +4005,26 @@ textarea,
   #sheet.new-sale-mode .item-field-category select.row-categoria,
   #sheet.edit-sale-mode .item-field-category select.row-categoria {
     padding-left: 10px;
+    padding-right: 42px;
+    background-position: right 15px center;
+  }
+}
+
+/* V12.69 — flecha de categoría separada del borde en ambos formularios.
+   Se reemplaza la flecha nativa por un indicador controlado y con margen estable. */
+#sheet.new-sale-mode .item-field-category select.row-categoria,
+#sheet.edit-sale-mode .item-field-category select.row-categoria {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2370788A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px 16px;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode .item-field-category select.row-categoria,
+  #sheet.edit-sale-mode .item-field-category select.row-categoria {
     padding-right: 42px;
     background-position: right 15px center;
   }
