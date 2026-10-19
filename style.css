@@ -4029,3 +4029,17 @@ textarea,
     background-position: right 15px center;
   }
 }
+
+
+/* V12.70 — foco de teclado visible y coherente en controles interactivos. */
+:focus-visible {
+  outline: 3px solid var(--primary-soft) !important;
+  outline-offset: 2px !important;
+}
+
+/* No eliminar el indicador de foco en menús navegables por teclado. */
+.menu-item:focus-visible,
+.client-action-menu button:focus-visible {
+  outline: 3px solid var(--primary-soft) !important;
+  outline-offset: 1px !important;
+}

@@ -2266,7 +2266,7 @@ document.addEventListener('DOMContentLoaded', function(){
     pastKeys.slice(0,3).forEach(function(k, historyIndex){
       let st = weekStats(groups[k]);
       let label = "Semana del " + formatRange(k);
-      html += '<button class="week-toggle '+(historyIndex===0?'week-latest':'')+'" data-week="' + k + '">' +
+      html += '<button type="button" class="week-toggle '+(historyIndex===0?'week-latest':'')+'" data-week="' + k + '" aria-controls="wk-' + k + '" aria-expanded="false">' +
                 '<span><span class="lbl">' + label + '</span><br><span class="sub">' + st.count + ' art. · ' + money(st.total) + '</span></span>' +
                 '<span class="chev">▾</span>' +
               '</button>';
@@ -2290,8 +2290,10 @@ document.addEventListener('DOMContentLoaded', function(){
           itemsEl.setAttribute('data-loaded', '1');
         }
 
-        btn.classList.toggle('open');
-        itemsEl.classList.toggle('open');
+        const opening = !itemsEl.classList.contains('open');
+        btn.classList.toggle('open', opening);
+        itemsEl.classList.toggle('open', opening);
+        btn.setAttribute('aria-expanded', String(opening));
       });
     });
 
