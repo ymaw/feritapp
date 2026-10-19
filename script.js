@@ -2014,7 +2014,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if(!card) return;
       root.querySelectorAll('.sales-client-group').forEach(function(other){if(other!==card) resetDeleteSelection(other);});
       resetDeleteSelection(card);
-      item.classList.add('is-delete-target');
+      // No se marca visualmente el artículo: la pulsación prolongada habilita la X del encabezado.
       const toggle=card.querySelector('.sales-group-chevron');
       if(toggle){toggle.setAttribute('data-delete-target-id',item.getAttribute('data-sale-id'));toggle.textContent='✕';toggle.classList.add('delete-selected');toggle.setAttribute('aria-label','Eliminar venta seleccionada: '+(item.querySelector('.sales-group-item-main strong')?.textContent||'venta'));}
     }
@@ -2045,7 +2045,7 @@ document.addEventListener('DOMContentLoaded', function(){
           longPressTriggered=true;
           item.dataset.longpressTriggered='true';
           selectDeleteTarget(item);
-          showToast('Venta seleccionada. Tocá la X roja del encabezado para eliminarla.', 2200);
+          showToast('Tocá la X roja del encabezado para eliminar esta venta.', 2200);
         },600);
       };
       const movePress=function(x,y){
@@ -2209,18 +2209,17 @@ document.addEventListener('DOMContentLoaded', function(){
     wrap.innerHTML = clientGroups.length ? clientGroups.map(function(client, clientIndex){
       const weeksPanelId='delivery-client-weeks-'+clientIndex;
       const weekRows=client.weekGroups.map(function(group){
+        const label=weekLabel(group.weekKey);
+        return '<section class="delivery-week-row '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'">'+
+          '<div class="delivery-week-summary"><span class="delivery-week-label">'+escapeHtml(label)+'</span><small>'+escapeHtml(formatRange(group.weekKey))+' · '+group.items.length+' '+(group.items.length===1?'artículo':'artículos')+' · '+money(group.total)+'</small></div></section>';
+      }).join('');
+      const statusBadges=client.weekGroups.map(function(group){
         const delivered=group.items.length>0 && group.delivered;
         const label=weekLabel(group.weekKey);
-        const paymentBadge=group.pendingPayment===0
-          ? '<span class="delivery-status paid">Abonado</span>'
-          : '<span class="delivery-status pending">Pendiente '+money(group.pendingPayment)+'</span>';
-        return '<section class="delivery-week-row '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'">'+
-          '<div class="delivery-week-summary"><span class="delivery-week-label">'+escapeHtml(label)+'</span><small>'+escapeHtml(formatRange(group.weekKey))+' · '+group.items.length+' '+(group.items.length===1?'artículo':'artículos')+' · '+money(group.total)+'</small><div class="delivery-management-badges">'+paymentBadge+'</div></div>'+
-          '<div class="delivery-state-switch" role="group" aria-label="Estado de entrega de '+escapeHtml(client.name)+' · '+escapeHtml(label)+'">'+
-          '<button type="button" class="delivery-state-option '+(!delivered?'is-active is-pending':'')+'" data-set-delivery="pending" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(!delivered)+'">Por Entregar</button>'+
-          '<button type="button" class="delivery-state-option '+(delivered?'is-active is-delivered':'')+'" data-set-delivery="delivered" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-pressed="'+String(delivered)+'">Entregado</button></div></section>';
+        return '<button type="button" class="delivery-client-status '+(delivered?'is-delivered':'is-pending')+' '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'" data-set-delivery="'+(delivered?'pending':'delivered')+'" data-client="'+escapeHtml(client.name)+'" data-week-key="'+escapeHtml(group.weekKey)+'" aria-label="'+escapeHtml(label+': '+(delivered?'Entregado':'Por Entregar')+'. Cambiar estado')+'" title="'+escapeHtml(label)+'">'+
+          '<span class="delivery-client-status-week">'+escapeHtml(label)+'</span><strong>'+(delivered?'Entregado':'Por Entregar')+'</strong></button>';
       }).join('');
-      return '<article class="delivery-client-card"><button type="button" class="delivery-client-trigger" data-toggle-delivery-card="'+weeksPanelId+'" aria-expanded="false" aria-controls="'+weeksPanelId+'"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><span class="delivery-client-heading-copy"><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></span><span class="delivery-client-chevron" aria-hidden="true">⌄</span></button><div class="delivery-client-weeks" id="'+weeksPanelId+'" hidden>'+weekRows+'</div></article>';
+      return '<article class="delivery-client-card"><button type="button" class="delivery-client-trigger" data-toggle-delivery-card="'+weeksPanelId+'" aria-expanded="false" aria-controls="'+weeksPanelId+'"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><span class="delivery-client-heading-copy"><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></span><span class="delivery-client-chevron" aria-hidden="true">⌄</span></button><div class="delivery-client-statuses">'+statusBadges+'</div><div class="delivery-client-weeks" id="'+weeksPanelId+'" hidden>'+weekRows+'</div></article>';
     }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }

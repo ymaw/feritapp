@@ -4118,3 +4118,19 @@ body.fa-dialog-open{overflow:hidden;}
 .delivery-week-row.is-current-week{background:var(--surface-2,var(--paper-2,var(--surface)));border-color:rgba(var(--primary-rgb),.16);}
 .delivery-week-row.is-previous-week{background:rgba(127,140,160,.045);border-color:rgba(127,140,160,.12);}
 @media(max-width:560px){.delivery-client-trigger{padding-bottom:9px;}.delivery-client-chevron{flex-basis:28px;width:28px;height:28px;}}
+
+/* V12.76 — estados de Entregas visibles en la cara principal de cada cliente */
+.delivery-client-statuses{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 9px;padding:0 3px 2px;}
+.delivery-client-status{display:inline-flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2,var(--surface));color:var(--text);text-align:left;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease;}
+.delivery-client-status:active{transform:scale(.985);}
+.delivery-client-status:focus-visible{outline:3px solid var(--primary);outline-offset:2px;}
+.delivery-client-status-week{font-size:calc(9px * var(--font-scale,1));font-weight:650;color:var(--text-muted);line-height:1.2;}
+.delivery-client-status strong{font-size:calc(11px * var(--font-scale,1));line-height:1.25;}
+.delivery-client-status.is-pending{border-color:rgba(var(--danger-rgb),.24);background:rgba(var(--danger-rgb),.055);}
+.delivery-client-status.is-pending strong{color:var(--danger);}
+.delivery-client-status.is-delivered{border-color:rgba(var(--success-rgb,46,160,98),.24);background:rgba(var(--success-rgb,46,160,98),.07);}
+.delivery-client-status.is-delivered strong{color:var(--success,var(--primary));}
+.delivery-client-status.is-current-week .delivery-client-status-week{color:var(--primary);}
+.delivery-week-row .delivery-week-summary{grid-column:1/-1;}
+.delivery-week-row .delivery-week-summary>small{margin-top:1px;}
+@media(max-width:560px){.delivery-client-statuses{gap:6px;margin-bottom:8px}.delivery-client-status{flex:1 1 calc(50% - 6px);padding:7px 8px}.delivery-client-status strong{font-size:calc(10px * var(--font-scale,1));}}
