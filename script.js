@@ -1237,18 +1237,68 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
+  const DELETE_UNDO_WINDOW_MS = 10000;
+  let pendingUndoOperations = [];
+
+  function refreshUndoToast(){
+    const toast=document.getElementById('toast');
+    if(!toast)return;
+    const latest=pendingUndoOperations[pendingUndoOperations.length-1];
+    if(!latest){toast.classList.remove('has-action');return;}
+    toast.replaceChildren(document.createTextNode(latest.message+' '));
+    const undo=document.createElement('button');
+    undo.type='button'; undo.className='toast-undo'; undo.textContent='Deshacer';
+    undo.setAttribute('aria-label','Deshacer eliminación');
+    undo.addEventListener('click',function(){undoPendingDeletion(latest.id);});
+    toast.appendChild(undo); toast.classList.add('show','has-action');
+  }
+
+  function scheduleUndoableDeletion(options){
+    const op={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),message:options.message,undo:options.undo,commit:options.commit,timer:null};
+    pendingUndoOperations.push(op);
+    op.timer=setTimeout(async function(){
+      pendingUndoOperations=pendingUndoOperations.filter(function(item){return item.id!==op.id;});
+      try{await op.commit();}
+      catch(error){
+        try{op.undo();render();}catch(restoreError){}
+        showToast('No se pudo completar la eliminación. Se restauró la información en pantalla; verificá la conexión.');
+      }
+      if(pendingUndoOperations.length)refreshUndoToast();
+      else{const toast=document.getElementById('toast');if(toast)toast.classList.remove('has-action','show');}
+    },DELETE_UNDO_WINDOW_MS);
+    refreshUndoToast();
+    return op.id;
+  }
+
+  function undoPendingDeletion(id){
+    const index=pendingUndoOperations.findIndex(function(item){return item.id===id;});
+    if(index<0)return;
+    const op=pendingUndoOperations[index];
+    clearTimeout(op.timer);
+    pendingUndoOperations.splice(index,1);
+    try{op.undo();}catch(error){showToast('No se pudo restaurar la vista. Actualizá la pantalla para verificar.');}
+    render();
+    if(pendingUndoOperations.length)refreshUndoToast();
+    else showToast('Eliminación deshecha');
+  }
+
   async function deleteSalesGroup(ids){
     const uniqueIds=Array.from(new Set(ids.map(String)));
     if(!uniqueIds.length)return;
-    try{
-      const result=await sb.from('sales').delete().in('id',uniqueIds).select('id');
-      if(result.error)throw result.error;
-      const deletedIds=new Set((result.data||[]).map(function(item){return String(item.id);}));
-      if(!deletedIds.size)throw new Error('No se eliminó ninguna venta.');
-      sales=sales.filter(function(item){return !deletedIds.has(String(item.id));});
-      render();
-      showToast(deletedIds.size===1?'Venta eliminada':'Ventas eliminadas: '+deletedIds.size);
-    }catch(error){showToast('No se pudieron eliminar las ventas. Verificá tus permisos e intentá nuevamente.');}
+    const removed=sales.filter(function(item){return uniqueIds.includes(String(item.id));});
+    if(!removed.length){showToast('No se encontraron ventas para eliminar.');return;}
+    sales=sales.filter(function(item){return !uniqueIds.includes(String(item.id));});
+    render();
+    scheduleUndoableDeletion({
+      message:(removed.length===1?'Venta eliminada.':'Ventas eliminadas: '+removed.length+'.')+' Podés deshacer',
+      undo:function(){sales=sales.concat(removed);},
+      commit:async function(){
+        const result=await sb.from('sales').delete().in('id',uniqueIds).select('id');
+        if(result.error)throw result.error;
+        const deletedIds=new Set((result.data||[]).map(function(item){return String(item.id);}));
+        if(!deletedIds.size)throw new Error('No se eliminó ninguna venta.');
+      }
+    });
   }
 
   function confirmDeleteSale(item){
@@ -1294,18 +1344,19 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function deleteSale(id){
-    try{
-      const result = await sb.from('sales').delete().eq('id', id).select('id');
-      if(result.error) throw result.error;
-      if(!result.data || result.data.length === 0){
-        throw new Error('La venta no se eliminó: puede que ya no exista o no tengas permiso.');
+    const removed=sales.filter(function(item){return String(item.id)===String(id);});
+    if(!removed.length){showToast('No se encontró la venta para eliminar.');return;}
+    sales=sales.filter(function(item){return String(item.id)!==String(id);});
+    render();
+    scheduleUndoableDeletion({
+      message:'Venta eliminada. Podés deshacer',
+      undo:function(){sales=sales.concat(removed);},
+      commit:async function(){
+        const result=await sb.from('sales').delete().eq('id',id).select('id');
+        if(result.error)throw result.error;
+        if(!result.data||result.data.length===0)throw new Error('La venta no se eliminó.');
       }
-      sales = sales.filter(function(s){ return s.id !== id; });
-      render();
-      showToast('Venta eliminada');
-    }catch(e){
-      showToast('No se pudo borrar la venta. Verificá tus permisos e intentá nuevamente.');
-    }
+    });
   }
 
   /* ---------------- date / week helpers ---------------- */
@@ -2039,7 +2090,7 @@ document.addEventListener('DOMContentLoaded', function(){
     function resetDeleteSelection(card){
       if(!card) return;
       const toggle=card.querySelector('.sales-group-chevron');
-      if(toggle){toggle.removeAttribute('data-delete-target-ids');toggle.textContent='⌄';toggle.classList.remove('delete-selected');toggle.setAttribute('aria-label','Expandir o contraer');}
+      if(toggle){toggle.removeAttribute('data-delete-target-ids');toggle.removeAttribute('title');toggle.textContent='⌄';toggle.classList.remove('delete-selected');toggle.setAttribute('aria-label','Expandir o contraer');}
     }
     function selectDeleteTarget(card){
       if(!card) return;
@@ -2051,6 +2102,7 @@ document.addEventListener('DOMContentLoaded', function(){
         toggle.setAttribute('data-delete-target-ids',ids.join(','));
         toggle.textContent='✕';
         toggle.classList.add('delete-selected');
+        toggle.setAttribute('title','Eliminar ventas de este cliente');
         const title=card.querySelector('.sales-client-group-copy strong');
         toggle.setAttribute('aria-label','Eliminar las ventas de '+(title?title.textContent.trim():'este cliente'));
         card.dataset.deleteSelectionTriggered='true';
@@ -2210,9 +2262,8 @@ document.addEventListener('DOMContentLoaded', function(){
       if(Number.isNaN(date.getTime())) return false;
       const itemWeekKey = weekKey(date);
       if(!visibleKeys.includes(itemWeekKey)) return false;
-      // La semana actual conserva entregados y pendientes. En las dos anteriores,
-      // solo se muestran las ventas que aún están pendientes de entrega.
-      if(itemWeekKey !== currentKey && x.entregado) return false;
+      // Las tres semanas visibles conservan tanto entregados como pendientes.
+      // Marcar una entrega como realizada no debe hacer desaparecer al cliente.
       const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       return hay.includes(search);
     });
@@ -2268,8 +2319,9 @@ document.addEventListener('DOMContentLoaded', function(){
       if(Number.isNaN(date.getTime())) return false;
       const key=weekKey(date);
       if(!visibleKeys.has(key)) return false;
-      // Igual que la lista: las semanas anteriores solo contienen pendientes.
-      return key===currentKey || !item.entregado;
+      // El estado del cliente se aplica a todas sus ventas de las tres semanas
+      // visibles, incluidas las ya entregadas, para que pueda alternarse sin ocultarlas.
+      return true;
     });
     if(!items.length) return;
     const changed=items.filter(function(item){return !!item.entregado!==desired;});
@@ -2721,15 +2773,15 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function deleteClientEntry(name){
-    try{
-      await sb.from('clients').delete().eq('name', name);
-      clients = clients.filter(function(c){ return c.toLowerCase() !== name.toLowerCase(); });
-      refreshClientsDatalist();
-      renderClientsFullList();
-      showToast('Cliente eliminado de la lista');
-    }catch(e){
-      showToast('No se pudo eliminar el cliente.');
-    }
+    const removed=clients.filter(function(c){return c.toLowerCase()===name.toLowerCase();});
+    if(!removed.length){showToast('No se encontró el cliente en la lista.');return;}
+    clients=clients.filter(function(c){return c.toLowerCase()!==name.toLowerCase();});
+    refreshClientsDatalist(); renderClientsFullList();
+    scheduleUndoableDeletion({
+      message:'Cliente quitado de la lista. Podés deshacer',
+      undo:function(){clients=clients.concat(removed);refreshClientsDatalist();renderClientsFullList();},
+      commit:async function(){const result=await sb.from('clients').delete().eq('name',name);if(result.error)throw result.error;}
+    });
   }
 
   let clientSearchDebounce = null;
@@ -2749,9 +2801,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function showToast(msg, duration){
     let t = document.getElementById('toast');
+    t.classList.remove('has-action');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, duration || 2200);
+    setTimeout(function(){ if(!t.classList.contains('has-action')) t.classList.remove('show'); }, duration || 2200);
   }
 
   /* ---------------- sheet open/close ---------------- */
@@ -3043,9 +3096,16 @@ document.addEventListener('DOMContentLoaded', function(){
           }
         }
         if(removedIds.length){
-          const delRes = await sb.from('sales').delete().in('id',removedIds);
-          if(delRes.error) throw delRes.error;
-          sales = sales.filter(function(x){return !removedIds.includes(x.id);});
+          const removedSales=sales.filter(function(x){return removedIds.includes(x.id);});
+          sales=sales.filter(function(x){return !removedIds.includes(x.id);});
+          scheduleUndoableDeletion({
+            message:(removedSales.length===1?'Artículo quitado.':'Artículos quitados: '+removedSales.length+'.')+' Podés deshacer',
+            undo:function(){sales=sales.concat(removedSales);},
+            commit:async function(){
+              const delRes=await sb.from('sales').delete().in('id',removedIds);
+              if(delRes.error)throw delRes.error;
+            }
+          });
         }
         editingClientSalesIds = null;
         await persistClientIfNew(cliente);
@@ -3167,16 +3227,19 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.getElementById('resetBtn').addEventListener('click', async function(){
-    if(!confirm('¿Borrar todo el historial de ventas? Esta acción no se puede deshacer.')) return;
-    try{
-      // truco para borrar todas las filas propias: RLS ya limita a las del usuario
-      await sb.from('sales').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      sales = [];
-      render();
-      showToast('Datos borrados');
-    }catch(e){
-      showToast('No se pudieron borrar los datos.');
-    }
+    if(!confirm('¿Quitar todo el historial de ventas? Vas a tener 10 segundos para deshacerlo.')) return;
+    const previousSales=sales.slice();
+    if(!previousSales.length){showToast('No hay ventas para eliminar.');return;}
+    sales=[];
+    render();
+    scheduleUndoableDeletion({
+      message:'Historial quitado. Podés deshacer',
+      undo:function(){sales=sales.concat(previousSales);},
+      commit:async function(){
+        const result=await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
+        if(result.error)throw result.error;
+      }
+    });
   });
 
   /* ---------------- voice dictation ---------------- */
