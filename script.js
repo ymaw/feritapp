@@ -3202,7 +3202,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.body.appendChild(menu);
       menu.hidden=false;trigger.setAttribute('aria-expanded','true');picker.classList.add('is-open');
       positionMenu();
-      const search=menu.querySelector('.category-picker-search');if(search)search.focus({preventScroll:true});
+      const search=menu.querySelector('.category-picker-search');if(search)search.blur();
     });
     picker._categoryPickerMenu=menu;picker._categoryPickerAnchor=menuAnchor;
     menu.addEventListener('click',function(event){event.stopPropagation();});
