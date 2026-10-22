@@ -4187,20 +4187,25 @@ body.fa-dialog-open{overflow:hidden;}
 /* V12.80 — acción contextual del Resumen Semanal. Conserva colores del tema. */
 .weekly-summary-context-menu {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
   gap: 8px;
-  padding: 9px 12px;
+  padding: 10px 12px;
+  margin-top: 8px;
   border-top: 1px solid var(--border);
   background: var(--surface-2, var(--surface));
+  border-radius: 0 0 12px 12px;
 }
 .weekly-summary-move-current {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 36px;
+  width: auto;
   max-width: 100%;
-  padding: 8px 12px;
+  padding: 8px 18px;
   border: 1px solid var(--primary);
   border-radius: 10px;
   background: var(--primary);
@@ -4217,4 +4222,10 @@ body.fa-dialog-open{overflow:hidden;}
 @media (max-width: 420px) {
   .weekly-summary-context-menu { padding: 8px 10px; }
   .weekly-summary-move-current { min-height: 34px; padding: 7px 10px; }
+}
+
+/* V12.83 — estado visible de selección para mover cliente desde Resumen Semanal. */
+.weekly-summary-client-group.weekly-summary-move-selected {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
 }

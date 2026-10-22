@@ -2216,10 +2216,11 @@ document.addEventListener('DOMContentLoaded', function(){
       },true);
       header.addEventListener('keydown',function(event){if(event.key==='Escape'){resetDeleteSelection(card);}});
     });
-    // Resumen Semanal: mantener pulsada la tarjeta general permite mover
-    // todas las ventas de ese cliente de la semana cerrada a la semana actual.
+    // Resumen Semanal: la pulsación larga puede iniciarse en casi toda la tarjeta.
+    // El menú queda al pie, centrado, y se cierra al tocar fuera de él/tarjeta.
     function closeWeeklySummaryMenus(){
       root.querySelectorAll('.weekly-summary-context-menu').forEach(function(menu){menu.remove();});
+      root.querySelectorAll('.weekly-summary-client-group.weekly-summary-move-selected').forEach(function(card){card.classList.remove('weekly-summary-move-selected');});
     }
     function showWeeklySummaryMenu(card){
       if(!card || !card.classList.contains('weekly-summary-client-group')) return;
@@ -2235,38 +2236,46 @@ document.addEventListener('DOMContentLoaded', function(){
       action.textContent='Mover a Semana Actual';
       action.addEventListener('click',function(event){
         event.preventDefault(); event.stopPropagation();
-        menu.remove();
+        closeWeeklySummaryMenus();
         moveWeeklySummaryClientToCurrentWeek(name);
       });
       menu.appendChild(action);
-      const content=card.querySelector('.sales-client-group-content');
-      card.insertBefore(menu,content || null);
+      card.appendChild(menu);
+      card.classList.add('weekly-summary-move-selected');
     }
-    root.querySelectorAll('.weekly-summary-client-group .sales-client-group-header').forEach(function(header){
-      const card=header.closest('.weekly-summary-client-group');
-      if(!card) return;
+    // Un toque fuera deselecciona. El botón no se cierra antes de recibir el click.
+    document.addEventListener('pointerdown',function(event){
+      const target=event.target;
+      if(target && target.closest('.weekly-summary-context-menu')) return;
+      const selectedCard=root.querySelector('.weekly-summary-client-group.weekly-summary-move-selected');
+      if(selectedCard && target && selectedCard.contains(target)) return;
+      closeWeeklySummaryMenus();
+    },true);
+    root.querySelectorAll('.weekly-summary-client-group').forEach(function(card){
       let pressTimer=null, startX=0, startY=0, longPressTriggered=false;
       const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
-      header.addEventListener('pointerdown',function(event){
-        if(!event.target || !event.target.closest('.sales-client-group-trigger')) return;
+      card.addEventListener('pointerdown',function(event){
+        // Ampliamos el área de pulsación a toda la tarjeta, evitando acciones y controles.
+        if(event.target && event.target.closest('button,a,input,select,textarea,[role="button"],.weekly-summary-context-menu')) return;
         if(event.isPrimary===false || (event.button!==undefined && event.button!==0)) return;
+        closeWeeklySummaryMenus();
         clearPress(); startX=event.clientX; startY=event.clientY; longPressTriggered=false;
         pressTimer=window.setTimeout(function(){
           pressTimer=null; longPressTriggered=true;
           showWeeklySummaryMenu(card);
         },650);
       });
-      header.addEventListener('pointermove',function(event){
-        if(pressTimer!==null && (Math.abs(event.clientX-startX)>18 || Math.abs(event.clientY-startY)>18)) clearPress();
+      card.addEventListener('pointermove',function(event){
+        if(pressTimer!==null && (Math.abs(event.clientX-startX)>22 || Math.abs(event.clientY-startY)>22)) clearPress();
       });
-      header.addEventListener('pointerup',clearPress);
-      header.addEventListener('pointercancel',clearPress);
-      header.addEventListener('contextmenu',function(event){
-        if(event.target && event.target.closest('.sales-client-group-trigger')){
+      card.addEventListener('pointerup',clearPress);
+      card.addEventListener('pointercancel',clearPress);
+      card.addEventListener('contextmenu',function(event){
+        if(event.target && !event.target.closest('button,a,input,select,textarea,[role="button"],.weekly-summary-context-menu')){
           event.preventDefault(); showWeeklySummaryMenu(card); longPressTriggered=true;
         }
       });
-      header.addEventListener('click',function(event){
+      card.addEventListener('click',function(event){
         if(longPressTriggered){longPressTriggered=false;event.preventDefault();event.stopPropagation();}
       },true);
     });
