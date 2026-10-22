@@ -1,0 +1,62 @@
+/* FeritApp V12.87 — selector de categorías alineado con la identidad visual existente. */
+#sheet .category-picker { position: relative; width: 100%; min-width: 0; }
+#sheet .category-picker-native {
+  position: absolute !important; width: 1px !important; height: 1px !important;
+  padding: 0 !important; margin: -1px !important; overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important; clip-path: inset(50%) !important;
+  white-space: nowrap !important; border: 0 !important; opacity: 0 !important;
+  pointer-events: none !important;
+}
+#sheet .category-picker-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; min-height: 44px; box-sizing: border-box; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface); color: var(--text);
+  font: 500 calc(14px * var(--font-scale, 1)) var(--body); text-align: left;
+  cursor: pointer; transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+#sheet .category-picker-trigger:focus-visible,
+#sheet .category-picker.is-open .category-picker-trigger {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft, color-mix(in srgb, var(--primary) 16%, transparent));
+}
+#sheet .category-picker-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#sheet .category-picker-chevron { flex: 0 0 auto; color: var(--primary); font-size: 17px; line-height: 1; transition: transform .16s ease; }
+#sheet .category-picker.is-open .category-picker-chevron { transform: rotate(180deg); }
+/* El menú se monta temporalmente en body para no quedar recortado por el modal. */
+.category-picker-menu {
+  display: flex; flex-direction: column; gap: 6px; box-sizing: border-box;
+  max-height: min(340px, 52vh); overflow: hidden; overscroll-behavior: contain;
+  padding: 8px; border: 1px solid var(--border); border-radius: 13px;
+  background: var(--surface); color: var(--text);
+  box-shadow: 0 12px 32px rgba(25, 18, 48, .18);
+}
+.category-picker-menu[hidden] { display: none !important; }
+.category-picker-search {
+  display: block; flex: 0 0 auto; width: 100%; min-height: 38px; box-sizing: border-box;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font: 400 13px var(--body);
+  outline: none; margin-bottom: 2px;
+}
+.category-picker-search::placeholder { color: var(--muted); opacity: .9; }
+.category-picker-search:focus { border-color: var(--primary); }
+.category-picker-options { min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 3px; }
+.category-picker-option {
+  display: flex; align-items: center; width: 100%; flex: 0 0 auto; min-height: 40px; box-sizing: border-box;
+  padding: 8px 10px; border: 1px solid transparent; border-radius: 8px;
+  background: transparent; color: var(--text); font: 400 14px var(--body);
+  text-align: left; cursor: pointer; transition: background .12s ease, border-color .12s ease;
+}
+.category-picker-option::before {
+  content: ''; width: 7px; height: 7px; flex: 0 0 7px; margin-right: 10px;
+  border-radius: 50%; background: var(--primary-soft, var(--primary)); opacity: .65;
+}
+.category-picker-option:hover { background: var(--surface-2); }
+.category-picker-option.is-selected {
+  background: var(--surface-2); border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+  color: var(--text); font-weight: 600;
+}
+.category-picker-option.is-selected::before { opacity: 1; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+.category-picker-option.is-selected::after { content: '✓'; margin-left: auto; padding-left: 10px; color: var(--primary); font-size: 14px; font-weight: 700; }
+.category-picker-empty { padding: 12px 8px; color: var(--muted); font-size: 13px; text-align: center; }
+[data-theme="dark"] .category-picker-menu { color-scheme: dark; }
