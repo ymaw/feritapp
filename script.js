@@ -685,7 +685,8 @@ document.addEventListener('DOMContentLoaded', function(){
       retira: row.retira,
       tercero: row.tercero || '',
       categoria: row.categoria || 'Sin categoría',
-      entregado: !!row.entregado
+      entregado: !!row.entregado,
+      entregado_en: row.entregado_en || null
     };
   }
 
@@ -2243,6 +2244,36 @@ document.addEventListener('DOMContentLoaded', function(){
     wrap.innerHTML = renderSalesGroupedByClient(filtered, 'management');
     bindTableEvents(wrap);
   }
+  // Interpreta las columnas tipo DATE como fechas de calendario locales.
+  // new Date('YYYY-MM-DD') las interpreta como UTC y puede moverlas al día anterior
+  // en zonas horarias como Argentina, afectando el límite de la semana configurada.
+  function parseDeliveryDate(value){
+    if(!value) return null;
+    if(value instanceof Date){
+      return Number.isNaN(value.getTime()) ? null : new Date(value.getTime());
+    }
+    const text=String(value);
+    const dateOnly=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(dateOnly){
+      const localDate=new Date(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3]));
+      return Number.isNaN(localDate.getTime()) ? null : localDate;
+    }
+    const parsed=new Date(text);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  // Entregadas: solo siguen visibles durante la semana en que se registró
+  // entregado_en. Pendientes: permanecen visibles dentro de la ventana móvil de 3 semanas.
+  function isDeliveryItemVisible(item, visibleKeys, currentKey){
+    if(!item || !item.fecha) return false;
+    const saleDate=parseDeliveryDate(item.fecha);
+    if(!saleDate) return false;
+    if(!visibleKeys.has(weekKey(saleDate))) return false;
+    if(!item.entregado) return true;
+    const deliveredAt=parseDeliveryDate(item.entregado_en);
+    return !!deliveredAt && weekKey(deliveredAt)===currentKey;
+  }
+
   function renderDeliveriesView(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const currentKey = weekKey(new Date());
@@ -2250,29 +2281,25 @@ document.addEventListener('DOMContentLoaded', function(){
     const twoWeeksAgoDate = startOfWeek(new Date());
     twoWeeksAgoDate.setDate(twoWeeksAgoDate.getDate() - 14);
     const twoWeeksAgoKey = weekKey(twoWeeksAgoDate);
-    const visibleKeys = [currentKey, previousKey, twoWeeksAgoKey].filter(Boolean);
+    const visibleKeysArray = [currentKey, previousKey, twoWeeksAgoKey].filter(Boolean);
+    const visibleKeys = new Set(visibleKeysArray);
     const weekLabel = function(key){
       if(key===currentKey) return 'Semana actual';
       if(key===previousKey) return 'Semana anterior';
       return 'Hace 2 semanas';
     };
-    const items = sales.filter(function(x){
-      if(!x || !x.fecha) return false;
-      const date = new Date(x.fecha);
-      if(Number.isNaN(date.getTime())) return false;
-      const itemWeekKey = weekKey(date);
-      if(!visibleKeys.includes(itemWeekKey)) return false;
-      // Las tres semanas visibles conservan tanto entregados como pendientes.
-      // Marcar una entrega como realizada no debe hacer desaparecer al cliente.
-      const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
+    const items = sales.filter(function(item){
+      if(!isDeliveryItemVisible(item, visibleKeys, currentKey)) return false;
+      const hay = ((item.cliente||'')+' '+(item.articulo||'')+' '+(item.categoria||'')).toLowerCase();
       return hay.includes(search);
     });
-    // Primero se agrupa por cliente y dentro de cada cliente por semana. Así un
-    // cliente aparece una sola vez, pero mantiene estados independientes por semana.
+    // Un cliente aparece una sola vez; sus ventas se agrupan por semana.
+    // Las entregadas solo cuentan durante la semana configurada en que se marcaron.
     const clients = {};
     items.forEach(function(item){
       const name = (item.cliente || 'Sin nombre').trim();
-      const itemWeekKey = weekKey(new Date(item.fecha));
+      const saleDate = parseDeliveryDate(item.fecha);
+      const itemWeekKey = weekKey(saleDate);
       if(!clients[name]) clients[name] = {name:name, weeks:{}, total:0};
       const client = clients[name];
       if(!client.weeks[itemWeekKey]) client.weeks[itemWeekKey] = {weekKey:itemWeekKey,items:[],total:0,pendingPayment:0,delivered:true};
@@ -2290,6 +2317,7 @@ document.addEventListener('DOMContentLoaded', function(){
       return client;
     }).sort(function(a,b){return a.name.localeCompare(b.name,'es');});
     const wrap = document.getElementById('deliveriesList');
+    if(!wrap) return;
     wrap.innerHTML = clientGroups.length ? clientGroups.map(function(client, clientIndex){
       const weeksPanelId='delivery-client-weeks-'+clientIndex;
       const weekRows=client.weekGroups.map(function(group){
@@ -2297,13 +2325,11 @@ document.addEventListener('DOMContentLoaded', function(){
         return '<section class="delivery-week-row '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'">'+
           '<div class="delivery-week-summary"><span class="delivery-week-label">'+escapeHtml(label)+'</span><small>'+escapeHtml(formatRange(group.weekKey))+' · '+group.items.length+' '+(group.items.length===1?'artículo':'artículos')+' · '+money(group.total)+'</small></div></section>';
       }).join('');
-      // Un único estado resume las entregas visibles del cliente; el detalle por semana
-      // muestra artículos y totales, sin duplicar estados dentro de cada semana.
       const clientItems=client.weekGroups.reduce(function(all,group){return all.concat(group.items);},[]);
       const delivered=clientItems.length>0 && clientItems.every(function(item){return !!item.entregado;});
       const statusButton='<button type="button" class="delivery-client-status '+(delivered?'is-delivered':'is-pending')+'" data-set-delivery-client="'+escapeHtml(client.name)+'" data-next-delivery="'+(delivered?'pending':'delivered')+'" aria-label="Cambiar estado de entrega de '+escapeHtml(client.name)+' a '+(delivered?'Por Entregar':'Entregado')+'">'+(delivered?'Entregado':'Por Entregar')+'</button>';
       return '<article class="delivery-client-card"><div class="delivery-client-header"><button type="button" class="delivery-client-trigger" data-toggle-delivery-card="'+weeksPanelId+'" aria-expanded="false" aria-controls="'+weeksPanelId+'"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><span class="delivery-client-heading-copy"><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></span></button>'+statusButton+'<button type="button" class="delivery-client-chevron-toggle" data-toggle-delivery-card="'+weeksPanelId+'" aria-label="Expandir o contraer semanas de '+escapeHtml(client.name)+'" aria-expanded="false" aria-controls="'+weeksPanelId+'">⌄</button></div><div class="delivery-client-weeks" id="'+weeksPanelId+'" hidden>'+weekRows+'</div></article>';
-    }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
+    }).join('') : '<div class="empty-inline">No hay entregas pendientes ni entregas realizadas durante esta semana para este filtro.</div>';
     bindTableEvents(wrap);
   }
   async function setDeliveryForVisibleClient(name, desired){
@@ -2314,27 +2340,23 @@ document.addEventListener('DOMContentLoaded', function(){
     const twoWeeksAgoKey=weekKey(twoWeeksAgoDate);
     const visibleKeys=new Set([currentKey,previousKey,twoWeeksAgoKey].filter(Boolean));
     const items=sales.filter(function(item){
-      if(!item || !item.fecha || (item.cliente||'Sin nombre').trim()!==name) return false;
-      const date=new Date(item.fecha);
-      if(Number.isNaN(date.getTime())) return false;
-      const key=weekKey(date);
-      if(!visibleKeys.has(key)) return false;
-      // El estado del cliente se aplica a todas sus ventas de las tres semanas
-      // visibles, incluidas las ya entregadas, para que pueda alternarse sin ocultarlas.
-      return true;
+      if((item.cliente||'Sin nombre').trim()!==name) return false;
+      return isDeliveryItemVisible(item,visibleKeys,currentKey);
     });
     if(!items.length) return;
     const changed=items.filter(function(item){return !!item.entregado!==desired;});
     if(!changed.length) return;
+    const deliveredAt=desired ? new Date().toISOString() : null;
     try{
       const ids=changed.map(function(item){return item.id;});
-      const result=await sb.from('sales').update({entregado:desired}).in('id',ids);
+      const result=await sb.from('sales').update({entregado:desired,entregado_en:deliveredAt}).in('id',ids);
       if(result.error) throw result.error;
-      changed.forEach(function(item){item.entregado=desired;});
+      changed.forEach(function(item){item.entregado=desired;item.entregado_en=deliveredAt;});
       render();
       showToast(desired?'Entregas marcadas como entregadas':'Entregas marcadas como pendientes');
     }catch(error){
-      showToast('No se pudo actualizar el estado de entrega.');
+      console.error('No se pudo actualizar el estado de entrega:',error);
+      showToast('No se pudo actualizar el estado. Verificá que la migración SQL de entregado_en esté aplicada.');
     }
   }
 
@@ -2348,16 +2370,17 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!targetWeekKey || !visibleKeys.has(targetWeekKey)) return;
     const items = sales.filter(function(x){
       if(!x || !x.fecha || (x.cliente||'').trim() !== name) return false;
-      const date = new Date(x.fecha);
-      return !Number.isNaN(date.getTime()) && weekKey(date) === targetWeekKey;
+      const date = parseDeliveryDate(x.fecha);
+      return !!date && weekKey(date) === targetWeekKey;
     });
     if(!items.length) return;
     if(items.every(function(x){return !!x.entregado === desired;})) return;
     try{
       const ids=items.filter(function(x){return !!x.entregado !== desired;}).map(function(x){return x.id;});
-      const res=await sb.from('sales').update({entregado:desired}).in('id',ids);
+      const deliveredAt=desired ? new Date().toISOString() : null;
+      const res=await sb.from('sales').update({entregado:desired,entregado_en:deliveredAt}).in('id',ids);
       if(res.error) throw res.error;
-      items.forEach(function(x){x.entregado=desired;});
+      items.filter(function(x){return !!x.entregado!==desired;}).forEach(function(x){x.entregado=desired;x.entregado_en=deliveredAt;});
       render();
       if(currentView==='deliveries') renderDeliveriesView();
       showToast(desired?'Pedido marcado como entregado':'Pedido marcado como pendiente de entrega');
@@ -2369,9 +2392,10 @@ document.addEventListener('DOMContentLoaded', function(){
     const next=!items.every(function(x){return !!x.entregado;});
     try{
       const ids=items.map(function(x){return x.id;});
-      const res=await sb.from('sales').update({entregado:next}).in('id',ids);
+      const deliveredAt=next ? new Date().toISOString() : null;
+      const res=await sb.from('sales').update({entregado:next,entregado_en:deliveredAt}).in('id',ids);
       if(res.error) throw res.error;
-      items.forEach(function(x){x.entregado=next;}); render();
+      items.forEach(function(x){x.entregado=next;x.entregado_en=deliveredAt;}); render();
       if(currentView==='deliveries') renderDeliveriesView();
       showToast(next?'Pedido marcado como entregado':'Pedido marcado como no entregado');
     }catch(e){ showToast('No se pudo guardar el estado de entrega. Aplicá primero la migración SQL incluida en el ZIP.'); }
