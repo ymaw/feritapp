@@ -678,6 +678,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return {
       id: row.id,
       fecha: row.fecha,
+      semana_asignada: row.semana_asignada || null,
       cliente: row.cliente,
       articulo: row.articulo,
       precio: Number(row.precio),
@@ -1391,12 +1392,26 @@ document.addEventListener('DOMContentLoaded', function(){
     previousStart.setDate(previousStart.getDate() - 7);
     return weekKey(previousStart);
   }
-  // Única regla para seleccionar ventas de una semana en todas las vistas.
+  // La fecha real de la venta nunca se modifica al reasignarla operativamente.
+  // La asignación solo cambia la semana en las vistas operativas (Resumen/Entregas).
+  function operationalWeekKey(item){
+    if(!item) return null;
+    if(item.semana_asignada){
+      const assignedDate=parseDeliveryDate(item.semana_asignada);
+      if(assignedDate) return weekKey(assignedDate);
+    }
+    const saleDate=parseDeliveryDate(item.fecha);
+    return saleDate ? weekKey(saleDate) : null;
+  }
+  function salesForOperationalWeek(items, key){
+    return (items || []).filter(function(item){ return operationalWeekKey(item)===key; });
+  }
+  // Selección por fecha real: se conserva para comprobantes e historial cronológico.
   function salesForWeek(items, key){
     return (items || []).filter(function(item){
       if(!item || !item.fecha) return false;
-      const date = new Date(item.fecha);
-      return !Number.isNaN(date.getTime()) && weekKey(date) === key;
+      const date = parseDeliveryDate(item.fecha);
+      return !!date && weekKey(date) === key;
     });
   }
   const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
@@ -1420,10 +1435,11 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   /* ---------------- rendering ---------------- */
-  function groupByWeek(){
+  function groupByWeek(useOperationalAssignment){
     let groups = {};
     sales.forEach(function(s){
-      let k = weekKey(new Date(s.fecha));
+      let k = useOperationalAssignment ? operationalWeekKey(s) : weekKey(parseDeliveryDate(s.fecha));
+      if(!k) return;
       if(!groups[k]) groups[k] = [];
       groups[k].push(s);
     });
@@ -1869,49 +1885,36 @@ document.addEventListener('DOMContentLoaded', function(){
     return {total:total, cobrado:cobrado, pendiente:pendiente, count:items.length};
   }
 
-  function shiftSaleDateOneWeek(value){
-    if(!value) throw new Error('La venta no tiene fecha.');
-    const text=String(value);
-    const dateOnly=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(dateOnly){
-      const date=new Date(Date.UTC(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3])+7));
-      return date.toISOString().slice(0,10);
-    }
-    const timestamp=new Date(text).getTime();
-    if(Number.isNaN(timestamp)) throw new Error('La fecha de una venta no es válida.');
-    return new Date(timestamp + 7*24*60*60*1000).toISOString();
-  }
-
   async function moveWeeklySummaryClientToCurrentWeek(name){
     const clientName=(name || '').trim();
     const currentKey=weekKey(new Date());
     const previousKey=previousWeekKey();
-    const items=salesForWeek(sales,previousKey).filter(function(item){return (item.cliente || 'Sin nombre').trim()===clientName;});
+    const items=salesForOperationalWeek(sales,previousKey).filter(function(item){
+      return (item.cliente || 'Sin nombre').trim()===clientName;
+    });
     if(!items.length){showToast('No hay ventas de este cliente en la semana anterior.');return;}
-    const updates=items.map(function(item){return {item:item,oldFecha:item.fecha,newFecha:shiftSaleDateOneWeek(item.fecha)};});
-    if(updates.some(function(update){const date=parseDeliveryDate(update.newFecha);return !date || weekKey(date)!==currentKey;})){
-      showToast('No se pudieron mover las ventas a la semana actual.'); return;
-    }
+    const updates=items.map(function(item){return {item:item,oldAssignment:item.semana_asignada || null};});
     const completed=[];
     try{
+      // Solo se actualiza la semana operativa; la fecha real de la venta queda intacta.
       for(const update of updates){
-        const result=await sb.from('sales').update({fecha:update.newFecha}).eq('id',update.item.id).select('id,fecha');
+        const result=await sb.from('sales').update({semana_asignada:currentKey}).eq('id',update.item.id).select('id,semana_asignada');
         if(result.error) throw result.error;
-        if(!result.data || result.data.length!==1) throw new Error('No se pudo confirmar la actualización de una venta.');
-        completed.push({id:update.item.id,oldFecha:update.oldFecha});
-        update.newFecha=result.data[0].fecha || update.newFecha;
+        if(!result.data || result.data.length!==1) throw new Error('No se pudo confirmar la reasignación de una venta.');
+        completed.push({id:update.item.id,oldAssignment:update.oldAssignment});
+        update.newAssignment=result.data[0].semana_asignada || currentKey;
       }
-      updates.forEach(function(update){update.item.fecha=update.newFecha;});
+      updates.forEach(function(update){update.item.semana_asignada=update.newAssignment;});
       render();
       if(currentView==='deliveries') renderDeliveriesView();
       showToast('Cliente movido a la semana actual');
     }catch(error){
-      // Si una actualización falla a mitad de camino, intentar restaurar las fechas originales.
+      // Revertir únicamente la asignación realizada en esta operación, nunca la fecha real.
       for(let i=completed.length-1;i>=0;i--){
-        try{await sb.from('sales').update({fecha:completed[i].oldFecha}).eq('id',completed[i].id);}catch(rollbackError){}
+        try{await sb.from('sales').update({semana_asignada:completed[i].oldAssignment}).eq('id',completed[i].id);}catch(rollbackError){}
       }
       console.error('No se pudo mover el cliente a la semana actual:',error);
-      showToast('No se pudo mover el cliente. No se aplicaron todos los cambios.');
+      showToast('No se pudo mover. Verificá la migración de Supabase.');
       try{await loadSales();render();}catch(refreshError){}
     }
   }
@@ -2333,7 +2336,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function renderManagementList(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const thisWeek = weekKey(new Date());
-    const current = salesForWeek(sales, thisWeek);
+    const current = salesForOperationalWeek(sales, thisWeek);
     const summary = current.reduce(function(acc, item){
       const price = Number(item.precio) || 0;
       acc.total += price;
@@ -2380,13 +2383,14 @@ document.addEventListener('DOMContentLoaded', function(){
   // entregado_en. Pendientes: permanecen visibles dentro de la ventana móvil de 3 semanas.
   function isDeliveryItemVisible(item, visibleKeys, currentKey){
     if(!item || !item.fecha) return false;
-    const saleDate=parseDeliveryDate(item.fecha);
-    if(!saleDate) return false;
-    if(!visibleKeys.has(weekKey(saleDate))) return false;
+    const itemWeekKey=operationalWeekKey(item);
+    if(!itemWeekKey || !visibleKeys.has(itemWeekKey)) return false;
     if(!item.entregado) return true;
-    // Una venta asignada a la semana actual debe permanecer visible en Entregas,
-    // incluso si ya estaba marcada como entregada antes de moverla.
-    if(weekKey(saleDate)===currentKey) return true;
+    // Una reasignación explícita a la semana actual la mantiene visible,
+    // aun si la venta ya estaba marcada como entregada antes del movimiento.
+    if(item.semana_asignada && itemWeekKey===currentKey) return true;
+    const saleDate=parseDeliveryDate(item.fecha);
+    if(saleDate && weekKey(saleDate)===currentKey) return true;
     const deliveredAt=parseDeliveryDate(item.entregado_en);
     return !!deliveredAt && weekKey(deliveredAt)===currentKey;
   }
@@ -2415,8 +2419,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const clients = {};
     items.forEach(function(item){
       const name = (item.cliente || 'Sin nombre').trim();
-      const saleDate = parseDeliveryDate(item.fecha);
-      const itemWeekKey = weekKey(saleDate);
+      const itemWeekKey = operationalWeekKey(item);
       if(!clients[name]) clients[name] = {name:name, weeks:{}, total:0};
       const client = clients[name];
       if(!client.weeks[itemWeekKey]) client.weeks[itemWeekKey] = {weekKey:itemWeekKey,items:[],total:0,pendingPayment:0,delivered:true};
@@ -2596,7 +2599,7 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   function render(){
-    let groups = groupByWeek();
+    let groups = groupByWeek(true);
     let keys = Object.keys(groups).sort().reverse();
     let currentKey = weekKey(new Date());
 
@@ -2710,7 +2713,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!query){ wrap.innerHTML = ''; return; }
 
     let thisWeekKey = weekKey(new Date());
-    let matches = salesForWeek(sales, thisWeekKey).filter(function(s){
+    let matches = salesForOperationalWeek(sales, thisWeekKey).filter(function(s){
       return (s.cliente || '').toLowerCase().indexOf(query) !== -1;
     });
 
@@ -2859,7 +2862,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!name){ panel.hidden = true; panel.innerHTML=''; return; }
     // La ficha de cliente muestra únicamente compras de la semana configurada como actual.
     let thisWeekKey = weekKey(new Date());
-    let items = salesForWeek(sales, thisWeekKey).filter(function(s){
+    let items = salesForOperationalWeek(sales, thisWeekKey).filter(function(s){
       return (s.cliente || '') === name;
     }).sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
     let total = items.reduce(function(sum,s){ return sum + (Number(s.precio)||0); },0);
