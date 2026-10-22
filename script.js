@@ -969,23 +969,36 @@ document.addEventListener('DOMContentLoaded', function(){
     return canvas;
   }
 
+  function getReceiptSelectionForClient(clientName){
+    const currentKey = weekKey(new Date());
+    const previousKey = previousWeekKey();
+    const clientItems = sales.filter(function(item){ return (item.cliente || '').trim() === clientName && item.fecha; });
+    const currentWeekItems = salesForWeek(clientItems, currentKey);
+    const previousWeekItems = salesForWeek(clientItems, previousKey);
+    // El estado mostrado en Ventas corresponde al grupo de la semana actual.
+    // Si todavía no hay compras esta semana, se toma como referencia la semana anterior.
+    const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
+    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(function(item){ return !!item.pagado; });
+    // Abonado: solo semana actual. Pendiente de Pago: semana actual + semana anterior.
+    const eligibleItems = (isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems))
+      .slice().sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
+    return {items:eligibleItems,isAbonado:isAbonado};
+  }
+
   function shareReceipt(compradorNombre, items){
     if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
     const clientName = (compradorNombre || '').trim();
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey();
-    // El comprobante nunca incluye ventas anteriores a estas dos semanas.
-    const eligibleItems = sales.filter(function(item){
-      return (item.cliente || '').trim() === clientName && item.fecha &&
-        (weekKey(new Date(item.fecha)) === currentKey || weekKey(new Date(item.fecha)) === previousKey);
-    }).sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
-    if(!eligibleItems.length){ showToast('Este cliente no tiene artículos de la semana actual ni de la semana anterior.'); return; }
+    const receiptSelection = getReceiptSelectionForClient(clientName);
+    const eligibleItems = receiptSelection.items;
+    if(!eligibleItems.length){
+      showToast(receiptSelection.isAbonado ? 'No hay artículos de esta semana para compartir.' : 'Este cliente no tiene artículos de las últimas dos semanas.');
+      return;
+    }
     pendingReceiptItems = eligibleItems;
     pendingReceiptClient = clientName;
     pendingReceiptTotal = eligibleItems.reduce(function(sum, item){ return sum + (Number(item.precio)||0); }, 0);
-    // Si queda algún importe pendiente en las dos semanas incluidas, se conserva el mensaje configurable.
-    // Si todo está abonado, el comprobante lleva el agradecimiento fijo solo para este envío.
-    pendingReceiptForceThankYou = eligibleItems.every(function(item){ return !!item.pagado; });
+    // Para clientes abonados se usa el agradecimiento fijo solo en este envío.
+    pendingReceiptForceThankYou = receiptSelection.isAbonado;
     let scrim = document.getElementById('receiptEditScrim');
     let msg = document.getElementById('receiptShareMessage');
     msg.value = pendingReceiptForceThankYou ? PAID_RECEIPT_THANK_YOU : (receiptMessage || '');
@@ -1856,6 +1869,53 @@ document.addEventListener('DOMContentLoaded', function(){
     return {total:total, cobrado:cobrado, pendiente:pendiente, count:items.length};
   }
 
+  function shiftSaleDateOneWeek(value){
+    if(!value) throw new Error('La venta no tiene fecha.');
+    const text=String(value);
+    const dateOnly=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(dateOnly){
+      const date=new Date(Date.UTC(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3])+7));
+      return date.toISOString().slice(0,10);
+    }
+    const timestamp=new Date(text).getTime();
+    if(Number.isNaN(timestamp)) throw new Error('La fecha de una venta no es válida.');
+    return new Date(timestamp + 7*24*60*60*1000).toISOString();
+  }
+
+  async function moveWeeklySummaryClientToCurrentWeek(name){
+    const clientName=(name || '').trim();
+    const currentKey=weekKey(new Date());
+    const previousKey=previousWeekKey();
+    const items=salesForWeek(sales,previousKey).filter(function(item){return (item.cliente || 'Sin nombre').trim()===clientName;});
+    if(!items.length){showToast('No hay ventas de este cliente en la semana anterior.');return;}
+    const updates=items.map(function(item){return {item:item,oldFecha:item.fecha,newFecha:shiftSaleDateOneWeek(item.fecha)};});
+    if(updates.some(function(update){const date=parseDeliveryDate(update.newFecha);return !date || weekKey(date)!==currentKey;})){
+      showToast('No se pudieron mover las ventas a la semana actual.'); return;
+    }
+    const completed=[];
+    try{
+      for(const update of updates){
+        const result=await sb.from('sales').update({fecha:update.newFecha}).eq('id',update.item.id).select('id,fecha');
+        if(result.error) throw result.error;
+        if(!result.data || result.data.length!==1) throw new Error('No se pudo confirmar la actualización de una venta.');
+        completed.push({id:update.item.id,oldFecha:update.oldFecha});
+        update.newFecha=result.data[0].fecha || update.newFecha;
+      }
+      updates.forEach(function(update){update.item.fecha=update.newFecha;});
+      render();
+      if(currentView==='deliveries') renderDeliveriesView();
+      showToast('Cliente movido a la semana actual');
+    }catch(error){
+      // Si una actualización falla a mitad de camino, intentar restaurar las fechas originales.
+      for(let i=completed.length-1;i>=0;i--){
+        try{await sb.from('sales').update({fecha:completed[i].oldFecha}).eq('id',completed[i].id);}catch(rollbackError){}
+      }
+      console.error('No se pudo mover el cliente a la semana actual:',error);
+      showToast('No se pudo mover el cliente. No se aplicaron todos los cambios.');
+      try{await loadSales();render();}catch(refreshError){}
+    }
+  }
+
   function renderDashboardTasks(items){
     let wrap = document.getElementById('dashboardTasks');
     if(!wrap) return;
@@ -2107,7 +2167,7 @@ document.addEventListener('DOMContentLoaded', function(){
         const title=card.querySelector('.sales-client-group-copy strong');
         toggle.setAttribute('aria-label','Eliminar las ventas de '+(title?title.textContent.trim():'este cliente'));
         card.dataset.deleteSelectionTriggered='true';
-        showToast('Tarjeta seleccionada. Tocá la X roja para eliminar las ventas de este cliente.',2600);
+        showToast('Tocá la X para eliminar.',2200);
       }
     }
     root.querySelectorAll('button[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(event){
@@ -2152,6 +2212,60 @@ document.addEventListener('DOMContentLoaded', function(){
         if(card.dataset.deleteSelectionTriggered==='true' && event.target.closest('.sales-client-group-trigger')){delete card.dataset.deleteSelectionTriggered;event.preventDefault();event.stopPropagation();}
       },true);
       header.addEventListener('keydown',function(event){if(event.key==='Escape'){resetDeleteSelection(card);}});
+    });
+    // Resumen Semanal: mantener pulsada la tarjeta general permite mover
+    // todas las ventas de ese cliente de la semana cerrada a la semana actual.
+    function closeWeeklySummaryMenus(){
+      root.querySelectorAll('.weekly-summary-context-menu').forEach(function(menu){menu.remove();});
+    }
+    function showWeeklySummaryMenu(card){
+      if(!card || !card.classList.contains('weekly-summary-client-group')) return;
+      closeWeeklySummaryMenus();
+      const title=card.querySelector('.sales-client-group-copy strong');
+      const name=title ? title.textContent.trim() : '';
+      if(!name) return;
+      const menu=document.createElement('div');
+      menu.className='weekly-summary-context-menu';
+      const action=document.createElement('button');
+      action.type='button';
+      action.className='weekly-summary-move-current';
+      action.textContent='Mover a Semana Actual';
+      action.addEventListener('click',function(event){
+        event.preventDefault(); event.stopPropagation();
+        menu.remove();
+        moveWeeklySummaryClientToCurrentWeek(name);
+      });
+      menu.appendChild(action);
+      const content=card.querySelector('.sales-client-group-content');
+      card.insertBefore(menu,content || null);
+    }
+    root.querySelectorAll('.weekly-summary-client-group .sales-client-group-header').forEach(function(header){
+      const card=header.closest('.weekly-summary-client-group');
+      if(!card) return;
+      let pressTimer=null, startX=0, startY=0, longPressTriggered=false;
+      const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
+      header.addEventListener('pointerdown',function(event){
+        if(!event.target || !event.target.closest('.sales-client-group-trigger')) return;
+        if(event.isPrimary===false || (event.button!==undefined && event.button!==0)) return;
+        clearPress(); startX=event.clientX; startY=event.clientY; longPressTriggered=false;
+        pressTimer=window.setTimeout(function(){
+          pressTimer=null; longPressTriggered=true;
+          showWeeklySummaryMenu(card);
+        },650);
+      });
+      header.addEventListener('pointermove',function(event){
+        if(pressTimer!==null && (Math.abs(event.clientX-startX)>18 || Math.abs(event.clientY-startY)>18)) clearPress();
+      });
+      header.addEventListener('pointerup',clearPress);
+      header.addEventListener('pointercancel',clearPress);
+      header.addEventListener('contextmenu',function(event){
+        if(event.target && event.target.closest('.sales-client-group-trigger')){
+          event.preventDefault(); showWeeklySummaryMenu(card); longPressTriggered=true;
+        }
+      });
+      header.addEventListener('click',function(event){
+        if(longPressTriggered){longPressTriggered=false;event.preventDefault();event.stopPropagation();}
+      },true);
     });
     root.querySelectorAll('[data-toggle-delivery-card]').forEach(function(btn){
       btn.addEventListener('click',function(){
@@ -2270,6 +2384,9 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!saleDate) return false;
     if(!visibleKeys.has(weekKey(saleDate))) return false;
     if(!item.entregado) return true;
+    // Una venta asignada a la semana actual debe permanecer visible en Entregas,
+    // incluso si ya estaba marcada como entregada antes de moverla.
+    if(weekKey(saleDate)===currentKey) return true;
     const deliveredAt=parseDeliveryDate(item.entregado_en);
     return !!deliveredAt && weekKey(deliveredAt)===currentKey;
   }
