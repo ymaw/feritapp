@@ -2254,6 +2254,9 @@ document.addEventListener('DOMContentLoaded', function(){
     root.querySelectorAll('.weekly-summary-client-group').forEach(function(card){
       let pressTimer=null, startX=0, startY=0, longPressTriggered=false;
       const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
+      card.addEventListener('selectstart',function(event){
+        if(!event.target || !event.target.closest('input,textarea,[contenteditable="true"]')) event.preventDefault();
+      });
       card.addEventListener('pointerdown',function(event){
         // Ampliamos el área de pulsación a toda la tarjeta, evitando acciones y controles.
         if(event.target && event.target.closest('button,a,input,select,textarea,[role="button"],.weekly-summary-context-menu')) return;
@@ -3050,7 +3053,7 @@ document.addEventListener('DOMContentLoaded', function(){
           '<input type="number" class="row-precio" aria-label="Precio del artículo" placeholder="$ 0" inputmode="decimal" value="' + (prefill ? prefill.precio : '') + '">' +
           '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="precio" data-mode="number" aria-label="Dictar precio"><svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/></svg></button>' +
         '</div></label>' +
-        '<label class="item-field item-field-category"><span>Categoría</span><select class="row-categoria" aria-label="Categoría del artículo">' + categoryOptionsHtml(defaultCat) + '</select></label>' +
+        '<div class="item-field item-field-category"><span>Categoría</span><div class="category-picker"><select class="row-categoria category-picker-native" aria-label="Categoría del artículo">' + categoryOptionsHtml(defaultCat) + '</select><button type="button" class="category-picker-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="category-picker-value">' + escapeHtml(defaultCat || 'Elegir categoría') + '</span><span class="category-picker-chevron" aria-hidden="true">⌄</span></button><div class="category-picker-menu" role="listbox" hidden></div></div></div>' +
       '</div>';
 
     container.insertAdjacentHTML('beforeend', html);
@@ -3059,6 +3062,7 @@ document.addEventListener('DOMContentLoaded', function(){
     rowEl.querySelectorAll('.mic-btn').forEach(function(btn){
       btn.addEventListener('click', function(){ startDictation(btn); });
     });
+    initializeCategoryPicker(rowEl);
     if(!voiceSupported){
       rowEl.querySelectorAll('.mic-btn').forEach(function(b){ b.style.display = 'none'; });
     }
@@ -3108,10 +3112,65 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
+  function initializeCategoryPicker(rowEl){
+    const picker=rowEl && rowEl.querySelector('.category-picker');
+    if(!picker) return;
+    const select=picker.querySelector('.row-categoria');
+    const trigger=picker.querySelector('.category-picker-trigger');
+    const valueLabel=picker.querySelector('.category-picker-value');
+    const menu=picker.querySelector('.category-picker-menu');
+    if(!select || !trigger || !menu || picker.dataset.initialized==='true') return;
+    picker.dataset.initialized='true';
+    function close(){menu.hidden=true;trigger.setAttribute('aria-expanded','false');picker.classList.remove('is-open');}
+    function renderOptions(){
+      menu.innerHTML='';
+      if(!categories.length){
+        const empty=document.createElement('div'); empty.className='category-picker-empty'; empty.textContent='No hay categorías disponibles'; menu.appendChild(empty); return;
+      }
+      categories.forEach(function(category){
+        const option=document.createElement('button');
+        option.type='button'; option.className='category-picker-option'; option.setAttribute('role','option');
+        option.setAttribute('aria-selected',String(select.value===category)); option.textContent=category;
+        if(select.value===category) option.classList.add('is-selected');
+        option.addEventListener('click',function(event){
+          event.preventDefault(); event.stopPropagation();
+          select.value=category;
+          select.dispatchEvent(new Event('change',{bubbles:true}));
+          valueLabel.textContent=category;
+          menu.querySelectorAll('.category-picker-option').forEach(function(other){
+            const selected=other===option; other.classList.toggle('is-selected',selected); other.setAttribute('aria-selected',String(selected));
+          });
+          close(); trigger.focus({preventScroll:true});
+        });
+        menu.appendChild(option);
+      });
+    }
+    trigger.addEventListener('click',function(event){
+      event.preventDefault(); event.stopPropagation();
+      document.querySelectorAll('.category-picker.is-open').forEach(function(other){
+        if(other!==picker){other.classList.remove('is-open');const otherMenu=other.querySelector('.category-picker-menu');const otherTrigger=other.querySelector('.category-picker-trigger');if(otherMenu)otherMenu.hidden=true;if(otherTrigger)otherTrigger.setAttribute('aria-expanded','false');}
+      });
+      const opening=menu.hidden; menu.hidden=!opening; trigger.setAttribute('aria-expanded',String(opening)); picker.classList.toggle('is-open',opening);
+      if(opening) renderOptions();
+    });
+    menu.addEventListener('click',function(event){event.stopPropagation();});
+    document.addEventListener('pointerdown',function(event){if(!picker.contains(event.target)) close();},true);
+    select.addEventListener('change',function(){valueLabel.textContent=select.value || 'Elegir categoría';renderOptions();});
+    renderOptions();
+    valueLabel.textContent=select.value || 'Elegir categoría';
+  }
+
   function refreshAllRowCategorySelects(){
     document.querySelectorAll('#itemRowsContainer .row-categoria').forEach(function(sel){
       let current = sel.value;
       sel.innerHTML = categoryOptionsHtml(current || (categories.length ? categories[0] : ''));
+      const picker=sel.closest('.category-picker');
+      if(picker){
+        const label=picker.querySelector('.category-picker-value');
+        if(label) label.textContent=sel.value || 'Elegir categoría';
+        const menu=picker.querySelector('.category-picker-menu');
+        if(menu) menu.innerHTML='';
+      }
     });
   }
 
