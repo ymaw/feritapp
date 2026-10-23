@@ -970,23 +970,36 @@ document.addEventListener('DOMContentLoaded', function(){
     return canvas;
   }
 
+  function getReceiptSelectionForClient(clientName){
+    const currentKey = weekKey(new Date());
+    const previousKey = previousWeekKey();
+    const clientItems = sales.filter(function(item){ return (item.cliente || '').trim() === clientName && item.fecha; });
+    const currentWeekItems = salesForWeek(clientItems, currentKey);
+    const previousWeekItems = salesForWeek(clientItems, previousKey);
+    // El estado mostrado en Ventas corresponde al grupo de la semana actual.
+    // Si todavía no hay compras esta semana, se toma como referencia la semana anterior.
+    const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
+    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(function(item){ return !!item.pagado; });
+    // Abonado: solo semana actual. Pendiente de Pago: semana actual + semana anterior.
+    const eligibleItems = (isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems))
+      .slice().sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
+    return {items:eligibleItems,isAbonado:isAbonado};
+  }
+
   function shareReceipt(compradorNombre, items){
     if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
     const clientName = (compradorNombre || '').trim();
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey();
-    // El comprobante nunca incluye ventas anteriores a estas dos semanas.
-    const eligibleItems = sales.filter(function(item){
-      return (item.cliente || '').trim() === clientName && item.fecha &&
-        (weekKey(new Date(item.fecha)) === currentKey || weekKey(new Date(item.fecha)) === previousKey);
-    }).sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
-    if(!eligibleItems.length){ showToast('Este cliente no tiene artículos de la semana actual ni de la semana anterior.'); return; }
+    const receiptSelection = getReceiptSelectionForClient(clientName);
+    const eligibleItems = receiptSelection.items;
+    if(!eligibleItems.length){
+      showToast(receiptSelection.isAbonado ? 'No hay artículos de esta semana para compartir.' : 'Este cliente no tiene artículos de las últimas dos semanas.');
+      return;
+    }
     pendingReceiptItems = eligibleItems;
     pendingReceiptClient = clientName;
     pendingReceiptTotal = eligibleItems.reduce(function(sum, item){ return sum + (Number(item.precio)||0); }, 0);
-    // Si queda algún importe pendiente en las dos semanas incluidas, se conserva el mensaje configurable.
-    // Si todo está abonado, el comprobante lleva el agradecimiento fijo solo para este envío.
-    pendingReceiptForceThankYou = eligibleItems.every(function(item){ return !!item.pagado; });
+    // Para clientes abonados se usa el agradecimiento fijo solo en este envío.
+    pendingReceiptForceThankYou = receiptSelection.isAbonado;
     let scrim = document.getElementById('receiptEditScrim');
     let msg = document.getElementById('receiptShareMessage');
     msg.value = pendingReceiptForceThankYou ? PAID_RECEIPT_THANK_YOU : (receiptMessage || '');
