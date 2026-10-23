@@ -1008,6 +1008,15 @@ document.addEventListener('DOMContentLoaded', function(){
     msg.focus();
   }
 
+  function updateReceiptPreviewMessage(){
+    let msg = document.getElementById('receiptShareMessage');
+    let preview = document.getElementById('receiptPreviewMessage');
+    const slider=document.getElementById('receiptMessageFontSize'); const output=document.getElementById('receiptMessageFontSizeValue');
+    const size=Math.max(10,Math.min(16,Number(slider&&slider.value)||12));
+    if(preview){ preview.textContent = msg && msg.value.trim() ? msg.value.trim() : ' '; preview.style.fontSize=size+'px'; }
+    if(output) output.textContent=size+' px';
+  }
+
   async function performReceiptShare(){
     if(!pendingReceiptItems.length) return;
     let msg = document.getElementById('receiptShareMessage').value.trim();
