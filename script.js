@@ -971,8 +971,9 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function getReceiptSelectionForClient(clientName){
-    // Selección aislada por fechas reales de venta. No depende de semana_asignada
-    // ni de que weekKey() devuelva una clave válida ante una preferencia mal formada.
+    // V12.96: el comprobante usa exclusivamente la fecha real de la venta.
+    // Se calcula una ventana cerrada por inicio de semana y se aplica un filtro
+    // final explícito para que ninguna venta anterior pueda llegar a la vista previa.
     const today = new Date();
     const configuredWeekStart = Number(weekStartDay);
     const safeWeekStart = Number.isInteger(configuredWeekStart) && configuredWeekStart >= 0 && configuredWeekStart <= 6
@@ -986,27 +987,30 @@ document.addEventListener('DOMContentLoaded', function(){
     previousStart.setDate(previousStart.getDate() - 7);
     const normalizedClientName = String(clientName || '').trim().toLocaleLowerCase('es');
 
-    const clientItems = sales.filter(function(item){
-      return !!item && String(item.cliente || '').trim().toLocaleLowerCase('es') === normalizedClientName;
-    }).map(function(item){
+    const clientItems = (Array.isArray(sales) ? sales : []).map(function(item){
+      if(!item || String(item.cliente || '').trim().toLocaleLowerCase('es') !== normalizedClientName) return null;
       const date = parseDeliveryDate(item.fecha);
-      return date ? { item: item, date: date } : null;
+      if(!date) return null;
+      return { item: item, date: date };
     }).filter(Boolean);
 
-    const currentWeekItems = clientItems.filter(function(entry){
+    const currentWeekEntries = clientItems.filter(function(entry){
       return entry.date >= currentStart && entry.date < nextStart;
-    }).map(function(entry){ return entry.item; });
-    const previousWeekItems = clientItems.filter(function(entry){
+    });
+    const previousWeekEntries = clientItems.filter(function(entry){
       return entry.date >= previousStart && entry.date < currentStart;
-    }).map(function(entry){ return entry.item; });
-
+    });
     const isPaid = function(item){
       return item.pagado === true || item.pagado === 1 || String(item.pagado).trim().toLowerCase() === 'true';
     };
-    const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
-    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(isPaid);
-    const allowedItems = isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems);
-    const eligibleItems = allowedItems.slice().sort(function(a, b){
+    const paymentStatusEntries = currentWeekEntries.length ? currentWeekEntries : previousWeekEntries;
+    const isAbonado = paymentStatusEntries.length > 0 && paymentStatusEntries.every(function(entry){ return isPaid(entry.item); });
+
+    // Selección permitida y validación de frontera independiente del filtro anterior.
+    const lowerBound = isAbonado ? currentStart : previousStart;
+    const eligibleItems = clientItems.filter(function(entry){
+      return entry.date >= lowerBound && entry.date < nextStart;
+    }).map(function(entry){ return entry.item; }).sort(function(a, b){
       return parseDeliveryDate(a.fecha) - parseDeliveryDate(b.fecha);
     });
     return { items: eligibleItems, isAbonado: isAbonado };
