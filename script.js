@@ -1020,7 +1020,25 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
     const clientName = (compradorNombre || '').trim();
     const receiptSelection = getReceiptSelectionForClient(clientName);
-    const eligibleItems = receiptSelection.items;
+    // Defensa final en el punto de entrada al comprobante: no confiar solo en
+    // el selector previo. Ningún artículo anterior a la semana pasada puede
+    // llegar ni a la vista previa ni al canvas que se comparte.
+    const receiptToday = new Date();
+    const receiptWeekStart = Number.isInteger(Number(weekStartDay)) && Number(weekStartDay) >= 0 && Number(weekStartDay) <= 6
+      ? Number(weekStartDay) : 1;
+    const receiptCurrentStart = new Date(receiptToday.getFullYear(), receiptToday.getMonth(), receiptToday.getDate());
+    receiptCurrentStart.setDate(receiptCurrentStart.getDate() - ((receiptCurrentStart.getDay() - receiptWeekStart + 7) % 7));
+    receiptCurrentStart.setHours(0, 0, 0, 0);
+    const receiptNextStart = new Date(receiptCurrentStart);
+    receiptNextStart.setDate(receiptNextStart.getDate() + 7);
+    const receiptPreviousStart = new Date(receiptCurrentStart);
+    receiptPreviousStart.setDate(receiptPreviousStart.getDate() - 7);
+    const receiptLowerBound = receiptSelection.isAbonado ? receiptCurrentStart : receiptPreviousStart;
+    const eligibleItems = (Array.isArray(receiptSelection.items) ? receiptSelection.items : []).filter(function(item){
+      if(!item) return false;
+      const saleDate = parseDeliveryDate(item.fecha);
+      return !!saleDate && saleDate >= receiptLowerBound && saleDate < receiptNextStart;
+    });
     if(!eligibleItems.length){
       showToast(receiptSelection.isAbonado ? 'No hay artículos de esta semana para compartir.' : 'Este cliente no tiene artículos de las últimas dos semanas.');
       return;
