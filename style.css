@@ -1384,33 +1384,8 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
 .dashboard-pending-money{font-size: calc((11px) * var(--font-scale, 1));text-align:right;}
 @media(min-width:680px){.dashboard-task-trigger{grid-template-columns:42px minmax(0,1fr) auto 22px;}.dashboard-task-trigger .dashboard-task-value{grid-column:auto;grid-row:auto;justify-self:end;margin:0;background:transparent;padding:0;white-space:nowrap;}.dashboard-task-trigger .dashboard-task-chevron{grid-column:auto;grid-row:auto;}.dashboard-task-trigger .dashboard-task-copy{grid-column:auto;grid-row:auto;}.dashboard-task-details{padding-left:53px!important;margin-left:14px!important;}}
 
-.receipt-edit-scrim{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(14,10,25,.62);backdrop-filter:blur(8px);}
-.receipt-edit-scrim[hidden]{display:none;}
-.receipt-modal-open{overflow:hidden;}
-.receipt-edit-modal{width:min(100%,460px);max-height:min(92dvh,860px);overflow:auto;padding:20px;border:1px solid var(--border);border-radius:24px;background:var(--surface);box-shadow:0 24px 80px rgba(0,0,0,.3);}
-.receipt-edit-heading{display:flex;align-items:center;gap:12px;margin-bottom:15px;}
-.receipt-edit-icon{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border-radius:14px;background:var(--surface-2);color:var(--primary-soft);font-size: calc((22px) * var(--font-scale, 1));}
-.receipt-edit-heading h2{margin:0;font-size: calc((18px) * var(--font-scale, 1));letter-spacing:-.02em;}
-.receipt-edit-heading p{margin:4px 0 0;color:var(--text-muted);font-size: calc((12px) * var(--font-scale, 1));}
-.icon-close-btn{margin-left:auto;width:34px;height:34px;border:0;border-radius:11px;background:var(--surface-2);color:var(--text);font-size: calc((24px) * var(--font-scale, 1));cursor:pointer;}
-.receipt-preview-card{padding:18px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(160deg,var(--surface),var(--surface-2));}
-.receipt-preview-brand{font-family:var(--display);font-size: calc((22px) * var(--font-scale, 1));font-weight:800;color:var(--text);}
-.receipt-preview-brand span{color:var(--primary-soft);}
-.receipt-preview-title{margin-top:12px;font-size: calc((10px) * var(--font-scale, 1));letter-spacing:.12em;font-weight:800;color:var(--text-muted);}
-.receipt-preview-date{margin-top:5px;font-size: calc((11px) * var(--font-scale, 1));color:var(--text-muted);}
-.receipt-preview-items{display:grid;gap:8px;margin-top:15px;padding-top:12px;border-top:1px dashed var(--border);}
-.receipt-preview-item{display:flex;justify-content:space-between;gap:12px;font-size: calc((12px) * var(--font-scale, 1));line-height:1.4;}
-.receipt-preview-item span{min-width:0;overflow-wrap:anywhere;}
-.receipt-preview-item strong{white-space:nowrap;font-family:var(--mono);font-size: calc((11px) * var(--font-scale, 1));}
-.receipt-preview-total{display:flex;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-weight:750;}
-.receipt-preview-total strong{font-family:var(--mono);font-size: calc((19px) * var(--font-scale, 1));color:var(--primary-soft);}
-.receipt-preview-message-label{margin-top:14px;color:var(--text-muted);font-size: calc((10px) * var(--font-scale, 1));text-transform:uppercase;letter-spacing:.08em;font-weight:800;}
-.receipt-preview-message{margin:5px 0 0;font-size: calc((12px) * var(--font-scale, 1));line-height:1.5;overflow-wrap:anywhere;}
-.receipt-message-label{display:block;margin:16px 0 7px;font-size: calc((12px) * var(--font-scale, 1));font-weight:750;}
-.receipt-edit-actions{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:10px;margin-top:14px;}
-.receipt-edit-actions .save-btn{margin:0;}
-.secondary-btn{min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font: 700 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
-@media(max-width:380px){.receipt-edit-modal{padding:14px;border-radius:20px}.receipt-edit-actions{grid-template-columns:1fr}.receipt-edit-actions .save-btn{order:-1}}
+/* Receipt editor styles are isolated in receipt.css (V12.92). */
+
 
 /* V12.2: auth gate blocks access to the app behind it when logged out */
 #authGate{position:fixed;inset:0;z-index:10000;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);align-items:center;}
