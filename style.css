@@ -4079,23 +4079,7 @@ body.fa-dialog-open{overflow:hidden;}
 @media(max-width:560px){.delivery-client-header{gap:5px;margin-bottom:8px}.delivery-client-trigger{gap:7px}.delivery-client-trigger .client-avatar{flex-basis:30px;width:30px;height:30px}.delivery-client-heading-copy strong{font-size:calc(12px * var(--font-scale,1))}.delivery-client-heading-copy small{font-size:calc(9px * var(--font-scale,1))}.delivery-client-status{min-height:26px;max-width:104px;padding:4px 6px;font-size:calc(9px * var(--font-scale,1))}.delivery-client-chevron-toggle{flex-basis:26px;width:26px;height:26px}}
 
 
-/* V12.80 — ajustes puntuales solicitados: toast de eliminación, categorías y pie de venta.
-   Usa las variables existentes para respetar los temas claro y oscuro. */
-.toast.has-action {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  width: max-content;
-  max-width: calc(100vw - 20px);
-  padding: 9px 12px;
-  gap: 8px;
-  white-space: nowrap;
-  overflow-x: auto;
-  box-sizing: border-box;
-}
-.toast.has-action .toast-undo {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
+/* V12.94 — overrides contextuales de toast extraídos a toast-actions.css. */
 
 /* La ventana de confirmación gana ancho para reducir saltos de línea innecesarios. */
 .fa-dialog {

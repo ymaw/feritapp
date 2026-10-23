@@ -971,31 +971,45 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function getReceiptSelectionForClient(clientName){
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey();
+    // Selección aislada por fechas reales de venta. No depende de semana_asignada
+    // ni de que weekKey() devuelva una clave válida ante una preferencia mal formada.
+    const today = new Date();
+    const configuredWeekStart = Number(weekStartDay);
+    const safeWeekStart = Number.isInteger(configuredWeekStart) && configuredWeekStart >= 0 && configuredWeekStart <= 6
+      ? configuredWeekStart : 1;
+    const currentStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    currentStart.setDate(currentStart.getDate() - ((currentStart.getDay() - safeWeekStart + 7) % 7));
+    currentStart.setHours(0, 0, 0, 0);
+    const nextStart = new Date(currentStart);
+    nextStart.setDate(nextStart.getDate() + 7);
+    const previousStart = new Date(currentStart);
+    previousStart.setDate(previousStart.getDate() - 7);
     const normalizedClientName = String(clientName || '').trim().toLocaleLowerCase('es');
+
     const clientItems = sales.filter(function(item){
-      return !!item && String(item.cliente || '').trim().toLocaleLowerCase('es') === normalizedClientName && !!parseDeliveryDate(item.fecha);
-    });
-    const currentWeekItems = salesForWeek(clientItems, currentKey);
-    const previousWeekItems = salesForWeek(clientItems, previousKey);
-    // Solo se aceptan booleanos/números verdaderos o el texto "true" como abonado.
-    // Evita que valores de texto como "false" se interpreten como verdaderos.
+      return !!item && String(item.cliente || '').trim().toLocaleLowerCase('es') === normalizedClientName;
+    }).map(function(item){
+      const date = parseDeliveryDate(item.fecha);
+      return date ? { item: item, date: date } : null;
+    }).filter(Boolean);
+
+    const currentWeekItems = clientItems.filter(function(entry){
+      return entry.date >= currentStart && entry.date < nextStart;
+    }).map(function(entry){ return entry.item; });
+    const previousWeekItems = clientItems.filter(function(entry){
+      return entry.date >= previousStart && entry.date < currentStart;
+    }).map(function(entry){ return entry.item; });
+
     const isPaid = function(item){
       return item.pagado === true || item.pagado === 1 || String(item.pagado).trim().toLowerCase() === 'true';
     };
-    // El estado corresponde a la semana actual; si no hay ventas allí, se usa la anterior.
     const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
     const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(isPaid);
-    // Abonado: solo ventas de la semana actual. Pendiente: semana actual + anterior.
-    const allowedWeekKeys = isAbonado ? [currentKey] : [currentKey, previousKey];
-    const eligibleItems = clientItems.filter(function(item){
-      const date = parseDeliveryDate(item.fecha);
-      return !!date && allowedWeekKeys.includes(weekKey(date));
-    }).slice().sort(function(a,b){
+    const allowedItems = isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems);
+    const eligibleItems = allowedItems.slice().sort(function(a, b){
       return parseDeliveryDate(a.fecha) - parseDeliveryDate(b.fecha);
     });
-    return {items:eligibleItems,isAbonado:isAbonado};
+    return { items: eligibleItems, isAbonado: isAbonado };
   }
 
   function shareReceipt(compradorNombre, items){
