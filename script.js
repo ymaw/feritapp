@@ -973,16 +973,28 @@ document.addEventListener('DOMContentLoaded', function(){
   function getReceiptSelectionForClient(clientName){
     const currentKey = weekKey(new Date());
     const previousKey = previousWeekKey();
-    const clientItems = sales.filter(function(item){ return (item.cliente || '').trim() === clientName && item.fecha; });
+    const normalizedClientName = String(clientName || '').trim().toLocaleLowerCase('es');
+    const clientItems = sales.filter(function(item){
+      return !!item && String(item.cliente || '').trim().toLocaleLowerCase('es') === normalizedClientName && !!parseDeliveryDate(item.fecha);
+    });
     const currentWeekItems = salesForWeek(clientItems, currentKey);
     const previousWeekItems = salesForWeek(clientItems, previousKey);
-    // El estado mostrado en Ventas corresponde al grupo de la semana actual.
-    // Si todavía no hay compras esta semana, se toma como referencia la semana anterior.
+    // Solo se aceptan booleanos/números verdaderos o el texto "true" como abonado.
+    // Evita que valores de texto como "false" se interpreten como verdaderos.
+    const isPaid = function(item){
+      return item.pagado === true || item.pagado === 1 || String(item.pagado).trim().toLowerCase() === 'true';
+    };
+    // El estado corresponde a la semana actual; si no hay ventas allí, se usa la anterior.
     const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
-    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(function(item){ return !!item.pagado; });
-    // Abonado: solo semana actual. Pendiente de Pago: semana actual + semana anterior.
-    const eligibleItems = (isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems))
-      .slice().sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
+    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(isPaid);
+    // Abonado: solo ventas de la semana actual. Pendiente: semana actual + anterior.
+    const allowedWeekKeys = isAbonado ? [currentKey] : [currentKey, previousKey];
+    const eligibleItems = clientItems.filter(function(item){
+      const date = parseDeliveryDate(item.fecha);
+      return !!date && allowedWeekKeys.includes(weekKey(date));
+    }).slice().sort(function(a,b){
+      return parseDeliveryDate(a.fecha) - parseDeliveryDate(b.fecha);
+    });
     return {items:eligibleItems,isAbonado:isAbonado};
   }
 
