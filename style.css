@@ -329,7 +329,6 @@ h1{
     display:flex; flex-direction:column; gap:6px;
     position:fixed; top:0; left:0; bottom:0; width:240px; z-index:25;
     background:var(--surface-2); border-right:1px solid var(--border);
-    padding:24px 16px;
   }
   .sidebar-brand{
     display:flex; align-items:center; gap:11px; font-family:var(--display); font-weight:700;
@@ -536,6 +535,8 @@ input:focus{ border-color:var(--primary); }
   transition:all .25s ease; z-index:40; max-width:88vw; text-align:center;
 }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.has-action{display:flex;align-items:center;justify-content:center;gap:10px;pointer-events:auto;border-radius:14px;max-width:92vw;}
+.toast-undo{border:0;border-radius:999px;padding:6px 11px;background:var(--bg);color:var(--primary);font:inherit;font-weight:800;white-space:nowrap;cursor:pointer;flex-shrink:0;}
 
 /* ---------- auth gate ---------- */
 #authGate, #onboardingGate{
@@ -1383,33 +1384,8 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
 .dashboard-pending-money{font-size: calc((11px) * var(--font-scale, 1));text-align:right;}
 @media(min-width:680px){.dashboard-task-trigger{grid-template-columns:42px minmax(0,1fr) auto 22px;}.dashboard-task-trigger .dashboard-task-value{grid-column:auto;grid-row:auto;justify-self:end;margin:0;background:transparent;padding:0;white-space:nowrap;}.dashboard-task-trigger .dashboard-task-chevron{grid-column:auto;grid-row:auto;}.dashboard-task-trigger .dashboard-task-copy{grid-column:auto;grid-row:auto;}.dashboard-task-details{padding-left:53px!important;margin-left:14px!important;}}
 
-.receipt-edit-scrim{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(14,10,25,.62);backdrop-filter:blur(8px);}
-.receipt-edit-scrim[hidden]{display:none;}
-.receipt-modal-open{overflow:hidden;}
-.receipt-edit-modal{width:min(100%,460px);max-height:min(92dvh,860px);overflow:auto;padding:20px;border:1px solid var(--border);border-radius:24px;background:var(--surface);box-shadow:0 24px 80px rgba(0,0,0,.3);}
-.receipt-edit-heading{display:flex;align-items:center;gap:12px;margin-bottom:15px;}
-.receipt-edit-icon{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border-radius:14px;background:var(--surface-2);color:var(--primary-soft);font-size: calc((22px) * var(--font-scale, 1));}
-.receipt-edit-heading h2{margin:0;font-size: calc((18px) * var(--font-scale, 1));letter-spacing:-.02em;}
-.receipt-edit-heading p{margin:4px 0 0;color:var(--text-muted);font-size: calc((12px) * var(--font-scale, 1));}
-.icon-close-btn{margin-left:auto;width:34px;height:34px;border:0;border-radius:11px;background:var(--surface-2);color:var(--text);font-size: calc((24px) * var(--font-scale, 1));cursor:pointer;}
-.receipt-preview-card{padding:18px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(160deg,var(--surface),var(--surface-2));}
-.receipt-preview-brand{font-family:var(--display);font-size: calc((22px) * var(--font-scale, 1));font-weight:800;color:var(--text);}
-.receipt-preview-brand span{color:var(--primary-soft);}
-.receipt-preview-title{margin-top:12px;font-size: calc((10px) * var(--font-scale, 1));letter-spacing:.12em;font-weight:800;color:var(--text-muted);}
-.receipt-preview-date{margin-top:5px;font-size: calc((11px) * var(--font-scale, 1));color:var(--text-muted);}
-.receipt-preview-items{display:grid;gap:8px;margin-top:15px;padding-top:12px;border-top:1px dashed var(--border);}
-.receipt-preview-item{display:flex;justify-content:space-between;gap:12px;font-size: calc((12px) * var(--font-scale, 1));line-height:1.4;}
-.receipt-preview-item span{min-width:0;overflow-wrap:anywhere;}
-.receipt-preview-item strong{white-space:nowrap;font-family:var(--mono);font-size: calc((11px) * var(--font-scale, 1));}
-.receipt-preview-total{display:flex;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-weight:750;}
-.receipt-preview-total strong{font-family:var(--mono);font-size: calc((19px) * var(--font-scale, 1));color:var(--primary-soft);}
-.receipt-preview-message-label{margin-top:14px;color:var(--text-muted);font-size: calc((10px) * var(--font-scale, 1));text-transform:uppercase;letter-spacing:.08em;font-weight:800;}
-.receipt-preview-message{margin:5px 0 0;font-size: calc((12px) * var(--font-scale, 1));line-height:1.5;overflow-wrap:anywhere;}
-.receipt-message-label{display:block;margin:16px 0 7px;font-size: calc((12px) * var(--font-scale, 1));font-weight:750;}
-.receipt-edit-actions{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:10px;margin-top:14px;}
-.receipt-edit-actions .save-btn{margin:0;}
-.secondary-btn{min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font: 700 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
-@media(max-width:380px){.receipt-edit-modal{padding:14px;border-radius:20px}.receipt-edit-actions{grid-template-columns:1fr}.receipt-edit-actions .save-btn{order:-1}}
+/* Receipt editor styles are isolated in receipt.css (V12.92). */
+
 
 /* V12.2: auth gate blocks access to the app behind it when logged out */
 #authGate{position:fixed;inset:0;z-index:10000;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);align-items:center;}
@@ -1617,7 +1593,7 @@ header.has-back-button .eyebrow,header.has-back-button .session-email{margin-rig
 .weekly-summary-chevron{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border-radius:10px;background:rgba(var(--primary-rgb),.09);color:var(--primary-soft);font-size: calc((20px) * var(--font-scale, 1));transition:transform .18s;}
 .weekly-summary-trigger.expanded .weekly-summary-chevron{transform:rotate(180deg);}
 .weekly-summary-content{padding:0 12px 12px;border-top:1px solid var(--border);}
-.weekly-summary-content[hidden]{display:none!important;}
+
 .menu-dropdown .menu-item{display:grid!important;grid-template-columns:32px minmax(0,1fr) 12px!important;align-items:center!important;column-gap:9px!important;}
 .menu-dropdown .menu-item>span:nth-child(2){display:block;min-width:0;white-space:nowrap;}
 .menu-dropdown .menu-item strong{white-space:nowrap;line-height:1.25;}
@@ -1631,7 +1607,6 @@ header.has-back-button .brand-lockup,
 header.has-back-button .eyebrow,
 header.has-back-button h1,
 header.has-back-button .session-email{
-  margin-left:0!important;
   margin-right:54px!important;
 }
 @media(max-width:520px){
@@ -1752,8 +1727,8 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .delivery-management-badges{display:flex;gap:6px;flex-wrap:wrap;}
 .delivery-mark-btn{flex:0 0 auto;max-width:150px;padding:10px 12px;border:0;border-radius:12px;background:var(--primary);color:#fff;font: 750 calc((11px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
 .delivery-mark-btn.is-delivered{background:var(--success);}
-.dashboard-weekly-summary{width:calc(100% - 32px);max-width:1180px;margin:10px auto 18px;box-sizing:border-box;}
-.dashboard-history-section{max-width:1180px;margin-left:auto;margin-right:auto;}
+
+
 #viewSales .sales-hero{margin:10px 0 14px;padding:16px 20px;}
 #viewSales .section-block,#viewDeliveries .section-block{max-width:1180px;margin-left:auto;margin-right:auto;}
 #viewDeliveries .view-hero{margin-top:10px;}
@@ -1894,7 +1869,7 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .management-expanded-layout .sales-group-item-side{gap:4px;align-items:flex-end;}
 .management-expanded-layout .sales-group-item-side>strong{font-size: calc((10px) * var(--font-scale, 1));}
 .management-expanded-layout .sales-group-item-side .pay-toggle{font-size: calc((9px) * var(--font-scale, 1));padding:4px 6px;}
-.management-expanded-layout .sales-group-item-side .row-actions{display:flex!important;align-items:center;justify-content:flex-end;}
+
 .management-expanded-layout .sales-group-total{padding:8px 1px;font-size: calc((11px) * var(--font-scale, 1));}
 .management-client-right{display:flex;flex-direction:column;gap:6px;padding-top:7px;}
 .management-client-right button{min-height:30px;width:100%;padding:6px 5px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--primary-soft);font: 700 calc((10px) * var(--font-scale, 1)) var(--body);cursor:pointer;text-align:center;}
@@ -1980,14 +1955,6 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .weekly-summary-client-group [data-toggle-pay] { display: none !important; }
 /* El estado de entrega debe ser visible exclusivamente en Inicio > Resumen Semanal. */
 #weeklySummaryContent .weekly-summary-delivery-status {
-  display: inline-flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
 }
 
 /* Encabezado de la app: marca centrada y controles laterales alineados */
@@ -2195,12 +2162,10 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 /* V12.40: estados persistentes y layout legible en Inicio > Resumen Semanal. */
 #weeklySummaryContent .sales-client-group-header {
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
   gap: 12px;
   min-width: 0;
 }
 #weeklySummaryContent .sales-client-group-trigger {
-  min-width: 0;
   width: 100%;
   grid-template-columns: 40px minmax(0, 1fr);
   gap: 10px;
@@ -2211,16 +2176,12 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
   overflow: visible;
 }
 #weeklySummaryContent .sales-group-statuses {
-  display: flex;
   flex: 0 0 auto;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
   width: auto;
-  max-width: 100%;
-  min-width: 0;
   padding-left: 0;
 }
 #weeklySummaryContent .sales-group-statuses .delivery-status {
@@ -2228,14 +2189,10 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  max-width: 100%;
   min-height: 28px;
   padding: 5px 9px;
   font-size: calc((11px) * var(--font-scale, 1));
-  line-height: 1.25;
-  white-space: normal;
   overflow-wrap: anywhere;
-  text-align: center;
 }
 #weeklySummaryContent .sales-group-chevron {
   flex: 0 0 24px;
@@ -2255,7 +2212,6 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
     padding-left: 44px;
   }
   #weeklySummaryContent .sales-group-statuses .delivery-status {
-    font-size: calc((10px) * var(--font-scale, 1));
     padding: 5px 8px;
   }
 }
@@ -2265,10 +2221,7 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 #greetingAvatar { cursor: pointer; border: 0; font: inherit; }
 #greetingAvatar:focus-visible { outline: 3px solid var(--primary-soft); outline-offset: 3px; }
 #weeklySummaryContent .sales-group-statuses {
-  flex-direction: column !important;
   align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 6px !important;
 }
 #weeklySummaryContent .sales-group-statuses .delivery-status { align-self: flex-start; }
 
@@ -2393,26 +2346,17 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 
 /* V12.46 · Resumen semanal: estados debajo, alineados al mismo borde derecho del cliente */
 #weeklySummaryContent .sales-client-group-header {
-  display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(140px, auto);
   align-items: start;
   column-gap: 12px;
 }
 #weeklySummaryContent .sales-group-statuses {
-  grid-column: 2;
-  grid-row: 1;
-  align-items: flex-end !important;
-  justify-content: flex-start !important;
   text-align: right;
   padding-left: 0 !important;
   padding-top: 40px;
   gap: 6px !important;
 }
 #weeklySummaryContent .sales-group-statuses .delivery-status {
-  align-self: flex-end !important;
-  max-width: 100%;
-  white-space: normal;
-  text-align: right;
 }
 #weeklySummaryContent .sales-group-chevron { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
 @media (max-width: 640px) {
@@ -2463,14 +2407,10 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 #weeklySummaryContent .sales-group-statuses {
   grid-column: 2; grid-row: 1;
   align-self: center !important;
-  align-items: flex-end !important;
   justify-content: center !important;
   padding: 0 0 0 0 !important;
-  margin: 0 !important;
-  gap: 5px !important;
 }
 #weeklySummaryContent .sales-group-statuses .delivery-status {
-  align-self: flex-end !important;
   max-width: 100%;
   white-space: normal;
   text-align: right;
@@ -2860,7 +2800,6 @@ header.view-dashboard .header-profile-btn { display: none !important; }
   border: 1px solid var(--border) !important;
   background: var(--surface) !important;
   color: var(--text-muted) !important;
-  font-size: calc((17px) * var(--font-scale, 1)) !important;
 }
 #sheet.new-sale-mode .field {
   overflow: hidden !important;
@@ -2932,14 +2871,12 @@ header.view-dashboard .header-profile-btn { display: none !important; }
   border-bottom: 1px solid var(--border) !important;
 }
 #sheet.new-sale-mode .item-row-label {
-  font-size: calc((12px) * var(--font-scale, 1)) !important;
   font-weight: 850 !important;
 }
 #sheet.new-sale-mode .item-row-label::before {
   width: 22px !important; height: 22px !important; flex-basis: 22px !important;
   content: "" !important;
   background: rgba(var(--primary-rgb), .12) !important;
-  border-radius: 7px !important;
 }
 #sheet.new-sale-mode .item-field { gap: 7px !important; font-size: calc((11px) * var(--font-scale, 1)) !important; }
 #sheet.new-sale-mode .item-field > span { color: var(--text-muted) !important; }
@@ -3004,7 +2941,6 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 #sheet.new-sale-mode .sheet-save-bar {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
   padding-top: 14px !important;
   border-top: 1px solid var(--border) !important;
 }
@@ -3021,7 +2957,6 @@ header.view-dashboard .header-profile-btn { display: none !important; }
 @media (max-width: 380px) {
   #sheet.new-sale-mode .field { padding: 13px 11px !important; }
   #sheet.new-sale-mode .item-row { padding: 11px !important; gap: 10px 7px !important; }
-  #sheet.new-sale-mode .item-field .input-row { gap: 4px !important; }
   #sheet.new-sale-mode .item-field .mic-btn { flex-basis: 30px !important; width: 30px !important; min-width: 30px !important; height: 34px !important; }
   #sheet.new-sale-mode .item-field .row-articulo,
   #sheet.new-sale-mode .item-field .row-precio,
@@ -3450,7 +3385,6 @@ textarea,
 #sheet.new-sale-mode .field-row-head,
 #sheet.edit-sale-mode .field-row-head {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -3499,9 +3433,6 @@ textarea,
 }
 #sheet.new-sale-mode .item-field .input-row,
 #sheet.edit-sale-mode .item-field .input-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 #sheet.new-sale-mode .item-field .row-articulo,
 #sheet.new-sale-mode .item-field .row-precio,
@@ -3509,10 +3440,6 @@ textarea,
 #sheet.edit-sale-mode .item-field .row-articulo,
 #sheet.edit-sale-mode .item-field .row-precio,
 #sheet.edit-sale-mode .item-field .row-categoria {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
 }
 #sheet.new-sale-mode .item-field .row-categoria,
 #sheet.edit-sale-mode .item-field .row-categoria {
@@ -3947,9 +3874,7 @@ textarea,
   font-size: calc((14px) * var(--font-scale, 1));
   line-height: 1.25;
   text-overflow: ellipsis;
-  background-position: right 16px center;
   background-origin: padding-box;
-  background-repeat: no-repeat;
 }
 #sheet.new-sale-mode .item-field .mic-btn,
 #sheet.edit-sale-mode .item-field .mic-btn {
@@ -4006,8 +3931,6 @@ textarea,
   #sheet.new-sale-mode .item-field-category select.row-categoria,
   #sheet.edit-sale-mode .item-field-category select.row-categoria {
     padding-left: 10px;
-    padding-right: 42px;
-    background-position: right 15px center;
   }
 }
 
@@ -4154,3 +4077,83 @@ body.fa-dialog-open{overflow:hidden;}
 .delivery-client-chevron-toggle.expanded{transform:rotate(180deg);background:var(--surface-2,var(--surface));}
 .delivery-client-chevron-toggle:focus-visible{outline:3px solid var(--primary);outline-offset:2px;}
 @media(max-width:560px){.delivery-client-header{gap:5px;margin-bottom:8px}.delivery-client-trigger{gap:7px}.delivery-client-trigger .client-avatar{flex-basis:30px;width:30px;height:30px}.delivery-client-heading-copy strong{font-size:calc(12px * var(--font-scale,1))}.delivery-client-heading-copy small{font-size:calc(9px * var(--font-scale,1))}.delivery-client-status{min-height:26px;max-width:104px;padding:4px 6px;font-size:calc(9px * var(--font-scale,1))}.delivery-client-chevron-toggle{flex-basis:26px;width:26px;height:26px}}
+
+
+/* V12.94 — overrides contextuales de toast extraídos a toast-actions.css. */
+
+/* La ventana de confirmación gana ancho para reducir saltos de línea innecesarios. */
+.fa-dialog {
+  width: min(100%, 620px);
+}
+#saleDeleteDialog #saleDeleteDescription {
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* El selector y sus opciones siguen los colores del tema activo de FeritApp. */
+#sheet.new-sale-mode .item-field-category select.row-categoria,
+#sheet.edit-sale-mode .item-field-category select.row-categoria {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+  color-scheme: light;
+}
+[data-theme="dark"] #sheet.new-sale-mode .item-field-category select.row-categoria,
+[data-theme="dark"] #sheet.edit-sale-mode .item-field-category select.row-categoria {
+  color-scheme: dark;
+}
+#sheet.new-sale-mode .item-field-category select.row-categoria option,
+#sheet.edit-sale-mode .item-field-category select.row-categoria option {
+  background-color: var(--surface);
+  color: var(--text);
+}
+#sheet.new-sale-mode .item-field-category select.row-categoria option:checked,
+#sheet.edit-sale-mode .item-field-category select.row-categoria option:checked {
+  background-color: var(--surface-3);
+  color: var(--text);
+}
+
+/* El total puede comprimirse; el texto de Guardar venta nunca se parte en dos líneas. */
+#sheet.new-sale-mode .sheet-save-total,
+#sheet.edit-sale-mode .sheet-save-total {
+  flex: 1 1 auto;
+  max-width: none;
+}
+#sheet.new-sale-mode .sheet-save-bar .save-btn,
+#sheet.edit-sale-mode .sheet-save-bar .save-btn {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: max-content;
+  max-width: none;
+  padding-left: 12px;
+  padding-right: 12px;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+@media (max-width: 380px) {
+  #sheet.new-sale-mode .sheet-save-bar .save-btn,
+  #sheet.edit-sale-mode .sheet-save-bar .save-btn {
+    min-width: max-content;
+    max-width: none;
+    padding-left: 9px;
+    padding-right: 9px;
+    font-size: calc((12px) * var(--font-scale, 1));
+  }
+}
+
+/* V12.88 — acciones contextuales de Resumen Semanal en weekly-summary-menu.css. */
+
+
+/* V12.85 — el componente de categorías se carga desde category-picker.css. */
+
+/* Evita que una pulsación larga en Resumen Semanal active la selección de texto del navegador. */
+.weekly-summary-client-group {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.weekly-summary-client-group input,
+.weekly-summary-client-group textarea,
+.weekly-summary-client-group [contenteditable="true"] {
+  -webkit-user-select: text; user-select: text;
+}
