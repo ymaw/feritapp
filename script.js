@@ -971,10 +971,8 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function getReceiptSelectionForClient(clientName){
-    // El comprobante se basa en la fecha real de venta, nunca en semana_asignada.
-    // Siempre incluye las ventas de la semana actual y solo arrastra de la semana
-    // anterior las ventas que individualmente siguen impagas. Las ventas pagadas
-    // de semanas previas no deben inflar el saldo actual del cliente.
+    // El comprobante usa la fecha real de venta. El estado de pago se evalúa
+    // por semana completa, igual que el indicador semanal de Ventas.
     const normalizedClientName = String(clientName || '').trim().toLocaleLowerCase('es');
     if(!normalizedClientName) return { items: [], isAbonado: false };
 
@@ -985,15 +983,16 @@ document.addEventListener('DOMContentLoaded', function(){
     const previousKey = previousWeekKey(new Date());
     const currentWeekItems = salesForWeek(clientItems, currentKey);
     const previousWeekItems = salesForWeek(clientItems, previousKey);
-    const isPaid = function(item){
-      const value = item.pagado;
-      return value === true || value === 1 || ['true','1','t','yes','si','sí'].includes(String(value == null ? '' : value).trim().toLowerCase());
-    };
-    const unpaidPreviousWeekItems = previousWeekItems.filter(function(item){ return !isPaid(item); });
-    const eligibleItems = currentWeekItems.concat(unpaidPreviousWeekItems).slice().sort(function(a,b){
+    const isPaid = function(item){ return !!item.pagado; };
+    const weekIsAbonado = function(items){ return items.length > 0 && items.every(isPaid); };
+
+    // Regla de negocio: si la semana anterior figura Abonado, se excluye
+    // completa. Si figura Pendiente de Pago, se incluye esa semana completa.
+    const previousWeekIsAbonado = weekIsAbonado(previousWeekItems);
+    const eligibleItems = currentWeekItems.concat(previousWeekItems.length && !previousWeekIsAbonado ? previousWeekItems : []).slice().sort(function(a,b){
       return parseDeliveryDate(a.fecha) - parseDeliveryDate(b.fecha);
     });
-    const isAbonado = eligibleItems.length > 0 && eligibleItems.every(isPaid);
+    const isAbonado = weekIsAbonado(currentWeekItems);
     return { items: eligibleItems, isAbonado: isAbonado };
   }
 
