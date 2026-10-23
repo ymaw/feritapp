@@ -971,7 +971,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function getReceiptSelectionForClient(clientName){
-    // Los comprobantes usan la fecha real de la venta. semana_asignada solo afecta Entregas.
+    // El comprobante se basa en la fecha real de venta, nunca en semana_asignada.
+    // Siempre incluye las ventas de la semana actual y solo arrastra de la semana
+    // anterior las ventas que individualmente siguen impagas. Las ventas pagadas
+    // de semanas previas no deben inflar el saldo actual del cliente.
     const normalizedClientName = String(clientName || '').trim().toLocaleLowerCase('es');
     if(!normalizedClientName) return { items: [], isAbonado: false };
 
@@ -983,21 +986,14 @@ document.addEventListener('DOMContentLoaded', function(){
     const currentWeekItems = salesForWeek(clientItems, currentKey);
     const previousWeekItems = salesForWeek(clientItems, previousKey);
     const isPaid = function(item){
-      return item.pagado === true || item.pagado === 1 || String(item.pagado).trim().toLowerCase() === 'true';
+      const value = item.pagado;
+      return value === true || value === 1 || ['true','1','t','yes','si','sí'].includes(String(value == null ? '' : value).trim().toLowerCase());
     };
-    // El estado se determina por las ventas de la semana actual; si no hay, por la anterior.
-    const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
-    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(isPaid);
-    // Abonado: solo ventas de esta semana. Pendiente: esta semana + la anterior.
-    const allowedItems = isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems);
-    const eligibleItems = allowedItems.filter(function(item){
-      const date = parseDeliveryDate(item.fecha);
-      if(!date) return false;
-      const key = weekKey(date);
-      return key === currentKey || key === previousKey;
-    }).slice().sort(function(a,b){
+    const unpaidPreviousWeekItems = previousWeekItems.filter(function(item){ return !isPaid(item); });
+    const eligibleItems = currentWeekItems.concat(unpaidPreviousWeekItems).slice().sort(function(a,b){
       return parseDeliveryDate(a.fecha) - parseDeliveryDate(b.fecha);
     });
+    const isAbonado = eligibleItems.length > 0 && eligibleItems.every(isPaid);
     return { items: eligibleItems, isAbonado: isAbonado };
   }
 
