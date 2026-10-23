@@ -970,23 +970,50 @@ document.addEventListener('DOMContentLoaded', function(){
     return canvas;
   }
 
+  function getReceiptSelectionForClient(clientName){
+    // Los comprobantes usan la fecha real de la venta. semana_asignada solo afecta Entregas.
+    const normalizedClientName = String(clientName || '').trim().toLocaleLowerCase('es');
+    if(!normalizedClientName) return { items: [], isAbonado: false };
+
+    const clientItems = sales.filter(function(item){
+      return !!item && String(item.cliente || '').trim().toLocaleLowerCase('es') === normalizedClientName && !!parseDeliveryDate(item.fecha);
+    });
+    const currentKey = weekKey(new Date());
+    const previousKey = previousWeekKey(new Date());
+    const currentWeekItems = salesForWeek(clientItems, currentKey);
+    const previousWeekItems = salesForWeek(clientItems, previousKey);
+    const isPaid = function(item){
+      return item.pagado === true || item.pagado === 1 || String(item.pagado).trim().toLowerCase() === 'true';
+    };
+    // El estado se determina por las ventas de la semana actual; si no hay, por la anterior.
+    const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
+    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(isPaid);
+    // Abonado: solo ventas de esta semana. Pendiente: esta semana + la anterior.
+    const allowedItems = isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems);
+    const eligibleItems = allowedItems.filter(function(item){
+      const date = parseDeliveryDate(item.fecha);
+      if(!date) return false;
+      const key = weekKey(date);
+      return key === currentKey || key === previousKey;
+    }).slice().sort(function(a,b){
+      return parseDeliveryDate(a.fecha) - parseDeliveryDate(b.fecha);
+    });
+    return { items: eligibleItems, isAbonado: isAbonado };
+  }
+
   function shareReceipt(compradorNombre, items){
     if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
     const clientName = (compradorNombre || '').trim();
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey();
-    // El comprobante nunca incluye ventas anteriores a estas dos semanas.
-    const eligibleItems = sales.filter(function(item){
-      return (item.cliente || '').trim() === clientName && item.fecha &&
-        (weekKey(new Date(item.fecha)) === currentKey || weekKey(new Date(item.fecha)) === previousKey);
-    }).sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
-    if(!eligibleItems.length){ showToast('Este cliente no tiene artículos de la semana actual ni de la semana anterior.'); return; }
+    const receiptSelection = getReceiptSelectionForClient(clientName);
+    const eligibleItems = receiptSelection.items;
+    if(!eligibleItems.length){
+      showToast(receiptSelection.isAbonado ? 'No hay artículos de esta semana para compartir.' : 'Este cliente no tiene artículos de las últimas dos semanas.');
+      return;
+    }
     pendingReceiptItems = eligibleItems;
     pendingReceiptClient = clientName;
     pendingReceiptTotal = eligibleItems.reduce(function(sum, item){ return sum + (Number(item.precio)||0); }, 0);
-    // Si queda algún importe pendiente en las dos semanas incluidas, se conserva el mensaje configurable.
-    // Si todo está abonado, el comprobante lleva el agradecimiento fijo solo para este envío.
-    pendingReceiptForceThankYou = eligibleItems.every(function(item){ return !!item.pagado; });
+    pendingReceiptForceThankYou = receiptSelection.isAbonado;
     let scrim = document.getElementById('receiptEditScrim');
     let msg = document.getElementById('receiptShareMessage');
     msg.value = pendingReceiptForceThankYou ? PAID_RECEIPT_THANK_YOU : (receiptMessage || '');
