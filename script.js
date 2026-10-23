@@ -2039,7 +2039,7 @@ document.addEventListener('DOMContentLoaded', function(){
     function resetDeleteSelection(card){
       if(!card) return;
       const toggle=card.querySelector('.sales-group-chevron');
-      if(toggle){toggle.removeAttribute('data-delete-target-ids');toggle.removeAttribute('title');toggle.textContent='⌄';toggle.classList.remove('delete-selected');toggle.setAttribute('aria-label','Expandir o contraer');}
+      if(toggle){toggle.removeAttribute('data-delete-target-ids');toggle.textContent='⌄';toggle.classList.remove('delete-selected');toggle.setAttribute('aria-label','Expandir o contraer');}
     }
     function selectDeleteTarget(card){
       if(!card) return;
@@ -2051,7 +2051,6 @@ document.addEventListener('DOMContentLoaded', function(){
         toggle.setAttribute('data-delete-target-ids',ids.join(','));
         toggle.textContent='✕';
         toggle.classList.add('delete-selected');
-        toggle.setAttribute('title','Eliminar ventas de este cliente');
         const title=card.querySelector('.sales-client-group-copy strong');
         toggle.setAttribute('aria-label','Eliminar las ventas de '+(title?title.textContent.trim():'este cliente'));
         card.dataset.deleteSelectionTriggered='true';
@@ -2211,8 +2210,9 @@ document.addEventListener('DOMContentLoaded', function(){
       if(Number.isNaN(date.getTime())) return false;
       const itemWeekKey = weekKey(date);
       if(!visibleKeys.includes(itemWeekKey)) return false;
-      // Las tres semanas visibles conservan tanto entregados como pendientes.
-      // Marcar una entrega como realizada no debe hacer desaparecer al cliente.
+      // La semana actual conserva entregados y pendientes. En las dos anteriores,
+      // solo se muestran las ventas que aún están pendientes de entrega.
+      if(itemWeekKey !== currentKey && x.entregado) return false;
       const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       return hay.includes(search);
     });
@@ -2268,9 +2268,8 @@ document.addEventListener('DOMContentLoaded', function(){
       if(Number.isNaN(date.getTime())) return false;
       const key=weekKey(date);
       if(!visibleKeys.has(key)) return false;
-      // El estado del cliente se aplica a todas sus ventas de las tres semanas
-      // visibles, incluidas las ya entregadas, para que pueda alternarse sin ocultarlas.
-      return true;
+      // Igual que la lista: las semanas anteriores solo contienen pendientes.
+      return key===currentKey || !item.entregado;
     });
     if(!items.length) return;
     const changed=items.filter(function(item){return !!item.entregado!==desired;});
