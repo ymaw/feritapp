@@ -678,7 +678,6 @@ document.addEventListener('DOMContentLoaded', function(){
     return {
       id: row.id,
       fecha: row.fecha,
-      semana_asignada: row.semana_asignada || null,
       cliente: row.cliente,
       articulo: row.articulo,
       precio: Number(row.precio),
@@ -686,8 +685,7 @@ document.addEventListener('DOMContentLoaded', function(){
       retira: row.retira,
       tercero: row.tercero || '',
       categoria: row.categoria || 'Sin categoría',
-      entregado: !!row.entregado,
-      entregado_en: row.entregado_en || null
+      entregado: !!row.entregado
     };
   }
 
@@ -970,36 +968,23 @@ document.addEventListener('DOMContentLoaded', function(){
     return canvas;
   }
 
-  function getReceiptSelectionForClient(clientName){
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey();
-    const clientItems = sales.filter(function(item){ return (item.cliente || '').trim() === clientName && item.fecha; });
-    const currentWeekItems = salesForWeek(clientItems, currentKey);
-    const previousWeekItems = salesForWeek(clientItems, previousKey);
-    // El estado mostrado en Ventas corresponde al grupo de la semana actual.
-    // Si todavía no hay compras esta semana, se toma como referencia la semana anterior.
-    const paymentStatusItems = currentWeekItems.length ? currentWeekItems : previousWeekItems;
-    const isAbonado = paymentStatusItems.length > 0 && paymentStatusItems.every(function(item){ return !!item.pagado; });
-    // Abonado: solo semana actual. Pendiente de Pago: semana actual + semana anterior.
-    const eligibleItems = (isAbonado ? currentWeekItems : currentWeekItems.concat(previousWeekItems))
-      .slice().sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
-    return {items:eligibleItems,isAbonado:isAbonado};
-  }
-
   function shareReceipt(compradorNombre, items){
     if(!items || items.length === 0){ showToast('No hay artículos para compartir.'); return; }
     const clientName = (compradorNombre || '').trim();
-    const receiptSelection = getReceiptSelectionForClient(clientName);
-    const eligibleItems = receiptSelection.items;
-    if(!eligibleItems.length){
-      showToast(receiptSelection.isAbonado ? 'No hay artículos de esta semana para compartir.' : 'Este cliente no tiene artículos de las últimas dos semanas.');
-      return;
-    }
+    const currentKey = weekKey(new Date());
+    const previousKey = previousWeekKey();
+    // El comprobante nunca incluye ventas anteriores a estas dos semanas.
+    const eligibleItems = sales.filter(function(item){
+      return (item.cliente || '').trim() === clientName && item.fecha &&
+        (weekKey(new Date(item.fecha)) === currentKey || weekKey(new Date(item.fecha)) === previousKey);
+    }).sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); });
+    if(!eligibleItems.length){ showToast('Este cliente no tiene artículos de la semana actual ni de la semana anterior.'); return; }
     pendingReceiptItems = eligibleItems;
     pendingReceiptClient = clientName;
     pendingReceiptTotal = eligibleItems.reduce(function(sum, item){ return sum + (Number(item.precio)||0); }, 0);
-    // Para clientes abonados se usa el agradecimiento fijo solo en este envío.
-    pendingReceiptForceThankYou = receiptSelection.isAbonado;
+    // Si queda algún importe pendiente en las dos semanas incluidas, se conserva el mensaje configurable.
+    // Si todo está abonado, el comprobante lleva el agradecimiento fijo solo para este envío.
+    pendingReceiptForceThankYou = eligibleItems.every(function(item){ return !!item.pagado; });
     let scrim = document.getElementById('receiptEditScrim');
     let msg = document.getElementById('receiptShareMessage');
     msg.value = pendingReceiptForceThankYou ? PAID_RECEIPT_THANK_YOU : (receiptMessage || '');
@@ -1252,68 +1237,18 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  const DELETE_UNDO_WINDOW_MS = 10000;
-  let pendingUndoOperations = [];
-
-  function refreshUndoToast(){
-    const toast=document.getElementById('toast');
-    if(!toast)return;
-    const latest=pendingUndoOperations[pendingUndoOperations.length-1];
-    if(!latest){toast.classList.remove('has-action');return;}
-    toast.replaceChildren(document.createTextNode(latest.message+' '));
-    const undo=document.createElement('button');
-    undo.type='button'; undo.className='toast-undo'; undo.textContent='Deshacer';
-    undo.setAttribute('aria-label','Deshacer eliminación');
-    undo.addEventListener('click',function(){undoPendingDeletion(latest.id);});
-    toast.appendChild(undo); toast.classList.add('show','has-action');
-  }
-
-  function scheduleUndoableDeletion(options){
-    const op={id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),message:options.message,undo:options.undo,commit:options.commit,timer:null};
-    pendingUndoOperations.push(op);
-    op.timer=setTimeout(async function(){
-      pendingUndoOperations=pendingUndoOperations.filter(function(item){return item.id!==op.id;});
-      try{await op.commit();}
-      catch(error){
-        try{op.undo();render();}catch(restoreError){}
-        showToast('No se pudo completar la eliminación. Se restauró la información en pantalla; verificá la conexión.');
-      }
-      if(pendingUndoOperations.length)refreshUndoToast();
-      else{const toast=document.getElementById('toast');if(toast)toast.classList.remove('has-action','show');}
-    },DELETE_UNDO_WINDOW_MS);
-    refreshUndoToast();
-    return op.id;
-  }
-
-  function undoPendingDeletion(id){
-    const index=pendingUndoOperations.findIndex(function(item){return item.id===id;});
-    if(index<0)return;
-    const op=pendingUndoOperations[index];
-    clearTimeout(op.timer);
-    pendingUndoOperations.splice(index,1);
-    try{op.undo();}catch(error){showToast('No se pudo restaurar la vista. Actualizá la pantalla para verificar.');}
-    render();
-    if(pendingUndoOperations.length)refreshUndoToast();
-    else showToast('Eliminación deshecha');
-  }
-
   async function deleteSalesGroup(ids){
     const uniqueIds=Array.from(new Set(ids.map(String)));
     if(!uniqueIds.length)return;
-    const removed=sales.filter(function(item){return uniqueIds.includes(String(item.id));});
-    if(!removed.length){showToast('No se encontraron ventas para eliminar.');return;}
-    sales=sales.filter(function(item){return !uniqueIds.includes(String(item.id));});
-    render();
-    scheduleUndoableDeletion({
-      message:(removed.length===1?'Venta eliminada.':'Ventas eliminadas: '+removed.length+'.')+' Podés deshacer',
-      undo:function(){sales=sales.concat(removed);},
-      commit:async function(){
-        const result=await sb.from('sales').delete().in('id',uniqueIds).select('id');
-        if(result.error)throw result.error;
-        const deletedIds=new Set((result.data||[]).map(function(item){return String(item.id);}));
-        if(!deletedIds.size)throw new Error('No se eliminó ninguna venta.');
-      }
-    });
+    try{
+      const result=await sb.from('sales').delete().in('id',uniqueIds).select('id');
+      if(result.error)throw result.error;
+      const deletedIds=new Set((result.data||[]).map(function(item){return String(item.id);}));
+      if(!deletedIds.size)throw new Error('No se eliminó ninguna venta.');
+      sales=sales.filter(function(item){return !deletedIds.has(String(item.id));});
+      render();
+      showToast(deletedIds.size===1?'Venta eliminada':'Ventas eliminadas: '+deletedIds.size);
+    }catch(error){showToast('No se pudieron eliminar las ventas. Verificá tus permisos e intentá nuevamente.');}
   }
 
   function confirmDeleteSale(item){
@@ -1359,19 +1294,18 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function deleteSale(id){
-    const removed=sales.filter(function(item){return String(item.id)===String(id);});
-    if(!removed.length){showToast('No se encontró la venta para eliminar.');return;}
-    sales=sales.filter(function(item){return String(item.id)!==String(id);});
-    render();
-    scheduleUndoableDeletion({
-      message:'Venta eliminada. Podés deshacer',
-      undo:function(){sales=sales.concat(removed);},
-      commit:async function(){
-        const result=await sb.from('sales').delete().eq('id',id).select('id');
-        if(result.error)throw result.error;
-        if(!result.data||result.data.length===0)throw new Error('La venta no se eliminó.');
+    try{
+      const result = await sb.from('sales').delete().eq('id', id).select('id');
+      if(result.error) throw result.error;
+      if(!result.data || result.data.length === 0){
+        throw new Error('La venta no se eliminó: puede que ya no exista o no tengas permiso.');
       }
-    });
+      sales = sales.filter(function(s){ return s.id !== id; });
+      render();
+      showToast('Venta eliminada');
+    }catch(e){
+      showToast('No se pudo borrar la venta. Verificá tus permisos e intentá nuevamente.');
+    }
   }
 
   /* ---------------- date / week helpers ---------------- */
@@ -1392,26 +1326,12 @@ document.addEventListener('DOMContentLoaded', function(){
     previousStart.setDate(previousStart.getDate() - 7);
     return weekKey(previousStart);
   }
-  // La fecha real de la venta nunca se modifica al reasignarla operativamente.
-  // La asignación solo cambia la semana en las vistas operativas (Resumen/Entregas).
-  function operationalWeekKey(item){
-    if(!item) return null;
-    if(item.semana_asignada){
-      const assignedDate=parseDeliveryDate(item.semana_asignada);
-      if(assignedDate) return weekKey(assignedDate);
-    }
-    const saleDate=parseDeliveryDate(item.fecha);
-    return saleDate ? weekKey(saleDate) : null;
-  }
-  function salesForOperationalWeek(items, key){
-    return (items || []).filter(function(item){ return operationalWeekKey(item)===key; });
-  }
-  // Selección por fecha real: se conserva para comprobantes e historial cronológico.
+  // Única regla para seleccionar ventas de una semana en todas las vistas.
   function salesForWeek(items, key){
     return (items || []).filter(function(item){
       if(!item || !item.fecha) return false;
-      const date = parseDeliveryDate(item.fecha);
-      return !!date && weekKey(date) === key;
+      const date = new Date(item.fecha);
+      return !Number.isNaN(date.getTime()) && weekKey(date) === key;
     });
   }
   const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
@@ -1435,11 +1355,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   /* ---------------- rendering ---------------- */
-  function groupByWeek(useOperationalAssignment){
+  function groupByWeek(){
     let groups = {};
     sales.forEach(function(s){
-      let k = useOperationalAssignment ? operationalWeekKey(s) : weekKey(parseDeliveryDate(s.fecha));
-      if(!k) return;
+      let k = weekKey(new Date(s.fecha));
       if(!groups[k]) groups[k] = [];
       groups[k].push(s);
     });
@@ -1885,40 +1804,6 @@ document.addEventListener('DOMContentLoaded', function(){
     return {total:total, cobrado:cobrado, pendiente:pendiente, count:items.length};
   }
 
-  async function moveWeeklySummaryClientToCurrentWeek(name){
-    const clientName=(name || '').trim();
-    const currentKey=weekKey(new Date());
-    const previousKey=previousWeekKey();
-    const items=salesForOperationalWeek(sales,previousKey).filter(function(item){
-      return (item.cliente || 'Sin nombre').trim()===clientName;
-    });
-    if(!items.length){showToast('No hay ventas de este cliente en la semana anterior.');return;}
-    const updates=items.map(function(item){return {item:item,oldAssignment:item.semana_asignada || null};});
-    const completed=[];
-    try{
-      // Solo se actualiza la semana operativa; la fecha real de la venta queda intacta.
-      for(const update of updates){
-        const result=await sb.from('sales').update({semana_asignada:currentKey}).eq('id',update.item.id).select('id,semana_asignada');
-        if(result.error) throw result.error;
-        if(!result.data || result.data.length!==1) throw new Error('No se pudo confirmar la reasignación de una venta.');
-        completed.push({id:update.item.id,oldAssignment:update.oldAssignment});
-        update.newAssignment=result.data[0].semana_asignada || currentKey;
-      }
-      updates.forEach(function(update){update.item.semana_asignada=update.newAssignment;});
-      render();
-      if(currentView==='deliveries') renderDeliveriesView();
-      showToast('Cliente movido a la semana actual');
-    }catch(error){
-      // Revertir únicamente la asignación realizada en esta operación, nunca la fecha real.
-      for(let i=completed.length-1;i>=0;i--){
-        try{await sb.from('sales').update({semana_asignada:completed[i].oldAssignment}).eq('id',completed[i].id);}catch(rollbackError){}
-      }
-      console.error('No se pudo mover el cliente a la semana actual:',error);
-      showToast('No se pudo mover. Verificá la migración de Supabase.');
-      try{await loadSales();render();}catch(refreshError){}
-    }
-  }
-
   function renderDashboardTasks(items){
     let wrap = document.getElementById('dashboardTasks');
     if(!wrap) return;
@@ -2170,7 +2055,7 @@ document.addEventListener('DOMContentLoaded', function(){
         const title=card.querySelector('.sales-client-group-copy strong');
         toggle.setAttribute('aria-label','Eliminar las ventas de '+(title?title.textContent.trim():'este cliente'));
         card.dataset.deleteSelectionTriggered='true';
-        showToast('Tocá la X para eliminar.',2200);
+        showToast('Tarjeta seleccionada. Tocá la X roja para eliminar las ventas de este cliente.',2600);
       }
     }
     root.querySelectorAll('button[data-sales-group]').forEach(function(btn){ btn.addEventListener('click', function(event){
@@ -2215,72 +2100,6 @@ document.addEventListener('DOMContentLoaded', function(){
         if(card.dataset.deleteSelectionTriggered==='true' && event.target.closest('.sales-client-group-trigger')){delete card.dataset.deleteSelectionTriggered;event.preventDefault();event.stopPropagation();}
       },true);
       header.addEventListener('keydown',function(event){if(event.key==='Escape'){resetDeleteSelection(card);}});
-    });
-    // Resumen Semanal: la pulsación larga puede iniciarse en casi toda la tarjeta.
-    // El menú queda al pie, centrado, y se cierra al tocar fuera de él/tarjeta.
-    function closeWeeklySummaryMenus(){
-      root.querySelectorAll('.weekly-summary-context-menu').forEach(function(menu){menu.remove();});
-      root.querySelectorAll('.weekly-summary-client-group.weekly-summary-move-selected').forEach(function(card){card.classList.remove('weekly-summary-move-selected');});
-    }
-    function showWeeklySummaryMenu(card){
-      if(!card || !card.classList.contains('weekly-summary-client-group')) return;
-      closeWeeklySummaryMenus();
-      const title=card.querySelector('.sales-client-group-copy strong');
-      const name=title ? title.textContent.trim() : '';
-      if(!name) return;
-      const menu=document.createElement('div');
-      menu.className='weekly-summary-context-menu';
-      const action=document.createElement('button');
-      action.type='button';
-      action.className='weekly-summary-move-current';
-      action.textContent='Mover a Semana Actual';
-      action.addEventListener('click',function(event){
-        event.preventDefault(); event.stopPropagation();
-        closeWeeklySummaryMenus();
-        moveWeeklySummaryClientToCurrentWeek(name);
-      });
-      menu.appendChild(action);
-      card.appendChild(menu);
-      card.classList.add('weekly-summary-move-selected');
-    }
-    // Un toque fuera deselecciona. El botón no se cierra antes de recibir el click.
-    document.addEventListener('pointerdown',function(event){
-      const target=event.target;
-      if(target && target.closest('.weekly-summary-context-menu')) return;
-      const selectedCard=root.querySelector('.weekly-summary-client-group.weekly-summary-move-selected');
-      if(selectedCard && target && selectedCard.contains(target)) return;
-      closeWeeklySummaryMenus();
-    },true);
-    root.querySelectorAll('.weekly-summary-client-group').forEach(function(card){
-      let pressTimer=null, startX=0, startY=0, longPressTriggered=false;
-      const clearPress=function(){if(pressTimer!==null){window.clearTimeout(pressTimer);pressTimer=null;}};
-      card.addEventListener('selectstart',function(event){
-        if(!event.target || !event.target.closest('input,textarea,[contenteditable="true"]')) event.preventDefault();
-      });
-      card.addEventListener('pointerdown',function(event){
-        // Ampliamos el área de pulsación a toda la tarjeta, evitando acciones y controles.
-        if(event.target && event.target.closest('button,a,input,select,textarea,[role="button"],.weekly-summary-context-menu')) return;
-        if(event.isPrimary===false || (event.button!==undefined && event.button!==0)) return;
-        closeWeeklySummaryMenus();
-        clearPress(); startX=event.clientX; startY=event.clientY; longPressTriggered=false;
-        pressTimer=window.setTimeout(function(){
-          pressTimer=null; longPressTriggered=true;
-          showWeeklySummaryMenu(card);
-        },650);
-      });
-      card.addEventListener('pointermove',function(event){
-        if(pressTimer!==null && (Math.abs(event.clientX-startX)>22 || Math.abs(event.clientY-startY)>22)) clearPress();
-      });
-      card.addEventListener('pointerup',clearPress);
-      card.addEventListener('pointercancel',clearPress);
-      card.addEventListener('contextmenu',function(event){
-        if(event.target && !event.target.closest('button,a,input,select,textarea,[role="button"],.weekly-summary-context-menu')){
-          event.preventDefault(); showWeeklySummaryMenu(card); longPressTriggered=true;
-        }
-      });
-      card.addEventListener('click',function(event){
-        if(longPressTriggered){longPressTriggered=false;event.preventDefault();event.stopPropagation();}
-      },true);
     });
     root.querySelectorAll('[data-toggle-delivery-card]').forEach(function(btn){
       btn.addEventListener('click',function(){
@@ -2348,7 +2167,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function renderManagementList(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const thisWeek = weekKey(new Date());
-    const current = salesForOperationalWeek(sales, thisWeek);
+    const current = salesForWeek(sales, thisWeek);
     const summary = current.reduce(function(acc, item){
       const price = Number(item.precio) || 0;
       acc.total += price;
@@ -2373,40 +2192,6 @@ document.addEventListener('DOMContentLoaded', function(){
     wrap.innerHTML = renderSalesGroupedByClient(filtered, 'management');
     bindTableEvents(wrap);
   }
-  // Interpreta las columnas tipo DATE como fechas de calendario locales.
-  // new Date('YYYY-MM-DD') las interpreta como UTC y puede moverlas al día anterior
-  // en zonas horarias como Argentina, afectando el límite de la semana configurada.
-  function parseDeliveryDate(value){
-    if(!value) return null;
-    if(value instanceof Date){
-      return Number.isNaN(value.getTime()) ? null : new Date(value.getTime());
-    }
-    const text=String(value);
-    const dateOnly=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(dateOnly){
-      const localDate=new Date(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3]));
-      return Number.isNaN(localDate.getTime()) ? null : localDate;
-    }
-    const parsed=new Date(text);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-
-  // Entregadas: solo siguen visibles durante la semana en que se registró
-  // entregado_en. Pendientes: permanecen visibles dentro de la ventana móvil de 3 semanas.
-  function isDeliveryItemVisible(item, visibleKeys, currentKey){
-    if(!item || !item.fecha) return false;
-    const itemWeekKey=operationalWeekKey(item);
-    if(!itemWeekKey || !visibleKeys.has(itemWeekKey)) return false;
-    if(!item.entregado) return true;
-    // Una reasignación explícita a la semana actual la mantiene visible,
-    // aun si la venta ya estaba marcada como entregada antes del movimiento.
-    if(item.semana_asignada && itemWeekKey===currentKey) return true;
-    const saleDate=parseDeliveryDate(item.fecha);
-    if(saleDate && weekKey(saleDate)===currentKey) return true;
-    const deliveredAt=parseDeliveryDate(item.entregado_en);
-    return !!deliveredAt && weekKey(deliveredAt)===currentKey;
-  }
-
   function renderDeliveriesView(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
     const currentKey = weekKey(new Date());
@@ -2414,24 +2199,29 @@ document.addEventListener('DOMContentLoaded', function(){
     const twoWeeksAgoDate = startOfWeek(new Date());
     twoWeeksAgoDate.setDate(twoWeeksAgoDate.getDate() - 14);
     const twoWeeksAgoKey = weekKey(twoWeeksAgoDate);
-    const visibleKeysArray = [currentKey, previousKey, twoWeeksAgoKey].filter(Boolean);
-    const visibleKeys = new Set(visibleKeysArray);
+    const visibleKeys = [currentKey, previousKey, twoWeeksAgoKey].filter(Boolean);
     const weekLabel = function(key){
       if(key===currentKey) return 'Semana actual';
       if(key===previousKey) return 'Semana anterior';
       return 'Hace 2 semanas';
     };
-    const items = sales.filter(function(item){
-      if(!isDeliveryItemVisible(item, visibleKeys, currentKey)) return false;
-      const hay = ((item.cliente||'')+' '+(item.articulo||'')+' '+(item.categoria||'')).toLowerCase();
+    const items = sales.filter(function(x){
+      if(!x || !x.fecha) return false;
+      const date = new Date(x.fecha);
+      if(Number.isNaN(date.getTime())) return false;
+      const itemWeekKey = weekKey(date);
+      if(!visibleKeys.includes(itemWeekKey)) return false;
+      // Las tres semanas visibles conservan tanto entregados como pendientes.
+      // Marcar una entrega como realizada no debe hacer desaparecer al cliente.
+      const hay = ((x.cliente||'')+' '+(x.articulo||'')+' '+(x.categoria||'')).toLowerCase();
       return hay.includes(search);
     });
-    // Un cliente aparece una sola vez; sus ventas se agrupan por semana.
-    // Las entregadas solo cuentan durante la semana configurada en que se marcaron.
+    // Primero se agrupa por cliente y dentro de cada cliente por semana. Así un
+    // cliente aparece una sola vez, pero mantiene estados independientes por semana.
     const clients = {};
     items.forEach(function(item){
       const name = (item.cliente || 'Sin nombre').trim();
-      const itemWeekKey = operationalWeekKey(item);
+      const itemWeekKey = weekKey(new Date(item.fecha));
       if(!clients[name]) clients[name] = {name:name, weeks:{}, total:0};
       const client = clients[name];
       if(!client.weeks[itemWeekKey]) client.weeks[itemWeekKey] = {weekKey:itemWeekKey,items:[],total:0,pendingPayment:0,delivered:true};
@@ -2449,7 +2239,6 @@ document.addEventListener('DOMContentLoaded', function(){
       return client;
     }).sort(function(a,b){return a.name.localeCompare(b.name,'es');});
     const wrap = document.getElementById('deliveriesList');
-    if(!wrap) return;
     wrap.innerHTML = clientGroups.length ? clientGroups.map(function(client, clientIndex){
       const weeksPanelId='delivery-client-weeks-'+clientIndex;
       const weekRows=client.weekGroups.map(function(group){
@@ -2457,11 +2246,13 @@ document.addEventListener('DOMContentLoaded', function(){
         return '<section class="delivery-week-row '+(group.weekKey===currentKey?'is-current-week':'is-previous-week')+'">'+
           '<div class="delivery-week-summary"><span class="delivery-week-label">'+escapeHtml(label)+'</span><small>'+escapeHtml(formatRange(group.weekKey))+' · '+group.items.length+' '+(group.items.length===1?'artículo':'artículos')+' · '+money(group.total)+'</small></div></section>';
       }).join('');
+      // Un único estado resume las entregas visibles del cliente; el detalle por semana
+      // muestra artículos y totales, sin duplicar estados dentro de cada semana.
       const clientItems=client.weekGroups.reduce(function(all,group){return all.concat(group.items);},[]);
       const delivered=clientItems.length>0 && clientItems.every(function(item){return !!item.entregado;});
       const statusButton='<button type="button" class="delivery-client-status '+(delivered?'is-delivered':'is-pending')+'" data-set-delivery-client="'+escapeHtml(client.name)+'" data-next-delivery="'+(delivered?'pending':'delivered')+'" aria-label="Cambiar estado de entrega de '+escapeHtml(client.name)+' a '+(delivered?'Por Entregar':'Entregado')+'">'+(delivered?'Entregado':'Por Entregar')+'</button>';
       return '<article class="delivery-client-card"><div class="delivery-client-header"><button type="button" class="delivery-client-trigger" data-toggle-delivery-card="'+weeksPanelId+'" aria-expanded="false" aria-controls="'+weeksPanelId+'"><span class="client-avatar">'+escapeHtml((client.name.charAt(0)||'C').toUpperCase())+'</span><span class="delivery-client-heading-copy"><strong>'+escapeHtml(client.name)+'</strong><small>'+client.weekGroups.length+' '+(client.weekGroups.length===1?'semana visible':'semanas visibles')+' · '+money(client.total)+'</small></span></button>'+statusButton+'<button type="button" class="delivery-client-chevron-toggle" data-toggle-delivery-card="'+weeksPanelId+'" aria-label="Expandir o contraer semanas de '+escapeHtml(client.name)+'" aria-expanded="false" aria-controls="'+weeksPanelId+'">⌄</button></div><div class="delivery-client-weeks" id="'+weeksPanelId+'" hidden>'+weekRows+'</div></article>';
-    }).join('') : '<div class="empty-inline">No hay entregas pendientes ni entregas realizadas durante esta semana para este filtro.</div>';
+    }).join('') : '<div class="empty-inline">No hay entregas para este filtro.</div>';
     bindTableEvents(wrap);
   }
   async function setDeliveryForVisibleClient(name, desired){
@@ -2472,23 +2263,27 @@ document.addEventListener('DOMContentLoaded', function(){
     const twoWeeksAgoKey=weekKey(twoWeeksAgoDate);
     const visibleKeys=new Set([currentKey,previousKey,twoWeeksAgoKey].filter(Boolean));
     const items=sales.filter(function(item){
-      if((item.cliente||'Sin nombre').trim()!==name) return false;
-      return isDeliveryItemVisible(item,visibleKeys,currentKey);
+      if(!item || !item.fecha || (item.cliente||'Sin nombre').trim()!==name) return false;
+      const date=new Date(item.fecha);
+      if(Number.isNaN(date.getTime())) return false;
+      const key=weekKey(date);
+      if(!visibleKeys.has(key)) return false;
+      // El estado del cliente se aplica a todas sus ventas de las tres semanas
+      // visibles, incluidas las ya entregadas, para que pueda alternarse sin ocultarlas.
+      return true;
     });
     if(!items.length) return;
     const changed=items.filter(function(item){return !!item.entregado!==desired;});
     if(!changed.length) return;
-    const deliveredAt=desired ? new Date().toISOString() : null;
     try{
       const ids=changed.map(function(item){return item.id;});
-      const result=await sb.from('sales').update({entregado:desired,entregado_en:deliveredAt}).in('id',ids);
+      const result=await sb.from('sales').update({entregado:desired}).in('id',ids);
       if(result.error) throw result.error;
-      changed.forEach(function(item){item.entregado=desired;item.entregado_en=deliveredAt;});
+      changed.forEach(function(item){item.entregado=desired;});
       render();
       showToast(desired?'Entregas marcadas como entregadas':'Entregas marcadas como pendientes');
     }catch(error){
-      console.error('No se pudo actualizar el estado de entrega:',error);
-      showToast('No se pudo actualizar el estado. Verificá que la migración SQL de entregado_en esté aplicada.');
+      showToast('No se pudo actualizar el estado de entrega.');
     }
   }
 
@@ -2502,17 +2297,16 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!targetWeekKey || !visibleKeys.has(targetWeekKey)) return;
     const items = sales.filter(function(x){
       if(!x || !x.fecha || (x.cliente||'').trim() !== name) return false;
-      const date = parseDeliveryDate(x.fecha);
-      return !!date && weekKey(date) === targetWeekKey;
+      const date = new Date(x.fecha);
+      return !Number.isNaN(date.getTime()) && weekKey(date) === targetWeekKey;
     });
     if(!items.length) return;
     if(items.every(function(x){return !!x.entregado === desired;})) return;
     try{
       const ids=items.filter(function(x){return !!x.entregado !== desired;}).map(function(x){return x.id;});
-      const deliveredAt=desired ? new Date().toISOString() : null;
-      const res=await sb.from('sales').update({entregado:desired,entregado_en:deliveredAt}).in('id',ids);
+      const res=await sb.from('sales').update({entregado:desired}).in('id',ids);
       if(res.error) throw res.error;
-      items.filter(function(x){return !!x.entregado!==desired;}).forEach(function(x){x.entregado=desired;x.entregado_en=deliveredAt;});
+      items.forEach(function(x){x.entregado=desired;});
       render();
       if(currentView==='deliveries') renderDeliveriesView();
       showToast(desired?'Pedido marcado como entregado':'Pedido marcado como pendiente de entrega');
@@ -2524,10 +2318,9 @@ document.addEventListener('DOMContentLoaded', function(){
     const next=!items.every(function(x){return !!x.entregado;});
     try{
       const ids=items.map(function(x){return x.id;});
-      const deliveredAt=next ? new Date().toISOString() : null;
-      const res=await sb.from('sales').update({entregado:next,entregado_en:deliveredAt}).in('id',ids);
+      const res=await sb.from('sales').update({entregado:next}).in('id',ids);
       if(res.error) throw res.error;
-      items.forEach(function(x){x.entregado=next;x.entregado_en=deliveredAt;}); render();
+      items.forEach(function(x){x.entregado=next;}); render();
       if(currentView==='deliveries') renderDeliveriesView();
       showToast(next?'Pedido marcado como entregado':'Pedido marcado como no entregado');
     }catch(e){ showToast('No se pudo guardar el estado de entrega. Aplicá primero la migración SQL incluida en el ZIP.'); }
@@ -2611,7 +2404,7 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   function render(){
-    let groups = groupByWeek(true);
+    let groups = groupByWeek();
     let keys = Object.keys(groups).sort().reverse();
     let currentKey = weekKey(new Date());
 
@@ -2725,7 +2518,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!query){ wrap.innerHTML = ''; return; }
 
     let thisWeekKey = weekKey(new Date());
-    let matches = salesForOperationalWeek(sales, thisWeekKey).filter(function(s){
+    let matches = salesForWeek(sales, thisWeekKey).filter(function(s){
       return (s.cliente || '').toLowerCase().indexOf(query) !== -1;
     });
 
@@ -2874,7 +2667,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!name){ panel.hidden = true; panel.innerHTML=''; return; }
     // La ficha de cliente muestra únicamente compras de la semana configurada como actual.
     let thisWeekKey = weekKey(new Date());
-    let items = salesForOperationalWeek(sales, thisWeekKey).filter(function(s){
+    let items = salesForWeek(sales, thisWeekKey).filter(function(s){
       return (s.cliente || '') === name;
     }).sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); });
     let total = items.reduce(function(sum,s){ return sum + (Number(s.precio)||0); },0);
@@ -2929,15 +2722,15 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   async function deleteClientEntry(name){
-    const removed=clients.filter(function(c){return c.toLowerCase()===name.toLowerCase();});
-    if(!removed.length){showToast('No se encontró el cliente en la lista.');return;}
-    clients=clients.filter(function(c){return c.toLowerCase()!==name.toLowerCase();});
-    refreshClientsDatalist(); renderClientsFullList();
-    scheduleUndoableDeletion({
-      message:'Cliente quitado de la lista. Podés deshacer',
-      undo:function(){clients=clients.concat(removed);refreshClientsDatalist();renderClientsFullList();},
-      commit:async function(){const result=await sb.from('clients').delete().eq('name',name);if(result.error)throw result.error;}
-    });
+    try{
+      await sb.from('clients').delete().eq('name', name);
+      clients = clients.filter(function(c){ return c.toLowerCase() !== name.toLowerCase(); });
+      refreshClientsDatalist();
+      renderClientsFullList();
+      showToast('Cliente eliminado de la lista');
+    }catch(e){
+      showToast('No se pudo eliminar el cliente.');
+    }
   }
 
   let clientSearchDebounce = null;
@@ -2957,10 +2750,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function showToast(msg, duration){
     let t = document.getElementById('toast');
-    t.classList.remove('has-action');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(function(){ if(!t.classList.contains('has-action')) t.classList.remove('show'); }, duration || 2200);
+    setTimeout(function(){ t.classList.remove('show'); }, duration || 2200);
   }
 
   /* ---------------- sheet open/close ---------------- */
@@ -3053,7 +2845,7 @@ document.addEventListener('DOMContentLoaded', function(){
           '<input type="number" class="row-precio" aria-label="Precio del artículo" placeholder="$ 0" inputmode="decimal" value="' + (prefill ? prefill.precio : '') + '">' +
           '<button class="mic-btn" type="button" data-row="' + rowId + '" data-field="precio" data-mode="number" aria-label="Dictar precio"><svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/></svg></button>' +
         '</div></label>' +
-        '<div class="item-field item-field-category"><span>Categoría</span><div class="category-picker"><select class="row-categoria category-picker-native" aria-label="Categoría del artículo">' + categoryOptionsHtml(defaultCat) + '</select><button type="button" class="category-picker-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="category-picker-value">' + escapeHtml(defaultCat || 'Elegir categoría') + '</span><span class="category-picker-chevron" aria-hidden="true">⌄</span></button><div class="category-picker-menu" role="listbox" hidden></div></div></div>' +
+        '<label class="item-field item-field-category"><span>Categoría</span><select class="row-categoria" aria-label="Categoría del artículo">' + categoryOptionsHtml(defaultCat) + '</select></label>' +
       '</div>';
 
     container.insertAdjacentHTML('beforeend', html);
@@ -3062,7 +2854,6 @@ document.addEventListener('DOMContentLoaded', function(){
     rowEl.querySelectorAll('.mic-btn').forEach(function(btn){
       btn.addEventListener('click', function(){ startDictation(btn); });
     });
-    initializeCategoryPicker(rowEl);
     if(!voiceSupported){
       rowEl.querySelectorAll('.mic-btn').forEach(function(b){ b.style.display = 'none'; });
     }
@@ -3112,120 +2903,10 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
-  function initializeCategoryPicker(rowEl){
-    const picker=rowEl && rowEl.querySelector('.category-picker');
-    if(!picker) return;
-    const select=picker.querySelector('.row-categoria');
-    const trigger=picker.querySelector('.category-picker-trigger');
-    const valueLabel=picker.querySelector('.category-picker-value');
-    const menu=picker.querySelector('.category-picker-menu');
-    if(!select || !trigger || !menu || picker.dataset.initialized==='true') return;
-    picker.dataset.initialized='true';
-    const menuHome=menu.parentNode;
-    const menuAnchor=document.createComment('category-picker-menu-anchor');
-    menuHome.insertBefore(menuAnchor,menu);
-    let resizeFrame=null;
-
-    function restoreMenu(){
-      if(menu.parentNode===document.body) menuAnchor.parentNode.insertBefore(menu,menuAnchor.nextSibling);
-      menu.style.position='';menu.style.left='';menu.style.top='';menu.style.width='';menu.style.maxHeight='';menu.style.zIndex='';
-    }
-    function close(){
-      menu.hidden=true;trigger.setAttribute('aria-expanded','false');picker.classList.remove('is-open');
-      restoreMenu();
-    }
-    function positionMenu(){
-      if(menu.hidden || menu.parentNode!==document.body) return;
-      const rect=trigger.getBoundingClientRect();
-      const margin=8;
-      const availableBelow=Math.max(0,window.innerHeight-rect.bottom-margin);
-      const availableAbove=Math.max(0,rect.top-margin);
-      const openAbove=availableBelow<150 && availableAbove>availableBelow;
-      const available=openAbove?availableAbove:availableBelow;
-      const maxHeight=Math.max(100,Math.min(320,Math.floor(available),Math.floor(window.innerHeight*.48)));
-      menu.style.position='fixed';
-      menu.style.left=Math.max(8,Math.min(rect.left,window.innerWidth-rect.width-8))+'px';
-      menu.style.width=Math.min(rect.width,window.innerWidth-16)+'px';
-      menu.style.maxHeight=maxHeight+'px';
-      menu.style.top=(openAbove?Math.max(8,rect.top-maxHeight-6):Math.min(window.innerHeight-maxHeight-8,rect.bottom+6))+'px';
-      menu.style.zIndex='20000';
-    }
-    function renderOptions(filterText){
-      const previousSearch=menu.querySelector('.category-picker-search');
-      const search=document.createElement('input');
-      search.type='search';search.className='category-picker-search';search.placeholder='Buscar categoría…';
-      search.setAttribute('aria-label','Buscar categoría');search.autocomplete='off';search.value=filterText||'';
-      menu.innerHTML='';
-      menu.appendChild(search);
-      const list=document.createElement('div');list.className='category-picker-options';menu.appendChild(list);
-      const query=search.value.trim().toLocaleLowerCase('es');
-      const matches=categories.filter(function(category){return category.toLocaleLowerCase('es').includes(query);});
-      if(!matches.length){
-        const empty=document.createElement('div');empty.className='category-picker-empty';empty.textContent=categories.length?'No se encontraron categorías':'No hay categorías disponibles';list.appendChild(empty);
-      }
-      matches.forEach(function(category){
-        const option=document.createElement('button');
-        option.type='button';option.className='category-picker-option';option.setAttribute('role','option');
-        option.setAttribute('aria-selected',String(select.value===category));option.textContent=category;
-        if(select.value===category) option.classList.add('is-selected');
-        option.addEventListener('click',function(event){
-          event.preventDefault();event.stopPropagation();
-          select.value=category;
-          select.dispatchEvent(new Event('change',{bubbles:true}));
-          valueLabel.textContent=category;
-          close();trigger.focus({preventScroll:true});
-        });
-        list.appendChild(option);
-      });
-      search.addEventListener('input',function(){
-        const value=search.value;
-        renderOptions(value);
-        const nextSearch=menu.querySelector('.category-picker-search');
-        if(nextSearch){nextSearch.focus();nextSearch.setSelectionRange(value.length,value.length);}
-      });
-      if(previousSearch && !filterText) search.value='';
-    }
-    trigger.addEventListener('click',function(event){
-      event.preventDefault();event.stopPropagation();
-      document.querySelectorAll('.category-picker.is-open').forEach(function(other){
-        if(other!==picker){
-          other.classList.remove('is-open');
-          const otherMenu=other._categoryPickerMenu;
-          const otherTrigger=other.querySelector('.category-picker-trigger');
-          if(otherMenu){otherMenu.hidden=true;if(otherMenu.parentNode===document.body){const anchor=other._categoryPickerAnchor;if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(otherMenu,anchor.nextSibling);}}
-          if(otherTrigger)otherTrigger.setAttribute('aria-expanded','false');
-        }
-      });
-      const opening=menu.hidden;
-      if(!opening){close();return;}
-      renderOptions('');
-      document.body.appendChild(menu);
-      menu.hidden=false;trigger.setAttribute('aria-expanded','true');picker.classList.add('is-open');
-      positionMenu();
-      const search=menu.querySelector('.category-picker-search');if(search)search.blur();
-    });
-    picker._categoryPickerMenu=menu;picker._categoryPickerAnchor=menuAnchor;
-    menu.addEventListener('click',function(event){event.stopPropagation();});
-    document.addEventListener('pointerdown',function(event){if(!picker.contains(event.target)&&!menu.contains(event.target)) close();},true);
-    document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!menu.hidden){close();trigger.focus({preventScroll:true});}});
-    window.addEventListener('resize',positionMenu,{passive:true});
-    window.addEventListener('scroll',positionMenu,{passive:true,capture:true});
-    select.addEventListener('change',function(){valueLabel.textContent=select.value || 'Elegir categoría';if(!menu.hidden)renderOptions('');});
-    renderOptions('');
-    valueLabel.textContent=select.value || 'Elegir categoría';
-  }
-
   function refreshAllRowCategorySelects(){
     document.querySelectorAll('#itemRowsContainer .row-categoria').forEach(function(sel){
       let current = sel.value;
       sel.innerHTML = categoryOptionsHtml(current || (categories.length ? categories[0] : ''));
-      const picker=sel.closest('.category-picker');
-      if(picker){
-        const label=picker.querySelector('.category-picker-value');
-        if(label) label.textContent=sel.value || 'Elegir categoría';
-        const menu=picker.querySelector('.category-picker-menu');
-        if(menu) menu.innerHTML='';
-      }
     });
   }
 
@@ -3363,16 +3044,9 @@ document.addEventListener('DOMContentLoaded', function(){
           }
         }
         if(removedIds.length){
-          const removedSales=sales.filter(function(x){return removedIds.includes(x.id);});
-          sales=sales.filter(function(x){return !removedIds.includes(x.id);});
-          scheduleUndoableDeletion({
-            message:(removedSales.length===1?'Artículo quitado.':'Artículos quitados: '+removedSales.length+'.')+' Podés deshacer',
-            undo:function(){sales=sales.concat(removedSales);},
-            commit:async function(){
-              const delRes=await sb.from('sales').delete().in('id',removedIds);
-              if(delRes.error)throw delRes.error;
-            }
-          });
+          const delRes = await sb.from('sales').delete().in('id',removedIds);
+          if(delRes.error) throw delRes.error;
+          sales = sales.filter(function(x){return !removedIds.includes(x.id);});
         }
         editingClientSalesIds = null;
         await persistClientIfNew(cliente);
@@ -3494,19 +3168,16 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.getElementById('resetBtn').addEventListener('click', async function(){
-    if(!confirm('¿Quitar todo el historial de ventas? Vas a tener 10 segundos para deshacerlo.')) return;
-    const previousSales=sales.slice();
-    if(!previousSales.length){showToast('No hay ventas para eliminar.');return;}
-    sales=[];
-    render();
-    scheduleUndoableDeletion({
-      message:'Historial quitado. Podés deshacer',
-      undo:function(){sales=sales.concat(previousSales);},
-      commit:async function(){
-        const result=await sb.from('sales').delete().neq('id','00000000-0000-0000-0000-000000000000');
-        if(result.error)throw result.error;
-      }
-    });
+    if(!confirm('¿Borrar todo el historial de ventas? Esta acción no se puede deshacer.')) return;
+    try{
+      // truco para borrar todas las filas propias: RLS ya limita a las del usuario
+      await sb.from('sales').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      sales = [];
+      render();
+      showToast('Datos borrados');
+    }catch(e){
+      showToast('No se pudieron borrar los datos.');
+    }
   });
 
   /* ---------------- voice dictation ---------------- */
