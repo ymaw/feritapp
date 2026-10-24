@@ -2407,11 +2407,9 @@ document.addEventListener('DOMContentLoaded', function(){
     const itemWeekKey=operationalWeekKey(item);
     if(!itemWeekKey || !visibleKeys.has(itemWeekKey)) return false;
     if(!item.entregado) return true;
-    // Una reasignación explícita a la semana actual la mantiene visible,
-    // aun si la venta ya estaba marcada como entregada antes del movimiento.
-    if(item.semana_asignada && itemWeekKey===currentKey) return true;
-    const saleDate=parseDeliveryDate(item.fecha);
-    if(saleDate && weekKey(saleDate)===currentKey) return true;
+    // Una venta entregada solo permanece visible hasta el cierre de la semana
+    // configurada en la que se registró la entrega. La fecha de venta o una
+    // reasignación a la semana actual no deben reactivar entregas antiguas.
     const deliveredAt=parseDeliveryDate(item.entregado_en);
     return !!deliveredAt && weekKey(deliveredAt)===currentKey;
   }
