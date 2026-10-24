@@ -1,4 +1,4 @@
-# FeritApp V12.107 — Corrección de visibilidad en Entregas
+# FeritApp V12.108 — Corrección de visibilidad en Entregas
 
 Esta versión parte de V12.103 y reconstruye primero los cambios documentados de V12.104; luego organiza la estructura sin cambiar la lógica de negocio.
 
@@ -28,7 +28,7 @@ Verificaciones estáticas locales solamente. No se realizaron pruebas E2E en nav
 Se sustituyeron las variantes de logo e icono por la nueva identidad oficial recibida, conservando el canal alfa (fondo transparente) y las dimensiones requeridas para favicon, PWA, encabezados y comprobantes.
 
 
-## Corrección V12.107 — Entregas
+## Corrección V12.108 — Entregas
 
 - Los pendientes continúan visibles dentro de la ventana de semana actual y dos semanas anteriores.
 - Las ventas marcadas como entregadas solo permanecen visibles si `entregado_en` corresponde a la semana configurada actual.
