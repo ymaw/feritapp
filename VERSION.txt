@@ -1,0 +1,3 @@
+FeritApp V12.112
+Base: V12.111
+Se desactiva el borrado automático semestral y se extraen los estilos de estados vacíos a css/empty-states.css.

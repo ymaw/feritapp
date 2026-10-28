@@ -1,0 +1,10 @@
+/* V12.111 — ajustes visuales aislados del diálogo de confirmación. */
+/* Conserva el ancho y el comportamiento horizontal del texto de eliminación. */
+.fa-dialog {
+  width: min(100%, 620px);
+}
+#saleDeleteDialog #saleDeleteDescription {
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+}

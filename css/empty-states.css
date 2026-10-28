@@ -1,0 +1,10 @@
+/* V12.112 — estilos base para estados vacíos. Selectores y declaraciones preservados. */
+.empty-inline{
+  padding:20px 16px; text-align:center; color:var(--text-muted); font-size: calc((13px) * var(--font-scale, 1));
+  background:var(--table-bg); border:1px solid var(--table-border); border-radius:14px;
+}
+.empty{
+  padding:40px 4px; text-align:center; color:var(--text-muted); font-size: calc((13.5px) * var(--font-scale, 1)); line-height:1.6;
+}
+.empty b{ color:var(--text); display:block; font-family:var(--display); font-size: calc((18px) * var(--font-scale, 1)); font-weight:600; margin-bottom:6px;}
+#viewClients .empty-inline{padding:28px 18px;border-radius:16px;}

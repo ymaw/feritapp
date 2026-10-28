@@ -742,12 +742,10 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     refreshClientsDatalist();
 
-    let lastPurgeSemester = null;
     try{
-      let settingsRes = await sb.from('user_settings').select('week_start_day, last_purge_semester, notify_enabled, notify_days_overdue, receipt_message, store_name, avatar_url').maybeSingle();
+      let settingsRes = await sb.from('user_settings').select('week_start_day, notify_enabled, notify_days_overdue, receipt_message, store_name, avatar_url').maybeSingle();
       if(settingsRes.data){
         weekStartDay = settingsRes.data.week_start_day;
-        lastPurgeSemester = settingsRes.data.last_purge_semester;
         notifyEnabled = settingsRes.data.notify_enabled !== false;
         notifyDaysOverdue = settingsRes.data.notify_days_overdue || 4;
         if(settingsRes.data.receipt_message){ receiptMessage = settingsRes.data.receipt_message; }
@@ -771,7 +769,6 @@ document.addEventListener('DOMContentLoaded', function(){
     await checkOnboarding();
     syncNotifyControls();
 
-    await checkSemesterCleanup(lastPurgeSemester);
     checkOverdueNotifications();
 
     render();
@@ -1096,35 +1093,6 @@ document.addEventListener('DOMContentLoaded', function(){
         showToast('No se pudo guardar el mensaje.');
       }
     });
-  }
-
-  // Cada semestre (ene-jun / jul-dic), borra las ventas anteriores al
-  // mes en curso, dejando solo el mes actual. Se controla con
-  // last_purge_semester en user_settings para que corra como mucho
-  // una vez por semestre, no en cada inicio de sesión. Recibe el valor
-  // ya cargado por loadSales() para no volver a consultar la misma fila.
-  async function checkSemesterCleanup(stored){
-    let now = new Date();
-    let currentSemester = now.getFullYear() + '-' + (now.getMonth() < 6 ? 'H1' : 'H2');
-
-    try{
-      if(stored && stored !== currentSemester){
-        let startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        let oldItems = sales.filter(function(s){ return new Date(s.fecha) < startOfMonth; });
-
-        if(oldItems.length > 0){
-          exportSalesToCSV(oldItems, 'feritapp-historial-' + stored + '.csv');
-        }
-
-        await sb.from('sales').delete().lt('fecha', startOfMonth.toISOString());
-        sales = sales.filter(function(s){ return new Date(s.fecha) >= startOfMonth; });
-        showToast('Mantenimiento semestral: se descargó un CSV de respaldo y se limpió el historial anterior.', 5000);
-      }
-
-      await sb.from('user_settings').upsert({ last_purge_semester: currentSemester }, { onConflict: 'user_id' });
-    }catch(e){
-      // Si falla, no es crítico: se vuelve a intentar en el próximo login.
-    }
   }
 
   /* ---------------- Configuración › Notificaciones ---------------- */

@@ -38,11 +38,15 @@
 <title>FeritApp</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="css/receipt.css?v=12.108" rel="stylesheet"/>
-<link href="css/style.css?v=12.108" rel="stylesheet"/>
-<link href="css/category-picker.css?v=12.108" rel="stylesheet"/>
-<link href="css/weekly-summary-menu.css?v=12.108" rel="stylesheet"/>
-<link href="css/toast-actions.css?v=12.108" rel="stylesheet"/>
+<link href="css/receipt.css?v=12.112" rel="stylesheet"/>
+<link href="css/style.css?v=12.112" rel="stylesheet"/>
+<link href="css/empty-states.css?v=12.112" rel="stylesheet"/>
+<link href="css/category-picker.css?v=12.112" rel="stylesheet"/>
+<link href="css/weekly-summary-menu.css?v=12.112" rel="stylesheet"/>
+<link href="css/toast-actions.css?v=12.112" rel="stylesheet"/>
+<link href="css/install-banner.css?v=12.112" rel="stylesheet"/>
+<link href="css/accessibility-font-scale.css?v=12.112" rel="stylesheet"/>
+<link href="css/confirmation-dialog.css?v=12.112" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js"></script>
 </head>
 <body>
@@ -384,7 +388,7 @@
 <div class="settings-card settings-card-featured"><div class="settings-card-head"><span class="settings-card-icon">💾</span><div><strong>Exportar historial</strong><small>Conservá tus ventas fuera de la aplicación</small></div></div><div class="field">
 <label>Copia de seguridad</label>
 <button class="save-btn" id="exportCsvBtn" type="button">⬇️ Exportar todo el historial a CSV</button>
-<p class="hint">Se descarga a la carpeta de Descargas de tu dispositivo. Cada semestre se descarga uno automático antes de limpiar el historial viejo.</p>
+<p class="hint">Se descarga a la carpeta de Descargas de tu dispositivo. Exportá una copia periódicamente y guardala en un lugar seguro.</p>
 </div></div>
 </div>
 </div>
@@ -560,6 +564,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <!-- /appRoot -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-<script src="script.js?v=12.108"></script>
+<script src="script.js?v=12.112"></script>
 </body>
 </html>
