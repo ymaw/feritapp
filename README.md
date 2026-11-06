@@ -98,3 +98,15 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - Se ajustó únicamente el dibujo del logo FeritApp en `generateReceiptCanvas`: de 110×110 px a 98×98 px y se elevó su posición para que quede contenido en la franja superior de la imagen exportada.
 - No se modificó el preview, el logo original, la selección de ventas, el contenido del comprobante ni la lógica de compartir.
 - Referencias de caché actualizadas a V12.116.
+
+## V12.118
+- Se ajustó únicamente el logo del comprobante exportado: 88×88 px y posición vertical 29 px, para evitar que toque la línea superior del encabezado.
+- La vista previa conserva su tamaño y presentación.
+- No se modificó la lógica de comprobantes ni los datos.
+
+## V12.118 — Centrado del logo en comprobante compartido
+- Se ajustó el logo del PNG compartido a 90×90 px.
+- Se centró horizontalmente dentro del espacio reservado a la derecha del encabezado y verticalmente dentro de la franja del encabezado (x calculada desde `W - PADDING - 106`, y=27 px).
+- Se mantiene intacto el preview HTML/CSS.
+- Se actualizó la prueba del logo para verificar tamaño, posición y conservación del preview.
+- No se modificó la lógica de selección de ventas, el contenido del comprobante, ni los datos de Supabase. No se publicó en producción ni se modificó GitHub.
