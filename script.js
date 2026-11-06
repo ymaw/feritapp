@@ -895,7 +895,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillStyle = PALE;
     ctx.fillRect(18, 26, W - 36, 92);
     // Logo FeritApp grande en el margen superior derecho, sin nombre de tienda en el pie.
-    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 110, 24, 110, 110);
+    if(receiptLogo) ctx.drawImage(receiptLogo, W - PADDING - 98, 18, 98, 98);
 
     let y = 62;
     ctx.textAlign = 'left';

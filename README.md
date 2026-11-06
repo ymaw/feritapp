@@ -65,8 +65,36 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - No se modificó la lógica de ventas, Entregas, comprobantes, clientes, autenticación ni las políticas/tablas de Supabase.
 - Las pruebas son estáticas/locales; no se hicieron cambios en producción ni pruebas E2E autenticadas.
 
-### Pruebas heredadas con fallos previos/no alineadas
 
-- `test-receipt-period-v12.93.cjs` falla porque espera incluir una venta anterior que la lógica actual excluye.
-- `test-receipt-selection-v12.95.cjs` falla porque intenta evaluar `weekKey` sin definirla en su entorno de prueba.
-- Estos dos tests son heredados y no se modificaron como parte de esta tarea; la validación de comprobantes actual de V12.102 sí pasa.
+## V12.113 — Extracción CSS de identidad visual
+
+- Se trasladaron las reglas de transparencia, ajuste de imagen, sombra y bordes del logo desde `css/style.css` a `css/brand-identity.css`.
+- Se conservaron exactamente los selectores y las declaraciones; la nueva hoja se carga después de los módulos CSS existentes para mantener la prioridad de cascada que tenía el bloque al final de `style.css`.
+- Las referencias de caché de hojas CSS propias y `script.js` se actualizaron a `12.113`.
+- No se modificaron imágenes, lógica JavaScript, comprobantes, Entregas, ventas ni Supabase.
+- La validación de esta versión es estática y automatizada; no se ejecutó una prueba visual E2E en navegador.
+
+
+## V12.114 — Extracción completa del diálogo de confirmación
+
+- Se trasladaron a `css/confirmation-dialog.css` las reglas base del diálogo, sus acciones, foco accesible, bloqueo de scroll y animación, conservando las declaraciones originales.
+- Se separaron las reglas responsive propias del diálogo de las reglas responsive de Entregas, que permanecen en `css/style.css`.
+- Se conservaron en el módulo los overrides de V12.111 para el ancho del diálogo y el texto de confirmación.
+- Se eliminaron las pruebas históricas de comprobantes V12.93 y V12.95 por estar desalineadas con el comportamiento vigente y/o tener un entorno de prueba defectuoso. Las pruebas vigentes V12.99 y V12.102 se mantienen como regresión.
+- Referencias de caché actualizadas a `12.114`. Sin cambios en lógica de comprobantes, Entregas, datos, Supabase, GitHub ni producción.
+
+
+## V12.115 — Extracción CSS de requisitos de contraseña
+
+- Se trasladaron las reglas de `.pw-requirements`, sus elementos `li`, `.req-icon` y estados `.req-ok` a `css/password-requirements.css`.
+- Se conservaron las declaraciones originales y se cargó el módulo después de `style.css`.
+- Se agregó una prueba de regresión para comprobar la extracción, la presencia del marcado y la uniformidad de versiones de caché.
+- Las pruebas históricas de comprobantes V12.93 y V12.95 ya se habían retirado en V12.114; las pruebas actuales V12.99 y V12.102 se conservan.
+- No se modificó JavaScript, la lógica de comprobantes, Entregas, autenticación ni datos de Supabase. No se publicó en producción ni se modificó GitHub.
+- Validación estática y automatizada local; no se ejecutó una prueba visual E2E en navegador.
+
+
+## V12.116 — Corrección del logo en comprobante compartido
+- Se ajustó únicamente el dibujo del logo FeritApp en `generateReceiptCanvas`: de 110×110 px a 98×98 px y se elevó su posición para que quede contenido en la franja superior de la imagen exportada.
+- No se modificó el preview, el logo original, la selección de ventas, el contenido del comprobante ni la lógica de compartir.
+- Referencias de caché actualizadas a V12.116.

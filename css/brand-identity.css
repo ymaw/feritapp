@@ -1,0 +1,7 @@
+/* V12.113 — identidad oficial de FeritApp: conservar transparencia y evitar recortes del logo. */
+.brand-logo, .sidebar-logo, .receipt-preview-ferit-logo, .receipt-brand-logo {
+  object-fit: contain !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.brand-logo, .sidebar-logo, .receipt-brand-logo { border-radius: 0 !important; }

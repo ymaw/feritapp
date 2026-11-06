@@ -1,3 +1,3 @@
-FeritApp V12.112
-Base: V12.111
-Se desactiva el borrado automático semestral y se extraen los estilos de estados vacíos a css/empty-states.css.
+FeritApp V12.116
+Base: V12.115
+Se corrigió el tamaño y la posición del logo FeritApp en la imagen PNG generada para compartir comprobantes. El canvas ahora lo dibuja en 98×98 px, alineado con el encabezado exportado y sin exceder su altura. La vista previa HTML/CSS y el recurso original del logo permanecen sin cambios. Referencias de caché actualizadas a 12.116.
