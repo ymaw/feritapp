@@ -43,8 +43,12 @@ jobs:
           echo "Executed ${count} regression test files."
 
   browser-quality:
-    name: Browser E2E and accessibility
+    name: Browser E2E, accessibility and compatibility
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,7 +58,7 @@ jobs:
           node-version: 22
       - name: Install pinned browser test tools
         run: npm install --no-save --no-package-lock @playwright/test@1.56.1 @axe-core/playwright@4.10.2
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Run browser E2E and accessibility tests
-        run: npx playwright test
+        run: npx playwright test --project=${{ matrix.browser }}
