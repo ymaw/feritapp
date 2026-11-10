@@ -1558,8 +1558,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }).join('');
 
     let selectHtml = '<div class="compare-row">' +
-      '<select class="compare-select" id="compareSelectA">' + optionsHtml + '</select>' +
-      '<select class="compare-select" id="compareSelectB">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareSelectA" aria-label="Comparar mes A">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareSelectB" aria-label="Comparar mes B">' + optionsHtml + '</select>' +
     '</div>';
 
     let stA = monthStats[compareMonthA] || {total:0,cobrado:0,pendiente:0,count:0};
@@ -1626,8 +1626,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }).join('');
 
     let selectHtml = '<div class="compare-row">' +
-      '<select class="compare-select" id="compareWeekSelectA">' + optionsHtml + '</select>' +
-      '<select class="compare-select" id="compareWeekSelectB">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareWeekSelectA" aria-label="Comparar semana A">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareWeekSelectB" aria-label="Comparar semana B">' + optionsHtml + '</select>' +
     '</div>';
 
     let stA = wStats[compareWeekA] || {total:0,cobrado:0,pendiente:0,count:0};
