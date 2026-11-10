@@ -42,3 +42,26 @@ test('initial page load stays within the agreed smoke-test budgets', async ({ pa
   expect(metrics.scriptBytes).toBeLessThan(350000);
   expect(metrics.stylesheetBytes).toBeLessThan(900000);
 });
+
+test('mobile auth layout has no horizontal overflow at common phone widths', async ({ page }) => {
+  await page.route('https://cdn.jsdelivr.net/**', route =>
+    route.fulfill({ contentType: 'application/javascript', body: '' })
+  );
+  await page.route('https://fonts.googleapis.com/**', route => route.abort());
+  await page.route('https://fonts.gstatic.com/**', route => route.abort());
+
+  for (const width of [360, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    const response = await page.goto('/');
+    expect(response && response.ok()).toBe(true);
+    await expect(page.locator('#authGate')).toBeVisible();
+
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      document: document.documentElement.scrollWidth,
+      authGate: Math.ceil(document.querySelector('#authGate').getBoundingClientRect().width)
+    }));
+    expect(dimensions.document, `document overflow at ${width}px: ${JSON.stringify(dimensions)}`).toBeLessThanOrEqual(width);
+    expect(dimensions.authGate).toBeLessThanOrEqual(width);
+  }
+});
