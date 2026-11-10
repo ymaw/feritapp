@@ -8,7 +8,7 @@ const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const version = '12.121';
 
 // The new stylesheet is loaded after the existing styles and uses the same cache version.
-assert.match(html, /css\/auth\.css\?v=12\.120/);
+assert.match(html, /css\/auth\.css\?v=12\.121/);
 assert.ok(html.indexOf('css/style.css?v=12.121') < html.indexOf('css/auth.css?v=12.121'));
 for (const match of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) {
   assert.equal(match[1], version, 'All app CSS/JS cache versions must match');
