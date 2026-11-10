@@ -4,15 +4,15 @@ const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const cspTag = html.match(/<meta\\b(?=[^>]*http-equiv="Content-Security-Policy")[^>]*>/i);
+const cspTag = html.match(/<meta\b(?=[^>]*http-equiv="Content-Security-Policy")[^>]*>/i);
 assert.ok(cspTag, 'A Content-Security-Policy meta tag must exist');
 
-const contentAttribute = cspTag[0].match(/content="([\\s\\S]*?)"\\s+http-equiv=/i);
+const contentAttribute = cspTag[0].match(/content="([\s\S]*?)"\s+http-equiv=/i);
 assert.ok(contentAttribute, 'The CSP content attribute must be readable');
-const csp = contentAttribute[1].replace(/\\s+/g, ' ').trim();
+const csp = contentAttribute[1].replace(/\s+/g, ' ').trim();
 const directives = Object.fromEntries(
   csp.split(';').map(part => part.trim()).filter(Boolean).map(part => {
-    const [name, ...values] = part.split(/\\s+/);
+    const [name, ...values] = part.split(/\s+/);
     return [name.toLowerCase(), values];
   })
 );
@@ -28,8 +28,8 @@ assert.ok(scriptSrc.includes('https://cdn.jsdelivr.net'), "script-src must allow
 assert.ok(!scriptSrc.includes("'unsafe-inline'"), "script-src must not broadly allow inline scripts");
 assert.ok(!scriptSrc.includes("'unsafe-eval'"), "script-src must not allow eval");
 
-const inlineScripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
-  .filter(([, attributes]) => !/\\bsrc\\s*=/.test(attributes));
+const inlineScripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+  .filter(([, attributes]) => !/\bsrc\s*=/.test(attributes));
 assert.ok(inlineScripts.length > 0, 'Expected the early theme bootstrap script to be present');
 
 for (const [, , body] of inlineScripts) {
