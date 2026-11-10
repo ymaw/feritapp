@@ -33,7 +33,7 @@ const inlineScripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g
 assert.ok(inlineScripts.length > 0, 'Expected the early theme bootstrap script to be present');
 
 for (const [, , body] of inlineScripts) {
-  const digest = crypto.createHash('sha256').update(body.trim(), 'utf8').digest('base64');
+  const digest = crypto.createHash('sha256').update(body, 'utf8').digest('base64');
   assert.ok(scriptSrc.includes("'sha256-" + digest + "'"), 'Every inline script must be authorized by its exact CSP hash');
 }
 
