@@ -1,0 +1,18 @@
+const fs = require('fs');
+const assert = require('assert');
+const path = require('path');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const style = fs.readFileSync(path.join(__dirname, '..', 'css', 'style.css'), 'utf8');
+const toast = fs.readFileSync(path.join(__dirname, '..', 'css', 'toast-actions.css'), 'utf8');
+const js = fs.readFileSync(path.join(__dirname, '..', 'script.js'), 'utf8');
+const links = [...html.matchAll(/<link\b[^>]*>/g)].filter(m => /\brel="stylesheet"/.test(m[0])).map(m => (m[0].match(/\bhref="([^"]+)"/) || [])[1]).filter(Boolean);
+const basename = x => x.split('/').pop().split('?')[0];
+const order = links.map(basename);
+assert(order.indexOf('receipt.css') < order.indexOf('style.css'), 'receipt.css must stay before style.css');
+assert(order.indexOf('style.css') < order.indexOf('category-picker.css'), 'category-picker.css order changed');
+assert(order.indexOf('category-picker.css') < order.indexOf('weekly-summary-menu.css'), 'weekly summary order changed');
+assert(order.indexOf('weekly-summary-menu.css') < order.indexOf('toast-actions.css'), 'toast overrides must load last');
+assert(!style.includes('.toast.has-action {\n  display: inline-flex;'), 'extracted override still exists in style.css');
+assert(toast.includes('.toast.has-action {') && toast.includes('.toast.has-action .toast-undo {'), 'toast override selectors missing');
+assert(js.includes('function getReceiptSelectionForClient('), 'receipt selection function missing');
+console.log('V12.94 CSS order and extraction checks passed');

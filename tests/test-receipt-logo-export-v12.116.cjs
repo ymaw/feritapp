@@ -1,0 +1,13 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const script = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const receiptCss = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf8');
+assert = require('assert');
+assert.match(script, /if\(receiptLogo\)\s*ctx\.drawImage\(receiptLogo,\s*W\s*-\s*PADDING\s*-\s*106,\s*27,\s*90,\s*90\);/, 'El logo exportado debe medir 90×90 y quedar centrado en ambos ejes dentro del espacio reservado del encabezado');
+assert.doesNotMatch(script, /ctx\.drawImage\(receiptLogo,\s*W\s*-\s*PADDING\s*-\s*110,\s*24,\s*110,\s*110\)/, 'No debe quedar el tamaño anterior de 88×88 ni su alineación contra el margen derecho');
+assert.match(html, /receipt-preview-ferit-logo/, 'El preview conserva el logo FeritApp');
+assert.match(receiptCss, /\.receipt-preview-ferit-logo\{top:-8px;right:0;width:98px;height:98px/, 'El preview conserva su tamaño desktop vigente');
+assert.match(html, /css\/receipt\.css\?v=12\.119/, 'La versión de caché debe actualizarse');
+console.log('OK: logo del comprobante compartido con margen superior dentro del encabezado; preview preservado.');
