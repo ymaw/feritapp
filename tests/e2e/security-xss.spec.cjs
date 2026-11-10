@@ -83,7 +83,7 @@ async function openAuthenticatedApp(page) {
 test('user-controlled client and sale fields remain inert text when rendered', async ({ page }) => {
   await openAuthenticatedApp(page);
 
-  await page.locator('[data-view="sales"]').first().click();
+  await page.locator('#sidebar [data-view="sales"]').click();
   const sales = page.locator('#currentWeekTable');
   await expect(sales.locator('.sales-client-group')).toHaveCount(1);
   await expect(sales).toContainText(clientPayload);
