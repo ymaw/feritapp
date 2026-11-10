@@ -47,7 +47,7 @@ assert.ok(responseHeaders['content-security-policy'], 'CSP must be delivered as 
 
 const responseDirectives = Object.fromEntries(
   responseHeaders['content-security-policy'].split(';').map(part => part.trim()).filter(Boolean).map(part => {
-    const [name, ...values] = part.split(/\\s+/);
+    const [name, ...values] = part.split(/\s+/);
     return [name.toLowerCase(), values];
   })
 );
