@@ -95,9 +95,19 @@ test('user-controlled client and sale fields remain inert text when rendered', a
   await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
 });
 
+async function expandFirstSalesClientGroup(page) {
+  const group = page.locator('#currentWeekTable .sales-client-group').first();
+  const panel = group.locator('.sales-client-group-content');
+  if (await panel.isHidden()) {
+    await group.locator('.sales-client-group-trigger').click();
+  }
+  await expect(panel).toBeVisible();
+}
+
 test('existing malicious sale values remain inert when opening the edit flow', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#sidebar [data-view="sales"]').click();
+  await expandFirstSalesClientGroup(page);
 
   const editButton = page.locator('#currentWeekTable [data-add-client-sale]');
   await expect(editButton).toHaveAttribute('data-add-client-sale', clientPayload);
@@ -113,6 +123,7 @@ test('existing malicious sale values remain inert when opening the edit flow', a
 test('receipt preview and editable message render untrusted text without creating markup', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#sidebar [data-view="sales"]').click();
+  await expandFirstSalesClientGroup(page);
 
   const receiptButton = page.locator('#currentWeekTable [data-share-client]');
   await expect(receiptButton).toHaveAttribute('data-share-client', clientPayload);
