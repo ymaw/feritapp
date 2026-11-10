@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const moduleCss = fs.readFileSync(path.join(root, 'css/confirmation-dialog.css'), 'utf8');
-assert.match(html, /css\/confirmation-dialog\.css\?v=12\.119/);
+assert.match(html, /css\/confirmation-dialog\.css\?v=12\.120/);
 assert.ok(html.indexOf('css/style.css?v=12.120') < html.indexOf('css/confirmation-dialog.css?v=12.120'));
 for (const selector of ['.fa-dialog-backdrop', '.fa-dialog-icon', '.fa-dialog-actions', '.fa-dialog-cancel', '.fa-dialog-confirm', 'body.fa-dialog-open', '@keyframes fa-dialog-in']) assert.ok(moduleCss.includes(selector), `Missing extracted selector: ${selector}`);
 assert.ok(!style.includes('.fa-dialog-backdrop{'), 'Dialog base styles should not remain in style.css');
