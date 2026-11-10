@@ -2,29 +2,40 @@ const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 
 async function openUnauthenticatedApp(page) {
-  await page.route('https://cdn.jsdelivr.net/**', async route => {
-    const url = route.request().url();
-    if (url.includes('@supabase/supabase-js')) {
-      return route.fulfill({
-        contentType: 'application/javascript',
-        body: `var supabase = window.supabase = { createClient: () => ({ auth: {
+  await page.addInitScript(() => {
+    window.__authMockCalls = [];
+    window.supabase = {
+      createClient: () => ({
+        auth: {
           onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
           getSession: async () => ({ data: { session: null } }),
-          signInWithPassword: async () => ({ error: { message: 'mock invalid credentials' } }),
-          signUp: async () => ({ error: null, data: { user: null } }),
-          resetPasswordForEmail: async () => ({ error: null }),
+          signInWithPassword: async credentials => {
+            window.__authMockCalls.push({ method: 'signInWithPassword', email: credentials.email });
+            return { error: { message: 'mock invalid credentials' } };
+          },
+          signUp: async credentials => {
+            window.__authMockCalls.push({ method: 'signUp', email: credentials.email });
+            return { error: null, data: { user: null } };
+          },
+          resetPasswordForEmail: async email => {
+            window.__authMockCalls.push({ method: 'resetPasswordForEmail', email });
+            return { error: null };
+          },
           updateUser: async () => ({ error: null, data: { user: null } }),
           signOut: async () => ({ error: null })
-        } }) } };`
-      });
-    }
-    return route.fulfill({ contentType: 'application/javascript', body: '' });
+        }
+      })
+    };
   });
+  await page.route('https://cdn.jsdelivr.net/**', route =>
+    route.fulfill({ contentType: 'application/javascript', body: '' })
+  );
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
   await page.goto('/');
   await expect(page.locator('#authGate')).toBeVisible();
   await expect(page.locator('#gateEmail')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => typeof window.supabase)).toBe('object');
 }
 
 test('login rejects invalid email without contacting authentication service', async ({ page }) => {
@@ -69,6 +80,7 @@ test('signup completes the confirmation-email screen with valid input', async ({
   await page.locator('#signupBtn').click();
   await expect(page.locator('#gateStep1')).toBeHidden();
   await expect(page.locator('#gateSent')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.__authMockCalls.some(call => call.method === 'signUp'))).toBe(true);
   await expect(page.locator('#gateSentTitle')).toHaveText('¡Cuenta creada!');
   await expect(page.locator('#gateSentText')).toContainText('qa@example.test');
 });
@@ -79,6 +91,7 @@ test('password recovery displays confirmation and returns to login', async ({ pa
   await page.locator('#forgotPinBtn').click();
   await expect(page.locator('#gateStep1')).toBeHidden();
   await expect(page.locator('#gateSent')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.__authMockCalls.some(call => call.method === 'resetPasswordForEmail'))).toBe(true);
   await expect(page.locator('#gateSentTitle')).toHaveText('Revisá tu correo');
   await page.locator('#backToEmailBtn').click();
   await expect(page.locator('#gateStep1')).toBeVisible();
