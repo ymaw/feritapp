@@ -4,6 +4,7 @@ const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const vercel = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
 const cspTag = html.match(/<meta\b(?=[^>]*http-equiv="Content-Security-Policy")[^>]*>/i);
 assert.ok(cspTag, 'A Content-Security-Policy meta tag must exist');
 
@@ -37,4 +38,22 @@ for (const [, , body] of inlineScripts) {
   assert.ok(scriptSrc.includes("'sha256-" + digest + "'"), 'Every inline script must be authorized by its exact CSP hash');
 }
 
-console.log('OK: CSP restricts script execution and authorizes only the exact inline bootstrap hash.');
+const deploymentHeaders = vercel.headers.find(entry => entry.source === '/(.*)')?.headers || [];
+const responseHeaders = Object.fromEntries(deploymentHeaders.map(header => [header.key.toLowerCase(), header.value]));
+assert.equal(responseHeaders['x-frame-options'], 'DENY', 'Framing must be denied at the HTTP response layer');
+assert.equal(responseHeaders['x-content-type-options'], 'nosniff', 'MIME sniffing must be disabled');
+assert.equal(responseHeaders['strict-transport-security'], 'max-age=31536000; includeSubDomains', 'HTTPS must be enforced for the deployed origin');
+assert.ok(responseHeaders['content-security-policy'], 'CSP must be delivered as an HTTP response header');
+
+const responseDirectives = Object.fromEntries(
+  responseHeaders['content-security-policy'].split(';').map(part => part.trim()).filter(Boolean).map(part => {
+    const [name, ...values] = part.split(/\\s+/);
+    return [name.toLowerCase(), values];
+  })
+);
+for (const [name, values] of Object.entries(directives)) {
+  assert.deepEqual(responseDirectives[name], values, `HTTP CSP must preserve the meta CSP directive: ${name}`);
+}
+assert.deepEqual(responseDirectives['frame-ancestors'], ["'none'"], 'HTTP CSP must prevent framing; frame-ancestors is not enforced from a meta policy');
+
+console.log('OK: CSP is enforced at the response layer, framing is denied, and HSTS is configured.');
