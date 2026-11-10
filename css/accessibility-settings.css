@@ -1,0 +1,13 @@
+/* V12.121 — Contraste accesible en el panel Apariencia. */
+#settingsPanelAppearance .settings-back-btn {
+  color: #5b21b6;
+}
+
+#settingsPanelAppearance .settings-panel-kicker {
+  color: #6d28d9;
+}
+
+#settingsPanelAppearance .theme-opt span,
+#settingsPanelAppearance .font-scale-option small {
+  color: #475569;
+}
