@@ -7,7 +7,7 @@ async function openUnauthenticatedApp(page) {
     if (url.includes('@supabase/supabase-js')) {
       return route.fulfill({
         contentType: 'application/javascript',
-        body: `window.supabase = { createClient: () => ({ auth: {
+        body: `var supabase = window.supabase = { createClient: () => ({ auth: {
           onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
           getSession: async () => ({ data: { session: null } }),
           signInWithPassword: async () => ({ error: { message: 'mock invalid credentials' } }),
