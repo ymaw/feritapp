@@ -1,0 +1,43 @@
+name: FeritApp CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feature/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: feritapp-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-regression:
+    name: Static regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run all regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          for test_file in tests/*.cjs; do
+            echo "::group::${test_file}"
+            node "${test_file}"
+            echo "::endgroup::"
+            count=$((count + 1))
+          done
+          if [ "${count}" -eq 0 ]; then
+            echo "No regression tests found."
+            exit 1
+          fi
+          echo "Executed ${count} regression test files."
