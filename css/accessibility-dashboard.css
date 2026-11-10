@@ -1,0 +1,23 @@
+/* V12.121 — Contraste accesible en el resumen del dashboard.
+   Se ajustan únicamente colores de texto; se preservan fondos, jerarquía y composición. */
+#viewDashboard .stat-card-label,
+#viewDashboard .payment-chart-legend > div span:nth-child(2),
+#viewDashboard .period-opt:not(.active) {
+  color: #475569;
+}
+
+#viewDashboard .stat-card.success .stat-card-value {
+  color: #047857;
+}
+
+#viewDashboard .stat-card.warning .stat-card-value {
+  color: #c2410c;
+}
+
+#viewDashboard .period-opt.active {
+  color: #5b21b6;
+}
+
+#viewDashboard .compare-table .head {
+  color: #6d28d9;
+}
