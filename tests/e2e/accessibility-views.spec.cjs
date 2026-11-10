@@ -59,6 +59,23 @@ async function openAuthenticatedApp(page) {
   await expect(page.locator('#viewDashboard')).toBeVisible();
 }
 
+
+async function navigateToView(page, view, width) {
+  if (width <= 700) {
+    if (['dashboard', 'sales', 'deliveries'].includes(view)) {
+      await page.locator('#bottomNav [data-view="' + view + '"]').click();
+    } else if (view === 'settings') {
+      await page.locator('#moreBtn').click();
+      await expect(page.locator('#menuDropdown')).toBeVisible();
+      await page.locator('#menuDropdown [data-view="settings"]').click();
+    } else {
+      throw new Error('No mobile navigation route is defined for view: ' + view);
+    }
+  } else {
+    await page.locator('#sidebar [data-view="' + view + '"]').click();
+  }
+}
+
 async function auditView(page, selector, name) {
   await expect(page.locator(selector)).toBeVisible();
   const results = await new AxeBuilder({ page })
@@ -70,7 +87,11 @@ async function auditView(page, selector, name) {
   );
   console.log('FERITAPP_AXE_' + name.toUpperCase() + ' ' + JSON.stringify(
     results.violations.map(({ id, impact, help, nodes }) => ({
-      id, impact, help, affected: nodes.length
+      id, impact, help, nodes: nodes.map(node => ({
+        target: node.target,
+        html: node.html,
+        failureSummary: node.failureSummary
+      }))
     }))
   ));
   expect(severe, name + ' must not contain serious or critical WCAG violations').toEqual([]);
@@ -80,23 +101,30 @@ test('main authenticated views have no serious or critical WCAG 2.1 A/AA violati
   await openAuthenticatedApp(page);
   await auditView(page, '#viewDashboard', 'dashboard');
 
-  for (const view of ['sales', 'clients', 'deliveries', 'settings']) {
-    await page.locator('#sidebar [data-view="' + view + '"]').click();
-    await auditView(page, '#view' + view[0].toUpperCase() + view.slice(1), view);
-  }
+  // Clientes está integrado en Ventas; no existe una ruta independiente en la navegación.
+  await navigateToView(page, 'sales', 1280);
+  await auditView(page, '#viewSales', 'sales_clients');
 
+  await navigateToView(page, 'deliveries', 1280);
+  await auditView(page, '#viewDeliveries', 'deliveries');
+
+  await navigateToView(page, 'settings', 1280);
+  await auditView(page, '#viewSettings', 'settings');
   await page.locator('#viewSettings [data-settings="appearance"]').click();
-  const appearance = page.locator('#viewSettings');
-  await expect(appearance).toBeVisible();
+  await expect(page.locator('#settingsPanelAppearance')).toBeVisible();
   const appearanceResults = await new AxeBuilder({ page })
-    .include('#viewSettings')
+    .include('#settingsPanelAppearance')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
   const severeAppearance = appearanceResults.violations.filter(v =>
     v.impact === 'critical' || v.impact === 'serious'
   );
   console.log('FERITAPP_AXE_APPEARANCE ' + JSON.stringify(
-    appearanceResults.violations.map(({ id, impact, help, nodes }) => ({ id, impact, help, affected: nodes.length }))
+    appearanceResults.violations.map(({ id, impact, help, nodes }) => ({
+      id, impact, help, nodes: nodes.map(node => ({
+        target: node.target, html: node.html, failureSummary: node.failureSummary
+      }))
+    }))
   ));
   expect(severeAppearance, 'appearance settings must not contain serious or critical WCAG violations').toEqual([]);
 });
@@ -105,10 +133,11 @@ test('primary view navigation completes without layout overflow on desktop and m
   await openAuthenticatedApp(page);
   for (const width of [1280, 390, 360]) {
     await page.setViewportSize({ width, height: 844 });
-    for (const view of ['sales', 'clients', 'deliveries', 'settings', 'dashboard']) {
+    for (const view of ['sales', 'deliveries', 'dashboard', 'settings']) {
       const start = await page.evaluate(() => performance.now());
-      await page.locator('#sidebar [data-view="' + view + '"]').click();
-      await expect(page.locator('#view' + view[0].toUpperCase() + view.slice(1))).toBeVisible();
+      await navigateToView(page, view, width);
+      const selector = view === 'settings' ? '#viewSettings' : '#view' + view[0].toUpperCase() + view.slice(1);
+      await expect(page.locator(selector)).toBeVisible();
       const elapsed = await page.evaluate(startTime => performance.now() - startTime, start);
       const dimensions = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
