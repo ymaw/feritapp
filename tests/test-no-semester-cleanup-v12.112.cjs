@@ -9,11 +9,11 @@ const emptyCss = fs.readFileSync(path.join(root, 'css/empty-states.css'), 'utf8'
 assert.doesNotMatch(js, /checkSemesterCleanup|last_purge_semester|Mantenimiento semestral/);
 assert.doesNotMatch(html, /Cada semestre se descarga uno automático/);
 assert.match(html, /Exportá una copia periódicamente/);
-assert.match(html, /css\/empty-states\.css\?v=12\.120/);
+assert.match(html, /css\/empty-states\.css\?v=12\.121/);
 assert.ok(html.indexOf('css/style.css?v=12.121') < html.indexOf('css/empty-states.css?v=12.121'));
 assert.doesNotMatch(style, /\.empty-inline\s*\{|#viewClients \.empty-inline|\.empty\s*\{/);
 assert.match(emptyCss, /\.empty-inline\s*\{/);
 assert.match(emptyCss, /#viewClients \.empty-inline/);
-assert.match(html, /script\.js\?v=12\.120/);
+assert.match(html, /script\.js\?v=12\.121/);
 for (const m of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) assert.equal(m[1], '12.121', 'cache versions must be uniform');
 console.log('OK V12.121: borrado semestral desactivado, exportación manual intacta y extracción de estados vacíos verificada.');
