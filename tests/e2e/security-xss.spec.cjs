@@ -99,7 +99,10 @@ test('existing malicious sale values remain inert when opening the edit flow', a
   await openAuthenticatedApp(page);
   await page.locator('#sidebar [data-view="sales"]').click();
 
-  await page.locator('#currentWeekTable [data-add-client-sale]').click();
+  const editButton = page.locator('#currentWeekTable [data-add-client-sale]');
+  await expect(editButton).toHaveAttribute('data-add-client-sale', clientPayload);
+  await expect(editButton).not.toHaveAttribute('onerror');
+  await editButton.click();
   const articleInput = page.locator('#itemRowsContainer .row-articulo').first();
   await expect(articleInput).toHaveValue(articlePayload);
   await expect(page.locator('#itemRowsContainer [data-xss-probe]')).toHaveCount(0);
@@ -111,7 +114,10 @@ test('receipt preview and editable message render untrusted text without creatin
   await openAuthenticatedApp(page);
   await page.locator('#sidebar [data-view="sales"]').click();
 
-  await page.locator('#currentWeekTable [data-share-client]').click();
+  const receiptButton = page.locator('#currentWeekTable [data-share-client]');
+  await expect(receiptButton).toHaveAttribute('data-share-client', clientPayload);
+  await expect(receiptButton).not.toHaveAttribute('onerror');
+  await receiptButton.click();
   const receipt = page.locator('#receiptEditScrim');
   await expect(receipt).toBeVisible();
   await expect(receipt.locator('.receipt-preview-item')).toContainText(articlePayload);
