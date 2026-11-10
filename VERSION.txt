@@ -1,3 +1,3 @@
-FeritApp V12.119
-Base: V12.118
-Se extrajeron a css/clients.css los estilos del panel de detalle del cliente, historial de compras y acciones asociadas. Se conservaron las declaraciones originales y el orden relativo entre reglas base y overrides. Referencias de caché actualizadas a 12.119.
+FeritApp V12.120
+Base: V12.119
+Se incorporó una hoja CSS aislada para modernizar la pantalla de acceso y el onboarding, con adaptación a los temas claro y oscuro. Se conservaron los identificadores, la estructura funcional y la lógica existente de autenticación; no se modificó script.js ni la configuración de Supabase.
