@@ -1,3 +1,3 @@
-FeritApp V12.120
-Base: V12.119
-Se incorporó una hoja CSS aislada para modernizar la pantalla de acceso y el onboarding, con adaptación a los temas claro y oscuro. Se conservaron los identificadores, la estructura funcional y la lógica existente de autenticación; no se modificó script.js ni la configuración de Supabase.
+FeritApp V12.121
+Base: V12.120
+Se corrigieron hallazgos WCAG en el dashboard: contraste de etiquetas y valores de estado, selector de período y encabezados de comparación. Los selectores dinámicos de comparación mensual y semanal ahora tienen nombres accesibles. Se agregó una hoja CSS aislada sin modificar estructura ni lógica de ventas.
