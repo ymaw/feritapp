@@ -110,3 +110,12 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - Se mantiene intacto el preview HTML/CSS.
 - Se actualizó la prueba del logo para verificar tamaño, posición y conservación del preview.
 - No se modificó la lógica de selección de ventas, el contenido del comprobante, ni los datos de Supabase. No se publicó en producción ni se modificó GitHub.
+
+
+## V12.119 — Extracción CSS del detalle de Clientes
+
+- Se trasladaron a `css/clients.css` los estilos del panel de detalle, resumen, lista de compras y acciones de copiar/compartir.
+- Se conservaron los selectores y declaraciones originales. Las reglas base y sus overrides se mantuvieron en el mismo orden relativo dentro del módulo.
+- Se dejó en `style.css` el resto de estilos compartidos o con dependencias de otras vistas (por ejemplo, nombres de clientes en Ventas/Ranking, flechas compartidas y estilos generales de modales).
+- Se agregó el módulo después de `style.css` y se actualizaron las referencias de caché a `12.119`.
+- Sin cambios en JavaScript, lógica de clientes, comprobantes, Entregas, Ventas, datos ni servicios externos.
