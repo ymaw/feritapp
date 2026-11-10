@@ -94,3 +94,32 @@ test('user-controlled client and sale fields remain inert text when rendered', a
   await expect(page.locator('[data-xss-probe]')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
 });
+
+test('existing malicious sale values remain inert when opening the edit flow', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#sidebar [data-view="sales"]').click();
+
+  await page.locator('#currentWeekTable [data-add-client-sale]').click();
+  const articleInput = page.locator('#itemRowsContainer .row-articulo').first();
+  await expect(articleInput).toHaveValue(articlePayload);
+  await expect(page.locator('#itemRowsContainer [data-xss-probe]')).toHaveCount(0);
+  await expect(page.locator('[data-xss-probe]')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
+});
+
+test('receipt preview and editable message render untrusted text without creating markup', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#sidebar [data-view="sales"]').click();
+
+  await page.locator('#currentWeekTable [data-share-client]').click();
+  const receipt = page.locator('#receiptEditScrim');
+  await expect(receipt).toBeVisible();
+  await expect(receipt.locator('.receipt-preview-item')).toContainText(articlePayload);
+  await expect(receipt.locator('[data-xss-probe]')).toHaveCount(0);
+
+  await page.locator('#receiptShareMessage').fill(clientPayload);
+  await expect(page.locator('#receiptPreviewMessage')).toHaveText(clientPayload);
+  await expect(receipt.locator('[data-xss-probe]')).toHaveCount(0);
+  await expect(page.locator('[data-xss-probe]')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
+});
