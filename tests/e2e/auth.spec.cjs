@@ -59,6 +59,32 @@ test('signup rejects a mismatched password confirmation', async ({ page }) => {
   await expect(page.locator('#authGate')).toBeVisible();
 });
 
+
+test('signup completes the confirmation-email screen with valid input', async ({ page }) => {
+  await openUnauthenticatedApp(page);
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.locator('#gatePin').fill('Clave123!');
+  await page.locator('#signupBtn').click();
+  await page.locator('#gatePinConfirm').fill('Clave123!');
+  await page.locator('#signupBtn').click();
+  await expect(page.locator('#gateStep1')).toBeHidden();
+  await expect(page.locator('#gateSent')).toBeVisible();
+  await expect(page.locator('#gateSentTitle')).toHaveText('¡Cuenta creada!');
+  await expect(page.locator('#gateSentText')).toContainText('qa@example.test');
+});
+
+test('password recovery displays confirmation and returns to login', async ({ page }) => {
+  await openUnauthenticatedApp(page);
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.locator('#forgotPinBtn').click();
+  await expect(page.locator('#gateStep1')).toBeHidden();
+  await expect(page.locator('#gateSent')).toBeVisible();
+  await expect(page.locator('#gateSentTitle')).toHaveText('Revisá tu correo');
+  await page.locator('#backToEmailBtn').click();
+  await expect(page.locator('#gateStep1')).toBeVisible();
+  await expect(page.locator('#gateSent')).toBeHidden();
+});
+
 test('authentication screen passes automated WCAG 2.1 A/AA checks', async ({ page }) => {
   await openUnauthenticatedApp(page);
   const results = await new AxeBuilder({ page })
