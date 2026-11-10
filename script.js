@@ -2929,7 +2929,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function escapeHtml(str){
     let d = document.createElement('div');
     d.textContent = str || '';
-    return d.innerHTML;
+    return d.innerHTML.replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function showToast(msg, duration){
