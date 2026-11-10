@@ -85,6 +85,22 @@ test('password recovery displays confirmation and returns to login', async ({ pa
   await expect(page.locator('#gateSent')).toBeHidden();
 });
 
+
+test('page bootstrap does not trigger Content Security Policy violations', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__cspViolations = [];
+    document.addEventListener('securitypolicyviolation', event => {
+      window.__cspViolations.push({
+        directive: event.violatedDirective,
+        blockedURI: event.blockedURI
+      });
+    });
+  });
+  await openUnauthenticatedApp(page);
+  const violations = await page.evaluate(() => window.__cspViolations);
+  expect(violations).toEqual([]);
+});
+
 test('authentication screen passes automated WCAG 2.1 A/AA checks', async ({ page }) => {
   await openUnauthenticatedApp(page);
   const results = await new AxeBuilder({ page })
