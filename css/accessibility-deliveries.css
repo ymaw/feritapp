@@ -1,0 +1,4 @@
+/* V12.121 — Contraste accesible en los estados de entrega. */
+#viewDeliveries .delivery-client-status.is-pending {
+  color: #b91c1c;
+}
