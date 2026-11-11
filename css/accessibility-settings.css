@@ -11,3 +11,15 @@
 #settingsPanelAppearance .font-scale-option small {
   color: #475569;
 }
+
+
+/* V12.125 — Contraste WCAG AA de Apariencia en tema oscuro. */
+[data-theme="dark"] #settingsPanelAppearance .settings-back-btn,
+[data-theme="dark"] #settingsPanelAppearance .theme-opt span,
+[data-theme="dark"] #settingsPanelAppearance .font-scale-option small {
+  color: #f1f0fe;
+}
+
+[data-theme="dark"] #settingsPanelAppearance .settings-panel-kicker {
+  color: #c4b5fd;
+}
