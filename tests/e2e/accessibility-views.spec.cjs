@@ -163,7 +163,9 @@ test('authenticated views and new-sale form have no serious or critical WCAG 2.1
   await expect(page.locator('#sheet')).toHaveClass(/open/);
   await auditView(page, '#sheet', 'dark_new_sale_form');
 
-  await page.locator('#scrim').click();
+  // El scrim queda detrás del panel; cerramos mediante su manejador sin intentar
+  // hacer clic físicamente a través del panel superpuesto.
+  await page.locator('#scrim').evaluate(element => element.click());
   await navigateToView(page, 'deliveries', 1280);
   await auditView(page, '#viewDeliveries', 'dark_deliveries');
 
@@ -204,9 +206,13 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
 
   await expect(page.locator('#openNewCatBtn')).toBeFocused();
   await page.keyboard.press('Tab');
-  await expect(page.locator('#itemRowsContainer .item-row-del')).toBeFocused();
+
+  // Con un único artículo, el botón "Quitar" se oculta intencionalmente.
+  await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
   await page.keyboard.press('Tab');
+  await expect(page.locator('#itemRowsContainer .row-precio')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(page.locator('#itemRowsContainer .item-row-del')).toBeFocused();
+  await expect(page.locator('#openNewCatBtn')).toBeFocused();
 });
