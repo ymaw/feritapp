@@ -141,19 +141,33 @@ test('receipt preview and editable message render untrusted text without creatin
   await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
 });
 
-test('sale deletion confirmation renders untrusted client and article values as inert text', async ({ page }) => {
+test('sale deletion confirmation renders untrusted client values as inert text', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#sidebar [data-view="sales"]').click();
   await expandFirstSalesClientGroup(page);
 
-  const deleteButton = page.locator('#currentWeekTable [data-del]:visible').first();
-  await expect(deleteButton).toBeVisible();
-  await deleteButton.click();
+  const group = page.locator('#currentWeekTable .sales-client-group').first();
+  const saleItem = group.locator('.sales-group-item[data-sale-id]').first();
+  await expect(saleItem).toContainText(articlePayload);
+  await expect(saleItem.locator('[data-xss-probe]')).toHaveCount(0);
 
-  const dialog = page.locator('#saleDeleteDialog');
+  // La eliminación en esta vista se habilita manteniendo presionada
+  // la cabecera de la tarjeta del cliente (650 ms).
+  const header = group.locator('.sales-client-group-header');
+  const bounds = await header.boundingBox();
+  if (!bounds) throw new Error('No se encontró la cabecera de la venta');
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(750);
+  await page.mouse.up();
+
+  const deleteToggle = group.locator('.sales-group-chevron[data-delete-target-ids]');
+  await expect(deleteToggle).toBeVisible();
+  await deleteToggle.click();
+
+  const dialog = page.locator('#saleGroupDeleteDialog');
   await expect(dialog).toBeVisible();
   const description = dialog.locator('#saleDeleteDescription');
-  await expect(description).toContainText(articlePayload);
   await expect(description).toContainText(clientPayload);
   await expect(dialog.locator('[data-xss-probe]')).toHaveCount(0);
   await expect(dialog.locator('img')).toHaveCount(0);
@@ -161,7 +175,7 @@ test('sale deletion confirmation renders untrusted client and article values as 
 
   await dialog.locator('.fa-dialog-cancel').click();
   await expect(dialog).toBeHidden();
-  await expect(page.locator('#currentWeekTable .sales-client-group')).toHaveCount(1);
-  await expect(page.locator('#currentWeekTable')).toContainText(articlePayload);
+  await expect(group).toBeVisible();
+  await expect(group).toContainText(articlePayload);
   await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
 });
