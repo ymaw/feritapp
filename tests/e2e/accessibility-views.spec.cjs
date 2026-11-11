@@ -194,9 +194,19 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
   await page.locator('#fCliente').focus();
   await expect(page.locator('#fCliente')).toBeFocused();
   await page.keyboard.press('Tab');
+
+  // El control de dictado sólo participa del recorrido si el navegador lo soporta.
+  const clientMic = page.locator('#sheet .mic-btn[data-target="fCliente"]');
+  if (await clientMic.isVisible()) {
+    await expect(clientMic).toBeFocused();
+    await page.keyboard.press('Tab');
+  }
+
   await expect(page.locator('#openNewCatBtn')).toBeFocused();
   await page.keyboard.press('Tab');
-  await expect(page.locator('#addItemRowBtn')).toBeFocused();
+  await expect(page.locator('#itemRowsContainer .item-row-del')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(page.locator('#openNewCatBtn')).toBeFocused();
+  await expect(page.locator('#itemRowsContainer .item-row-del')).toBeFocused();
 });
