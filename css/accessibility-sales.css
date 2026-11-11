@@ -24,3 +24,16 @@
 #viewSales .delivery-status.pending {
   color: #b91c1c;
 }
+
+/* V12.123 — contraste WCAG AA en Ventas para el tema oscuro. */
+[data-theme="dark"] #viewSales .management-filter:not(.active) {
+  color: #f1f0fe;
+}
+
+[data-theme="dark"] #viewSales .sales-retira-label {
+  color: #c4b5fd !important;
+}
+
+[data-theme="dark"] #viewSales .delivery-status.pending {
+  color: #fca5a5;
+}
