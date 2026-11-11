@@ -39,7 +39,10 @@ async function openAuthenticatedApp(page) {
     window.supabase = {
       createClient: () => ({
         auth: {
-          onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+          onAuthStateChange: callback => {
+            window.__authStateChangeHandler = callback;
+            return { data: { subscription: { unsubscribe() {} } } };
+          },
           getSession: async () => ({ data: { session: null } }),
           signInWithPassword: async () => ({
             error: null,
@@ -198,4 +201,20 @@ test('sale deletion confirmation renders untrusted client values as inert text',
   await expect(group).toBeVisible();
   await expect(group).toContainText(articlePayload);
   await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
+});
+
+
+test('a revoked authentication session returns the app to the login gate', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await expect(page.locator('#appRoot')).toBeVisible();
+
+  await page.evaluate(() => {
+    if (typeof window.__authStateChangeHandler !== 'function') {
+      throw new Error('No se registró el listener de autenticación');
+    }
+    window.__authStateChangeHandler('SIGNED_OUT', null);
+  });
+
+  await expect(page.locator('#authGate')).toBeVisible();
+  await expect(page.locator('#appRoot')).toBeHidden();
 });
