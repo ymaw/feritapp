@@ -31,8 +31,8 @@ async function openAuthenticatedApp(page) {
         week_start_day: 1,
         notify_enabled: false,
         notify_days_overdue: 4,
-        receipt_message: 'Gracias',
-        store_name: 'Tienda QA',
+        receipt_message: article,
+        store_name: client,
         avatar_url: ''
       }
     };
@@ -103,6 +103,26 @@ async function expandFirstSalesClientGroup(page) {
   }
   await expect(panel).toBeVisible();
 }
+
+test('persisted store name and receipt message remain inert text in profile and receipt views', async ({ page }) => {
+  await openAuthenticatedApp(page);
+
+  await expect(page.locator('#greetingText')).toHaveText('¡Hola, ' + clientPayload + '!');
+  await expect(page.locator('#greetingText [data-xss-probe]')).toHaveCount(0);
+  await expect(page.locator('#greetingText img')).toHaveCount(0);
+
+  await page.locator('#sidebar [data-view="sales"]').click();
+  await expandFirstSalesClientGroup(page);
+  await page.locator('#currentWeekTable [data-share-client]').click();
+
+  const receipt = page.locator('#receiptEditScrim');
+  await expect(receipt).toBeVisible();
+  await expect(page.locator('#receiptShareMessage')).toHaveValue(articlePayload);
+  await expect(page.locator('#receiptPreviewMessage')).toHaveText(articlePayload);
+  await expect(receipt.locator('[data-xss-probe]')).toHaveCount(0);
+  await expect(receipt.locator('img[data-xss-probe]')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
+});
 
 test('existing malicious sale values remain inert when opening the edit flow', async ({ page }) => {
   await openAuthenticatedApp(page);
