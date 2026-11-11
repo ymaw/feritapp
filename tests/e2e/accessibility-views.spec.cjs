@@ -209,10 +209,29 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
 
   // Con un único artículo, el botón "Quitar" se oculta intencionalmente.
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
-  await page.keyboard.press('Tab');
+
+  // El micrófono de artículo es un control intermedio cuando SpeechRecognition está disponible.
+  const articleMic = page.locator('#itemRowsContainer .item-field-name .mic-btn');
+  if (await articleMic.isVisible()) {
+    await page.keyboard.press('Tab');
+    await expect(articleMic).toBeFocused();
+    await page.keyboard.press('Tab');
+  } else {
+    await page.keyboard.press('Tab');
+  }
+
   await expect(page.locator('#itemRowsContainer .row-precio')).toBeFocused();
+
+  // El micrófono de precio también forma parte del recorrido si está disponible.
+  const priceMic = page.locator('#itemRowsContainer .item-field-price .mic-btn');
   await page.keyboard.press('Shift+Tab');
+  if (await priceMic.isVisible()) {
+    await expect(priceMic).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+  }
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
-  await page.keyboard.press('Shift+Tab');
+  if (await articleMic.isVisible()) {
+    await page.keyboard.press('Shift+Tab');
+  }
   await expect(page.locator('#openNewCatBtn')).toBeFocused();
 });
