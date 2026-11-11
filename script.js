@@ -492,6 +492,15 @@ document.addEventListener('DOMContentLoaded', function(){
         showSetNewPinPrompt();
         return;
       }
+      if(event === 'SIGNED_OUT'){
+        // Una sesión revocada en otra pestaña/dispositivo también debe
+        // bloquear la interfaz y descartar el estado en memoria.
+        if(idleTimer) clearTimeout(idleTimer);
+        entered = false;
+        currentUserEmail = null;
+        window.location.reload();
+        return;
+      }
       if(event === 'SIGNED_IN' && newSession && newSession.user && !recoveryDetected){
         enterApp(newSession.user);
       }
