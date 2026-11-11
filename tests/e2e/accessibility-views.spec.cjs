@@ -222,16 +222,22 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
 
   await expect(page.locator('#itemRowsContainer .row-precio')).toBeFocused();
 
-  // El micrófono de precio también forma parte del recorrido si está disponible.
+  // El micrófono de precio está después del input; verificamos avance y retorno.
   const priceMic = page.locator('#itemRowsContainer .item-field-price .mic-btn');
-  await page.keyboard.press('Shift+Tab');
   if (await priceMic.isVisible()) {
+    await page.keyboard.press('Tab');
     await expect(priceMic).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('#itemRowsContainer .row-precio')).toBeFocused();
+  }
+
+  // En sentido inverso, desde precio se vuelve primero al micrófono de artículo.
+  await page.keyboard.press('Shift+Tab');
+  if (await articleMic.isVisible()) {
+    await expect(articleMic).toBeFocused();
     await page.keyboard.press('Shift+Tab');
   }
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
-  if (await articleMic.isVisible()) {
-    await page.keyboard.press('Shift+Tab');
-  }
+  await page.keyboard.press('Shift+Tab');
   await expect(page.locator('#openNewCatBtn')).toBeFocused();
 });
