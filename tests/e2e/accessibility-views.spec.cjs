@@ -159,7 +159,7 @@ test('authenticated views and new-sale form have no serious or critical WCAG 2.1
   await navigateToView(page, 'sales', 1280);
   await auditView(page, '#viewSales', 'dark_sales_clients');
 
-  await page.locator('#openSheet').click();
+  await page.locator('#sidebarOpenSheet').click();
   await expect(page.locator('#sheet')).toHaveClass(/open/);
   await auditView(page, '#sheet', 'dark_new_sale_form');
 
@@ -176,7 +176,7 @@ test('authenticated views and new-sale form have no serious or critical WCAG 2.1
 
 test('new-sale form exposes labeled controls and supports keyboard traversal', async ({ page }) => {
   await openAuthenticatedApp(page);
-  await page.locator('#openSheet').click();
+  await page.locator('#sidebarOpenSheet').click();
   await expect(page.locator('#sheet')).toHaveClass(/open/);
 
   const unlabeled = await page.locator('#sheet input, #sheet select, #sheet textarea').evaluateAll(elements =>
