@@ -1,7 +1,8 @@
 const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 
-async function openAuthenticatedApp(page) {
+async function openAuthenticatedApp(page, themeChoice = 'light') {
+  await page.addInitScript(choice => { localStorage.setItem('feritapp-theme', choice); }, themeChoice);
   await page.addInitScript(() => {
     const today = new Date().toISOString();
     const dataByTable = {
@@ -147,4 +148,55 @@ test('primary view navigation completes without layout overflow on desktop and m
       expect(dimensions.document, view + ' must not cause horizontal page overflow at ' + width + 'px').toBeLessThanOrEqual(dimensions.viewport);
     }
   }
+});
+
+
+test('authenticated views and new-sale form have no serious or critical WCAG 2.1 A/AA violations in dark theme', async ({ page }) => {
+  await openAuthenticatedApp(page, 'dark');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await auditView(page, '#viewDashboard', 'dark_dashboard');
+
+  await navigateToView(page, 'sales', 1280);
+  await auditView(page, '#viewSales', 'dark_sales_clients');
+
+  await page.locator('#openSheet').click();
+  await expect(page.locator('#sheet')).toHaveClass(/open/);
+  await auditView(page, '#sheet', 'dark_new_sale_form');
+
+  await page.locator('#scrim').click();
+  await navigateToView(page, 'deliveries', 1280);
+  await auditView(page, '#viewDeliveries', 'dark_deliveries');
+
+  await navigateToView(page, 'settings', 1280);
+  await auditView(page, '#viewSettings', 'dark_settings');
+  await page.locator('#viewSettings [data-settings="appearance"]').click();
+  await expect(page.locator('#settingsPanelAppearance')).toBeVisible();
+  await auditView(page, '#settingsPanelAppearance', 'dark_appearance');
+});
+
+test('new-sale form exposes labeled controls and supports keyboard traversal', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#openSheet').click();
+  await expect(page.locator('#sheet')).toHaveClass(/open/);
+
+  const unlabeled = await page.locator('#sheet input, #sheet select, #sheet textarea').evaluateAll(elements =>
+    elements.filter(element => {
+      if (element.type === 'hidden' || element.disabled) return false;
+      const id = element.id;
+      const hasLabel = (id && document.querySelector('label[for="' + CSS.escape(id) + '"]')) ||
+        element.closest('label') || element.getAttribute('aria-label') ||
+        element.getAttribute('aria-labelledby');
+      return !hasLabel;
+    }).map(element => ({ tag: element.tagName, id: element.id, type: element.type }))
+  );
+  expect(unlabeled, 'all active form controls in the new-sale sheet must have an accessible name').toEqual([]);
+
+  await page.locator('#fCliente').focus();
+  await expect(page.locator('#fCliente')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#openNewCatBtn')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#addItemRowBtn')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('#openNewCatBtn')).toBeFocused();
 });
