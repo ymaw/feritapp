@@ -140,3 +140,28 @@ test('receipt preview and editable message render untrusted text without creatin
   await expect(page.locator('[data-xss-probe]')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
 });
+
+test('sale deletion confirmation renders untrusted client and article values as inert text', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#sidebar [data-view="sales"]').click();
+  await expandFirstSalesClientGroup(page);
+
+  const deleteButton = page.locator('#currentWeekTable [data-del]:visible').first();
+  await expect(deleteButton).toBeVisible();
+  await deleteButton.click();
+
+  const dialog = page.locator('#saleDeleteDialog');
+  await expect(dialog).toBeVisible();
+  const description = dialog.locator('#saleDeleteDescription');
+  await expect(description).toContainText(articlePayload);
+  await expect(description).toContainText(clientPayload);
+  await expect(dialog.locator('[data-xss-probe]')).toHaveCount(0);
+  await expect(dialog.locator('img')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
+
+  await dialog.locator('.fa-dialog-cancel').click();
+  await expect(dialog).toBeHidden();
+  await expect(page.locator('#currentWeekTable .sales-client-group')).toHaveCount(1);
+  await expect(page.locator('#currentWeekTable')).toContainText(articlePayload);
+  await expect.poll(() => page.evaluate(() => window.__xssExecuted)).toBe(false);
+});
