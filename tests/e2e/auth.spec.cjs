@@ -11,14 +11,17 @@ async function openUnauthenticatedApp(page) {
           getSession: async () => ({ data: { session: null } }),
           signInWithPassword: async credentials => {
             window.__authMockCalls.push({ method: 'signInWithPassword', email: credentials.email });
+            if(window.__authMockReject === 'login') throw new Error('network unavailable');
             return { error: { message: 'mock invalid credentials' } };
           },
           signUp: async credentials => {
             window.__authMockCalls.push({ method: 'signUp', email: credentials.email });
+            if(window.__authMockReject === 'signup') throw new Error('network unavailable');
             return { error: null, data: { user: null } };
           },
           resetPasswordForEmail: async email => {
             window.__authMockCalls.push({ method: 'resetPasswordForEmail', email });
+            if(window.__authMockReject === 'recovery') throw new Error('network unavailable');
             return { error: null };
           },
           updateUser: async () => ({ error: null, data: { user: null } }),
@@ -272,4 +275,39 @@ test('30 minutes without activity signs out and returns to the login gate', asyn
   await expect(page.locator('#authGate')).toBeVisible();
   await expect(page.locator('#appRoot')).toBeHidden();
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('qa-signed-out'))).toBe('1');
+});
+
+
+test('login network exceptions show a recoverable error and re-enable actions', async ({ page }) => {
+  await openUnauthenticatedApp(page);
+  await page.evaluate(() => { window.__authMockReject = 'login'; });
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.locator('#gatePin').fill('Clave123!');
+  await page.locator('#loginBtn').click();
+  await expect(page.locator('#gateError')).toContainText('problema de conexión');
+  await expect(page.locator('#loginBtn')).toBeEnabled();
+  await expect(page.locator('#signupBtn')).toBeEnabled();
+});
+
+test('signup network exceptions show a recoverable error and re-enable actions', async ({ page }) => {
+  await openUnauthenticatedApp(page);
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.locator('#gatePin').fill('Clave123!');
+  await page.locator('#signupBtn').click();
+  await page.locator('#gatePinConfirm').fill('Clave123!');
+  await page.evaluate(() => { window.__authMockReject = 'signup'; });
+  await page.locator('#signupBtn').click();
+  await expect(page.locator('#gateError')).toContainText('problema de conexión');
+  await expect(page.locator('#loginBtn')).toBeEnabled();
+  await expect(page.locator('#signupBtn')).toBeEnabled();
+});
+
+test('password recovery network exceptions restore the action and keep the form usable', async ({ page }) => {
+  await openUnauthenticatedApp(page);
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.evaluate(() => { window.__authMockReject = 'recovery'; });
+  await page.locator('#forgotPinBtn').click();
+  await expect(page.locator('#gateError')).toContainText('problema de conexión');
+  await expect(page.locator('#forgotPinBtn')).toBeEnabled();
+  await expect(page.locator('#gateStep1')).toBeVisible();
 });
