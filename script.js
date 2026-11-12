@@ -297,10 +297,17 @@ document.addEventListener('DOMContentLoaded', function(){
   async function handleIdleTimeout(){
     if(!entered) return;
     try{
-      if(sb) await sb.auth.signOut();
+      if(sb){
+        const result = await sb.auth.signOut();
+        if(result && result.error){
+          console.error('Supabase no pudo cerrar la sesión por inactividad:', result.error);
+        }
+      }
     }catch(error){
       console.error('No se pudo cerrar la sesión por inactividad:', error);
     }finally{
+      // Aunque falle la revocación remota, recargar bloquea la interfaz local;
+      // el timestamp vencido impide restaurar esta sesión como válida.
       location.reload();
     }
   }
@@ -549,7 +556,11 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!freshAuthentication && storedActivityAt > 0 && Date.now() - storedActivityAt >= IDLE_TIMEOUT_MS){
       showGateError('Tu sesión expiró por inactividad. Iniciá sesión nuevamente.');
       if(sb){
-        sb.auth.signOut().catch(function(error){
+        sb.auth.signOut().then(function(result){
+          if(result && result.error){
+            console.error('Supabase no pudo cerrar la sesión vencida:', result.error);
+          }
+        }).catch(function(error){
           console.error('No se pudo cerrar la sesión vencida:', error);
         });
       }
