@@ -108,9 +108,15 @@ CREATE POLICY user_settings_update_own
   USING (user_id = (SELECT auth.uid()))
   WITH CHECK (user_id = (SELECT auth.uid()));
 
--- 3) Defaults de objetos futuros creados por postgres en public.
---    Se revocan grants automáticos para que las nuevas tablas/funciones/secuencias
---    requieran grants explícitos según su caso de uso.
+-- 3) Defaults de objetos futuros creados por postgres.
+--    El REVOKE global evita que funciones nuevas hereden EXECUTE de PUBLIC
+--    en cualquier esquema. Es deliberadamente global: los consumidores de
+--    funciones futuras deberán recibir EXECUTE mediante GRANT explícito.
+--    Los REVOKE por schema eliminan además grants directos a anon/authenticated.
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+  REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+
+-- Defaults específicos de public para tablas, secuencias y funciones.
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE ALL ON TABLES FROM anon, authenticated;
 
