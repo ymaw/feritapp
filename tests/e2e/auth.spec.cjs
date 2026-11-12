@@ -284,7 +284,7 @@ test('login network exceptions show a recoverable error and re-enable actions', 
   await page.locator('#gateEmail').fill('qa@example.test');
   await page.locator('#gatePin').fill('Clave123!');
   await page.locator('#loginBtn').click();
-  await expect(page.locator('#gateError')).toContainText('problema de conexión');
+  await expect(page.locator('#gateError')).toContainText('No se pudo conectar con el servicio');
   await expect(page.locator('#loginBtn')).toBeEnabled();
   await expect(page.locator('#signupBtn')).toBeEnabled();
 });
@@ -307,7 +307,7 @@ test('password recovery network exceptions restore the action and keep the form 
   await page.locator('#gateEmail').fill('qa@example.test');
   await page.evaluate(() => { window.__authMockReject = 'recovery'; });
   await page.locator('#forgotPinBtn').click();
-  await expect(page.locator('#gateError')).toContainText('problema de conexión');
+  await expect(page.locator('#gateError')).toContainText('No se pudo conectar para enviar el correo');
   await expect(page.locator('#forgotPinBtn')).toBeEnabled();
   await expect(page.locator('#gateStep1')).toBeVisible();
 });
