@@ -328,3 +328,20 @@ test('a persisted session idle for 30 minutes is rejected after a page reload', 
   )).toBe(true);
   await expect(page.locator('#gateError')).toContainText('expiró por inactividad');
 });
+
+
+test('restoring a persisted session preserves the remaining idle deadline', async ({ page }) => {
+  await page.clock.install();
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'feritapp-last-activity:qa-session-user',
+      String(Date.now() - (29 * 60 * 1000))
+    );
+  });
+  await openAppWithPersistedSession(page);
+  await expect(page.locator('#appRoot')).toBeVisible();
+  await page.clock.fastForward(60 * 1000 + 1);
+  await expect(page.locator('#authGate')).toBeVisible();
+  await expect(page.locator('#appRoot')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('qa-signed-out'))).toBe('1');
+});
