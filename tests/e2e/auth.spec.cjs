@@ -171,6 +171,26 @@ test('signup reveals confirmation and updates password requirements', async ({ p
   await expect(page.locator('#reqSymbol')).toHaveClass(/req-ok/);
 });
 
+test('signup enforces eight characters plus uppercase, number, and symbol', async ({ page }) => {
+  await openUnauthenticatedApp(page);
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.locator('#signupBtn').click();
+
+  await page.locator('#gatePin').fill('Ab1!xyz');
+  await expect(page.locator('#reqLength')).toHaveClass(/req-bad/);
+  await page.locator('#gatePinConfirm').fill('Ab1!xyz');
+  await page.locator('#signupBtn').click();
+  await expect(page.locator('#gateError')).toContainText('mínimo 8 caracteres');
+  await expect.poll(() => page.evaluate(() => window.__authMockCalls.some(call => call.method === 'signUp'))).toBe(false);
+
+  await page.locator('#gatePin').fill('Ab1!xyzw');
+  await expect(page.locator('#reqLength')).toHaveClass(/req-ok/);
+  await page.locator('#gatePinConfirm').fill('Ab1!xyzw');
+  await page.locator('#signupBtn').click();
+  await expect(page.locator('#gateSentTitle')).toHaveText('¡Cuenta creada!');
+  await expect.poll(() => page.evaluate(() => window.__authMockCalls.some(call => call.method === 'signUp'))).toBe(true);
+});
+
 test('signup rejects a mismatched password confirmation', async ({ page }) => {
   await openUnauthenticatedApp(page);
   await page.locator('#gateEmail').fill('qa@example.test');
