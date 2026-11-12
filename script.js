@@ -37,9 +37,10 @@ document.addEventListener('DOMContentLoaded', function(){
   function isValidEmail(v){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   }
-  // Mínimo 8 caracteres, al menos 1 mayúscula, 1 número y 1 símbolo.
+  // Política alineada con Supabase Auth: mínimo 8 caracteres, minúscula,
+  // mayúscula, número y símbolo.
   function isValidPassword(v){
-    return /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/.test(v);
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/.test(v);
   }
   function showGateError(msg){
     let err = document.getElementById('gateError');
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function updatePwRequirements(){
     let pin = document.getElementById('gatePin').value;
     setReq('reqLength', pin.length >= 8);
+    setReq('reqLower', /[a-z]/.test(pin));
     setReq('reqUpper', /[A-Z]/.test(pin));
     setReq('reqNumber', /[0-9]/.test(pin));
     setReq('reqSymbol', /[^A-Za-z0-9]/.test(pin));
@@ -119,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let pinConfirm = document.getElementById('gatePinConfirm').value;
 
     if(!isValidEmail(email)){ showGateError('Ingresá un correo electrónico válido.'); return; }
-    if(!isValidPassword(pin)){ showGateError('La contraseña necesita mínimo 8 caracteres, con una mayúscula, un número y un símbolo.'); return; }
+    if(!isValidPassword(pin)){ showGateError('La contraseña necesita mínimo 8 caracteres, una minúscula, una mayúscula, un número y un símbolo.'); return; }
     if(pin !== pinConfirm){ showGateError('Las contraseñas no coinciden.'); return; }
     if(!SUPABASE_READY){ showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).'); return; }
 
@@ -201,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let err = document.getElementById('newPinError');
     err.style.display = 'none';
 
-    if(!isValidPassword(p1)){ err.textContent = 'Mínimo 8 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
+    if(!isValidPassword(p1)){ err.textContent = 'Mínimo 8 caracteres, con una minúscula, una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
     if(p1 !== p2){ err.textContent = 'Las contraseñas no coinciden.'; err.style.display = 'block'; return; }
 
     if(!SUPABASE_READY || !sb){
@@ -3591,7 +3593,7 @@ document.addEventListener('DOMContentLoaded', function(){
     err.style.display = 'none';
 
     if(!current){ err.textContent = 'Ingresá tu contraseña actual.'; err.style.display = 'block'; return; }
-    if(!isValidPassword(newPin)){ err.textContent = 'La nueva contraseña necesita mínimo 8 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
+    if(!isValidPassword(newPin)){ err.textContent = 'La nueva contraseña necesita mínimo 8 caracteres, una minúscula, una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
     if(newPin !== newPinConfirm){ err.textContent = 'Las contraseñas nuevas no coinciden.'; err.style.display = 'block'; return; }
     if(!currentUserEmail){ err.textContent = 'No se pudo identificar tu cuenta, volvé a iniciar sesión.'; err.style.display = 'block'; return; }
 
