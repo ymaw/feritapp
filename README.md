@@ -180,4 +180,5 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - Los privilegios por defecto para objetos futuros creados por `postgres` en `public` se revocan para `anon` y `authenticated`; las futuras tablas requerirán grants explícitos.
 - En Storage se conserva la lectura pública del bucket `avatars`; las operaciones de escritura/eliminación requieren autenticación y una ruta cuyo primer segmento coincida con el UID.
 - **Estado operativo:** migración preparada en GitHub, todavía no aplicada al proyecto Supabase. No se modificaron datos, políticas remotas ni configuración de Auth/Storage.
-- **Validación pendiente:** revisar SQL con el entorno de pruebas, ejecutar Actions y luego aplicar en una ventana controlada con autorización; después comprobar grants, políticas y operaciones reales de dos usuarios.
+- Se agregó `supabase/tests/rls_hardening_verification.sql`, un bloque de comprobaciones de solo lectura para ejecutar después de la migración y verificar grants, políticas, RLS y Storage.
+- **Validación pendiente:** ejecutar las comprobaciones en un entorno de pruebas, obtener Actions en verde y luego aplicar en una ventana controlada con autorización; después comprobar operaciones reales con dos usuarios.
