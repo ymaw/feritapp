@@ -38,6 +38,46 @@ async function openUnauthenticatedApp(page) {
   await expect.poll(() => page.evaluate(() => typeof window.supabase)).toBe('object');
 }
 
+
+
+async function openAppWithPersistedSession(page) {
+  await page.addInitScript(() => {
+    window.__authMockCalls = [];
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          onAuthStateChange: callback => {
+            window.__authStateChangeHandler = callback;
+            return { data: { subscription: { unsubscribe() {} } } };
+          },
+          getSession: async () => {
+            const signedOut = sessionStorage.getItem('qa-signed-out') === '1';
+            return {
+              data: {
+                session: signedOut ? null : {
+                  user: { id: 'qa-session-user', email: 'sesion@example.test' }
+                }
+              }
+            };
+          },
+          signInWithPassword: async () => ({ error: { message: 'mock invalid credentials' } }),
+          signOut: async () => {
+            window.__authMockCalls.push({ method: 'signOut' });
+            sessionStorage.setItem('qa-signed-out', '1');
+            return { error: null };
+          }
+        }
+      })
+    };
+  });
+  await page.route('https://cdn.jsdelivr.net/**', route =>
+    route.fulfill({ contentType: 'application/javascript', body: '' })
+  );
+  await page.route('https://fonts.googleapis.com/**', route => route.abort());
+  await page.route('https://fonts.gstatic.com/**', route => route.abort());
+  await page.goto('/');
+}
+
 test('login rejects invalid email without contacting authentication service', async ({ page }) => {
   await openUnauthenticatedApp(page);
   await page.locator('#gateEmail').fill('correo-invalido');
@@ -132,4 +172,33 @@ test('login remains usable on a narrow mobile viewport and dark theme', async ({
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   expect(overflow).toBe(false);
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});
+
+
+test('a valid persisted session is restored after a page load', async ({ page }) => {
+  await openAppWithPersistedSession(page);
+
+  await expect(page.locator('#appRoot')).toBeVisible();
+  await expect(page.locator('#authGate')).toBeHidden();
+  await expect(page.locator('#profileEmail')).toHaveText('sesion@example.test');
+});
+
+test('an unauthenticated visitor cannot access the application shell', async ({ page }) => {
+  await openUnauthenticatedApp(page);
+
+  await expect(page.locator('#authGate')).toBeVisible();
+  await expect(page.locator('#appRoot')).toBeHidden();
+  await expect(page.locator('#viewDashboard')).toBeHidden();
+});
+
+test('30 minutes without activity signs out and returns to the login gate', async ({ page }) => {
+  await page.clock.install();
+  await openAppWithPersistedSession(page);
+
+  await expect(page.locator('#appRoot')).toBeVisible();
+  await page.clock.fastForward(30 * 60 * 1000 + 1);
+
+  await expect(page.locator('#authGate')).toBeVisible();
+  await expect(page.locator('#appRoot')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('qa-signed-out'))).toBe('1');
 });
