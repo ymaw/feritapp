@@ -42,7 +42,7 @@ const deploymentHeaders = vercel.headers.find(entry => entry.source === '/(.*)')
 const responseHeaders = Object.fromEntries(deploymentHeaders.map(header => [header.key.toLowerCase(), header.value]));
 assert.equal(responseHeaders['x-frame-options'], 'DENY', 'Framing must be denied at the HTTP response layer');
 assert.equal(responseHeaders['x-content-type-options'], 'nosniff', 'MIME sniffing must be disabled');
-assert.equal(responseHeaders['strict-transport-security'], 'max-age=31536000; includeSubDomains', 'HTTPS must be enforced for the deployed origin');
+assert.equal(responseHeaders['strict-transport-security'], 'max-age=63072000; includeSubDomains; preload', 'HTTPS must retain the production HSTS policy');
 assert.ok(responseHeaders['content-security-policy'], 'CSP must be delivered as an HTTP response header');
 
 const responseDirectives = Object.fromEntries(
