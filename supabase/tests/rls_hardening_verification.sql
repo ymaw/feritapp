@@ -267,7 +267,7 @@ BEGIN
       FROM pg_default_acl d
       CROSS JOIN LATERAL aclexplode(d.defaclacl) a
       WHERE d.defaclrole = 'postgres'::regrole
-        AND d.defaclnamespace IN (0, 'public'::regnamespace)
+        AND d.defaclnamespace IN (0::oid, 'public'::regnamespace)
         AND d.defaclobjtype = object_type
         AND a.grantee IN ('anon'::regrole, 'authenticated'::regrole)
     ) THEN
