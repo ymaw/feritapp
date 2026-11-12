@@ -45,6 +45,13 @@ async function openAppWithPersistedSession(page) {
     window.__authMockCalls = [];
     window.__authMockClientCreated = false;
     window.__authMockGetSessionCalls = 0;
+    window.__qaPageErrors = [];
+    window.addEventListener('error', event => {
+      window.__qaPageErrors.push({ type: 'error', message: event.message });
+    });
+    window.addEventListener('unhandledrejection', event => {
+      window.__qaPageErrors.push({ type: 'unhandledrejection', message: String(event.reason) });
+    });
 
     const authMock = {
       onAuthStateChange: callback => {
@@ -54,13 +61,15 @@ async function openAppWithPersistedSession(page) {
       getSession: async () => {
         window.__authMockGetSessionCalls += 1;
         const signedOut = sessionStorage.getItem('qa-signed-out') === '1';
-        return {
+        const result = {
           data: {
             session: signedOut ? null : {
               user: { id: 'qa-session-user', email: 'sesion@example.test' }
             }
           }
         };
+        window.__authMockLastSessionResult = result;
+        return result;
       },
       signInWithPassword: async () => ({ error: { message: 'mock invalid credentials' } }),
       signOut: async () => {
@@ -195,6 +204,17 @@ test('login remains usable on a narrow mobile viewport and dark theme', async ({
 test('a valid persisted session is restored after a page load', async ({ page }) => {
   await openAppWithPersistedSession(page);
 
+  const bootstrapDiagnostics = await page.evaluate(() => ({
+    clientCreated: window.__authMockClientCreated,
+    getSessionCalls: window.__authMockGetSessionCalls,
+    sessionResult: window.__authMockLastSessionResult,
+    appRootDisplay: getComputedStyle(document.getElementById('appRoot')).display,
+    appRootInlineDisplay: document.getElementById('appRoot').style.display,
+    authGateDisplay: getComputedStyle(document.getElementById('authGate')).display,
+    bodyClasses: document.body.className,
+    pageErrors: window.__qaPageErrors
+  }));
+  expect(bootstrapDiagnostics.appRootDisplay, JSON.stringify(bootstrapDiagnostics)).not.toBe('none');
   await expect(page.locator('#appRoot')).toBeVisible();
   await expect(page.locator('#authGate')).toBeHidden();
   await expect(page.locator('#profileEmail')).toHaveText('sesion@example.test');
