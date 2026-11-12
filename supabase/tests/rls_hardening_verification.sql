@@ -11,10 +11,10 @@ DECLARE
   avatar_is_public boolean;
 BEGIN
   FOREACH table_name IN ARRAY expected_tables LOOP
-    IF NOT (SELECT c.relrowsecurity
-            FROM pg_class c
-            JOIN pg_namespace n ON n.oid = c.relnamespace
-            WHERE n.nspname = 'public' AND c.relname = table_name) THEN
+    IF (SELECT c.relrowsecurity
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relname = table_name) IS DISTINCT FROM true THEN
       RAISE EXCEPTION 'RLS no está habilitado en public.%', table_name;
     END IF;
 
@@ -89,9 +89,9 @@ BEGIN
     RAISE EXCEPTION 'Los grants de storage.objects no coinciden con la política prevista';
   END IF;
 
-  SELECT public INTO avatar_is_public
-  FROM storage.buckets
-  WHERE id = 'avatars';
+  SELECT b.public INTO avatar_is_public
+  FROM storage.buckets AS b
+  WHERE b.id = 'avatars';
 
   IF avatar_is_public IS DISTINCT FROM true THEN
     RAISE EXCEPTION 'El bucket avatars dejó de ser público; revisar el requisito funcional';
