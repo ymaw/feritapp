@@ -1,4 +1,4 @@
-# FeritApp V12.109 — Refactor CSS del banner de instalación
+# FeritApp V12.121 — Modernización del acceso y accesibilidad del dashboard
 
 Esta versión parte de V12.103 y reconstruye primero los cambios documentados de V12.104; luego organiza la estructura sin cambiar la lógica de negocio.
 
@@ -119,3 +119,31 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - Se dejó en `style.css` el resto de estilos compartidos o con dependencias de otras vistas (por ejemplo, nombres de clientes en Ventas/Ranking, flechas compartidas y estilos generales de modales).
 - Se agregó el módulo después de `style.css` y se actualizaron las referencias de caché a `12.119`.
 - Sin cambios en JavaScript, lógica de clientes, comprobantes, Entregas, Ventas, datos ni servicios externos.
+
+
+## V12.120 — Modernización visual del acceso
+
+- Se incorporó `css/auth.css` como capa de presentación aislada para login, creación de cuenta, recuperación de contraseña y onboarding.
+- Se conservaron los identificadores y controles que utiliza la lógica de autenticación existente; no se reemplazó el flujo de Supabase Auth.
+- Se preservaron el logo oficial transparente, el nombre FeritApp, el slogan exacto `Vendé. Organizá. Crecé.` y los temas claro/oscuro.
+- Se añadieron estados de foco visibles, adaptación a pantallas pequeñas y respeto por `prefers-reduced-motion`.
+- La hoja nueva se carga después de los estilos generales. Las referencias de caché de CSS y JavaScript se actualizaron de forma uniforme a `12.120` en esta etapa.
+
+## V12.121 — Accesibilidad del dashboard y controles de comparación
+
+- Se incorporó `css/accessibility-dashboard.css` para mejorar el contraste de etiquetas, valores de estado, selector de período y encabezados de comparación.
+- Los selectores dinámicos de comparación mensual y semanal recibieron nombres accesibles.
+- Se mantuvo separada la capa visual de la lógica de ventas y de los datos.
+- Las referencias de caché de CSS y JavaScript quedaron uniformadas en `12.121`, versión declarada en `VERSION.txt`.
+
+## Validación de la rama feature/login-modernization
+
+- GitHub Actions ejecuta la regresión estática y pruebas E2E con Chromium, Firefox y WebKit.
+- La cobertura incorporada incluye autenticación simulada, restauración de sesión, cierre por inactividad y cierre remoto, recuperación de contraseña, XSS, navegación por teclado, accesibilidad automatizada, layout móvil y smoke de rendimiento.
+- Las pruebas de autenticación usan mocks y no sustituyen una validación con el proyecto Supabase real.
+- La matriz WebKit no sustituye una prueba en un iPhone/iPad físico.
+- axe-core cubre las vistas y reglas incluidas en las pruebas; no representa una certificación WCAG completa.
+- El smoke de rendimiento es una comprobación local de presupuesto de recursos y carga, no una medición real de Core Web Vitals.
+- RLS y Storage no se validaron porque requieren acceso autorizado al proyecto Supabase correspondiente.
+- La configuración de seguridad se verifica estáticamente; la validación independiente de encabezados HTTP efectivos en el despliegue sigue siendo una comprobación operativa separada.
+
