@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function(){
       showGateError('Correo o contraseña incorrectos.');
       return;
     }
-    if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user); }
+    if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user, true); }
   });
 
   signupBtn.addEventListener('click', async function(){
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function(){
       return;
     }
     document.getElementById('gateNewPin').style.display = 'none';
-    if(res.data && res.data.user){ enterApp(res.data.user); }
+    if(res.data && res.data.user){ enterApp(res.data.user, true); }
   });
 
   document.getElementById('logoutBtn').addEventListener('click', async function(){
@@ -248,21 +248,52 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- expiración de sesión por inactividad (30 min) ---------------- */
   const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  const IDLE_ACTIVITY_KEY_PREFIX = 'feritapp-last-activity:';
   let idleTimer = null;
   let lastActivityAt = Date.now();
+  let lastActivityPersistedAt = 0;
+  let idleStorageKey = null;
 
   function resetIdleTimer(){
     if(!entered) return;
-    lastActivityAt = Date.now();
+    const now = Date.now();
+    lastActivityAt = now;
+    // Persistir con un pequeño intervalo evita escrituras excesivas durante
+    // eventos frecuentes como mousemove y permite compartir actividad entre pestañas.
+    if(idleStorageKey && now - lastActivityPersistedAt >= 10000){
+      try{
+        localStorage.setItem(idleStorageKey, String(now));
+        lastActivityPersistedAt = now;
+      }catch(error){
+        console.warn('No se pudo persistir la actividad de sesión:', error);
+      }
+    }
     if(idleTimer) clearTimeout(idleTimer);
     idleTimer = setTimeout(handleIdleTimeout, IDLE_TIMEOUT_MS);
   }
 
   async function handleIdleTimeout(){
     if(!entered) return;
-    if(sb){ await sb.auth.signOut(); }
-    location.reload();
+    try{
+      if(sb) await sb.auth.signOut();
+    }catch(error){
+      console.error('No se pudo cerrar la sesión por inactividad:', error);
+    }finally{
+      location.reload();
+    }
   }
+
+  // La actividad de otra pestaña del mismo usuario también mantiene vigente
+  // la sesión local, sin extenderla por encima de los 30 minutos reales.
+  window.addEventListener('storage', function(event){
+    if(!entered || !idleStorageKey || event.key !== idleStorageKey || !event.newValue) return;
+    const sharedActivityAt = Number(event.newValue);
+    if(!Number.isFinite(sharedActivityAt) || sharedActivityAt <= lastActivityAt) return;
+    lastActivityAt = sharedActivityAt;
+    if(idleTimer) clearTimeout(idleTimer);
+    const remaining = Math.max(0, IDLE_TIMEOUT_MS - (Date.now() - lastActivityAt));
+    idleTimer = setTimeout(handleIdleTimeout, remaining);
+  });
 
   ['click','touchstart','keydown','mousemove','scroll'].forEach(function(evt){
     document.addEventListener(evt, resetIdleTimer, { passive: true });
@@ -485,8 +516,33 @@ document.addEventListener('DOMContentLoaded', function(){
 
   let currentUserEmail = null;
 
-  function enterApp(user){
+  function enterApp(user, freshAuthentication){
     if(entered) return;
+    idleStorageKey = IDLE_ACTIVITY_KEY_PREFIX + (user.id || user.email || 'current');
+    let storedActivityAt = 0;
+    try{
+      storedActivityAt = Number(localStorage.getItem(idleStorageKey)) || 0;
+    }catch(error){
+      console.warn('No se pudo leer la actividad de sesión:', error);
+    }
+
+    if(!freshAuthentication && storedActivityAt > 0 && Date.now() - storedActivityAt >= IDLE_TIMEOUT_MS){
+      showGateError('Tu sesión expiró por inactividad. Iniciá sesión nuevamente.');
+      if(sb){
+        sb.auth.signOut().catch(function(error){
+          console.error('No se pudo cerrar la sesión vencida:', error);
+        });
+      }
+      return;
+    }
+
+    const now = Date.now();
+    lastActivityAt = freshAuthentication || !storedActivityAt ? now : storedActivityAt;
+    lastActivityPersistedAt = lastActivityAt;
+    if(freshAuthentication || !storedActivityAt){
+      try{ localStorage.setItem(idleStorageKey, String(now)); }catch(error){}
+    }
+
     entered = true;
     currentUserEmail = user.email;
     document.getElementById('authGate').style.display = 'none';
@@ -539,11 +595,15 @@ document.addEventListener('DOMContentLoaded', function(){
         if(idleTimer) clearTimeout(idleTimer);
         entered = false;
         currentUserEmail = null;
+        if(idleStorageKey){
+          try{ localStorage.removeItem(idleStorageKey); }catch(error){}
+          idleStorageKey = null;
+        }
         window.location.reload();
         return;
       }
       if(event === 'SIGNED_IN' && newSession && newSession.user && !recoveryDetected){
-        enterApp(newSession.user);
+        enterApp(newSession.user, true);
       }
     });
 
