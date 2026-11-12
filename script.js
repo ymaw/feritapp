@@ -84,9 +84,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
     loginBtn.disabled = true; signupBtn.disabled = true;
 
-    let loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
-
-    loginBtn.disabled = false; signupBtn.disabled = false;
+    let loginRes;
+    try{
+      loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
+    }catch(error){
+      showGateError('No se pudo conectar con el servicio. Revisá tu conexión e intentá nuevamente.');
+      return;
+    }finally{
+      loginBtn.disabled = false;
+      signupBtn.disabled = false;
+    }
 
     if(loginRes.error){
       showGateError('Correo o contraseña incorrectos.');
@@ -119,13 +126,20 @@ document.addEventListener('DOMContentLoaded', function(){
     loginBtn.disabled = true; signupBtn.disabled = true;
 
     let redirectTo = window.location.origin + window.location.pathname;
-    let signUpRes = await sb.auth.signUp({
-      email: email,
-      password: pin,
-      options: { emailRedirectTo: redirectTo }
-    });
-
-    loginBtn.disabled = false; signupBtn.disabled = false;
+    let signUpRes;
+    try{
+      signUpRes = await sb.auth.signUp({
+        email: email,
+        password: pin,
+        options: { emailRedirectTo: redirectTo }
+      });
+    }catch(error){
+      showGateError('No se pudo crear la cuenta por un problema de conexión. Intentá nuevamente.');
+      return;
+    }finally{
+      loginBtn.disabled = false;
+      signupBtn.disabled = false;
+    }
 
     if(signUpRes.error){
       showGateError(
@@ -152,7 +166,17 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!SUPABASE_READY){ showGateError('Falta configurar Supabase.'); return; }
 
     let redirectTo = window.location.origin + window.location.pathname;
-    let res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    let forgotBtn = document.getElementById('forgotPinBtn');
+    let res;
+    forgotBtn.disabled = true;
+    try{
+      res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    }catch(error){
+      showGateError('No se pudo conectar para enviar el correo. Revisá tu conexión e intentá nuevamente.');
+      return;
+    }finally{
+      forgotBtn.disabled = false;
+    }
     if(res.error){
       showGateError('No se pudo enviar el correo de recuperación: ' + res.error.message);
       return;
@@ -180,7 +204,24 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!isValidPassword(p1)){ err.textContent = 'Mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
     if(p1 !== p2){ err.textContent = 'Las contraseñas no coinciden.'; err.style.display = 'block'; return; }
 
-    let res = await sb.auth.updateUser({ password: p1 });
+    if(!SUPABASE_READY || !sb){
+      err.textContent = 'No se pudo verificar la sesión de recuperación. Volvé a solicitar el enlace.';
+      err.style.display = 'block';
+      return;
+    }
+
+    let submitBtn = document.getElementById('newPinSubmit');
+    let res;
+    submitBtn.disabled = true;
+    try{
+      res = await sb.auth.updateUser({ password: p1 });
+    }catch(error){
+      err.textContent = 'No se pudo conectar para guardar la contraseña. Revisá tu conexión e intentá nuevamente.';
+      err.style.display = 'block';
+      return;
+    }finally{
+      submitBtn.disabled = false;
+    }
     if(res.error){
       err.textContent = 'No se pudo guardar la contraseña: ' + res.error.message;
       err.style.display = 'block';
@@ -513,6 +554,7 @@ document.addEventListener('DOMContentLoaded', function(){
       }
     }catch(e){
       console.error('Error leyendo la sesión de Supabase:', e);
+      showGateError('No pudimos comprobar tu sesión. Iniciá sesión nuevamente.');
     }
   }
 
