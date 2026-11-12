@@ -170,3 +170,14 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - Se reemplazó el emoji del control mostrar/ocultar contraseña por iconos SVG lineales (mostrar/ocultar), manteniendo el comportamiento y los nombres accesibles.
 - Se actualizaron las referencias de caché de CSS y JavaScript a `12.123`.
 - Sin cambios en autenticación, datos, Supabase ni lógica de negocio.
+
+
+## V12.124 — Endurecimiento de RLS y Storage (migración preparada)
+
+- Se incorporó `supabase/migrations/MIGRACION_V12_124_SEGURIDAD_RLS.sql` en la rama `feature/login-modernization`.
+- La migración retira los privilegios de `anon` sobre las tablas de negocio y limita `authenticated` a las operaciones necesarias por tabla.
+- Las políticas de propiedad quedan asignadas a `authenticated`; las operaciones UPDATE verifican tanto la fila original como el nuevo `user_id` mediante `USING` y `WITH CHECK`.
+- Los privilegios por defecto para objetos futuros creados por `postgres` en `public` se revocan para `anon` y `authenticated`; las futuras tablas requerirán grants explícitos.
+- En Storage se conserva la lectura pública del bucket `avatars`; las operaciones de escritura/eliminación requieren autenticación y una ruta cuyo primer segmento coincida con el UID.
+- **Estado operativo:** migración preparada en GitHub, todavía no aplicada al proyecto Supabase. No se modificaron datos, políticas remotas ni configuración de Auth/Storage.
+- **Validación pendiente:** revisar SQL con el entorno de pruebas, ejecutar Actions y luego aplicar en una ventana controlada con autorización; después comprobar grants, políticas y operaciones reales de dos usuarios.
