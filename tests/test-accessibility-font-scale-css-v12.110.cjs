@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const moduleCss = fs.readFileSync(path.join(root, 'css/accessibility-font-scale.css'), 'utf8');
-assert.match(html, /css\/accessibility-font-scale\.css\?v=12\.122/);
+assert.match(html, /css\/accessibility-font-scale\.css\?v=12\.123/);
 assert.ok(html.indexOf('css/style.css?v=12.123') < html.indexOf('css/accessibility-font-scale.css?v=12.123'), 'El módulo debe cargarse después de style.css');
 for (const selector of ['.font-scale-label{', '.font-scale-options{', '.font-scale-option{', '.font-scale-option small{', '.font-scale-option.active{', '.font-scale-option:focus-visible', '.font-scale-reset{']) {
   assert.ok(moduleCss.includes(selector), `Falta ${selector} en el módulo nuevo`);
