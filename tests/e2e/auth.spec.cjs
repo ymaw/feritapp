@@ -76,6 +76,37 @@ async function openAppWithPersistedSession(page) {
         window.__authMockCalls.push({ method: 'signOut' });
         sessionStorage.setItem('qa-signed-out', '1');
         return { error: null };
+      },
+      from: table => {
+        // A restored user already has onboarding completed. Keep the
+        // authenticated shell test independent from a live Supabase DB.
+        const rows = {
+          sales: [],
+          categories: [
+            { name: 'Remeras' },
+            { name: 'Pantalones' },
+            { name: 'Vestidos' },
+            { name: 'Accesorios' }
+          ],
+          clients: [],
+          user_settings: {
+            week_start_day: 1,
+            notify_enabled: true,
+            notify_days_overdue: 4,
+            receipt_message: '¡Gracias por tu compra!',
+            store_name: 'Tienda QA',
+            avatar_url: ''
+          }
+        };
+        const data = rows[table] ?? [];
+        return {
+          select: () => ({
+            order: async () => ({ data, error: null }),
+            maybeSingle: async () => ({ data: table === 'user_settings' ? data : null, error: null })
+          }),
+          insert: async () => ({ data: [], error: null }),
+          upsert: async () => ({ data: [], error: null })
+        };
       }
     };
 
