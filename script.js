@@ -254,6 +254,13 @@ document.addEventListener('DOMContentLoaded', function(){
   let lastActivityPersistedAt = 0;
   let idleStorageKey = null;
 
+  function scheduleIdleTimeout(){
+    if(!entered) return;
+    if(idleTimer) clearTimeout(idleTimer);
+    const remaining = Math.max(0, IDLE_TIMEOUT_MS - (Date.now() - lastActivityAt));
+    idleTimer = setTimeout(handleIdleTimeout, remaining);
+  }
+
   function resetIdleTimer(){
     if(!entered) return;
     const now = Date.now();
@@ -268,8 +275,7 @@ document.addEventListener('DOMContentLoaded', function(){
         console.warn('No se pudo persistir la actividad de sesión:', error);
       }
     }
-    if(idleTimer) clearTimeout(idleTimer);
-    idleTimer = setTimeout(handleIdleTimeout, IDLE_TIMEOUT_MS);
+    scheduleIdleTimeout();
   }
 
   async function handleIdleTimeout(){
@@ -290,9 +296,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const sharedActivityAt = Number(event.newValue);
     if(!Number.isFinite(sharedActivityAt) || sharedActivityAt <= lastActivityAt) return;
     lastActivityAt = sharedActivityAt;
-    if(idleTimer) clearTimeout(idleTimer);
-    const remaining = Math.max(0, IDLE_TIMEOUT_MS - (Date.now() - lastActivityAt));
-    idleTimer = setTimeout(handleIdleTimeout, remaining);
+    scheduleIdleTimeout();
   });
 
   ['click','touchstart','keydown','mousemove','scroll'].forEach(function(evt){
@@ -552,7 +556,9 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('profileEmail').textContent = user.email;
     window.history.replaceState({feritAppView:'dashboard'}, document.title, window.location.pathname);
     switchView('dashboard', false);
-    resetIdleTimer();
+    // Al restaurar una sesión, conservar su última actividad real; cargar la
+    // página no debe reiniciar artificialmente los 30 minutos de inactividad.
+    scheduleIdleTimeout();
     loadSales();
   }
 
