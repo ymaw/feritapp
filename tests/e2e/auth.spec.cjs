@@ -120,7 +120,10 @@ async function openAppWithPersistedSession(page) {
       value: {
         createClient: () => {
           window.__authMockClientCreated = true;
-          return { auth: authMock };
+          return {
+            auth: authMock,
+            from: table => authMock.from(table)
+          };
         }
       }
     });
