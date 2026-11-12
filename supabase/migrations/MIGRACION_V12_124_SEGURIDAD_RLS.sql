@@ -22,7 +22,11 @@ REVOKE ALL PRIVILEGES
   FROM anon, authenticated;
 
 GRANT SELECT, INSERT, UPDATE, DELETE
-  ON TABLE public.sales, public.clients, public.categories
+  ON TABLE public.sales, public.clients
+  TO authenticated;
+
+GRANT SELECT, INSERT, DELETE
+  ON TABLE public.categories
   TO authenticated;
 
 GRANT SELECT, INSERT, UPDATE
@@ -81,12 +85,6 @@ CREATE POLICY categories_select_own
 DROP POLICY IF EXISTS categories_insert_own ON public.categories;
 CREATE POLICY categories_insert_own
   ON public.categories FOR INSERT TO authenticated
-  WITH CHECK (user_id = (SELECT auth.uid()));
-
-DROP POLICY IF EXISTS categories_update_own ON public.categories;
-CREATE POLICY categories_update_own
-  ON public.categories FOR UPDATE TO authenticated
-  USING (user_id = (SELECT auth.uid()))
   WITH CHECK (user_id = (SELECT auth.uid()));
 
 DROP POLICY IF EXISTS categories_delete_own ON public.categories;
