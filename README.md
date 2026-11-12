@@ -1,4 +1,4 @@
-# FeritApp V12.122 — Modernización del acceso y accesibilidad del dashboard
+# FeritApp V12.123 — Modernización del acceso y accesibilidad del dashboard
 
 Esta versión parte de V12.103 y reconstruye primero los cambios documentados de V12.104; luego organiza la estructura sin cambiar la lógica de negocio.
 
@@ -163,3 +163,10 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - RLS está habilitado en `sales`, `categories`, `clients` y `user_settings`; existen políticas de propiedad basadas en `auth.uid() = user_id`. No se modificaron políticas ni datos.
 - Supabase Security Advisor informa que la protección contra contraseñas filtradas está deshabilitada. Se recomienda habilitarla antes de producción; no se cambió la configuración.
 - Falta completar pruebas con una cuenta real: inicio de sesión, confirmación de correo, recuperación, redirecciones permitidas y carga de datos posterior al acceso.
+
+
+## V12.123 — Iconos profesionales para autenticación
+
+- Se reemplazó el emoji del control mostrar/ocultar contraseña por iconos SVG lineales (mostrar/ocultar), manteniendo el comportamiento y los nombres accesibles.
+- Se actualizaron las referencias de caché de CSS y JavaScript a `12.123`.
+- Sin cambios en autenticación, datos, Supabase ni lógica de negocio.
