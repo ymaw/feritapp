@@ -1,4 +1,4 @@
-# FeritApp V12.121 — Modernización del acceso y accesibilidad del dashboard
+# FeritApp V12.122 — Modernización del acceso y accesibilidad del dashboard
 
 Esta versión parte de V12.103 y reconstruye primero los cambios documentados de V12.104; luego organiza la estructura sin cambiar la lógica de negocio.
 
@@ -147,3 +147,19 @@ Se sustituyeron las variantes de logo e icono por la nueva identidad oficial rec
 - RLS y Storage no se validaron porque requieren acceso autorizado al proyecto Supabase correspondiente.
 - La configuración de seguridad se verifica estáticamente; la validación independiente de encabezados HTTP efectivos en el despliegue sigue siendo una comprobación operativa separada.
 
+
+## V12.122 — Resiliencia y expiración de sesión
+
+- Los flujos de inicio de sesión, alta, recuperación y actualización de contraseña manejan excepciones de red, muestran mensajes recuperables y restauran los controles al finalizar.
+- La lectura inicial de sesión muestra un error accesible si no puede comprobar el estado de autenticación.
+- La expiración de inactividad de 30 minutos se conserva al restaurar una sesión después de recargar la página; cargar la app no reinicia el tiempo de inactividad.
+- La última actividad se persiste por usuario y se comparte entre pestañas del mismo navegador.
+- Se agregaron pruebas E2E para fallos de red en autenticación y sesiones persistidas vencidas.
+- Se actualizaron las referencias de caché de CSS y JavaScript a `12.122`.
+
+## Verificación operativa pendiente
+
+- La URL y la clave publicable de `script.js` coinciden con el proyecto Supabase FeritApp activo. No se realizaron cambios en el proyecto.
+- RLS está habilitado en `sales`, `categories`, `clients` y `user_settings`; existen políticas de propiedad basadas en `auth.uid() = user_id`. No se modificaron políticas ni datos.
+- Supabase Security Advisor informa que la protección contra contraseñas filtradas está deshabilitada. Se recomienda habilitarla antes de producción; no se cambió la configuración.
+- Falta completar pruebas con una cuenta real: inicio de sesión, confirmación de correo, recuperación, redirecciones permitidas y carga de datos posterior al acceso.
