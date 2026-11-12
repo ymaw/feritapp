@@ -5,7 +5,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const moduleCss = fs.readFileSync(path.join(root, 'css/install-banner.css'), 'utf8');
 const assert = require('assert');
-assert.match(html, /css\/install-banner\.css\?v=12\.122/);
+assert.match(html, /css\/install-banner\.css\?v=12\.123/);
 assert.ok(html.indexOf('css/style.css?v=12.123') < html.indexOf('css/install-banner.css?v=12.123'), 'El módulo debe cargarse después de style.css');
 assert.ok(!/\.install-banner\s*\{[^}]*position\s*:\s*fixed/s.test(style), 'Las reglas base no deben seguir duplicadas en style.css');
 assert.match(moduleCss, /\.install-banner\s*\{[^}]*position\s*:\s*fixed/s);
