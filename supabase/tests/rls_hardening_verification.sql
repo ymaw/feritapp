@@ -296,7 +296,24 @@ BEGIN
       AND a.privilege_type = 'EXECUTE'
   ) THEN
     RAISE EXCEPTION
-      'Las funciones futuras creadas por postgres aún heredan EXECUTE de PUBLIC. V12.124 debe revisar el default global de funciones antes de poder aprobarse.';
+      'Las funciones futuras creadas por postgres aún heredan EXECUTE de PUBLIC en el default global.';
+  END IF;
+
+  -- Los defaults específicos de public se suman a los globales. Por eso
+  -- también deben comprobarse: un REVOKE global no elimina un EXECUTE
+  -- concedido explícitamente a PUBLIC solo para este esquema.
+  IF EXISTS (
+    SELECT 1
+    FROM pg_default_acl d
+    CROSS JOIN LATERAL aclexplode(d.defaclacl) a
+    WHERE d.defaclrole = 'postgres'::regrole
+      AND d.defaclnamespace = 'public'::regnamespace
+      AND d.defaclobjtype = 'f'
+      AND a.grantee = 0
+      AND a.privilege_type = 'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION
+      'Las funciones futuras creadas por postgres en public aún heredan EXECUTE de PUBLIC por un default específico del esquema.';
   END IF;
 
   RAISE NOTICE
