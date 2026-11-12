@@ -91,7 +91,7 @@ test('password update network exceptions restore the submit action and keep reco
   await page.locator('#newPin').fill('Clave123!');
   await page.locator('#newPinConfirm').fill('Clave123!');
   await page.locator('#newPinSubmit').click();
-  await expect(page.locator('#newPinError')).toContainText('problema de conexión');
+  await expect(page.locator('#newPinError')).toContainText('No se pudo conectar para guardar la contraseña');
   await expect(page.locator('#newPinSubmit')).toBeEnabled();
   await expect(page.locator('#gateNewPin')).toBeVisible();
 });
