@@ -1,3 +1,3 @@
-FeritApp V12.121
-Base: V12.120
-Se corrigieron hallazgos WCAG en el dashboard: contraste de etiquetas y valores de estado, selector de período y encabezados de comparación. Los selectores dinámicos de comparación mensual y semanal ahora tienen nombres accesibles. Se agregó una hoja CSS aislada sin modificar estructura ni lógica de ventas.
+FeritApp V12.122
+Base: V12.121
+Se reforzó la resiliencia de autenticación ante excepciones de red y se corrigió la expiración por inactividad para sesiones persistidas: la carga de página ya no reinicia el plazo y la actividad se comparte entre pestañas. Se agregaron pruebas de regresión para fallos de red y restauración de sesión vencida.
