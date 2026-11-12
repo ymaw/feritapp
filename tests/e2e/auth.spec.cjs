@@ -63,20 +63,29 @@ async function openAppWithPersistedSession(page) {
       },
       getSession: async () => {
         window.__authMockGetSessionCalls += 1;
+        if(window.__authMockReject === 'getSession'){
+          const result = { data: { session: null }, error: { message: 'mock session read failure' } };
+          window.__authMockLastSessionResult = result;
+          return result;
+        }
         const signedOut = sessionStorage.getItem('qa-signed-out') === '1';
         const result = {
           data: {
             session: signedOut ? null : {
               user: { id: 'qa-session-user', email: 'sesion@example.test' }
             }
-          }
+          },
+          error: null
         };
         window.__authMockLastSessionResult = result;
         return result;
       },
       signInWithPassword: async () => ({ error: { message: 'mock invalid credentials' } }),
-      signOut: async () => {
-        window.__authMockCalls.push({ method: 'signOut' });
+      signOut: async options => {
+        window.__authMockCalls.push({ method: 'signOut', options: options || null });
+        if(window.__authMockReject === 'signout'){
+          return { error: { message: 'mock signout failure' } };
+        }
         sessionStorage.setItem('qa-signed-out', '1');
         return { error: null };
       },
@@ -255,6 +264,53 @@ test('a valid persisted session is restored after a page load', async ({ page })
   await expect(page.locator('#appRoot')).toBeVisible();
   await expect(page.locator('#authGate')).toBeHidden();
   await expect(page.locator('#profileEmail')).toHaveText('sesion@example.test');
+});
+
+test('a getSession response error keeps the auth gate visible and reports a recoverable message', async ({ page }) => {
+  await page.addInitScript(() => { window.__authMockReject = 'getSession'; });
+  await openAppWithPersistedSession(page);
+
+  await expect(page.locator('#authGate')).toBeVisible();
+  await expect(page.locator('#appRoot')).toBeHidden();
+  await expect(page.locator('#gateError')).toContainText('No pudimos comprobar tu sesión');
+  await expect(page.locator('#gateError')).not.toContainText('mock session read failure');
+});
+
+test('a signOut response error does not reload or claim that logout succeeded', async ({ page }) => {
+  await page.addInitScript(() => { window.__authMockReject = 'signout'; });
+  await openAppWithPersistedSession(page);
+
+  const dialogs = [];
+  page.on('dialog', async dialog => {
+    dialogs.push(dialog.message());
+    await dialog.accept();
+  });
+  await page.evaluate(() => document.getElementById('logoutBtn').click());
+
+  await expect(page.locator('#appRoot')).toBeVisible();
+  await expect.poll(() => dialogs.length).toBe(1);
+  expect(dialogs[0]).toContain('No se pudo cerrar la sesión');
+  const calls = await page.evaluate(() => window.__authMockCalls.filter(call => call.method === 'signOut'));
+  expect(calls).toHaveLength(1);
+});
+
+test('global signOut response errors are handled without reloading the active session', async ({ page }) => {
+  await page.addInitScript(() => { window.__authMockReject = 'signout'; });
+  await openAppWithPersistedSession(page);
+
+  const dialogs = [];
+  page.on('dialog', async dialog => {
+    dialogs.push(dialog.message());
+    await dialog.accept();
+  });
+  await page.evaluate(() => document.getElementById('logoutAllBtn').click());
+
+  await expect(page.locator('#appRoot')).toBeVisible();
+  await expect.poll(() => dialogs.length).toBe(2);
+  expect(dialogs[0]).toContain('Cerrar la sesión en TODOS los dispositivos');
+  expect(dialogs[1]).toContain('No se pudo cerrar la sesión');
+  const calls = await page.evaluate(() => window.__authMockCalls.filter(call => call.method === 'signOut'));
+  expect(calls[0].options).toEqual({ scope: 'global' });
 });
 
 test('an unauthenticated visitor cannot access the application shell', async ({ page }) => {
