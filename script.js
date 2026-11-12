@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function(){
       showGateError(
         /registered|exists/i.test(signUpRes.error.message)
           ? 'Ese correo ya tiene una cuenta creada. Usá "Iniciar sesión".'
-          : 'No se pudo crear la cuenta: ' + signUpRes.error.message
+          : 'No se pudo crear la cuenta. Verificá los datos e intentá nuevamente.'
       );
       return;
     }
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function(){
       forgotBtn.disabled = false;
     }
     if(res.error){
-      showGateError('No se pudo enviar el correo de recuperación: ' + res.error.message);
+      showGateError('No se pudo enviar el correo de recuperación. Intentá nuevamente más tarde.');
       return;
     }
     document.getElementById('gateSentTitle').textContent = 'Revisá tu correo';
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function(){
       submitBtn.disabled = false;
     }
     if(res.error){
-      err.textContent = 'No se pudo guardar la contraseña: ' + res.error.message;
+      err.textContent = 'No se pudo guardar la contraseña. Volvé a solicitar el enlace e intentá nuevamente.';
       err.style.display = 'block';
       return;
     }
@@ -231,19 +231,35 @@ document.addEventListener('DOMContentLoaded', function(){
     if(res.data && res.data.user){ enterApp(res.data.user, true); }
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', async function(){
-    if(sb){ await sb.auth.signOut(); }
-    location.reload();
+  async function signOutAndReload(options){
+    if(!sb){
+      window.alert('No se pudo cerrar la sesión. Recargá la página e intentá nuevamente.');
+      return;
+    }
+    try{
+      const result = await sb.auth.signOut(options);
+      if(result && result.error){
+        console.error('Supabase no pudo cerrar la sesión:', result.error);
+        window.alert('No se pudo cerrar la sesión. Revisá tu conexión e intentá nuevamente.');
+        return;
+      }
+      location.reload();
+    }catch(error){
+      console.error('Error al cerrar la sesión:', error);
+      window.alert('No se pudo cerrar la sesión. Revisá tu conexión e intentá nuevamente.');
+    }
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    signOutAndReload();
   });
-  document.getElementById('sidebarLogoutBtn').addEventListener('click', async function(){
-    if(sb){ await sb.auth.signOut(); }
-    location.reload();
+  document.getElementById('sidebarLogoutBtn').addEventListener('click', function(){
+    signOutAndReload();
   });
 
-  document.getElementById('logoutAllBtn').addEventListener('click', async function(){
+  document.getElementById('logoutAllBtn').addEventListener('click', function(){
     if(!confirm('¿Cerrar la sesión en TODOS los dispositivos donde esté iniciada (celular, compu, etc.)? Vas a tener que volver a ingresar con tu correo y contraseña en todos ellos.')) return;
-    if(sb){ await sb.auth.signOut({ scope: 'global' }); }
-    location.reload();
+    signOutAndReload({ scope: 'global' });
   });
 
   /* ---------------- expiración de sesión por inactividad (30 min) ---------------- */
@@ -615,7 +631,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
     try{
       let sessionRes = await sb.auth.getSession();
-      if(!recoveryDetected && sessionRes.data && sessionRes.data.session && sessionRes.data.session.user){
+      if(sessionRes && sessionRes.error){
+        console.error('Supabase no pudo comprobar la sesión:', sessionRes.error);
+        showGateError('No pudimos comprobar tu sesión. Revisá tu conexión e intentá nuevamente.');
+        return;
+      }
+      if(!sessionRes || !sessionRes.data){
+        showGateError('No pudimos comprobar tu sesión. Iniciá sesión nuevamente.');
+        return;
+      }
+      if(!recoveryDetected && sessionRes.data.session && sessionRes.data.session.user){
         enterApp(sessionRes.data.session.user);
       }
     }catch(e){
