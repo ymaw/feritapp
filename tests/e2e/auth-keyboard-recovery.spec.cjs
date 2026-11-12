@@ -17,6 +17,7 @@ async function openAuthWithRecoveryMock(page) {
           resetPasswordForEmail: async () => ({ error: null }),
           updateUser: async attributes => {
             window.__authMockCalls.push({ method: 'updateUser', attributes });
+            if(window.__authMockReject === 'update') throw new Error('network unavailable');
             return { error: { message: 'mock update failure' }, data: { user: null } };
           },
           signOut: async () => ({ error: null })
@@ -76,5 +77,21 @@ test('password recovery requires a valid matching password and handles update er
   await page.locator('#newPinSubmit').click();
   await expect.poll(() => page.evaluate(() => window.__authMockCalls.length)).toBe(1);
   await expect(page.locator('#newPinError')).toContainText('No se pudo guardar la contraseña');
+  await expect(page.locator('#gateNewPin')).toBeVisible();
+});
+
+
+test('password update network exceptions restore the submit action and keep recovery visible', async ({ page }) => {
+  await openAuthWithRecoveryMock(page);
+  await page.evaluate(() => {
+    window.__authStateListener('PASSWORD_RECOVERY', { user: { email: 'qa@example.test' } });
+    window.__authMockReject = 'update';
+  });
+  await expect(page.locator('#gateNewPin')).toBeVisible();
+  await page.locator('#newPin').fill('Clave123!');
+  await page.locator('#newPinConfirm').fill('Clave123!');
+  await page.locator('#newPinSubmit').click();
+  await expect(page.locator('#newPinError')).toContainText('problema de conexión');
+  await expect(page.locator('#newPinSubmit')).toBeEnabled();
   await expect(page.locator('#gateNewPin')).toBeVisible();
 });
