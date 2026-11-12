@@ -43,32 +43,47 @@ async function openUnauthenticatedApp(page) {
 async function openAppWithPersistedSession(page) {
   await page.addInitScript(() => {
     window.__authMockCalls = [];
-    window.supabase = {
-      createClient: () => ({
-        auth: {
-          onAuthStateChange: callback => {
-            window.__authStateChangeHandler = callback;
-            return { data: { subscription: { unsubscribe() {} } } };
-          },
-          getSession: async () => {
-            const signedOut = sessionStorage.getItem('qa-signed-out') === '1';
-            return {
-              data: {
-                session: signedOut ? null : {
-                  user: { id: 'qa-session-user', email: 'sesion@example.test' }
-                }
-              }
-            };
-          },
-          signInWithPassword: async () => ({ error: { message: 'mock invalid credentials' } }),
-          signOut: async () => {
-            window.__authMockCalls.push({ method: 'signOut' });
-            sessionStorage.setItem('qa-signed-out', '1');
-            return { error: null };
+    window.__authMockClientCreated = false;
+    window.__authMockGetSessionCalls = 0;
+
+    const authMock = {
+      onAuthStateChange: callback => {
+        window.__authStateChangeHandler = callback;
+        return { data: { subscription: { unsubscribe() {} } } };
+      },
+      getSession: async () => {
+        window.__authMockGetSessionCalls += 1;
+        const signedOut = sessionStorage.getItem('qa-signed-out') === '1';
+        return {
+          data: {
+            session: signedOut ? null : {
+              user: { id: 'qa-session-user', email: 'sesion@example.test' }
+            }
           }
-        }
-      })
+        };
+      },
+      signInWithPassword: async () => ({ error: { message: 'mock invalid credentials' } }),
+      signOut: async () => {
+        window.__authMockCalls.push({ method: 'signOut' });
+        sessionStorage.setItem('qa-signed-out', '1');
+        return { error: null };
+      }
     };
+
+    // Supabase UMD exposes a global named "supabase". Define the same
+    // browser-global contract explicitly so the app never depends on CDN
+    // script timing or a partially loaded SDK in these isolated tests.
+    Object.defineProperty(window, 'supabase', {
+      configurable: true,
+      enumerable: true,
+      writable: true,
+      value: {
+        createClient: () => {
+          window.__authMockClientCreated = true;
+          return { auth: authMock };
+        }
+      }
+    });
   });
   await page.route('https://cdn.jsdelivr.net/**', route =>
     route.fulfill({ contentType: 'application/javascript', body: '' })
@@ -76,6 +91,8 @@ async function openAppWithPersistedSession(page) {
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
   await page.goto('/');
+  await expect.poll(() => page.evaluate(() => window.__authMockClientCreated)).toBe(true);
+  await expect.poll(() => page.evaluate(() => window.__authMockGetSessionCalls)).toBe(1);
 }
 
 test('login rejects invalid email without contacting authentication service', async ({ page }) => {
