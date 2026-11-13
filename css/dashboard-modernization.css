@@ -1017,3 +1017,113 @@
     padding-right: 5px !important;
   }
 }
+
+
+/* V8 — encabezados unificados: resumen, atención y subsecciones. */
+#viewDashboard .weekly-summary-heading {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 68px;
+  padding: 16px 18px;
+}
+#viewDashboard .weekly-summary-main {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 12px;
+}
+#viewDashboard .weekly-summary-heading-copy {
+  min-width: 0;
+}
+#viewDashboard .weekly-summary-heading .dashboard-history-icon {
+  align-self: flex-start;
+  flex: 0 0 36px;
+  margin-top: 1px;
+}
+#viewDashboard .weekly-summary-heading .dashboard-heading-divider {
+  align-self: stretch;
+  flex: 0 0 2px;
+  min-height: 34px;
+  margin-top: 1px;
+}
+#viewDashboard .weekly-summary-heading .weekly-summary-chevron {
+  flex: 0 0 auto;
+  margin-left: 12px;
+}
+#viewDashboard .dashboard-tasks-section .section-heading-row.dashboard-section-heading-static {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 68px;
+  padding: 16px 18px;
+  margin: 0;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  gap: 12px;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-history-icon {
+  flex: 0 0 36px;
+  align-self: flex-start;
+  margin-top: 1px;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-heading-divider {
+  flex: 0 0 2px;
+  align-self: stretch;
+  min-height: 34px;
+  margin-top: 1px;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-toggle-copy {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  #viewDashboard .greeting-badge {
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 899px) {
+  #viewDashboard .weekly-summary-heading {
+    min-height: 64px;
+    padding: 14px 15px;
+  }
+  #viewDashboard .weekly-summary-main,
+  #viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
+    gap: 9px;
+  }
+  #viewDashboard .weekly-summary-heading .dashboard-history-icon,
+  #viewDashboard .dashboard-section-heading-static .dashboard-history-icon {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  #viewDashboard .weekly-summary-heading .dashboard-heading-divider,
+  #viewDashboard .dashboard-section-heading-static .dashboard-heading-divider {
+    min-height: 31px;
+  }
+  #viewDashboard .dashboard-tasks-section .section-heading-row.dashboard-section-heading-static {
+    min-height: 64px;
+    padding: 14px 15px;
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .weekly-summary-main,
+  #viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
+    gap: 7px;
+  }
+  #viewDashboard .weekly-summary-heading .dashboard-history-icon,
+  #viewDashboard .dashboard-section-heading-static .dashboard-history-icon {
+    flex-basis: 29px;
+    width: 29px;
+    height: 29px;
+  }
+}
