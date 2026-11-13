@@ -116,20 +116,18 @@ BEGIN
       WHEN p.cmd IN ('SELECT','DELETE') THEN
         p.qual IS NOT NULL
         AND p.qual ILIKE '%user_id%'
-        AND p.qual ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
-        -- Exigir initPlan: auth.uid() debe estar envuelto en una subconsulta escalar.
-        
+        AND p.qual ~* '\(\s*SELECT\s+auth\.uid\(\)'
       WHEN p.cmd = 'INSERT' THEN
         p.with_check IS NOT NULL
         AND p.with_check ILIKE '%user_id%'
-        AND p.with_check ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
+        AND p.with_check ~* '\(\s*SELECT\s+auth\.uid\(\)'
       WHEN p.cmd = 'UPDATE' THEN
         p.qual IS NOT NULL
         AND p.with_check IS NOT NULL
         AND p.qual ILIKE '%user_id%'
-        AND p.qual ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
+        AND p.qual ~* '\(\s*SELECT\s+auth\.uid\(\)'
         AND p.with_check ILIKE '%user_id%'
-        AND p.with_check ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
+        AND p.with_check ~* '\(\s*SELECT\s+auth\.uid\(\)'
       ELSE false
     END;
 
@@ -153,9 +151,9 @@ BEGIN
     AND cardinality(roles) = 1
     AND roles @> ARRAY['authenticated']::name[]
     AND qual ILIKE '%user_id%'
-    AND qual ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
+    AND qual ~* '\(\s*SELECT\s+auth\.uid\(\)'
     AND with_check ILIKE '%user_id%'
-    AND with_check ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)';
+    AND with_check ~* '\(\s*SELECT\s+auth\.uid\(\)';
 
   IF update_policy_count <> 3 THEN
     RAISE EXCEPTION
