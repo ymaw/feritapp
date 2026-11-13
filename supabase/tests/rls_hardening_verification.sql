@@ -160,6 +160,14 @@ BEGIN
       update_policy_count;
   END IF;
 
+  -- Storage debe mantener RLS habilitado además de sus grants y policies.
+  IF (SELECT c.relrowsecurity
+      FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'storage' AND c.relname = 'objects') IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'RLS no está habilitado en storage.objects';
+  END IF;
+
   -- 3) Storage: privilegios SQL mínimos. SELECT anónimo se conserva para
   --    que las URLs públicas del bucket sigan funcionando.
   FOREACH privilege_name IN ARRAY ARRAY[
@@ -246,22 +254,12 @@ BEGIN
   END IF;
 
   -- 4) Defaults para objetos futuros creados por postgres en public.
-  --    Verifica los ACL explícitos globales y por schema para tablas,
-  --    secuencias y funciones. No inspecciona defaults de supabase_admin:
-  --    es un rol interno administrado por Supabase.
+  --    Inspecciona los ACL explícitos globales y por schema para tablas,
+  --    secuencias y funciones. PostgreSQL elimina filas vacías de pg_default_acl
+  --    cuando REVOKE retira todos los grants del schema; por eso la ausencia
+  --    de una fila es válida y significa que no hay override específico.
+  --    Se comprueba cualquier ACL que exista, sin exigir filas vacías.
   FOREACH object_type IN ARRAY ARRAY['r'::"char",'S'::"char",'f'::"char"] LOOP
-    IF NOT EXISTS (
-      SELECT 1
-      FROM pg_default_acl d
-      WHERE d.defaclrole = 'postgres'::regrole
-        AND d.defaclnamespace = 'public'::regnamespace
-        AND d.defaclobjtype = object_type
-    ) THEN
-      RAISE EXCEPTION
-        'Falta default ACL explícito de postgres para tipo de objeto % en public',
-        object_type;
-    END IF;
-
     IF EXISTS (
       SELECT 1
       FROM pg_default_acl d

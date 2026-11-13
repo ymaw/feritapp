@@ -73,6 +73,8 @@ CREATE TABLE storage.objects (
   name text NOT NULL
 );
 
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
 CREATE TABLE storage.buckets (
   id text PRIMARY KEY,
   name text NOT NULL,
