@@ -4,7 +4,8 @@
 --
 -- La prueba valida:
 --   * RLS y grants efectivos exactos para anon/authenticated.
---   * Las 14 políticas de negocio, su rol y sus predicados de propiedad.
+--   * Las 14 políticas de negocio, su rol, predicados de propiedad e initPlan
+--     (auth.uid() dentro de una subconsulta escalar).
 --   * Las políticas y grants de Storage para avatars.
 --   * Defaults globales y por schema de objetos creados por postgres.
 --
@@ -115,18 +116,20 @@ BEGIN
       WHEN p.cmd IN ('SELECT','DELETE') THEN
         p.qual IS NOT NULL
         AND p.qual ILIKE '%user_id%'
-        AND p.qual ILIKE '%auth.uid()%'
+        AND p.qual ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
+        -- Exigir initPlan: auth.uid() debe estar envuelto en una subconsulta escalar.
+        
       WHEN p.cmd = 'INSERT' THEN
         p.with_check IS NOT NULL
         AND p.with_check ILIKE '%user_id%'
-        AND p.with_check ILIKE '%auth.uid()%'
+        AND p.with_check ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
       WHEN p.cmd = 'UPDATE' THEN
         p.qual IS NOT NULL
         AND p.with_check IS NOT NULL
         AND p.qual ILIKE '%user_id%'
-        AND p.qual ILIKE '%auth.uid()%'
+        AND p.qual ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
         AND p.with_check ILIKE '%user_id%'
-        AND p.with_check ILIKE '%auth.uid()%'
+        AND p.with_check ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
       ELSE false
     END;
 
@@ -150,9 +153,9 @@ BEGIN
     AND cardinality(roles) = 1
     AND roles @> ARRAY['authenticated']::name[]
     AND qual ILIKE '%user_id%'
-    AND qual ILIKE '%auth.uid()%'
+    AND qual ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)'
     AND with_check ILIKE '%user_id%'
-    AND with_check ILIKE '%auth.uid()%';
+    AND with_check ~* '\\(\\s*SELECT\\s+auth\\.uid\\(\\)';
 
   IF update_policy_count <> 3 THEN
     RAISE EXCEPTION
