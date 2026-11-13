@@ -1,7 +1,8 @@
-/* FeritApp — eje común de contenido alineado con el header en desktop.
-   El header, su marca, logo y navegación permanecen intactos. */
+/* FeritApp — eje común de contenido alineado con el branding del header.
+   Desktop: sidebar de 248px + padding interno de header de 30px = eje X 278px.
+   No altera el header, el sidebar ni los breakpoints mobile/tablet. */
 @media (min-width: 900px) {
-  /* Header y vistas comparten el mismo inicio: sidebar de 248px. */
+  /* El área útil de todas las vistas comienza después del sidebar real (248px). */
   #appRoot > .app-view {
     box-sizing: border-box !important;
     width: calc(100% - 248px) !important;
@@ -9,7 +10,7 @@
     margin-right: 0 !important;
   }
 
-  /* Columna principal: mismo ancho y bordes para todas las pantallas. */
+  /* Un único ancho y un único eje izquierdo para el contenido principal. */
   #viewDashboard > .greeting-badge,
   #viewDashboard > .ticket-wrap,
   #viewDashboard > .section-block,
@@ -25,16 +26,28 @@
     width: min(1120px, calc(100% - 60px)) !important;
     max-width: 1120px !important;
     margin-left: 30px !important;
-    margin-right: auto !important;
+    margin-right: 0 !important;
   }
 
-  /* Las secciones sin superficie propia no agregan un segundo margen interno.
-     El ticket conserva su padding porque sí es una tarjeta visible. */
+  /* Evita sumar el padding histórico de .section-block al eje de 30px. */
   #viewDashboard > .section-block,
   #viewSales > .section-block,
   #viewClients > .section-block,
   #viewDeliveries > .section-block,
-  #viewRanking > .section-block {
+  #viewRanking > .section-block,
+  #viewSettings > #settingsMenu > .section-block {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Los paneles internos de Configuración usan el mismo eje,
+     conservando su ancho de lectura más compacto. */
+  #viewSettings > .settings-panel > .section-block {
+    box-sizing: border-box !important;
+    width: min(920px, calc(100% - 60px)) !important;
+    max-width: 920px !important;
+    margin-left: 30px !important;
+    margin-right: 0 !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
@@ -61,9 +74,7 @@
     min-width: 0 !important;
   }
 
-  /* Las tarjetas de encabezado comparten un ancho compacto.
-     Se fuerza también sobre los overrides históricos de Ventas. */
-  #viewSales > .view-hero.sales-hero.ranking-hero,
+  /* Encabezados de las vistas: mismo eje que el contenido y el branding. */
   #viewSales > .view-hero,
   #viewClients > .view-hero,
   #viewDeliveries > .view-hero,
@@ -110,23 +121,27 @@
     text-align: center !important;
   }
 
-  /* Inicio: composición de una sola columna en desktop. */
-  #viewDashboard > .section-block {
-    vertical-align: initial !important;
+  /* Inicio: el estado vacío ocupa el mismo ancho de la sección,
+     sin márgenes laterales propios ni una tarjeta adicional. */
+  #viewDashboard #dashboardTasks {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
-
-  /* Estado vacío integrado en la sección mediante un separador. */
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
-    display: grid;
+    display: grid !important;
+    box-sizing: border-box !important;
     grid-template-columns: 42px minmax(0, 1fr);
-    align-items: center;
-    margin: 16px 0 0;
-    padding: 16px 0 0;
-    border: 0;
-    border-top: 1px solid var(--border);
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 16px 0 0 !important;
+    padding: 16px 0 0 !important;
+    border: 0 !important;
+    border-top: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 }
 
