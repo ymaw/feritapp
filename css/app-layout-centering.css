@@ -1,58 +1,107 @@
-/* FeritApp — eje común de contenido alineado con el branding del header.
-   Desktop: sidebar de 248px + padding interno de header de 30px = eje X 278px.
-   No altera el header, el sidebar ni los breakpoints mobile/tablet. */
+/* FeritApp — eje común alineado con el branding del header.
+   Desktop: sidebar real de 240px + padding horizontal del header de 20px. */
 @media (min-width: 900px) {
-  /* El área útil de todas las vistas comienza después del sidebar real (248px). */
+  /* Header y vistas comparten el mismo origen después del sidebar. */
+  #appRoot > header,
   #appRoot > .app-view {
     box-sizing: border-box !important;
-    width: calc(100% - 248px) !important;
-    margin-left: 248px !important;
+    margin-left: 240px !important;
+  }
+
+  #appRoot > .app-view {
+    width: calc(100% - 240px) !important;
+    max-width: none !important;
     margin-right: 0 !important;
   }
 
-  /* Un único ancho y un único eje izquierdo para el contenido principal. */
+  /* El borde/contorno de cada bloque empieza exactamente debajo del logo. */
   #viewDashboard > .greeting-badge,
   #viewDashboard > .ticket-wrap,
   #viewDashboard > .section-block,
+  #viewSales > .view-hero,
   #viewSales > .section-block,
+  #viewClients > .view-hero,
   #viewClients > .section-block,
+  #viewDeliveries > .view-hero,
   #viewDeliveries > .section-block,
+  #viewRanking > .view-hero,
   #viewRanking > .section-block,
-  #viewSettings > #settingsMenu > .section-block {
+  #viewSettings .section-block {
     display: block !important;
     float: none !important;
     clear: both !important;
     box-sizing: border-box !important;
-    width: min(1120px, calc(100% - 60px)) !important;
+    width: min(1120px, calc(100% - 40px)) !important;
     max-width: 1120px !important;
-    margin-left: 30px !important;
+    margin-left: 20px !important;
     margin-right: 0 !important;
   }
 
-  /* Evita sumar el padding histórico de .section-block al eje de 30px. */
-  #viewDashboard > .section-block,
-  #viewSales > .section-block,
-  #viewClients > .section-block,
-  #viewDeliveries > .section-block,
-  #viewRanking > .section-block,
-  #viewSettings > #settingsMenu > .section-block {
+  /* Los bloques de Inicio mantienen el borde exterior y el contenido en el
+     mismo eje que el logo; no se agrega una segunda sangría interna. */
+  #viewDashboard > .section-block {
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
 
-  /* Los paneles internos de Configuración usan el mismo eje,
-     conservando su ancho de lectura más compacto. */
-  #viewSettings > .settings-panel > .section-block {
-    box-sizing: border-box !important;
-    width: min(920px, calc(100% - 60px)) !important;
+  #viewDashboard > .ticket-wrap {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  /* Los paneles internos de Configuración conservan un ancho de lectura menor,
+     pero parten del mismo eje horizontal que el header. */
+  #viewSettings .settings-panel .section-block {
+    width: min(920px, calc(100% - 40px)) !important;
     max-width: 920px !important;
-    margin-left: 30px !important;
+    margin-left: 20px !important;
     margin-right: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
   }
 
-  /* Saludo: avatar y texto permanecen juntos, en una sola fila. */
+  /* Encabezados de las vistas: mismo origen; el texto sigue centrado dentro. */
+  #viewSales > .view-hero,
+  #viewClients > .view-hero,
+  #viewDeliveries > .view-hero,
+  #viewRanking > .view-hero {
+    margin-top: 18px !important;
+    margin-bottom: 14px !important;
+    text-align: center !important;
+  }
+
+  #viewSales > .view-hero h2,
+  #viewSales > .view-hero p,
+  #viewSales > .view-hero .view-hero-kicker,
+  #viewClients > .view-hero h2,
+  #viewClients > .view-hero p,
+  #viewClients > .view-hero .view-hero-kicker,
+  #viewRanking > .view-hero h2,
+  #viewRanking > .view-hero p,
+  #viewRanking > .view-hero .view-hero-kicker {
+    width: 100%;
+    text-align: center !important;
+  }
+
+  #viewSales > .view-hero p,
+  #viewClients > .view-hero p,
+  #viewRanking > .view-hero p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  #viewDeliveries > .view-hero .sales-heading-card {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100%;
+    text-align: center !important;
+  }
+  #viewDeliveries > .view-hero .sales-heading-card > div,
+  #viewDeliveries > .view-hero .sales-heading-card h2,
+  #viewDeliveries > .view-hero .sales-heading-card p {
+    text-align: center !important;
+  }
+
+  /* Saludo: avatar y texto en una fila y alineados al eje del resto. */
   #viewDashboard .greeting-badge {
     display: flex !important;
     flex-direction: row !important;
@@ -74,67 +123,22 @@
     min-width: 0 !important;
   }
 
-  /* Encabezados de las vistas: mismo eje que el contenido y el branding. */
-  #viewSales > .view-hero,
-  #viewClients > .view-hero,
-  #viewDeliveries > .view-hero,
-  #viewRanking > .view-hero {
-    display: block !important;
-    box-sizing: border-box !important;
-    width: min(820px, calc(100% - 60px)) !important;
-    max-width: 820px !important;
-    margin: 18px 0 14px 30px !important;
-    text-align: center !important;
-  }
-
-  #viewSales > .view-hero h2,
-  #viewSales > .view-hero p,
-  #viewSales > .view-hero .view-hero-kicker,
-  #viewClients > .view-hero h2,
-  #viewClients > .view-hero p,
-  #viewClients > .view-hero .view-hero-kicker,
-  #viewRanking > .view-hero h2,
-  #viewRanking > .view-hero p,
-  #viewRanking > .view-hero .view-hero-kicker {
-    width: 100%;
-    text-align: center !important;
-  }
-  #viewSales > .view-hero p,
-  #viewClients > .view-hero p,
-  #viewRanking > .view-hero p {
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  #viewDeliveries > .view-hero .sales-heading-card {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    width: 100%;
-    text-align: center !important;
-  }
-  #viewDeliveries > .view-hero .sales-heading-card > div {
-    text-align: center !important;
-  }
-  #viewDeliveries > .view-hero .sales-heading-card h2,
-  #viewDeliveries > .view-hero .sales-heading-card p {
-    text-align: center !important;
-  }
-
-  /* Inicio: el estado vacío ocupa el mismo ancho de la sección,
-     sin márgenes laterales propios ni una tarjeta adicional. */
-  #viewDashboard #dashboardTasks {
+  /* Estado vacío: título y descripción alineados con el texto de las
+     subsecciones (después del icono y del separador vertical). */
+  #viewDashboard #dashboardTasks,
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     box-sizing: border-box !important;
     width: 100% !important;
-    margin-left: 0 !important;
     margin-right: 0 !important;
+  }
+  #viewDashboard #dashboardTasks {
+    margin-left: 0 !important;
   }
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     display: grid !important;
-    box-sizing: border-box !important;
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr) !important;
     align-items: center !important;
-    width: 100% !important;
+    gap: 12px !important;
     margin: 16px 0 0 !important;
     padding: 16px 0 0 !important;
     border: 0 !important;
@@ -143,8 +147,19 @@
     background: transparent !important;
     box-shadow: none !important;
   }
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
+    min-width: 0 !important;
+    padding-left: 12px !important;
+    border-left: 1px solid var(--border) !important;
+  }
 }
 
+/* En mobile/tablet se conserva el layout existente y solo el estado vacío
+   mantiene el tratamiento sin tarjeta adicional. */
 @media (max-width: 899px) {
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     display: grid;
