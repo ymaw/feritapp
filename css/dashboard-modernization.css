@@ -616,3 +616,64 @@
 @media (prefers-reduced-motion: reduce) {
   #viewDashboard .dashboard-toggle-chevron { transition: none; }
 }
+
+
+/* V3 — correcciones de composición desktop y alineación de encabezados. */
+@media (min-width: 900px) {
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    display: block;
+    float: none;
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+    vertical-align: initial;
+  }
+  #viewDashboard > .section-block {
+    clear: both;
+  }
+  #viewDashboard .summary-heading {
+    width: 100%;
+    max-width: none;
+  }
+  #viewDashboard .summary-heading > div {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+}
+#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
+  align-items: flex-start;
+}
+#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+  align-self: flex-start;
+  margin-top: 0;
+}
+#viewDashboard .dashboard-toggle-copy {
+  align-self: flex-start;
+  min-width: 0;
+}
+#viewDashboard .dashboard-toggle-copy .section-title,
+#viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+#viewDashboard .summary-heading .stat-cards-label,
+#viewDashboard .summary-heading .summary-period {
+  max-width: 100%;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 899px) {
+  #viewDashboard .summary-heading { max-width: none; }
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    display: block;
+    width: calc(100% - 28px);
+    max-width: none;
+  }
+}
