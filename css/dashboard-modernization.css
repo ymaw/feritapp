@@ -793,3 +793,103 @@
     font-size: calc(16px * var(--font-scale, 1));
   }
 }
+
+
+/* V5 — composición desktop en una sola columna y separador icono/título. */
+@media (min-width: 900px) {
+  #viewDashboard > .section-block {
+    display: block !important;
+    float: none !important;
+    clear: both !important;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    vertical-align: initial !important;
+  }
+  #viewDashboard > .ticket-wrap {
+    display: block !important;
+    float: none !important;
+    clear: both !important;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start !important;
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+  align-self: flex-start !important;
+  flex: 0 0 36px;
+  margin: 1px 0 0 !important;
+}
+#viewDashboard .dashboard-heading-divider {
+  display: block;
+  align-self: stretch;
+  flex: 0 0 2px;
+  width: 2px;
+  min-height: 34px;
+  margin: 1px 0 0;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+}
+#viewDashboard .dashboard-toggle-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start !important;
+  min-width: 0;
+  gap: 3px;
+  text-align: left;
+}
+#viewDashboard .dashboard-toggle-copy .section-title {
+  display: block;
+  width: 100%;
+  margin: 0 !important;
+  line-height: 1.35;
+  text-align: left;
+}
+#viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle {
+  display: block;
+  width: 100%;
+  margin: 0 !important;
+  line-height: 1.4;
+  text-align: left;
+}
+@media (max-width: 899px) {
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    width: calc(100% - 28px) !important;
+    max-width: none !important;
+  }
+  #viewDashboard .dashboard-section-toggle .dashboard-toggle-main { gap: 9px; }
+  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  #viewDashboard .dashboard-heading-divider {
+    min-height: 31px;
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .dashboard-section-toggle .dashboard-toggle-main { gap: 7px; }
+  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+    flex-basis: 29px;
+    width: 29px;
+    height: 29px;
+  }
+  #viewDashboard .dashboard-heading-divider {
+    flex-basis: 2px;
+    width: 2px;
+    min-height: 29px;
+  }
+}
