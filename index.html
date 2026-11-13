@@ -192,19 +192,36 @@
 <div class="weekly-summary-content" hidden="" id="weeklySummaryContent"></div>
 </div>
 </div>
-<div class="section-block dashboard-history-section"><div class="dashboard-history-card"><div class="dashboard-history-heading"><div><p class="section-title">Historial semanal</p><p class="dashboard-history-subtitle">Consultá los artículos y totales de las últimas tres semanas.</p></div><span aria-hidden="true" class="dashboard-history-icon">▦</span></div><div class="weeks" id="weeksContainer"></div></div></div>
-<div class="section-block">
-<p class="section-title">Categoría más vendida del mes</p>
-<div id="topCategoryChart"></div>
-</div>
-<div class="section-block">
-<p class="section-title">Comparar ventas</p>
+<div class="section-block dashboard-history-section">
+<div class="dashboard-history-card dashboard-collapsible-card">
+<button class="dashboard-section-toggle" type="button" data-dashboard-toggle aria-controls="weeksContainer" aria-expanded="true">
+<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">▦</span><span class="dashboard-toggle-copy"><span class="section-title">Historial semanal</span><span class="dashboard-history-subtitle">Consultá los artículos y totales de las últimas tres semanas.</span></span></span>
+<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span>
+</button>
+<div class="dashboard-collapsible-content" id="weeksContainer"></div>
+</div></div>
+<div class="section-block dashboard-category-section">
+<div class="dashboard-collapsible-card">
+<button class="dashboard-section-toggle" type="button" data-dashboard-toggle aria-controls="topCategoryChart" aria-expanded="true">
+<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">▤</span><span class="dashboard-toggle-copy"><span class="section-title">Categoría más vendida del mes</span><span class="dashboard-history-subtitle">Distribución de artículos por categoría.</span></span></span>
+<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span>
+</button>
+<div class="dashboard-collapsible-content" id="topCategoryChart"></div>
+</div></div>
+<div class="section-block dashboard-comparison-section">
+<div class="dashboard-collapsible-card">
+<button class="dashboard-section-toggle" type="button" data-dashboard-toggle aria-controls="dashboardCompareContent" aria-expanded="true">
+<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">↗</span><span class="dashboard-toggle-copy"><span class="section-title">Comparar ventas</span><span class="dashboard-history-subtitle">Evolución y comparación de períodos.</span></span></span>
+<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span>
+</button>
+<div class="dashboard-collapsible-content" id="dashboardCompareContent">
 <div class="seg seg-spaced-bottom">
 <button class="period-opt active" data-period="week" type="button">Semanal</button>
 <button class="period-opt" data-period="month" type="button">Mensual</button>
 </div>
 <div id="periodCompare"></div>
 </div>
+</div></div>
 </div>
 <div class="app-view" id="viewSettings" style="display:none;">
 <div id="settingsMenu">
