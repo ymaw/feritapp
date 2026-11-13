@@ -336,7 +336,9 @@ document.addEventListener('DOMContentLoaded', function(){
     if(Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS){
       handleIdleTimeout();
     }else{
-      resetIdleTimer();
+      // Volver a primer plano no constituye actividad del usuario.
+      // Recalcular el tiempo restante desde la última interacción real.
+      scheduleIdleTimeout();
     }
   });
 
