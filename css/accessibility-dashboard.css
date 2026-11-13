@@ -1,0 +1,33 @@
+/* V12.121 — Contraste accesible en el resumen del dashboard.
+   Se ajustan únicamente colores de texto; se preservan fondos, jerarquía y composición. */
+#viewDashboard .stat-card-label,
+#viewDashboard .payment-chart-legend > div span:nth-child(2),
+#viewDashboard .period-opt:not(.active) {
+  color: #475569;
+}
+
+#viewDashboard .stat-card.success .stat-card-value {
+  color: #047857;
+}
+
+#viewDashboard .stat-card.warning .stat-card-value {
+  color: #c2410c;
+}
+
+#viewDashboard .period-opt.active {
+  color: #5b21b6;
+}
+
+#viewDashboard .compare-table .head {
+  color: #6d28d9;
+}
+
+
+/* V12.122 — contraste WCAG AA para textos del dashboard en tema oscuro. */
+[data-theme="dark"] #viewDashboard .stat-card-label,
+[data-theme="dark"] #viewDashboard .payment-chart-legend > div span:nth-child(2),
+[data-theme="dark"] #viewDashboard .period-opt:not(.active),
+[data-theme="dark"] #viewDashboard .period-opt.active,
+[data-theme="dark"] #viewDashboard .compare-table .head {
+  color: #f1f0fe;
+}

@@ -1,0 +1,39 @@
+/* V12.121 — Contraste accesible en la vista de Ventas y Clientes integrados. */
+#viewSales #managementWeekTotal {
+  color: #047857;
+}
+
+#viewSales #managementOwedTotal {
+  color: #c2410c;
+}
+
+#viewSales .management-filter {
+  color: #475569;
+}
+
+#viewSales .management-filter.active {
+  background-color: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+}
+
+#viewSales .sales-retira-label {
+  color: #6d28d9 !important;
+}
+
+#viewSales .delivery-status.pending {
+  color: #b91c1c;
+}
+
+/* V12.123 — contraste WCAG AA en Ventas para el tema oscuro. */
+[data-theme="dark"] #viewSales .management-filter:not(.active) {
+  color: #f1f0fe;
+}
+
+[data-theme="dark"] #viewSales .sales-retira-label {
+  color: #c4b5fd !important;
+}
+
+[data-theme="dark"] #viewSales .delivery-status.pending {
+  color: #fca5a5;
+}

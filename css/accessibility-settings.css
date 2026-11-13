@@ -1,0 +1,25 @@
+/* V12.121 — Contraste accesible en el panel Apariencia. */
+#settingsPanelAppearance .settings-back-btn {
+  color: #5b21b6;
+}
+
+#settingsPanelAppearance .settings-panel-kicker {
+  color: #6d28d9;
+}
+
+#settingsPanelAppearance .theme-opt span,
+#settingsPanelAppearance .font-scale-option small {
+  color: #475569;
+}
+
+
+/* V12.125 — Contraste WCAG AA de Apariencia en tema oscuro. */
+[data-theme="dark"] #settingsPanelAppearance .settings-back-btn,
+[data-theme="dark"] #settingsPanelAppearance .theme-opt span,
+[data-theme="dark"] #settingsPanelAppearance .font-scale-option small {
+  color: #f1f0fe;
+}
+
+[data-theme="dark"] #settingsPanelAppearance .settings-panel-kicker {
+  color: #c4b5fd;
+}

@@ -37,9 +37,10 @@ document.addEventListener('DOMContentLoaded', function(){
   function isValidEmail(v){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   }
-  // Mínimo 6 caracteres, al menos 1 mayúscula, 1 número y 1 símbolo.
+  // Política alineada con Supabase Auth: mínimo 8 caracteres, minúscula,
+  // mayúscula, número y símbolo.
   function isValidPassword(v){
-    return /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{6,}$/.test(v);
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/.test(v);
   }
   function showGateError(msg){
     let err = document.getElementById('gateError');
@@ -53,7 +54,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function updatePwRequirements(){
     let pin = document.getElementById('gatePin').value;
-    setReq('reqLength', pin.length >= 6);
+    setReq('reqLength', pin.length >= 8);
+    setReq('reqLower', /[a-z]/.test(pin));
     setReq('reqUpper', /[A-Z]/.test(pin));
     setReq('reqNumber', /[0-9]/.test(pin));
     setReq('reqSymbol', /[^A-Za-z0-9]/.test(pin));
@@ -84,15 +86,22 @@ document.addEventListener('DOMContentLoaded', function(){
 
     loginBtn.disabled = true; signupBtn.disabled = true;
 
-    let loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
-
-    loginBtn.disabled = false; signupBtn.disabled = false;
+    let loginRes;
+    try{
+      loginRes = await sb.auth.signInWithPassword({ email: email, password: pin });
+    }catch(error){
+      showGateError('No se pudo conectar con el servicio. Revisá tu conexión e intentá nuevamente.');
+      return;
+    }finally{
+      loginBtn.disabled = false;
+      signupBtn.disabled = false;
+    }
 
     if(loginRes.error){
       showGateError('Correo o contraseña incorrectos.');
       return;
     }
-    if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user); }
+    if(loginRes.data && loginRes.data.user){ enterApp(loginRes.data.user, true); }
   });
 
   signupBtn.addEventListener('click', async function(){
@@ -112,26 +121,33 @@ document.addEventListener('DOMContentLoaded', function(){
     let pinConfirm = document.getElementById('gatePinConfirm').value;
 
     if(!isValidEmail(email)){ showGateError('Ingresá un correo electrónico válido.'); return; }
-    if(!isValidPassword(pin)){ showGateError('La contraseña necesita mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'); return; }
+    if(!isValidPassword(pin)){ showGateError('La contraseña necesita mínimo 8 caracteres, una minúscula, una mayúscula, un número y un símbolo.'); return; }
     if(pin !== pinConfirm){ showGateError('Las contraseñas no coinciden.'); return; }
     if(!SUPABASE_READY){ showGateError('Todavía no se configuró Supabase (faltan la URL y la clave del proyecto en script.js).'); return; }
 
     loginBtn.disabled = true; signupBtn.disabled = true;
 
     let redirectTo = window.location.origin + window.location.pathname;
-    let signUpRes = await sb.auth.signUp({
-      email: email,
-      password: pin,
-      options: { emailRedirectTo: redirectTo }
-    });
-
-    loginBtn.disabled = false; signupBtn.disabled = false;
+    let signUpRes;
+    try{
+      signUpRes = await sb.auth.signUp({
+        email: email,
+        password: pin,
+        options: { emailRedirectTo: redirectTo }
+      });
+    }catch(error){
+      showGateError('No se pudo crear la cuenta por un problema de conexión. Intentá nuevamente.');
+      return;
+    }finally{
+      loginBtn.disabled = false;
+      signupBtn.disabled = false;
+    }
 
     if(signUpRes.error){
       showGateError(
         /registered|exists/i.test(signUpRes.error.message)
           ? 'Ese correo ya tiene una cuenta creada. Usá "Iniciar sesión".'
-          : 'No se pudo crear la cuenta: ' + signUpRes.error.message
+          : 'No se pudo crear la cuenta. Verificá los datos e intentá nuevamente.'
       );
       return;
     }
@@ -152,9 +168,19 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!SUPABASE_READY){ showGateError('Falta configurar Supabase.'); return; }
 
     let redirectTo = window.location.origin + window.location.pathname;
-    let res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    let forgotBtn = document.getElementById('forgotPinBtn');
+    let res;
+    forgotBtn.disabled = true;
+    try{
+      res = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    }catch(error){
+      showGateError('No se pudo conectar para enviar el correo. Revisá tu conexión e intentá nuevamente.');
+      return;
+    }finally{
+      forgotBtn.disabled = false;
+    }
     if(res.error){
-      showGateError('No se pudo enviar el correo de recuperación: ' + res.error.message);
+      showGateError('No se pudo enviar el correo de recuperación. Intentá nuevamente más tarde.');
       return;
     }
     document.getElementById('gateSentTitle').textContent = 'Revisá tu correo';
@@ -177,51 +203,126 @@ document.addEventListener('DOMContentLoaded', function(){
     let err = document.getElementById('newPinError');
     err.style.display = 'none';
 
-    if(!isValidPassword(p1)){ err.textContent = 'Mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
+    if(!isValidPassword(p1)){ err.textContent = 'Mínimo 8 caracteres, con una minúscula, una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
     if(p1 !== p2){ err.textContent = 'Las contraseñas no coinciden.'; err.style.display = 'block'; return; }
 
-    let res = await sb.auth.updateUser({ password: p1 });
+    if(!SUPABASE_READY || !sb){
+      err.textContent = 'No se pudo verificar la sesión de recuperación. Volvé a solicitar el enlace.';
+      err.style.display = 'block';
+      return;
+    }
+
+    let submitBtn = document.getElementById('newPinSubmit');
+    let res;
+    submitBtn.disabled = true;
+    try{
+      res = await sb.auth.updateUser({ password: p1 });
+    }catch(error){
+      err.textContent = 'No se pudo conectar para guardar la contraseña. Revisá tu conexión e intentá nuevamente.';
+      err.style.display = 'block';
+      return;
+    }finally{
+      submitBtn.disabled = false;
+    }
     if(res.error){
-      err.textContent = 'No se pudo guardar la contraseña: ' + res.error.message;
+      err.textContent = 'No se pudo guardar la contraseña. Volvé a solicitar el enlace e intentá nuevamente.';
       err.style.display = 'block';
       return;
     }
     document.getElementById('gateNewPin').style.display = 'none';
-    if(res.data && res.data.user){ enterApp(res.data.user); }
+    if(res.data && res.data.user){ enterApp(res.data.user, true); }
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', async function(){
-    if(sb){ await sb.auth.signOut(); }
-    location.reload();
+  async function signOutAndReload(options){
+    if(!sb){
+      window.alert('No se pudo cerrar la sesión. Recargá la página e intentá nuevamente.');
+      return;
+    }
+    try{
+      const result = await sb.auth.signOut(options);
+      if(result && result.error){
+        console.error('Supabase no pudo cerrar la sesión:', result.error);
+        window.alert('No se pudo cerrar la sesión. Revisá tu conexión e intentá nuevamente.');
+        return;
+      }
+      location.reload();
+    }catch(error){
+      console.error('Error al cerrar la sesión:', error);
+      window.alert('No se pudo cerrar la sesión. Revisá tu conexión e intentá nuevamente.');
+    }
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    signOutAndReload();
   });
-  document.getElementById('sidebarLogoutBtn').addEventListener('click', async function(){
-    if(sb){ await sb.auth.signOut(); }
-    location.reload();
+  document.getElementById('sidebarLogoutBtn').addEventListener('click', function(){
+    signOutAndReload();
   });
 
-  document.getElementById('logoutAllBtn').addEventListener('click', async function(){
+  document.getElementById('logoutAllBtn').addEventListener('click', function(){
     if(!confirm('¿Cerrar la sesión en TODOS los dispositivos donde esté iniciada (celular, compu, etc.)? Vas a tener que volver a ingresar con tu correo y contraseña en todos ellos.')) return;
-    if(sb){ await sb.auth.signOut({ scope: 'global' }); }
-    location.reload();
+    signOutAndReload({ scope: 'global' });
   });
 
   /* ---------------- expiración de sesión por inactividad (30 min) ---------------- */
   const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  const IDLE_ACTIVITY_KEY_PREFIX = 'feritapp-last-activity:';
   let idleTimer = null;
   let lastActivityAt = Date.now();
+  let lastActivityPersistedAt = 0;
+  let idleStorageKey = null;
+
+  function scheduleIdleTimeout(){
+    if(!entered) return;
+    if(idleTimer) clearTimeout(idleTimer);
+    const remaining = Math.max(0, IDLE_TIMEOUT_MS - (Date.now() - lastActivityAt));
+    idleTimer = setTimeout(handleIdleTimeout, remaining);
+  }
 
   function resetIdleTimer(){
     if(!entered) return;
-    lastActivityAt = Date.now();
-    if(idleTimer) clearTimeout(idleTimer);
-    idleTimer = setTimeout(handleIdleTimeout, IDLE_TIMEOUT_MS);
+    const now = Date.now();
+    lastActivityAt = now;
+    // Persistir con un pequeño intervalo evita escrituras excesivas durante
+    // eventos frecuentes como mousemove y permite compartir actividad entre pestañas.
+    if(idleStorageKey && now - lastActivityPersistedAt >= 10000){
+      try{
+        localStorage.setItem(idleStorageKey, String(now));
+        lastActivityPersistedAt = now;
+      }catch(error){
+        console.warn('No se pudo persistir la actividad de sesión:', error);
+      }
+    }
+    scheduleIdleTimeout();
   }
 
   async function handleIdleTimeout(){
     if(!entered) return;
-    if(sb){ await sb.auth.signOut(); }
-    location.reload();
+    try{
+      if(sb){
+        const result = await sb.auth.signOut();
+        if(result && result.error){
+          console.error('Supabase no pudo cerrar la sesión por inactividad:', result.error);
+        }
+      }
+    }catch(error){
+      console.error('No se pudo cerrar la sesión por inactividad:', error);
+    }finally{
+      // Aunque falle la revocación remota, recargar bloquea la interfaz local;
+      // el timestamp vencido impide restaurar esta sesión como válida.
+      location.reload();
+    }
   }
+
+  // La actividad de otra pestaña del mismo usuario también mantiene vigente
+  // la sesión local, sin extenderla por encima de los 30 minutos reales.
+  window.addEventListener('storage', function(event){
+    if(!entered || !idleStorageKey || event.key !== idleStorageKey || !event.newValue) return;
+    const sharedActivityAt = Number(event.newValue);
+    if(!Number.isFinite(sharedActivityAt) || sharedActivityAt <= lastActivityAt) return;
+    lastActivityAt = sharedActivityAt;
+    scheduleIdleTimeout();
+  });
 
   ['click','touchstart','keydown','mousemove','scroll'].forEach(function(evt){
     document.addEventListener(evt, resetIdleTimer, { passive: true });
@@ -235,7 +336,9 @@ document.addEventListener('DOMContentLoaded', function(){
     if(Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS){
       handleIdleTimeout();
     }else{
-      resetIdleTimer();
+      // Volver a primer plano no constituye actividad del usuario.
+      // Recalcular el tiempo restante desde la última interacción real.
+      scheduleIdleTimeout();
     }
   });
 
@@ -444,8 +547,37 @@ document.addEventListener('DOMContentLoaded', function(){
 
   let currentUserEmail = null;
 
-  function enterApp(user){
+  function enterApp(user, freshAuthentication){
     if(entered) return;
+    idleStorageKey = IDLE_ACTIVITY_KEY_PREFIX + (user.id || user.email || 'current');
+    let storedActivityAt = 0;
+    try{
+      storedActivityAt = Number(localStorage.getItem(idleStorageKey)) || 0;
+    }catch(error){
+      console.warn('No se pudo leer la actividad de sesión:', error);
+    }
+
+    if(!freshAuthentication && storedActivityAt > 0 && Date.now() - storedActivityAt >= IDLE_TIMEOUT_MS){
+      showGateError('Tu sesión expiró por inactividad. Iniciá sesión nuevamente.');
+      if(sb){
+        sb.auth.signOut().then(function(result){
+          if(result && result.error){
+            console.error('Supabase no pudo cerrar la sesión vencida:', result.error);
+          }
+        }).catch(function(error){
+          console.error('No se pudo cerrar la sesión vencida:', error);
+        });
+      }
+      return;
+    }
+
+    const now = Date.now();
+    lastActivityAt = freshAuthentication || !storedActivityAt ? now : storedActivityAt;
+    lastActivityPersistedAt = lastActivityAt;
+    if(freshAuthentication || !storedActivityAt){
+      try{ localStorage.setItem(idleStorageKey, String(now)); }catch(error){}
+    }
+
     entered = true;
     currentUserEmail = user.email;
     document.getElementById('authGate').style.display = 'none';
@@ -455,7 +587,9 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('profileEmail').textContent = user.email;
     window.history.replaceState({feritAppView:'dashboard'}, document.title, window.location.pathname);
     switchView('dashboard', false);
-    resetIdleTimer();
+    // Al restaurar una sesión, conservar su última actividad real; cargar la
+    // página no debe reiniciar artificialmente los 30 minutos de inactividad.
+    scheduleIdleTimeout();
     loadSales();
   }
 
@@ -492,18 +626,41 @@ document.addEventListener('DOMContentLoaded', function(){
         showSetNewPinPrompt();
         return;
       }
+      if(event === 'SIGNED_OUT'){
+        // Una sesión revocada en otra pestaña/dispositivo también debe
+        // bloquear la interfaz y descartar el estado en memoria.
+        if(idleTimer) clearTimeout(idleTimer);
+        entered = false;
+        currentUserEmail = null;
+        if(idleStorageKey){
+          try{ localStorage.removeItem(idleStorageKey); }catch(error){}
+          idleStorageKey = null;
+        }
+        window.location.reload();
+        return;
+      }
       if(event === 'SIGNED_IN' && newSession && newSession.user && !recoveryDetected){
-        enterApp(newSession.user);
+        enterApp(newSession.user, true);
       }
     });
 
     try{
       let sessionRes = await sb.auth.getSession();
-      if(!recoveryDetected && sessionRes.data && sessionRes.data.session && sessionRes.data.session.user){
+      if(sessionRes && sessionRes.error){
+        console.error('Supabase no pudo comprobar la sesión:', sessionRes.error);
+        showGateError('No pudimos comprobar tu sesión. Revisá tu conexión e intentá nuevamente.');
+        return;
+      }
+      if(!sessionRes || !sessionRes.data){
+        showGateError('No pudimos comprobar tu sesión. Iniciá sesión nuevamente.');
+        return;
+      }
+      if(!recoveryDetected && sessionRes.data.session && sessionRes.data.session.user){
         enterApp(sessionRes.data.session.user);
       }
     }catch(e){
       console.error('Error leyendo la sesión de Supabase:', e);
+      showGateError('No pudimos comprobar tu sesión. Iniciá sesión nuevamente.');
     }
   }
 
@@ -1558,8 +1715,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }).join('');
 
     let selectHtml = '<div class="compare-row">' +
-      '<select class="compare-select" id="compareSelectA">' + optionsHtml + '</select>' +
-      '<select class="compare-select" id="compareSelectB">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareSelectA" aria-label="Comparar mes A">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareSelectB" aria-label="Comparar mes B">' + optionsHtml + '</select>' +
     '</div>';
 
     let stA = monthStats[compareMonthA] || {total:0,cobrado:0,pendiente:0,count:0};
@@ -1626,8 +1783,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }).join('');
 
     let selectHtml = '<div class="compare-row">' +
-      '<select class="compare-select" id="compareWeekSelectA">' + optionsHtml + '</select>' +
-      '<select class="compare-select" id="compareWeekSelectB">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareWeekSelectA" aria-label="Comparar semana A">' + optionsHtml + '</select>' +
+      '<select class="compare-select" id="compareWeekSelectB" aria-label="Comparar semana B">' + optionsHtml + '</select>' +
     '</div>';
 
     let stA = wStats[compareWeekA] || {total:0,cobrado:0,pendiente:0,count:0};
@@ -2929,7 +3086,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function escapeHtml(str){
     let d = document.createElement('div');
     d.textContent = str || '';
-    return d.innerHTML;
+    return d.innerHTML.replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function showToast(msg, duration){
@@ -3438,7 +3595,7 @@ document.addEventListener('DOMContentLoaded', function(){
     err.style.display = 'none';
 
     if(!current){ err.textContent = 'Ingresá tu contraseña actual.'; err.style.display = 'block'; return; }
-    if(!isValidPassword(newPin)){ err.textContent = 'La nueva contraseña necesita mínimo 6 caracteres, con una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
+    if(!isValidPassword(newPin)){ err.textContent = 'La nueva contraseña necesita mínimo 8 caracteres, una minúscula, una mayúscula, un número y un símbolo.'; err.style.display = 'block'; return; }
     if(newPin !== newPinConfirm){ err.textContent = 'Las contraseñas nuevas no coinciden.'; err.style.display = 'block'; return; }
     if(!currentUserEmail){ err.textContent = 'No se pudo identificar tu cuenta, volvé a iniciar sesión.'; err.style.display = 'block'; return; }
 
@@ -3599,7 +3756,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if(!input) return;
       let showing = input.type === 'text';
       input.type = showing ? 'password' : 'text';
-      btn.textContent = showing ? '👁' : '🙈';
+      btn.innerHTML = showing ? '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>' : '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 3 18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A11 11 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.9M6.2 6.2C3.5 8.1 2 12 2 12s3.6 7 10 7a10 10 0 0 0 3-.4"/></svg>';
       btn.classList.toggle('showing', !showing);
       btn.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
     });

@@ -5,8 +5,8 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const moduleCss = fs.readFileSync(path.join(root, 'css/confirmation-dialog.css'), 'utf8');
-assert.match(html, /css\/confirmation-dialog\.css\?v=12\.119/);
-assert.ok(html.indexOf('css/style.css?v=12.119') < html.indexOf('css/confirmation-dialog.css?v=12.119'));
+assert.match(html, /css\/confirmation-dialog\.css\?v=12\.123/);
+assert.ok(html.indexOf('css/style.css?v=12.123') < html.indexOf('css/confirmation-dialog.css?v=12.123'));
 for (const selector of ['.fa-dialog-backdrop', '.fa-dialog-icon', '.fa-dialog-actions', '.fa-dialog-cancel', '.fa-dialog-confirm', 'body.fa-dialog-open', '@keyframes fa-dialog-in']) assert.ok(moduleCss.includes(selector), `Missing extracted selector: ${selector}`);
 assert.ok(!style.includes('.fa-dialog-backdrop{'), 'Dialog base styles should not remain in style.css');
 assert.ok(style.includes('.delivery-client-card{padding:9px}'), 'Delivery responsive styles must remain in style.css');
@@ -16,5 +16,5 @@ assert.ok(fs.existsSync(path.join(root, 'tests/test-receipt-selection-v12.102.cj
 assert.ok(fs.existsSync(path.join(root, 'tests/test-receipt-selection-v12.99.cjs')));
 assert.ok(!fs.existsSync(path.join(root, 'tests/test-receipt-period-v12.93.cjs')));
 assert.ok(!fs.existsSync(path.join(root, 'tests/test-receipt-selection-v12.95.cjs')));
-for (const m of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) assert.equal(m[1], '12.119', 'cache versions must be uniform');
-console.log('OK V12.119: diálogo extraído, estilos responsive de Entregas conservados y pruebas históricas retiradas.');
+for (const m of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) assert.equal(m[1], '12.123', 'cache versions must be uniform');
+console.log('OK V12.123: diálogo extraído, estilos responsive de Entregas conservados y pruebas históricas retiradas.');

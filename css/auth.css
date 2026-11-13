@@ -1,0 +1,281 @@
+/* FeritApp V12.120 — modernización visual del acceso.
+   Presentación únicamente: conserva los IDs y flujos existentes de autenticación. */
+#authGate,
+#onboardingGate{
+  min-height:100vh;
+  min-height:100dvh;
+  padding:clamp(20px,5vh,56px) 20px calc(24px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(ellipse at 12% 12%, rgba(var(--primary-rgb),.13), transparent 34%),
+    radial-gradient(ellipse at 88% 82%, rgba(var(--secondary-rgb),.10), transparent 32%),
+    var(--bg);
+}
+#authGate{
+  align-items:center;
+  justify-content:center;
+}
+#authGate .gate-card,
+#onboardingGate .gate-card{
+  position:relative;
+  isolation:isolate;
+  width:min(100%, 470px);
+  max-width:470px;
+  padding:clamp(26px,5vw,42px);
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:26px;
+  background:var(--surface);
+  box-shadow:0 24px 70px rgba(20,16,31,.13), 0 4px 14px rgba(var(--primary-rgb),.06);
+}
+#authGate .gate-card::before,
+#onboardingGate .gate-card::before{
+  position:absolute;
+  z-index:-1;
+  top:-110px;
+  right:-90px;
+  width:230px;
+  height:230px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(var(--primary-rgb),.13), transparent 70%);
+  content:"";
+  pointer-events:none;
+}
+#authGate .brand-lockup,
+#onboardingGate .brand-lockup{
+  justify-content:center;
+  gap:13px;
+  margin:0 0 9px;
+}
+#authGate .brand-logo,
+#onboardingGate .brand-logo{
+  width:58px;
+  height:58px;
+  border-radius:16px;
+}
+#authGate .brand-word,
+#onboardingGate .brand-word{
+  font-size:calc(34px * var(--font-scale,1));
+}
+#authGate .eyebrow,
+#onboardingGate .eyebrow{
+  margin:0 0 24px;
+  color:var(--primary-soft);
+  text-align:center;
+  font-size:calc(10px * var(--font-scale,1));
+  letter-spacing:.16em;
+}
+#authGate .gate-card h1,
+#onboardingGate .gate-card h1{
+  margin:0 0 9px;
+  text-align:center;
+  font-size:calc(29px * var(--font-scale,1));
+  line-height:1.18;
+  letter-spacing:-.035em;
+}
+#authGate .gate-sub,
+#onboardingGate .gate-sub{
+  max-width:340px;
+  margin:0 auto 27px;
+  text-align:center;
+  font-size:calc(14px * var(--font-scale,1));
+  line-height:1.55;
+}
+#authGate .field,
+#onboardingGate .field{
+  margin-bottom:17px;
+}
+#authGate .field label,
+#onboardingGate .field label{
+  margin:0 0 8px 2px;
+  color:var(--text);
+  font-family:var(--body);
+  font-size:calc(13px * var(--font-scale,1));
+  font-weight:650;
+  letter-spacing:0;
+  text-transform:none;
+}
+#authGate input[type=email],
+#authGate input[type=password],
+#onboardingGate input[type=text]{
+  min-height:54px;
+  padding:14px 15px;
+  border-color:var(--border);
+  border-radius:13px;
+  background:var(--surface-2);
+  font-size:calc(15px * var(--font-scale,1));
+  transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+#authGate input:focus,
+#onboardingGate input:focus{
+  border-color:var(--primary);
+  background:var(--surface);
+  box-shadow:0 0 0 4px rgba(var(--primary-rgb),.12);
+  outline:none;
+}
+#authGate input::placeholder,
+#onboardingGate input::placeholder{
+  color:var(--text-muted);
+  opacity:.72;
+}
+#authGate .input-row,
+#onboardingGate .input-row{
+  gap:8px;
+}
+#authGate .pw-toggle-btn,
+#onboardingGate .pw-toggle-btn{
+  width:50px;
+  height:54px;
+  border-radius:13px;
+  background:var(--surface-2);
+  transition:border-color .18s ease, color .18s ease, background .18s ease;
+}
+#authGate .pw-toggle-btn:hover,
+#onboardingGate .pw-toggle-btn:hover{
+  border-color:var(--primary);
+  color:var(--primary-soft);
+}
+#authGate .gate-actions{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:22px;
+}
+#authGate .gate-btn{
+  width:100%;
+  min-height:52px;
+  padding:14px 18px;
+  border-radius:13px;
+  font-size:calc(14px * var(--font-scale,1));
+}
+#authGate .gate-btn-primary{
+  order:0;
+  background:linear-gradient(105deg,var(--primary),var(--primary-soft));
+  color:#fff;
+  box-shadow:0 8px 18px rgba(var(--primary-rgb),.22);
+}
+#authGate .gate-btn-primary:not(:disabled):hover{
+  filter:brightness(1.06);
+  transform:translateY(-1px);
+}
+#authGate .gate-btn-primary:not(:disabled):active{
+  background:var(--primary);
+  transform:translateY(0) scale(.99);
+}
+#authGate .gate-btn-secondary{
+  order:1;
+  background:transparent;
+  border-color:var(--border);
+  color:var(--text);
+}
+#authGate .gate-btn-secondary:not(:disabled):hover{
+  background:var(--surface-2);
+}
+#authGate .gate-links{
+  justify-content:center;
+  margin:15px 0 2px;
+}
+#authGate .reset-link,
+#onboardingGate .reset-link{
+  padding:8px 10px;
+  color:var(--primary-soft);
+  font-family:var(--body);
+  font-size:calc(13px * var(--font-scale,1));
+  font-weight:600;
+  text-decoration:none;
+}
+#authGate .reset-link:hover,
+#onboardingGate .reset-link:hover{
+  color:var(--primary);
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+#authGate .gate-note{
+  margin:22px 0 0;
+  padding:16px 4px 0;
+  border-top:1px solid var(--border);
+  text-align:center;
+  font-size:calc(11.5px * var(--font-scale,1));
+  line-height:1.6;
+}
+#authGate .gate-error,
+#onboardingGate .gate-error{
+  margin:0 0 14px;
+  padding:10px 12px;
+  border:1px solid rgba(var(--danger-rgb),.25);
+  border-radius:11px;
+  background:rgba(var(--danger-rgb),.08);
+  line-height:1.45;
+}
+#authGate #gateSent,
+#authGate #gateNewPin{
+  text-align:center;
+}
+#authGate #gateSent .gate-sub,
+#authGate #gateNewPin .gate-sub{
+  margin-bottom:22px;
+}
+#authGate #gateSent .reset-link{
+  margin-top:8px;
+}
+#authGate #gateNewPin .field{
+  text-align:left;
+}
+#authGate #gateNewPin .save-btn,
+#onboardingGate .save-btn{
+  min-height:52px;
+  margin-top:8px;
+  border-radius:13px;
+  background:linear-gradient(105deg,var(--primary),var(--primary-soft));
+  color:#fff;
+  box-shadow:0 8px 18px rgba(var(--primary-rgb),.18);
+}
+#authGate #pwRequirements{
+  margin-top:12px;
+  padding:12px 14px;
+  border-radius:12px;
+  background:var(--surface-2);
+  text-align:left;
+}
+#onboardingGate{
+  align-items:center;
+  justify-content:center;
+}
+#onboardingGate .gate-card h1{
+  margin-bottom:10px;
+}
+#onboardingGate .gate-sub{
+  margin-bottom:25px;
+}
+@media(max-width:520px){
+  #authGate{
+    align-items:flex-start;
+    padding: max(18px,env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));
+  }
+  #authGate .gate-card,
+  #onboardingGate .gate-card{
+    margin:auto 0;
+    padding:27px 22px;
+    border-radius:22px;
+  }
+  #authGate .brand-logo,
+  #onboardingGate .brand-logo{
+    width:52px;
+    height:52px;
+  }
+  #authGate .brand-word,
+  #onboardingGate .brand-word{
+    font-size:calc(31px * var(--font-scale,1));
+  }
+  #authGate .gate-card h1,
+  #onboardingGate .gate-card h1{
+    font-size:calc(26px * var(--font-scale,1));
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #authGate *,
+  #onboardingGate *{
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+  }
+}

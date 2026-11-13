@@ -1,0 +1,10 @@
+/* V12.121 — Contraste accesible en los estados de entrega. */
+#viewDeliveries .delivery-client-status.is-pending {
+  color: #b91c1c;
+}
+
+/* V12.124 — contraste WCAG AA del estado pendiente en tema oscuro. */
+[data-theme="dark"] #viewDeliveries .delivery-client-status.is-pending,
+[data-theme="dark"] #viewDeliveries .delivery-client-status.is-pending strong {
+  color: #fca5a5;
+}

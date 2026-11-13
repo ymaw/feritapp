@@ -1,0 +1,106 @@
+name: FeritApp CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feature/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: feritapp-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-regression:
+    name: Static regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run all regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          for test_file in tests/*.cjs; do
+            echo "::group::${test_file}"
+            node "${test_file}"
+            echo "::endgroup::"
+            count=$((count + 1))
+          done
+          if [ "${count}" -eq 0 ]; then
+            echo "No regression tests found."
+            exit 1
+          fi
+          echo "Executed ${count} regression test files."
+
+  browser-quality:
+    name: Browser E2E, accessibility and compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install pinned browser test tools
+        run: npm install --no-save --no-package-lock @playwright/test@1.56.1 @axe-core/playwright@4.10.2
+      - name: Install browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run browser E2E and accessibility tests
+        run: npx playwright test --project=${{ matrix.browser }}
+
+  postgres-security:
+    name: PostgreSQL security migration and RLS verification
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: feritapp_security_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d feritapp_security_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Prepare disposable Supabase-compatible baseline
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d feritapp_security_test \
+            -v ON_ERROR_STOP=1 \
+            -f supabase/tests/fixtures/v12_124_supabase_baseline.sql
+      - name: Apply V12.124 migration to disposable PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d feritapp_security_test \
+            -v ON_ERROR_STOP=1 \
+            -f supabase/migrations/MIGRACION_V12_124_SEGURIDAD_RLS.sql
+      - name: Verify RLS, grants, Storage policies and default ACLs
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -p 5432 -U postgres -d feritapp_security_test \
+            -v ON_ERROR_STOP=1 \
+            -f supabase/tests/rls_hardening_verification.sql
