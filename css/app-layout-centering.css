@@ -24,14 +24,13 @@
     box-sizing: border-box !important;
     width: min(1120px, calc(100% - 60px)) !important;
     max-width: 1120px !important;
-    margin-left: auto !important;
+    margin-left: 30px !important;
     margin-right: auto !important;
   }
 
-  /* Las secciones exteriores no agregan un segundo margen interno:
-     su borde visible coincide con el eje del logo y título del header. */
+  /* Las secciones sin superficie propia no agregan un segundo margen interno.
+     El ticket conserva su padding porque sí es una tarjeta visible. */
   #viewDashboard > .section-block,
-  #viewDashboard > .ticket-wrap,
   #viewSales > .section-block,
   #viewClients > .section-block,
   #viewDeliveries > .section-block,
@@ -72,7 +71,7 @@
     box-sizing: border-box !important;
     width: min(820px, calc(100% - 60px)) !important;
     max-width: 820px !important;
-    margin: 18px auto 14px !important;
+    margin: 18px 0 14px 30px !important;
     text-align: center !important;
   }
 
