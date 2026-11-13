@@ -893,3 +893,53 @@
     min-height: 29px;
   }
 }
+
+
+/* V6 — una única superficie por subsección, con el patrón de Resumen Semanal. */
+#viewDashboard > .section-block.dashboard-history-section,
+#viewDashboard > .section-block.dashboard-category-section,
+#viewDashboard > .section-block.dashboard-comparison-section {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* La tarjeta interior pasa a ser la única superficie visible. */
+#viewDashboard .dashboard-history-section .dashboard-collapsible-card,
+#viewDashboard .dashboard-category-section .dashboard-collapsible-card,
+#viewDashboard .dashboard-comparison-section .dashboard-collapsible-card {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(30, 20, 70, .05);
+}
+
+/* Mismo ritmo y jerarquía de encabezado que Resumen Semanal. */
+#viewDashboard .dashboard-section-toggle {
+  min-height: 68px;
+  padding: 16px 18px;
+  background: transparent;
+}
+#viewDashboard .dashboard-collapsible-content {
+  padding: 0 18px 18px;
+}
+#viewDashboard .dashboard-collapsible-content[hidden] {
+  display: none !important;
+}
+@media (max-width: 899px) {
+  #viewDashboard .dashboard-section-toggle {
+    min-height: 64px;
+    padding: 14px 15px;
+  }
+  #viewDashboard .dashboard-collapsible-content {
+    padding: 0 15px 15px;
+  }
+}
