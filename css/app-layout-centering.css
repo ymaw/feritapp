@@ -1,0 +1,71 @@
+/* FeritApp — composición global centrada para Desktop.
+   Alinea todas las vistas con el eje visual de la marca y evita contenedores
+   excesivamente anchos. No altera la navegación ni los breakpoints móviles. */
+@media (min-width: 900px) {
+  #appRoot > header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-left: 64px;
+    padding-right: 64px;
+  }
+
+  #appRoot > header .brand-lockup {
+    justify-content: center;
+    width: 100%;
+    margin: 0 0 8px !important;
+  }
+
+  #appRoot > header .eyebrow,
+  #appRoot > header .session-email {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    text-align: center;
+  }
+
+  #appRoot > .app-view:not(#viewDashboard) > .view-hero,
+  #appRoot > .app-view:not(#viewDashboard) > .section-block,
+  #viewSettings > #settingsMenu > .section-block,
+  #viewSettings > .settings-panel > .section-block {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #appRoot > .app-view:not(#viewDashboard) > .view-hero {
+    text-align: center;
+  }
+
+  #appRoot > .app-view:not(#viewDashboard) > .view-hero p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #appRoot > .app-view:not(#viewDashboard) > .section-block > .section-title,
+  #viewSettings > #settingsMenu > .section-block > .section-title,
+  #viewSettings > .settings-panel .settings-panel-heading {
+    text-align: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #viewSettings > .settings-panel .settings-panel-heading > * {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #viewDeliveries > .view-hero .sales-heading-card {
+    justify-content: center;
+    text-align: center;
+  }
+
+  #viewDeliveries > .view-hero .sales-heading-card > div {
+    text-align: center;
+  }
+}
