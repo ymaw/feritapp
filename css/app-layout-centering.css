@@ -1,55 +1,82 @@
-/* FeritApp — eje común de contenido en Desktop.
-   Las vistas comparten el mismo eje horizontal que el área de contenido del header.
-   El header y su lockup de marca no se modifican. */
+/* FeritApp — alineación común de las vistas con el eje del header.
+   El header, su logo y su nombre se conservan sin modificaciones. */
 @media (min-width: 900px) {
-  /* Todas las vistas usan el ancho útil posterior al sidebar, igual que el header. */
-  #appRoot > .app-view > .view-hero,
-  #appRoot > .app-view > .section-block,
-  #appRoot > .app-view > .ticket-wrap,
-  #appRoot > .app-view > .greeting-badge,
-  #viewSettings > #settingsMenu > .section-block,
-  #viewSettings > .settings-panel > .section-block {
-    display: block;
+  /* El área de cada vista comienza exactamente donde comienza el header.
+     El offset previo de 248px desplazaba el centro 8px respecto de la marca. */
+  #appRoot > .app-view {
     box-sizing: border-box;
-    float: none;
-    width: min(1120px, calc(100% - 60px));
-    max-width: 1120px;
-    margin-left: auto;
-    margin-right: auto;
+    width: calc(100% - 240px) !important;
+    margin-left: 240px !important;
+    margin-right: 0 !important;
   }
 
-  /* Inicio: elimina las antiguas columnas flotantes que desplazaban secciones
-     y conserva una única columna alineada con el saludo y el resumen principal. */
+  /* Mismo ancho y centro geométrico para los contenidos de las vistas. */
+  #viewDashboard > .greeting-badge,
+  #viewDashboard > .ticket-wrap,
   #viewDashboard > .section-block,
-  #viewDashboard > .ticket-wrap {
-    clear: both;
-    vertical-align: initial;
+  #viewSales > .view-hero,
+  #viewSales > .section-block,
+  #viewDeliveries > .view-hero,
+  #viewDeliveries > .section-block,
+  #viewRanking > .view-hero,
+  #viewRanking > .section-block {
+    display: block !important;
+    float: none !important;
+    box-sizing: border-box !important;
+    width: min(1120px, calc(100% - 60px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
-  /* Los encabezados de página comparten alineación central.
-     No se altera la alineación de títulos funcionales dentro de las secciones. */
-  #appRoot > .app-view > .view-hero,
-  #appRoot > .app-view > .view-hero h2,
-  #appRoot > .app-view > .view-hero p {
-    text-align: center;
+  /* Inicio: evita que las antiguas columnas de 49% desplacen las secciones. */
+  #viewDashboard > .section-block {
+    clear: both !important;
+    vertical-align: initial !important;
   }
 
-  #appRoot > .app-view > .view-hero p {
-    margin-left: auto;
-    margin-right: auto;
+  /* Los tres encabezados tipo card quedan centrados como una unidad,
+     tanto la superficie como el contenido textual de cada una. */
+  #viewSales > .view-hero,
+  #viewDeliveries > .view-hero,
+  #viewRanking > .view-hero {
+    text-align: center !important;
   }
 
-  /* Entregas tiene un encabezado compuesto por icono y bloque de texto. */
+  #viewSales > .view-hero h2,
+  #viewSales > .view-hero p,
+  #viewSales > .view-hero .view-hero-kicker,
+  #viewRanking > .view-hero h2,
+  #viewRanking > .view-hero p,
+  #viewRanking > .view-hero .view-hero-kicker {
+    width: 100%;
+    text-align: center !important;
+  }
+
+  #viewSales > .view-hero p,
+  #viewRanking > .view-hero p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
   #viewDeliveries > .view-hero .sales-heading-card {
-    justify-content: center;
-    text-align: center;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100%;
+    text-align: center !important;
   }
 
   #viewDeliveries > .view-hero .sales-heading-card > div {
-    text-align: center;
+    text-align: center !important;
   }
 
-  /* Estado vacío integrado en la sección: separador horizontal, sin tarjeta anidada. */
+  #viewDeliveries > .view-hero .sales-heading-card h2,
+  #viewDeliveries > .view-hero .sales-heading-card p {
+    text-align: center !important;
+  }
+
+  /* Estado vacío de Inicio integrado en la sección mediante un separador. */
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     display: grid;
     grid-template-columns: 42px minmax(0, 1fr);
