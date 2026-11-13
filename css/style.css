@@ -4058,3 +4058,25 @@ textarea,
 
 
 /* V12.106 — reglas de identidad trasladadas a brand-identity.css. */
+
+
+/* V12.124 — composición centrada de las vistas principales en Desktop.
+   Mantiene el ancho de Inicio como referencia y no modifica modales,
+   navegación, paneles internos de Configuración ni el layout responsive. */
+@media (min-width: 900px) {
+  #viewSales > .view-hero,
+  #viewSales > .section-block,
+  #viewClients > .view-hero,
+  #viewClients > .section-block,
+  #viewRanking > .view-hero,
+  #viewRanking > .section-block,
+  #viewDeliveries > .view-hero,
+  #viewDeliveries > .section-block,
+  #viewSettings > #settingsMenu > .section-block {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
