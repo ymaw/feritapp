@@ -440,3 +440,38 @@ test('restoring a persisted session preserves the remaining idle deadline', asyn
   await expect(page.locator('#appRoot')).toBeHidden();
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('qa-signed-out'))).toBe('1');
 });
+
+
+test('returning from the background does not extend the idle deadline without user activity', async ({ page }) => {
+  await page.clock.install();
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'feritapp-last-activity:qa-session-user',
+      String(Date.now() - (29 * 60 * 1000))
+    );
+  });
+  await openAppWithPersistedSession(page);
+  await expect(page.locator('#appRoot')).toBeVisible();
+
+  await page.evaluate(() => {
+    const originalNow = Date.now.bind(Date);
+    let visibilityState = 'hidden';
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => visibilityState
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    // Simular dos minutos transcurridos en segundo plano sin avanzar los
+    // temporizadores de Playwright: solo cambia el reloj de pared observado.
+    Date.now = () => originalNow() + (2 * 60 * 1000);
+    visibilityState = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+
+  await expect(page.locator('#authGate')).toBeVisible();
+  await expect(page.locator('#appRoot')).toBeHidden();
+  await expect.poll(() => page.evaluate(() =>
+    sessionStorage.getItem('qa-signed-out')
+  )).toBe('1');
+});
