@@ -1198,3 +1198,16 @@
     padding: 12px;
   }
 }
+
+/* V10 — mismo ancho exterior para saludo, resumen general y subsecciones en desktop. */
+@media (min-width: 900px) {
+  #viewDashboard .greeting-badge,
+  #viewDashboard > .ticket-wrap,
+  #viewDashboard > .section-block {
+    box-sizing: border-box !important;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
