@@ -1,29 +1,45 @@
-/* FeritApp — centrado del contenido de las vistas en Desktop.
-   El header conserva su composición original: sirve como referencia visual.
-   El contenido se centra dentro del área útil situada a la derecha del sidebar. */
+/* FeritApp — eje común de contenido en Desktop.
+   Las vistas comparten el mismo eje horizontal que el área de contenido del header.
+   El header y su lockup de marca no se modifican. */
 @media (min-width: 900px) {
-  #appRoot > .app-view:not(#viewDashboard) > .view-hero,
-  #appRoot > .app-view:not(#viewDashboard) > .section-block,
+  /* Todas las vistas usan el ancho útil posterior al sidebar, igual que el header. */
+  #appRoot > .app-view > .view-hero,
+  #appRoot > .app-view > .section-block,
+  #appRoot > .app-view > .ticket-wrap,
+  #appRoot > .app-view > .greeting-badge,
   #viewSettings > #settingsMenu > .section-block,
   #viewSettings > .settings-panel > .section-block {
+    display: block;
     box-sizing: border-box;
-    width: min(1120px, calc(100% - 48px));
+    float: none;
+    width: min(1120px, calc(100% - 60px));
     max-width: 1120px;
     margin-left: auto;
     margin-right: auto;
   }
 
-  #appRoot > .app-view:not(#viewDashboard) > .view-hero {
+  /* Inicio: elimina las antiguas columnas flotantes que desplazaban secciones
+     y conserva una única columna alineada con el saludo y el resumen principal. */
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    clear: both;
+    vertical-align: initial;
+  }
+
+  /* Los encabezados de página comparten alineación central.
+     No se altera la alineación de títulos funcionales dentro de las secciones. */
+  #appRoot > .app-view > .view-hero,
+  #appRoot > .app-view > .view-hero h2,
+  #appRoot > .app-view > .view-hero p {
     text-align: center;
   }
 
-  #appRoot > .app-view:not(#viewDashboard) > .view-hero p {
+  #appRoot > .app-view > .view-hero p {
     margin-left: auto;
     margin-right: auto;
   }
 
-  /* Centra el encabezado principal de cada página sin alterar
-     la alineación funcional de títulos dentro de las secciones. */
+  /* Entregas tiene un encabezado compuesto por icono y bloque de texto. */
   #viewDeliveries > .view-hero .sales-heading-card {
     justify-content: center;
     text-align: center;
@@ -33,8 +49,7 @@
     text-align: center;
   }
 
-  /* Estado vacío integrado en la sección: solo un separador horizontal,
-     sin una segunda tarjeta anidada. */
+  /* Estado vacío integrado en la sección: separador horizontal, sin tarjeta anidada. */
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     display: grid;
     grid-template-columns: 42px minmax(0, 1fr);
