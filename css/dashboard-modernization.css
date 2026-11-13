@@ -410,3 +410,39 @@
   #viewDashboard .weekly-summary-chevron,
   #viewDashboard .stat-card { transition: none !important; }
 }
+
+/* Ajustes de dimensiones frente a las reglas heredadas de Chart.js. */
+#viewDashboard #topCategoryChart .chart-box-doughnut {
+  margin: 0 !important;
+}
+#viewDashboard #topCategoryChart .cat-legend {
+  margin-top: 0;
+}
+#viewDashboard #periodCompare .chart-box.chart-box-modern {
+  height: 142px !important;
+  min-height: 142px !important;
+}
+#viewDashboard #periodCompare .payment-chart-layout {
+  grid-template-columns: minmax(0, 108px) minmax(0, 1fr);
+}
+#viewDashboard #periodCompare .payment-doughnut {
+  width: 108px !important;
+  max-width: 108px !important;
+  height: 112px !important;
+  min-height: 112px !important;
+}
+@media (max-width: 520px) {
+  #viewDashboard #periodCompare .chart-box.chart-box-modern {
+    height: 126px !important;
+    min-height: 126px !important;
+  }
+  #viewDashboard #periodCompare .payment-chart-layout {
+    grid-template-columns: minmax(0, 94px) minmax(0, 1fr);
+  }
+  #viewDashboard #periodCompare .payment-doughnut {
+    width: 94px !important;
+    max-width: 94px !important;
+    height: 98px !important;
+    min-height: 98px !important;
+  }
+}
