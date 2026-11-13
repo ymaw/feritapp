@@ -446,3 +446,173 @@
     min-height: 98px !important;
   }
 }
+
+
+/* V2 — alineación consistente y subsecciones plegables del dashboard. */
+#viewDashboard { box-sizing: border-box; }
+#viewDashboard, #viewDashboard * { box-sizing: border-box; }
+#viewDashboard .ticket-wrap,
+#viewDashboard > .section-block {
+  width: min(1120px, calc(100% - 48px));
+  margin-left: auto;
+  margin-right: auto;
+}
+#viewDashboard .section-block { min-width: 0; }
+#viewDashboard .dashboard-collapsible-card {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+#viewDashboard .dashboard-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  padding: 15px 16px;
+  border: 0;
+  background: linear-gradient(110deg, rgba(var(--primary-rgb), .055), transparent 70%);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+#viewDashboard .dashboard-section-toggle:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: -3px;
+}
+#viewDashboard .dashboard-toggle-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+#viewDashboard .dashboard-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+#viewDashboard .dashboard-toggle-copy .section-title {
+  margin: 0;
+  line-height: 1.3;
+}
+#viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle { margin: 0; }
+#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+  flex: 0 0 36px;
+  margin: 0;
+}
+#viewDashboard .dashboard-toggle-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--primary);
+  font-size: 20px;
+  transition: transform .18s ease;
+}
+#viewDashboard .dashboard-section-toggle.expanded .dashboard-toggle-chevron { transform: rotate(180deg); }
+#viewDashboard .dashboard-collapsible-content {
+  min-width: 0;
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--border);
+}
+#viewDashboard .dashboard-collapsible-content[hidden] { display: none !important; }
+#viewDashboard #weeksContainer.weeks { padding: 0; }
+#viewDashboard #topCategoryChart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+#viewDashboard #topCategoryChart .chart-box-doughnut {
+  flex: 0 0 150px;
+  width: 150px;
+  height: 150px;
+  min-height: 150px;
+}
+#viewDashboard .dashboard-payment-card { width: 100%; margin-top: 12px; }
+#viewDashboard .dashboard-payment-toggle { padding: 12px 14px; border: 1px solid var(--border); border-radius: 14px; }
+#viewDashboard .dashboard-payment-card .dashboard-collapsible-content {
+  padding: 14px 0 0;
+  border-top: 0;
+}
+#viewDashboard #periodCompare .payment-chart-heading { display: none; }
+#viewDashboard #periodCompare .payment-chart-layout {
+  display: grid;
+  grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  min-width: 0;
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+#viewDashboard #periodCompare .payment-doughnut {
+  width: 190px !important;
+  max-width: 190px !important;
+  height: 190px !important;
+  min-height: 190px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+#viewDashboard #periodCompare .payment-chart-legend { gap: 18px; }
+#viewDashboard #periodCompare .payment-chart-legend > div strong {
+  font-size: calc(14px * var(--font-scale, 1));
+}
+#viewDashboard #periodCompare .payment-chart-legend > div span:nth-child(2) {
+  font-size: calc(12px * var(--font-scale, 1));
+}
+@media (max-width: 760px) {
+  #viewDashboard .ticket-wrap,
+  #viewDashboard > .section-block { width: calc(100% - 28px); }
+  #viewDashboard .dashboard-section-toggle { padding: 13px 12px; gap: 9px; }
+  #viewDashboard .dashboard-toggle-main { gap: 9px; }
+  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+    flex-basis: 32px; width: 32px; height: 32px;
+  }
+  #viewDashboard .dashboard-collapsible-content { padding: 12px; }
+  #viewDashboard #weeksContainer.weeks { padding: 0; }
+  #viewDashboard #topCategoryChart { flex-direction: column; gap: 12px; }
+  #viewDashboard #topCategoryChart .chart-box-doughnut {
+    flex-basis: 136px; width: 136px; height: 136px; min-height: 136px;
+  }
+  #viewDashboard #topCategoryChart .cat-legend { width: 100%; }
+  #viewDashboard #periodCompare .payment-chart-layout {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 12px;
+    padding: 14px;
+  }
+  #viewDashboard #periodCompare .payment-doughnut {
+    width: 184px !important; max-width: 184px !important;
+    height: 184px !important; min-height: 184px !important;
+  }
+  #viewDashboard #periodCompare .payment-chart-legend {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%; gap: 10px;
+  }
+  #viewDashboard #periodCompare .payment-chart-legend > div {
+    padding: 10px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface);
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .dashboard-toggle-copy .section-title { font-size: calc(15px * var(--font-scale, 1)); }
+  #viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle { font-size: calc(10px * var(--font-scale, 1)); }
+  #viewDashboard #periodCompare .payment-chart-legend { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #viewDashboard .dashboard-toggle-chevron { transition: none; }
+}
