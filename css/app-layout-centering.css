@@ -63,6 +63,7 @@
 
   /* Las tarjetas de encabezado comparten un ancho compacto.
      Se fuerza también sobre los overrides históricos de Ventas. */
+  #viewSales > .view-hero.sales-hero.ranking-hero,
   #viewSales > .view-hero,
   #viewClients > .view-hero,
   #viewDeliveries > .view-hero,
