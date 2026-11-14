@@ -67,14 +67,20 @@
     margin: 18px auto 14px;
   }
 
-  #viewSales > .view-hero.sales-hero.ranking-hero h2,
-  #viewSales > .view-hero.sales-hero.ranking-hero .view-hero-kicker {
-    text-align: center;
+  /* Ventas conserva la misma jerarquía editorial que Clientes y Ranking:
+     kicker, título y descripción alineados al borde izquierdo del contenido. */
+  #viewSales > .view-hero.sales-hero {
+    text-align: left;
   }
 
-  #viewSales > .view-hero.sales-hero.ranking-hero p {
+  #viewSales > .view-hero.sales-hero h2,
+  #viewSales > .view-hero.sales-hero .view-hero-kicker,
+  #viewSales > .view-hero.sales-hero p {
+    text-align: left;
+  }
+
+  #viewSales > .view-hero.sales-hero p {
     margin-top: 7px;
-    text-align: center;
   }
 
   /* "Todo listo por ahora": mantener el separador y eliminar la tarjeta. */
