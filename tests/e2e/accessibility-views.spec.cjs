@@ -256,10 +256,22 @@ test('desktop views share the same centered content axis as the header brand', a
           const element = document.querySelector(selector);
           if (!element || element.getClientRects().length === 0) return null;
           const rect = element.getBoundingClientRect();
-          return { selector, delta: Math.abs((rect.left + rect.width / 2) - brandCenter) };
+          const targetCenter = rect.left + rect.width / 2;
+          return {
+            selector,
+            delta: Math.abs(targetCenter - brandCenter),
+            brandLeft: brandRect.left,
+            brandWidth: brandRect.width,
+            brandCenter,
+            targetLeft: rect.left,
+            targetWidth: rect.width,
+            targetCenter,
+            viewWidth: document.querySelector('#appRoot > header').getBoundingClientRect().width
+          };
         })
         .filter(Boolean);
     }, selectors);
+    console.log('FERITAPP_LAYOUT_AXIS ' + viewName + ' ' + JSON.stringify(result));
     expect(result.length, viewName + ' must expose measurable content containers').toBeGreaterThan(0);
     for (const item of result) {
       expect(item.delta, viewName + ' ' + item.selector + ' must share the header brand center').toBeLessThanOrEqual(1);
