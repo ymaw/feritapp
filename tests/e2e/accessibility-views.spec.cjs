@@ -68,7 +68,7 @@ async function navigateToView(page, view, width) {
     } else if (view === 'settings') {
       await page.locator('#headerMoreBtn').click();
       await expect(page.locator('#menuDropdown')).toBeVisible();
-      await page.locator('#menuDropdown [data-view="settings"]').click();
+      await page.locator('#menuDropdown [data-nav-key="settings"]').click();
     } else {
       throw new Error('No mobile navigation route is defined for view: ' + view);
     }
