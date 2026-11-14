@@ -241,3 +241,58 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
   await page.keyboard.press('Shift+Tab');
   await expect(page.locator('#openNewCatBtn')).toBeFocused();
 });
+
+
+test('desktop views share the same centered content axis as the header brand', async ({ page }) => {
+  await openAuthenticatedApp(page);
+
+  async function expectCenteredOnBrand(selectors, viewName) {
+    const result = await page.evaluate((targets) => {
+      const brand = document.querySelector('#appRoot > header > .brand-lockup');
+      const brandRect = brand.getBoundingClientRect();
+      const brandCenter = brandRect.left + brandRect.width / 2;
+      return targets
+        .map(selector => {
+          const element = document.querySelector(selector);
+          if (!element || element.getClientRects().length === 0) return null;
+          const rect = element.getBoundingClientRect();
+          return { selector, delta: Math.abs((rect.left + rect.width / 2) - brandCenter) };
+        })
+        .filter(Boolean);
+    }, selectors);
+    expect(result.length, viewName + ' must expose measurable content containers').toBeGreaterThan(0);
+    for (const item of result) {
+      expect(item.delta, viewName + ' ' + item.selector + ' must share the header brand center').toBeLessThanOrEqual(1);
+    }
+  }
+
+  for (const width of [1024, 1280, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+
+    await expectCenteredOnBrand([
+      '#viewDashboard > .ticket-wrap',
+      '#viewDashboard > .section-block'
+    ], 'Inicio');
+
+    await navigateToView(page, 'sales', width);
+    await expectCenteredOnBrand(['#viewSales > .view-hero', '#viewSales > .section-block'], 'Ventas');
+
+    await page.evaluate(() => {
+      document.querySelector('#viewSales').style.display = 'none';
+      document.querySelector('#viewClients').style.display = 'block';
+    });
+    await expectCenteredOnBrand(['#viewClients > .view-hero', '#viewClients > .section-block'], 'Clientes');
+
+    await navigateToView(page, 'deliveries', width);
+    await expectCenteredOnBrand(['#viewDeliveries > .view-hero', '#viewDeliveries > .section-block'], 'Entregas');
+
+    await page.locator('#sidebar [data-view="ranking"]').click();
+    await expectCenteredOnBrand(['#viewRanking > .view-hero', '#viewRanking > .section-block'], 'Ranking');
+
+    await navigateToView(page, 'settings', width);
+    await expectCenteredOnBrand(['#viewSettings > #settingsMenu > .section-block'], 'Configuración');
+    await page.locator('#viewSettings [data-settings="appearance"]').click();
+    await expect(page.locator('#settingsPanelAppearance')).toBeVisible();
+    await expectCenteredOnBrand(['#settingsPanelAppearance > .section-block'], 'Configuración / Apariencia');
+  }
+});

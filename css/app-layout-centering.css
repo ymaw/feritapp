@@ -1,34 +1,34 @@
-/* FeritApp — contenedor horizontal compartido por header y todas las vistas.
-   El contenido se centra en el área útil; el inicio del contenedor coincide
-   con el lockup de marca (logo + FeritApp) del header. */
+/* FeritApp — desktop content rail.
+   The sidebar is 248px. Header identity and each view share one centered
+   content column, using the header's 30px horizontal inset and 1120px cap. */
+
 @media (min-width: 900px) {
   #appRoot > header,
-  #appRoot > .app-view,
-  #appRoot > .install-banner {
-    margin-left: 240px !important;
-  }
-
-  #appRoot > header,
   #appRoot > .app-view {
-    width: calc(100% - 240px) !important;
-    max-width: none !important;
-    box-sizing: border-box !important;
-    margin-right: 0 !important;
+    box-sizing: border-box;
+    width: calc(100% - 248px);
+    max-width: none;
+    margin-left: 248px;
+    margin-right: 0;
   }
 
-  /* El header y el contenido usan exactamente el mismo ancho máximo
-     y centrado. De esta forma el logo y cada página comparten eje. */
+  #appRoot > .install-banner {
+    margin-left: 248px;
+  }
+
   #appRoot > header > .brand-lockup,
   #appRoot > header > .eyebrow,
   #appRoot > header > #viewHeading,
   #appRoot > header > .session-email {
-    width: min(1120px, 100%) !important;
-    max-width: 1120px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    box-sizing: border-box !important;
+    box-sizing: border-box;
+    width: min(1120px, 100%);
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
+  /* One shared rail for every primary view. The 60px subtraction mirrors
+     the desktop header's 30px padding on each side. */
   #viewDashboard > .greeting-badge,
   #viewDashboard > .ticket-wrap,
   #viewDashboard > .section-block,
@@ -36,379 +36,83 @@
   #viewSales > .section-block,
   #viewClients > .view-hero,
   #viewClients > .section-block,
-  #viewDeliveries > .view-hero,
-  #viewDeliveries > .section-block,
   #viewRanking > .view-hero,
   #viewRanking > .section-block,
-  #viewSettings .section-block {
-    display: block !important;
-    float: none !important;
-    clear: both !important;
-    box-sizing: border-box !important;
-    width: min(1120px, calc(100% - 40px)) !important;
-    max-width: 1120px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+  #viewDeliveries > .view-hero,
+  #viewDeliveries > .section-block,
+  #viewSettings > #settingsMenu > .section-block {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   #viewSettings .settings-panel .section-block {
-    width: min(920px, calc(100% - 40px)) !important;
-    max-width: 920px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    box-sizing: border-box;
+    width: min(920px, calc(100% - 60px));
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  /* Las subsecciones de Inicio comparten el mismo borde y ancho.
-     Se conserva el padding interior del diseño base. */
-  #viewDashboard > .section-block {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-  }
+  #viewDashboard > .section-block,
   #viewDashboard > .ticket-wrap {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    display: block;
   }
 
-  #viewSales > .view-hero,
-  #viewClients > .view-hero,
-  #viewDeliveries > .view-hero,
-  #viewRanking > .view-hero {
-    margin-top: 18px !important;
-    margin-bottom: 14px !important;
-    text-align: center !important;
+  #viewSales > .view-hero.sales-hero.ranking-hero {
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin: 18px auto 14px;
   }
 
-  #viewSales > .view-hero h2,
-  #viewSales > .view-hero p,
-  #viewSales > .view-hero .view-hero-kicker,
-  #viewClients > .view-hero h2,
-  #viewClients > .view-hero p,
-  #viewClients > .view-hero .view-hero-kicker,
-  #viewRanking > .view-hero h2,
-  #viewRanking > .view-hero p,
-  #viewRanking > .view-hero .view-hero-kicker {
-    width: 100%;
-    text-align: center !important;
+  #viewSales > .view-hero.sales-hero.ranking-hero h2,
+  #viewSales > .view-hero.sales-hero.ranking-hero .view-hero-kicker {
+    text-align: left;
   }
 
-  #viewSales > .view-hero p,
-  #viewClients > .view-hero p,
-  #viewRanking > .view-hero p {
-    margin-left: auto !important;
-    margin-right: auto !important;
+  #viewSales > .view-hero.sales-hero.ranking-hero p {
+    margin-top: 7px;
+    text-align: left;
   }
 
-  #viewDeliveries > .view-hero .sales-heading-card {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    width: 100%;
-    text-align: center !important;
-  }
-  #viewDeliveries > .view-hero .sales-heading-card > div,
-  #viewDeliveries > .view-hero .sales-heading-card h2,
-  #viewDeliveries > .view-hero .sales-heading-card p {
-    text-align: center !important;
-  }
-
-  #viewDashboard .greeting-badge {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 16px !important;
-    min-width: 0 !important;
-  }
-  #viewDashboard .greeting-avatar {
-    display: flex !important;
-    flex: 0 0 48px !important;
-    width: 48px !important;
-    height: 48px !important;
-    margin: 0 !important;
-  }
-  #viewDashboard .greeting-body {
-    display: block !important;
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-  }
-
-  /* El estado vacío se presenta como una fila/separador, sin tarjeta
-     independiente, dentro del mismo ancho de la sección contenedora. */
-  #viewDashboard #dashboardTasks,
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
-    display: grid !important;
-    grid-template-columns: 36px minmax(0, 1fr) !important;
-    align-items: center !important;
-    gap: 12px !important;
-    margin-top: 16px !important;
-    padding: 16px 0 0 !important;
-    border: 0 !important;
-    border-top: 1px solid var(--border) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-icon {
-    width: 36px !important;
-    height: 36px !important;
-  }
-  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
-    min-width: 0 !important;
-    padding-left: 12px !important;
-    border-left: 1px solid var(--border) !important;
+    padding-bottom: 16px;
   }
 }
 
+/* Mobile layout is intentionally unchanged; keep the empty state as a
+   horizontal separator and preserve the compact Sales hero gutters. */
 @media (max-width: 899px) {
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     display: grid;
     grid-template-columns: 38px minmax(0, 1fr);
     margin: 14px 0 0;
-    padding: 14px 0 0;
+    padding: 14px 0 14px;
     border: 0;
     border-top: 1px solid var(--border);
     border-radius: 0;
     background: transparent;
     box-shadow: none;
   }
-}
 
-
-/* V11 — alineación puntual de estado vacío y vistas de gestión.
-   No modifica el contenedor del sidebar ni las vistas Inicio/Configuración. */
-#viewDashboard > .dashboard-tasks-section #dashboardTasks {
-  display: block !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-#viewDashboard > .dashboard-tasks-section #dashboardTasks > .dashboard-task.is-clear {
-  box-sizing: border-box !important;
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 16px 18px 0 !important;
-}
-#viewDashboard > .dashboard-tasks-section #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
-  min-width: 0 !important;
-  margin: 0 !important;
-}
-
-/* Las tres vistas usan la misma caja central que las subsecciones de Inicio. */
-#viewSales > .view-hero,
-#viewSales > .section-block,
-#viewClients > .view-hero,
-#viewClients > .section-block,
-#viewRanking > .view-hero,
-#viewRanking > .section-block {
-  display: block !important;
-  float: none !important;
-  clear: both !important;
-  box-sizing: border-box !important;
-  width: min(1120px, calc(100% - 48px)) !important;
-  max-width: 1120px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
-/* Ventas: encabezado compacto, con título y descripción en un mismo eje. */
-#viewSales > .view-hero.sales-hero {
-  width: min(760px, calc(100% - 48px)) !important;
-  max-width: 760px !important;
-  padding: 18px 24px !important;
-  text-align: center !important;
-}
-#viewSales > .view-hero.sales-hero h2,
-#viewSales > .view-hero.sales-hero p,
-#viewSales > .view-hero.sales-hero .view-hero-kicker {
-  display: block !important;
-  width: 100% !important;
-  max-width: none !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  text-align: center !important;
-}
-#viewSales > .view-hero.sales-hero p {
-  margin-top: 7px !important;
-}
-
-@media (max-width: 899px) {
-  #viewDashboard > .dashboard-tasks-section #dashboardTasks > .dashboard-task.is-clear {
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 14px 15px 0 !important;
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-icon {
+    width: 36px;
+    height: 36px;
   }
 
-  #viewSales > .view-hero,
-  #viewSales > .section-block,
-  #viewClients > .view-hero,
-  #viewClients > .section-block,
-  #viewRanking > .view-hero,
-  #viewRanking > .section-block {
-    width: calc(100% - 28px) !important;
-    max-width: none !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
+    min-width: 0;
+    padding-left: 0;
+    border-left: 0;
   }
 
-  #viewSales > .view-hero.sales-hero {
-    width: calc(100% - 28px) !important;
-    max-width: none !important;
-    padding: 16px 18px !important;
-  }
-}
-
-
-/* V12 — mismo eje del header para Ventas, Clientes y Ranking; hero uniforme. */
-@media (min-width: 900px) {
-  #viewSales > .view-hero,
-  #viewSales > .section-block,
-  #viewClients > .view-hero,
-  #viewClients > .section-block,
-  #viewRanking > .view-hero,
-  #viewRanking > .section-block {
-    width: min(1120px, calc(100% - 60px)) !important;
-    max-width: 1120px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  /* Ventas comparte exactamente la superficie, proporción y padding
-     de los encabezados de Clientes y Ranking. */
-  #viewSales > .view-hero.sales-hero {
-    width: min(1120px, calc(100% - 60px)) !important;
-    max-width: 1120px !important;
-    padding: 25px 26px !important;
-    margin-top: 22px !important;
-    margin-bottom: 0 !important;
-    text-align: center !important;
-  }
-}
-
-@media (max-width: 899px) {
-  #viewSales > .view-hero,
-  #viewClients > .view-hero,
-  #viewRanking > .view-hero {
-    width: calc(100% - 40px) !important;
-    max-width: none !important;
-    margin-left: 20px !important;
-    margin-right: 20px !important;
-  }
-
-  #viewSales > .view-hero.sales-hero {
-    width: calc(100% - 40px) !important;
-    max-width: none !important;
-    padding: 20px 20px 19px !important;
-  }
-}
-
-/* “Todo listo por ahora”: se conserva el separador horizontal de la fila,
-   pero se elimina el vertical para evitar un patrón distinto al de Inicio. */
-#viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
-  padding-left: 0 !important;
-  border-left: 0 !important;
-}
-
-
-/* V13 — reglas finales: mismo eje que la marca del header y heroes equivalentes. */
-@media (min-width: 900px) {
-  /* El header tiene 20px de padding por lado: el contenido debe usar
-     exactamente ese mismo inset, no 30px. */
-  #appRoot > #viewSales.app-view > .view-hero,
-  #appRoot > #viewSales.app-view > .section-block,
-  #appRoot > #viewClients.app-view > .view-hero,
-  #appRoot > #viewClients.app-view > .section-block,
-  #appRoot > #viewRanking.app-view > .view-hero,
-  #appRoot > #viewRanking.app-view > .section-block {
-    box-sizing: border-box !important;
-    width: min(1120px, calc(100% - 40px)) !important;
-    max-width: 1120px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  /* Desactiva el override histórico de Ventas (width:auto + margen 16px)
-     y recupera literalmente la superficie base compartida por los otros heroes. */
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero {
-    display: block !important;
-    width: min(1120px, calc(100% - 40px)) !important;
-    max-width: 1120px !important;
-    margin: 22px auto 0 !important;
-    padding: 20px 20px 19px !important;
-    border: 1px solid rgba(var(--primary-rgb),.14) !important;
-    border-radius: 20px !important;
-    background: radial-gradient(circle at 100% 0%, rgba(var(--secondary-rgb),.12), transparent 42%), linear-gradient(135deg, rgba(var(--primary-rgb),.10), var(--surface)) !important;
-    box-shadow: 0 8px 24px rgba(15,23,42,.045) !important;
-    overflow: hidden !important;
-    text-align: left !important;
-  }
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero h2 {
-    margin: 0 !important;
-    font-size: calc((24px) * var(--font-scale, 1)) !important;
-    line-height: 1.12 !important;
-    text-align: left !important;
-  }
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero .view-hero-kicker {
-    margin-bottom: 7px !important;
-    font-size: calc((9px) * var(--font-scale, 1)) !important;
-    letter-spacing: .16em !important;
-    text-align: left !important;
-  }
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero p {
-    max-width: 680px !important;
-    margin: 7px 0 0 !important;
-    font-size: calc((13px) * var(--font-scale, 1)) !important;
-    line-height: 1.5 !important;
-    text-align: left !important;
-  }
-}
-
-@media (max-width: 899px) {
-  #appRoot > #viewSales.app-view > .view-hero,
-  #appRoot > #viewClients.app-view > .view-hero,
-  #appRoot > #viewRanking.app-view > .view-hero {
-    box-sizing: border-box !important;
-    width: calc(100% - 28px) !important;
-    max-width: none !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero {
-    width: calc(100% - 28px) !important;
-    margin-top: 18px !important;
-    margin-bottom: 14px !important;
-    padding: 20px 20px 19px !important;
-    border: 1px solid rgba(var(--primary-rgb),.14) !important;
-    border-radius: 20px !important;
-    background: radial-gradient(circle at 100% 0%, rgba(var(--secondary-rgb),.12), transparent 42%), linear-gradient(135deg, rgba(var(--primary-rgb),.10), var(--surface)) !important;
-    box-shadow: 0 8px 24px rgba(15,23,42,.045) !important;
-  }
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero h2,
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero p,
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero .view-hero-kicker {
-    width: 100% !important;
-    max-width: none !important;
-    text-align: center !important;
-  }
-  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero p {
-    margin: 7px 0 0 !important;
-  }
-}
-
-/* El estado vacío necesita aire debajo del texto antes del borde del bloque. */
-#viewDashboard #dashboardTasks > .dashboard-task.is-clear {
-  padding-bottom: 16px !important;
-}
-@media (max-width: 899px) {
-  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
-    padding-bottom: 14px !important;
+  #viewSales > .view-hero.sales-hero.ranking-hero {
+    box-sizing: border-box;
+    width: calc(100% - 40px);
+    max-width: none;
+    margin: 18px 20px 14px;
+    padding: 20px;
   }
 }
