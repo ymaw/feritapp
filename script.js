@@ -516,6 +516,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function showSettingsPanel(key){
     let panelId = SETTINGS_PANEL_IDS[key];
     if(!panelId) return;
+    if(key === 'personalization') fillNavigationSelectors();
     document.getElementById('settingsMenu').style.display = 'none';
     Object.keys(SETTINGS_PANEL_IDS).forEach(function(k){
       document.getElementById(SETTINGS_PANEL_IDS[k]).style.display = (k === key) ? 'block' : 'none';
@@ -1014,6 +1015,22 @@ document.addEventListener('DOMContentLoaded', function(){
     }catch(e){
       weekStartDay = 1;
     }
+    try{
+      const navigationRes = await sb.from('user_settings').select('navigation_slots').maybeSingle();
+      const savedSlots = navigationRes.data && navigationRes.data.navigation_slots;
+      if(Array.isArray(savedSlots) && savedSlots.length === 4
+        && new Set(savedSlots).size === 4
+        && savedSlots.includes('dashboard')
+        && savedSlots.every(function(key){return Object.prototype.hasOwnProperty.call(NAVIGATION_OPTIONS,key);})){
+        navigationSlots = savedSlots.slice();
+      }else{
+        navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
+      }
+    }catch(error){
+      navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
+    }
+    applyNavigationSlots();
+    fillNavigationSelectors();
     let weekStartSelect = document.getElementById('weekStartSelect');
     if(weekStartSelect){ weekStartSelect.value = String(weekStartDay); }
     let receiptMessageInput = document.getElementById('receiptMessageInput');
