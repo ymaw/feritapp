@@ -265,3 +265,54 @@
     padding: 16px 18px !important;
   }
 }
+
+
+/* V12 — mismo eje del header para Ventas, Clientes y Ranking; hero uniforme. */
+@media (min-width: 900px) {
+  #viewSales > .view-hero,
+  #viewSales > .section-block,
+  #viewClients > .view-hero,
+  #viewClients > .section-block,
+  #viewRanking > .view-hero,
+  #viewRanking > .section-block {
+    width: min(1120px, calc(100% - 60px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Ventas comparte exactamente la superficie, proporción y padding
+     de los encabezados de Clientes y Ranking. */
+  #viewSales > .view-hero.sales-hero {
+    width: min(1120px, calc(100% - 60px)) !important;
+    max-width: 1120px !important;
+    padding: 25px 26px !important;
+    margin-top: 22px !important;
+    margin-bottom: 0 !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 899px) {
+  #viewSales > .view-hero,
+  #viewClients > .view-hero,
+  #viewRanking > .view-hero {
+    width: calc(100% - 40px) !important;
+    max-width: none !important;
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+  }
+
+  #viewSales > .view-hero.sales-hero {
+    width: calc(100% - 40px) !important;
+    max-width: none !important;
+    padding: 20px 20px 19px !important;
+  }
+}
+
+/* “Todo listo por ahora”: se conserva el separador horizontal de la fila,
+   pero se elimina el vertical para evitar un patrón distinto al de Inicio. */
+#viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
+  padding-left: 0 !important;
+  border-left: 0 !important;
+}
