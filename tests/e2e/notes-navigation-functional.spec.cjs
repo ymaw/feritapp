@@ -129,7 +129,10 @@ async function openNotes(page) {
 }
 
 async function openNavigationSettings(page) {
-  await page.locator('#sidebar [data-view="settings"]').click();
+  // En viewport móvil, Configuración se alcanza desde el menú Más; el sidebar está oculto.
+  await page.locator('#headerMoreBtn').click();
+  await expect(page.locator('#menuDropdown')).toBeVisible();
+  await page.locator('#moreDynamicItems [data-nav-key="settings"]').click();
   await expect(page.locator('#viewSettings')).toBeVisible();
   await page.locator('#viewSettings [data-settings="personalization"]').click();
   await expect(page.locator('#settingsPanelPersonalization')).toBeVisible();
