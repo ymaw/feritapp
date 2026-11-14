@@ -316,3 +316,99 @@
   padding-left: 0 !important;
   border-left: 0 !important;
 }
+
+
+/* V13 — reglas finales: mismo eje que la marca del header y heroes equivalentes. */
+@media (min-width: 900px) {
+  /* El header tiene 20px de padding por lado: el contenido debe usar
+     exactamente ese mismo inset, no 30px. */
+  #appRoot > #viewSales.app-view > .view-hero,
+  #appRoot > #viewSales.app-view > .section-block,
+  #appRoot > #viewClients.app-view > .view-hero,
+  #appRoot > #viewClients.app-view > .section-block,
+  #appRoot > #viewRanking.app-view > .view-hero,
+  #appRoot > #viewRanking.app-view > .section-block {
+    box-sizing: border-box !important;
+    width: min(1120px, calc(100% - 40px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Desactiva el override histórico de Ventas (width:auto + margen 16px)
+     y recupera literalmente la superficie base compartida por los otros heroes. */
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero {
+    display: block !important;
+    width: min(1120px, calc(100% - 40px)) !important;
+    max-width: 1120px !important;
+    margin: 22px auto 0 !important;
+    padding: 20px 20px 19px !important;
+    border: 1px solid rgba(var(--primary-rgb),.14) !important;
+    border-radius: 20px !important;
+    background: radial-gradient(circle at 100% 0%, rgba(var(--secondary-rgb),.12), transparent 42%), linear-gradient(135deg, rgba(var(--primary-rgb),.10), var(--surface)) !important;
+    box-shadow: 0 8px 24px rgba(15,23,42,.045) !important;
+    overflow: hidden !important;
+    text-align: left !important;
+  }
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero h2 {
+    margin: 0 !important;
+    font-size: calc((24px) * var(--font-scale, 1)) !important;
+    line-height: 1.12 !important;
+    text-align: left !important;
+  }
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero .view-hero-kicker {
+    margin-bottom: 7px !important;
+    font-size: calc((9px) * var(--font-scale, 1)) !important;
+    letter-spacing: .16em !important;
+    text-align: left !important;
+  }
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero p {
+    max-width: 680px !important;
+    margin: 7px 0 0 !important;
+    font-size: calc((13px) * var(--font-scale, 1)) !important;
+    line-height: 1.5 !important;
+    text-align: left !important;
+  }
+}
+
+@media (max-width: 899px) {
+  #appRoot > #viewSales.app-view > .view-hero,
+  #appRoot > #viewClients.app-view > .view-hero,
+  #appRoot > #viewRanking.app-view > .view-hero {
+    box-sizing: border-box !important;
+    width: calc(100% - 28px) !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero {
+    width: calc(100% - 28px) !important;
+    margin-top: 18px !important;
+    margin-bottom: 14px !important;
+    padding: 20px 20px 19px !important;
+    border: 1px solid rgba(var(--primary-rgb),.14) !important;
+    border-radius: 20px !important;
+    background: radial-gradient(circle at 100% 0%, rgba(var(--secondary-rgb),.12), transparent 42%), linear-gradient(135deg, rgba(var(--primary-rgb),.10), var(--surface)) !important;
+    box-shadow: 0 8px 24px rgba(15,23,42,.045) !important;
+  }
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero h2,
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero p,
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero .view-hero-kicker {
+    width: 100% !important;
+    max-width: none !important;
+    text-align: center !important;
+  }
+  #appRoot > #viewSales.app-view > .view-hero.sales-hero.ranking-hero p {
+    margin: 7px 0 0 !important;
+  }
+}
+
+/* El estado vacío necesita aire debajo del texto antes del borde del bloque. */
+#viewDashboard #dashboardTasks > .dashboard-task.is-clear {
+  padding-bottom: 16px !important;
+}
+@media (max-width: 899px) {
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
+    padding-bottom: 14px !important;
+  }
+}
