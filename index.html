@@ -41,6 +41,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="css/receipt.css?v=12.126" rel="stylesheet"/>
 <link href="css/style.css?v=12.126" rel="stylesheet"/>
+<link href="css/notes.css?v=1" rel="stylesheet"/>
 <link href="css/clients.css?v=12.126" rel="stylesheet"/>
 <link href="css/empty-states.css?v=12.126" rel="stylesheet"/>
 <link href="css/category-picker.css?v=12.126" rel="stylesheet"/>
@@ -163,6 +164,7 @@
 <div aria-label="Menú Más" class="menu-dropdown" id="menuDropdown" style="display:none;">
 <div class="menu-dropdown-heading"><span aria-hidden="true" class="menu-heading-icon">⌘</span><div><strong>Más</strong></div><button aria-label="Cerrar menú Más" class="menu-close-btn" id="menuCloseBtn" title="Cerrar" type="button">×</button></div>
 <div class="menu-dropdown-group-label">GESTIÓN</div>
+<button class="menu-item" data-view="notes" type="button"><span class="menu-item-icon">✎</span><span><strong>Notas</strong><small>Anotaciones y recordatorios</small></span><span class="menu-item-arrow">›</span></button>
 <button class="menu-item" data-view="ranking" type="button"><span class="menu-item-icon">♕</span><span><strong>Ranking de clientes</strong><small>Clientes destacados</small></span><span class="menu-item-arrow">›</span></button>
 <button class="menu-item" data-view="settings" type="button"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong><small>Perfil y preferencias</small></span><span class="menu-item-arrow">›</span></button>
 <div class="menu-dropdown-group-label">AYUDA Y ACCESO</div>
@@ -483,6 +485,30 @@
 <div class="app-view" id="viewDeliveries" style="display:none;">
 <div class="view-hero deliveries-hero"><div class="sales-heading-card deliveries-heading-card"><span aria-hidden="true" class="sales-heading-mark deliveries-heading-mark"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span><div><h2>Entregas</h2><p>Controlá qué pedidos faltan entregar y cuáles ya fueron entregados.</p></div></div></div>
 <div class="section-block"><div id="deliveriesList"></div></div>
+</div>
+<div class="app-view" id="viewNotes" style="display:none;">
+  <div class="section-block">
+    <div class="notes-toolbar">
+      <div class="notes-toolbar-copy"><h2>Mis notas</h2><p>Anotá algo rápido y encontralo cuando lo necesites.</p></div>
+      <button class="notes-new-btn" id="newNoteBtn" type="button">＋ Nueva nota</button>
+    </div>
+    <input class="notes-search" id="notesSearch" type="search" placeholder="Buscar en mis notas…" aria-label="Buscar notas"/>
+    <section class="notes-editor" id="notesEditor" hidden aria-labelledby="notesEditorTitle">
+      <div class="notes-editor-heading"><h3 id="notesEditorTitle">Nueva nota</h3><button class="notes-editor-close" id="closeNoteEditor" type="button" aria-label="Cerrar editor">×</button></div>
+      <form id="noteForm">
+        <div class="notes-field"><label for="noteContent">Nota</label><textarea id="noteContent" maxlength="10000" required placeholder="Escribí lo que necesitás recordar…"></textarea></div>
+        <div class="notes-field"><label for="noteClient">Vincular con un cliente (opcional)</label><select id="noteClient"><option value="">Sin cliente asociado</option></select></div>
+        <label class="notes-reminder-row"><input id="noteReminderEnabled" type="checkbox"/> Agregar recordatorio (opcional)</label>
+        <div class="notes-reminder-fields" id="noteReminderFields" hidden>
+          <div class="notes-field"><label for="noteReminderDate">Fecha</label><input id="noteReminderDate" type="date"/></div>
+          <div class="notes-field"><label for="noteReminderTime">Hora</label><input id="noteReminderTime" type="time"/></div>
+        </div>
+        <p class="notes-feedback" id="notesReminderInfo">El recordatorio se guardará con la nota. La entrega de notificaciones push se habilitará en una fase posterior.</p>
+        <div class="notes-editor-actions"><button id="cancelNoteBtn" type="button">Cancelar</button><button class="notes-save" id="saveNoteBtn" type="submit">Guardar nota</button></div>
+      </form>
+    </section>
+    <div class="notes-list" id="notesList" aria-live="polite"><div class="notes-empty">Todavía no tenés notas guardadas.</div></div>
+  </div>
 </div>
 <nav aria-label="Navegación principal" class="bottom-nav" id="bottomNav">
 <button class="nav-item active" data-view="dashboard" type="button">
