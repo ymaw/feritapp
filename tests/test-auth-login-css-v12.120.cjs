@@ -5,11 +5,11 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'css/auth.css'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
-const version = '12.124';
+const version = '12.125';
 
 // The new stylesheet is loaded after the existing styles and uses the same cache version.
-assert.match(html, /css\/auth\.css\?v=12\.124/);
-assert.ok(html.indexOf('css/style.css?v=12.124') < html.indexOf('css/auth.css?v=12.124'));
+assert.match(html, /css\/auth\.css\?v=12\.125/);
+assert.ok(html.indexOf('css/style.css?v=12.125') < html.indexOf('css/auth.css?v=12.125'));
 for (const match of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) {
   assert.equal(match[1], version, 'All app CSS/JS cache versions must match');
 }
@@ -35,4 +35,4 @@ assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
 assert.match(style, /--primary-rgb:/);
 assert.match(style, /--secondary-rgb:/);
 assert.match(style, /--danger-rgb:/);
-console.log('OK V12.124: login stylesheet, cache version, responsive/reduced-motion rules, brand and auth hooks preserved.');
+console.log('OK V12.125: login stylesheet, cache version, responsive/reduced-motion rules, brand and auth hooks preserved.');
