@@ -9,5 +9,8 @@ assert.match(script, /if\(receiptLogo\)\s*ctx\.drawImage\(receiptLogo,\s*W\s*-\s
 assert.doesNotMatch(script, /ctx\.drawImage\(receiptLogo,\s*W\s*-\s*PADDING\s*-\s*110,\s*24,\s*110,\s*110\)/, 'No debe quedar el tamaño anterior de 88×88 ni su alineación contra el margen derecho');
 assert.match(html, /receipt-preview-ferit-logo/, 'El preview conserva el logo FeritApp');
 assert.match(receiptCss, /\.receipt-preview-ferit-logo\{top:-8px;right:0;width:98px;height:98px/, 'El preview conserva su tamaño desktop vigente');
-assert.match(html, /css\/receipt\.css\?v=12\.125/, 'La versión de caché debe actualizarse');
-console.log('OK: logo del comprobante compartido con margen superior dentro del encabezado; preview preservado.');
+const styleVersion = html.match(/css\/style\.css\?v=([^"\\s]+)/)?.[1];
+const receiptVersion = html.match(/css\/receipt\.css\?v=([^"\\s]+)/)?.[1];
+assert.ok(styleVersion && receiptVersion, 'Los estilos principales y de comprobantes deben tener versión de caché');
+assert.equal(receiptVersion, styleVersion, 'La versión de caché de receipt.css debe estar sincronizada con style.css');
+console.log('OK: logo del comprobante compartido con margen superior dentro del encabezado; preview preservado y caché sincronizada.');
