@@ -128,18 +128,13 @@ jobs:
       - name: Prepare isolated Supabase-compatible schema
         env:
           PGPASSWORD: postgres
-        run: |
-          psql -h localhost -p 5432 -U postgres -d feritapp_notes_test \\
-            -v ON_ERROR_STOP=1 \\
-            -f supabase/tests/fixtures/notes_supabase_baseline.sql
+        run: psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/tests/fixtures/notes_supabase_baseline.sql
       - name: Apply Notes and navigation migrations
         env:
           PGPASSWORD: postgres
         run: |
-          psql -h localhost -p 5432 -U postgres -d feritapp_notes_test \\
-            -v ON_ERROR_STOP=1 \\
-            -f supabase/migrations/20261114010000_create_notes.sql \\
-            -f supabase/migrations/20261114011000_add_navigation_preferences.sql
+          psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261114010000_create_notes.sql
+          psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261114011000_add_navigation_preferences.sql
       - name: Verify Notes RLS, grants and tenant isolation
         env:
           PGPASSWORD: postgres
