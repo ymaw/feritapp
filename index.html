@@ -164,9 +164,9 @@
 <div aria-label="Menú Más" class="menu-dropdown" id="menuDropdown" style="display:none;">
 <div class="menu-dropdown-heading"><span aria-hidden="true" class="menu-heading-icon">⌘</span><div><strong>Más</strong></div><button aria-label="Cerrar menú Más" class="menu-close-btn" id="menuCloseBtn" title="Cerrar" type="button">×</button></div>
 <div class="menu-dropdown-group-label">GESTIÓN</div>
-<button class="menu-item" data-view="notes" type="button"><span class="menu-item-icon">✎</span><span><strong>Notas</strong><small>Anotaciones y recordatorios</small></span><span class="menu-item-arrow">›</span></button>
-<button class="menu-item" data-view="ranking" type="button"><span class="menu-item-icon">♕</span><span><strong>Ranking de clientes</strong><small>Clientes destacados</small></span><span class="menu-item-arrow">›</span></button>
-<button class="menu-item" data-view="settings" type="button"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong><small>Perfil y preferencias</small></span><span class="menu-item-arrow">›</span></button>
+<button class="menu-item" data-view="notes" data-nav-key="notes" type="button"><span class="menu-item-icon">✎</span><span><strong>Notas</strong><small>Anotaciones y recordatorios</small></span><span class="menu-item-arrow">›</span></button>
+<button class="menu-item" data-view="ranking" data-nav-key="ranking" type="button"><span class="menu-item-icon">♕</span><span><strong>Ranking de clientes</strong><small>Clientes destacados</small></span><span class="menu-item-arrow">›</span></button>
+<button class="menu-item" data-view="settings" data-nav-key="settings" type="button"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong><small>Perfil y preferencias</small></span><span class="menu-item-arrow">›</span></button>
 <div class="menu-dropdown-group-label">AYUDA Y ACCESO</div>
 <button class="menu-item" id="menuInstallBtn" style="display:none;" type="button"><span class="menu-item-icon">↓</span><span><strong>Instalar FeritApp</strong><small>Acceso directo en tu dispositivo</small></span><span class="menu-item-arrow">›</span></button>
 <button class="menu-item menu-item-danger" id="logoutBtn" type="button"><span class="menu-item-icon">↪</span><span><strong>Cerrar sesión</strong><small>Salir de tu cuenta</small></span><span class="menu-item-arrow">›</span></button>
@@ -232,6 +232,8 @@
 <div class="section-block">
 <p class="section-title">Configuración</p>
 <p class="settings-menu-intro">Personalizá tu experiencia, tu cuenta y la forma en que trabajás con tus ventas.</p>
+<div class="settings-group-label">PERSONALIZACIÓN</div>
+<div class="settings-menu-list"><button class="settings-menu-item settings-menu-primary" data-settings="personalization" type="button"><span class="settings-menu-main"><span class="settings-menu-icon">☷</span><span><strong>Personalización</strong><small>Elegí tus accesos directos</small></span></span><span class="settings-menu-arrow">›</span></button></div>
 <div class="settings-group-label">CUENTA Y EXPERIENCIA</div>
 <div class="settings-menu-list">
 <button class="settings-menu-item settings-menu-primary" data-settings="profile" type="button">
@@ -261,6 +263,20 @@
 <button class="settings-menu-item settings-menu-danger" data-settings="danger" type="button">
 <span class="settings-menu-main"><span class="settings-menu-icon">⚠️</span><span><strong>Zona crítica</strong><small>Acciones permanentes sobre tus datos</small></span></span><span class="settings-menu-arrow">›</span>
 </button>
+</div>
+</div>
+</div>
+<div class="settings-panel app-view" id="settingsPanelPersonalization" style="display:none;">
+<div class="section-block">
+<button class="settings-back-btn" data-settings-back="" type="button">← Configuración</button>
+<div class="settings-panel-heading"><div class="settings-panel-kicker">PERSONALIZACIÓN</div><p class="section-title">Personalizar navegación</p><p class="settings-panel-description">Elegí los cuatro accesos que querés tener siempre a mano. Inicio es obligatorio y el botón + permanece fijo en el centro.</p></div>
+<div class="settings-card settings-card-featured">
+<div class="field"><label for="navigationSlot1">Acceso 1</label><select id="navigationSlot1" class="navigation-slot-select"></select></div>
+<div class="field"><label for="navigationSlot2">Acceso 2</label><select id="navigationSlot2" class="navigation-slot-select"></select></div>
+<div class="field"><label for="navigationSlot3">Acceso 3</label><select id="navigationSlot3" class="navigation-slot-select"></select></div>
+<div class="field"><label for="navigationSlot4">Acceso 4</label><select id="navigationSlot4" class="navigation-slot-select"></select></div>
+<p class="hint">No se muestran en «Más» los accesos que ya estén fijados en la barra. Las acciones críticas no se pueden fijar.</p>
+<div class="notes-editor-actions"><button id="resetNavigationBtn" type="button">Restablecer</button><button class="notes-save" id="saveNavigationBtn" type="button">Guardar cambios</button></div>
 </div>
 </div>
 </div>
@@ -521,6 +537,7 @@
 <button class="nav-item" data-view="deliveries" type="button">
 <span aria-hidden="true" class="nav-icon delivery-nav-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span><span class="nav-label">Entregas</span>
 </button>
+<button class="nav-item" data-view="notes" type="button"><span class="nav-icon">✎</span><span class="nav-label">Notas</span></button>
 </nav>
 <nav class="sidebar" id="sidebar">
 <div class="sidebar-brand">
@@ -528,12 +545,12 @@
 </div>
 <button class="sidebar-cta" id="sidebarOpenSheet" type="button">+ Nueva venta</button>
 <div class="sidebar-links">
-<button class="sidebar-item active" data-view="dashboard" type="button">⌂ Inicio</button>
-<button class="sidebar-item" data-view="sales" type="button">▤ Ventas</button>
-<button class="sidebar-item" data-view="notes" type="button">✎ Notas</button>
-<button class="sidebar-item" data-view="deliveries" type="button"><span aria-hidden="true" class="sidebar-delivery-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span> Entregas</button>
-<button class="sidebar-item" data-view="ranking" type="button">♕ Ranking</button>
-<button class="sidebar-item" data-view="settings" type="button">⚙ Configuración</button>
+<button class="sidebar-item active" data-view="dashboard" data-nav-key="dashboard" type="button">⌂ Inicio</button>
+<button class="sidebar-item" data-view="sales" data-nav-key="sales" type="button">▤ Ventas</button>
+<button class="sidebar-item" data-view="notes" data-nav-key="notes" type="button">✎ Notas</button>
+<button class="sidebar-item" data-view="deliveries" data-nav-key="deliveries" type="button"><span aria-hidden="true" class="sidebar-delivery-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span> Entregas</button>
+<button class="sidebar-item" data-view="ranking" data-nav-key="ranking" type="button">♕ Ranking</button>
+<button class="sidebar-item" data-view="settings" data-nav-key="settings" type="button">⚙ Configuración</button>
 </div>
 <button class="sidebar-item sidebar-logout" id="sidebarLogoutBtn" type="button">🚪 Cerrar sesión</button>
 </nav>
