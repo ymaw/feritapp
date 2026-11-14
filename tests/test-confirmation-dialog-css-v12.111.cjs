@@ -18,6 +18,7 @@ const dialogVersion = assetVersion('css/confirmation-dialog.css');
 const scriptVersion = assetVersion('script.js');
 assert.equal(dialogVersion, styleVersion, 'style.css and confirmation-dialog.css must share the cache version');
 assert.equal(scriptVersion, styleVersion, 'script.js and stylesheets must share the cache version');
+assert.ok(html.indexOf('css/style.css?v=') < html.indexOf('css/confirmation-dialog.css?v='), 'Dialog stylesheet must load after style.css');
 assert.match(html, /css\/confirmation-dialog\.css\?v=12\.125/);
 
 assert.match(moduleCss, /\.fa-dialog\s*\{[^}]*width:\s*min\(100%,\s*620px\)/s);
