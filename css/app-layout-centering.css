@@ -115,4 +115,10 @@
     margin: 18px 20px 14px;
     padding: 20px;
   }
+
+  /* El padding asimétrico sólo se usa en desktop; en mobile se conserva
+     el espacio original para el botón Volver. */
+  header.has-back-button {
+    padding-left: 0 !important;
+  }
 }
