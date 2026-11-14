@@ -164,9 +164,7 @@
 <div aria-label="Menú Más" class="menu-dropdown" id="menuDropdown" style="display:none;">
 <div class="menu-dropdown-heading"><span aria-hidden="true" class="menu-heading-icon">⌘</span><div><strong>Más</strong></div><button aria-label="Cerrar menú Más" class="menu-close-btn" id="menuCloseBtn" title="Cerrar" type="button">×</button></div>
 <div class="menu-dropdown-group-label">GESTIÓN</div>
-<button class="menu-item" data-view="notes" data-nav-key="notes" type="button"><span class="menu-item-icon">✎</span><span><strong>Notas</strong><small>Anotaciones y recordatorios</small></span><span class="menu-item-arrow">›</span></button>
-<button class="menu-item" data-view="ranking" data-nav-key="ranking" type="button"><span class="menu-item-icon">♕</span><span><strong>Ranking de clientes</strong><small>Clientes destacados</small></span><span class="menu-item-arrow">›</span></button>
-<button class="menu-item" data-view="settings" data-nav-key="settings" type="button"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong><small>Perfil y preferencias</small></span><span class="menu-item-arrow">›</span></button>
+<div id="moreDynamicItems"></div>
 <div class="menu-dropdown-group-label">AYUDA Y ACCESO</div>
 <button class="menu-item" id="menuInstallBtn" style="display:none;" type="button"><span class="menu-item-icon">↓</span><span><strong>Instalar FeritApp</strong><small>Acceso directo en tu dispositivo</small></span><span class="menu-item-arrow">›</span></button>
 <button class="menu-item menu-item-danger" id="logoutBtn" type="button"><span class="menu-item-icon">↪</span><span><strong>Cerrar sesión</strong><small>Salir de tu cuenta</small></span><span class="menu-item-arrow">›</span></button>
@@ -527,17 +525,17 @@
   </div>
 </div>
 <nav aria-label="Navegación principal" class="bottom-nav" id="bottomNav">
-<button class="nav-item active" data-view="dashboard" type="button">
+<button class="nav-item active" data-nav-slot="1" data-nav-key="dashboard" data-view="dashboard" type="button">
 <span class="nav-icon">⌂</span><span class="nav-label">Inicio</span>
 </button>
-<button class="nav-item" data-view="sales" type="button">
+<button class="nav-item" data-nav-slot="2" data-nav-key="sales" data-view="sales" type="button">
 <span class="nav-icon">▤</span><span class="nav-label">Ventas</span>
 </button>
 <button aria-label="Agregar venta" class="nav-fab" id="openSheet">+</button>
-<button class="nav-item" data-view="deliveries" type="button">
+<button class="nav-item" data-nav-slot="3" data-nav-key="deliveries" data-view="deliveries" type="button">
 <span aria-hidden="true" class="nav-icon delivery-nav-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span><span class="nav-label">Entregas</span>
 </button>
-<button class="nav-item" data-view="notes" type="button"><span class="nav-icon">✎</span><span class="nav-label">Notas</span></button>
+<button class="nav-item" data-nav-slot="4" data-nav-key="notes" data-view="notes" type="button"><span class="nav-icon">✎</span><span class="nav-label">Notas</span></button>
 </nav>
 <nav class="sidebar" id="sidebar">
 <div class="sidebar-brand">
