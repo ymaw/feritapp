@@ -174,11 +174,16 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   await page.locator('#saveNoteBtn').click();
   await expect(page.locator('.note-card').filter({ hasText: 'Inventario revisado y actualizado' })).toBeVisible();
 
+  // Quitar el filtro de búsqueda para volver a mostrar la nota vinculada antes de eliminarla.
+  await page.locator('#notesSearch').fill('');
+  await expect(linkedNote).toBeVisible();
   await linkedNote.locator('[data-note-delete]').click();
   await expect(page.locator('.note-card').filter({ hasText: 'Llamar al cliente por el pedido' })).toHaveCount(0);
 });
 
 test('navigation preferences persist and reset only applies after saving', async ({ page }) => {
+  // Esta cobertura verifica la barra inferior y el menú móvil, no el sidebar de escritorio.
+  await page.setViewportSize({ width: 390, height: 844 });
   await openIsolatedApp(page);
   await openNavigationSettings(page);
 
