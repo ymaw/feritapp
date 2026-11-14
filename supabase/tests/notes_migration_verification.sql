@@ -8,10 +8,18 @@ BEGIN
   IF (SELECT count(*) FROM pg_policies WHERE schemaname='public' AND tablename='notes') <> 4 THEN
     RAISE EXCEPTION 'Expected four owner-scoped Notes policies';
   END IF;
-  IF has_table_privilege('anon','public.notes','SELECT,INSERT,UPDATE,DELETE') THEN
+  IF has_table_privilege('anon','public.notes','SELECT')
+    OR has_table_privilege('anon','public.notes','INSERT')
+    OR has_table_privilege('anon','public.notes','UPDATE')
+    OR has_table_privilege('anon','public.notes','DELETE') THEN
     RAISE EXCEPTION 'anon must not have Notes table privileges';
   END IF;
-  IF NOT has_table_privilege('authenticated','public.notes','SELECT,INSERT,UPDATE,DELETE') THEN
+  IF NOT (
+    has_table_privilege('authenticated','public.notes','SELECT')
+    AND has_table_privilege('authenticated','public.notes','INSERT')
+    AND has_table_privilege('authenticated','public.notes','UPDATE')
+    AND has_table_privilege('authenticated','public.notes','DELETE')
+  ) THEN
     RAISE EXCEPTION 'authenticated is missing Notes CRUD privileges';
   END IF;
   IF NOT EXISTS (
