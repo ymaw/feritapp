@@ -138,7 +138,4 @@ jobs:
       - name: Verify Notes RLS, grants and tenant isolation
         env:
           PGPASSWORD: postgres
-        run: |
-          psql -h localhost -p 5432 -U postgres -d feritapp_notes_test \\
-            -v ON_ERROR_STOP=1 \\
-            -f supabase/tests/notes_migration_verification.sql
+        run: psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/tests/notes_migration_verification.sql
