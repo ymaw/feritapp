@@ -29,7 +29,7 @@ for (const selector of ['.font-scale-label{', '.font-scale-options{', '.font-sca
   assert.ok(moduleCss.includes(selector), `Falta ${selector} en el módulo nuevo`);
   assert.ok(!style.includes(selector), `La regla ${selector} sigue en style.css`);
 }
-assert.match(moduleCss, /@media\\s*\\(max-width:\\s*520px\\)/);
-assert.match(moduleCss, /grid-template-columns:repeat\\(3,minmax\\(0,1fr)\\)/);
+assert.ok(moduleCss.includes('@media(max-width:520px)'), 'Debe conservarse el breakpoint móvil de 520px');
+assert.ok(moduleCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))'), 'La grilla móvil debe conservar tres columnas');
 assert.ok(style.includes('#viewSales .management-expanded-layout .sales-group-item-side .row-actions .del-btn'), 'La regla de eliminación no debe moverse con el módulo de accesibilidad');
 console.log(`OK regresión V12.110: reglas extraídas, responsividad móvil y versiones de caché sincronizadas (${styleVersion}).`);
