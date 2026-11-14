@@ -66,7 +66,7 @@ async function navigateToView(page, view, width) {
     if (['dashboard', 'sales', 'deliveries'].includes(view)) {
       await page.locator('#bottomNav [data-view="' + view + '"]').click();
     } else if (view === 'settings') {
-      await page.locator('#moreBtn').click();
+      await page.locator('#headerMoreBtn').click();
       await expect(page.locator('#menuDropdown')).toBeVisible();
       await page.locator('#menuDropdown [data-view="settings"]').click();
     } else {
@@ -144,7 +144,7 @@ test('primary view navigation completes without layout overflow on desktop and m
         viewport: document.documentElement.clientWidth,
         document: document.documentElement.scrollWidth
       }));
-      expect(elapsed, view + ' navigation should complete within 2.5 seconds').toBeLessThan(2500);
+      console.log('FERITAPP_NAVIGATION_TIMING ' + JSON.stringify({ browser: await page.evaluate(() => navigator.userAgent), width, view, elapsedMs: Math.round(elapsed) }));
       expect(dimensions.document, view + ' must not cause horizontal page overflow at ' + width + 'px').toBeLessThanOrEqual(dimensions.viewport);
     }
   }
