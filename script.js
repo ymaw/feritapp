@@ -496,6 +496,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- Configuración: menú de dos niveles ---------------- */
   const SETTINGS_PANEL_IDS = {
+    personalization: 'settingsPanelPersonalization',
     appearance: 'settingsPanelAppearance',
     profile: 'settingsPanelProfile',
     notifications: 'settingsPanelNotifications',
@@ -533,7 +534,9 @@ document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('[data-view]').forEach(function(btn){
     btn.addEventListener('click', function(){
       switchView(btn.getAttribute('data-view'));
-      menuDropdown.style.display = 'none';
+      const settingsTarget = btn.getAttribute('data-settings-open');
+      if(settingsTarget) showSettingsPanel(settingsTarget);
+      closeMoreMenu();
     });
   });
   const headerProfileBtn = document.getElementById('headerProfileBtn');
@@ -547,6 +550,99 @@ document.addEventListener('DOMContentLoaded', function(){
     greetingAvatarBtn.addEventListener('click', openProfile);
     greetingAvatarBtn.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openProfile(); } });
   }
+
+
+  /* ---------------- Navegación móvil personalizable ---------------- */
+  const NAVIGATION_OPTIONS = {
+    dashboard:{label:'Inicio',icon:'⌂',view:'dashboard'},
+    sales:{label:'Ventas',icon:'▤',view:'sales'},
+    deliveries:{label:'Entregas',icon:'▧',view:'deliveries'},
+    notes:{label:'Notas',icon:'✎',view:'notes'},
+    ranking:{label:'Ranking',icon:'♕',view:'ranking'},
+    settings:{label:'Configuración',icon:'⚙',view:'settings'},
+    'settings:profile':{label:'Mi Perfil',icon:'👤',view:'settings',settings:'profile'},
+    'settings:appearance':{label:'Apariencia',icon:'🎨',view:'settings',settings:'appearance'},
+    'settings:notifications':{label:'Notificaciones',icon:'🔔',view:'settings',settings:'notifications'},
+    'settings:week':{label:'Semana de ventas',icon:'📅',view:'settings',settings:'week'},
+    'settings:receipt':{label:'Mensaje del comprobante',icon:'🧾',view:'settings',settings:'receipt'},
+    'settings:backup':{label:'Copia de seguridad',icon:'💾',view:'settings',settings:'backup'}
+  };
+  const DEFAULT_NAVIGATION_SLOTS = ['dashboard','sales','deliveries','notes'];
+  let navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
+
+  function applyNavigationSlots(){
+    const buttons = Array.from(document.querySelectorAll('#bottomNav .nav-item[data-nav-slot]'));
+    buttons.forEach(function(button,index){
+      const key = navigationSlots[index] || DEFAULT_NAVIGATION_SLOTS[index];
+      const option = NAVIGATION_OPTIONS[key] || NAVIGATION_OPTIONS[DEFAULT_NAVIGATION_SLOTS[index]];
+      button.setAttribute('data-nav-key',key);
+      button.setAttribute('data-view',option.view);
+      if(option.settings) button.setAttribute('data-settings-open',option.settings);
+      else button.removeAttribute('data-settings-open');
+      button.innerHTML = '<span class="nav-icon">' + option.icon + '</span><span class="nav-label">' + escapeHtml(option.label) + '</span>';
+      button.setAttribute('aria-label',option.label);
+    });
+    document.querySelectorAll('#sidebar .sidebar-item[data-nav-key]').forEach(function(button){
+      button.classList.toggle('active',button.getAttribute('data-view') === currentView);
+    });
+    renderMoreMenu();
+  }
+
+  function renderMoreMenu(){
+    const root = document.getElementById('moreDynamicItems');
+    if(!root) return;
+    const pinned = new Set(navigationSlots);
+    root.innerHTML = Object.keys(NAVIGATION_OPTIONS).filter(function(key){return !pinned.has(key);}).map(function(key){
+      const option = NAVIGATION_OPTIONS[key];
+      const settingsAttr = option.settings ? ' data-settings-open="' + option.settings + '"' : '';
+      return '<button class="menu-item" type="button" data-view="' + option.view + '" data-nav-key="' + key + '"' + settingsAttr + '>'
+        + '<span class="menu-item-icon">' + option.icon + '</span><span><strong>' + escapeHtml(option.label) + '</strong></span><span class="menu-item-arrow">›</span></button>';
+    }).join('');
+    root.querySelectorAll('[data-view]').forEach(function(button){
+      button.addEventListener('click',function(){
+        switchView(button.getAttribute('data-view'));
+        const target = button.getAttribute('data-settings-open');
+        if(target) showSettingsPanel(target);
+        closeMoreMenu();
+      });
+    });
+  }
+
+  function fillNavigationSelectors(){
+    for(let i=1;i<=4;i++){
+      const select = document.getElementById('navigationSlot'+i);
+      if(!select) continue;
+      select.innerHTML = Object.keys(NAVIGATION_OPTIONS).map(function(key){
+        return '<option value="' + key + '">' + escapeHtml(NAVIGATION_OPTIONS[key].label) + '</option>';
+      }).join('');
+      select.value = navigationSlots[i-1];
+    }
+  }
+
+  async function saveNavigationSlots(){
+    const selected = [1,2,3,4].map(function(i){return document.getElementById('navigationSlot'+i).value;});
+    if(new Set(selected).size !== 4){ showToast('Elegí cuatro accesos diferentes.'); return; }
+    if(!selected.includes('dashboard')){ showToast('Inicio debe permanecer entre los cuatro accesos.'); return; }
+    const button = document.getElementById('saveNavigationBtn');
+    button.disabled = true;
+    try{
+      const result = await sb.from('user_settings').upsert({navigation_slots:selected},{onConflict:'user_id'});
+      if(result.error) throw result.error;
+      navigationSlots = selected;
+      applyNavigationSlots();
+      showToast('Navegación personalizada');
+      showSettingsMenu();
+    }catch(error){
+      console.error('No se pudieron guardar los accesos:',error);
+      showToast('No se pudo guardar. Aplicá la migración de preferencias de navegación.');
+    }finally{ button.disabled = false; }
+  }
+
+  document.getElementById('saveNavigationBtn').addEventListener('click',saveNavigationSlots);
+  document.getElementById('resetNavigationBtn').addEventListener('click',function(){
+    navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
+    fillNavigationSelectors();
+  });
 
   let currentUserEmail = null;
 
