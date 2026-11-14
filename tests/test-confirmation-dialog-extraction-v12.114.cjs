@@ -29,5 +29,5 @@ assert.ok(fs.existsSync(path.join(root, 'tests/test-receipt-selection-v12.102.cj
 assert.ok(fs.existsSync(path.join(root, 'tests/test-receipt-selection-v12.99.cjs')));
 assert.ok(!fs.existsSync(path.join(root, 'tests/test-receipt-period-v12.93.cjs')));
 assert.ok(!fs.existsSync(path.join(root, 'tests/test-receipt-selection-v12.95.cjs')));
-for (const m of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) assert.equal(m[1], '12.125', 'cache versions must be uniform');
-console.log('OK confirmation dialog extraction: responsive delivery styles preserved and cache versions synchronized (${styleVersion}).');
+for (const m of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) assert.equal(m[1], styleVersion, 'cache versions must be uniform');
+console.log('OK confirmation dialog extraction: responsive delivery styles preserved and cache versions synchronized (' + styleVersion + ').');
