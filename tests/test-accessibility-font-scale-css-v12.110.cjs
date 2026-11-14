@@ -7,10 +7,12 @@ const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const moduleCss = fs.readFileSync(path.join(root, 'css/accessibility-font-scale.css'), 'utf8');
 
 function assetVersion(assetPath) {
-  const escapedPath = assetPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = html.match(new RegExp(escapedPath + '\\?v=([^"\\s]+)'));
-  assert.ok(match, `Falta la referencia versionada de ${assetPath}`);
-  return match[1];
+  const marker = assetPath + '?v=';
+  const start = html.indexOf(marker);
+  assert.notEqual(start, -1, `Falta la referencia versionada de ${assetPath}`);
+  const version = html.slice(start + marker.length).match(/^([^"\\s]+)/);
+  assert.ok(version, `No se pudo leer la versión de ${assetPath}`);
+  return version[1];
 }
 
 const styleVersion = assetVersion('css/style.css');
