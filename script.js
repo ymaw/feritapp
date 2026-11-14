@@ -445,9 +445,10 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewClients').style.display = 'none';
     document.getElementById('viewDeliveries').style.display = (view === 'deliveries') ? 'block' : 'none';
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
+    document.getElementById('viewNotes').style.display = (view === 'notes') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
@@ -457,6 +458,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(view === 'sales'){ renderManagementList(); }
     if(view === 'deliveries'){ renderDeliveriesView(); }
     if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
+    if(view === 'notes'){ loadNotes(); }
     if(view === 'settings'){ syncNotifyControls(); showSettingsMenu(); }
   }
 
@@ -932,6 +934,169 @@ document.addEventListener('DOMContentLoaded', function(){
     render();
     resetForm();
   }
+
+
+  /* ---------------- Notas personales ---------------- */
+  let notesCache = [];
+  let notesClients = [];
+  let editingNoteId = null;
+
+  function formatNoteDate(value){
+    if(!value) return '';
+    const date = new Date(value);
+    if(Number.isNaN(date.getTime())) return '';
+    return date.toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
+  }
+
+  function closeNoteEditor(){
+    const editor = document.getElementById('notesEditor');
+    if(editor) editor.hidden = true;
+    editingNoteId = null;
+    const form = document.getElementById('noteForm');
+    if(form) form.reset();
+    const reminderFields = document.getElementById('noteReminderFields');
+    if(reminderFields) reminderFields.hidden = true;
+    const title = document.getElementById('notesEditorTitle');
+    if(title) title.textContent = 'Nueva nota';
+  }
+
+  function openNoteEditor(note){
+    const editor = document.getElementById('notesEditor');
+    const form = document.getElementById('noteForm');
+    if(!editor || !form) return;
+    form.reset();
+    editingNoteId = note ? note.id : null;
+    document.getElementById('notesEditorTitle').textContent = note ? 'Editar nota' : 'Nueva nota';
+    document.getElementById('noteContent').value = note ? note.content : '';
+    document.getElementById('noteClient').value = note && note.client_id ? note.client_id : '';
+    const enabled = !!(note && note.reminder_at);
+    document.getElementById('noteReminderEnabled').checked = enabled;
+    document.getElementById('noteReminderFields').hidden = !enabled;
+    if(enabled){
+      const date = new Date(note.reminder_at);
+      const local = new Date(date.getTime() - date.getTimezoneOffset()*60000);
+      document.getElementById('noteReminderDate').value = local.toISOString().slice(0,10);
+      document.getElementById('noteReminderTime').value = local.toISOString().slice(11,16);
+    }
+    editor.hidden = false;
+    document.getElementById('noteContent').focus();
+    editor.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function renderNotes(){
+    const root = document.getElementById('notesList');
+    if(!root) return;
+    const term = (document.getElementById('notesSearch').value || '').trim().toLocaleLowerCase('es');
+    const filtered = notesCache.filter(function(note){
+      const client = notesClients.find(function(c){return c.id === note.client_id;});
+      return (note.content || '').toLocaleLowerCase('es').includes(term)
+        || (client && client.name.toLocaleLowerCase('es').includes(term));
+    });
+    if(!filtered.length){
+      root.innerHTML = '<div class="notes-empty">' + (term ? 'No encontramos notas que coincidan con tu búsqueda.' : 'Todavía no tenés notas guardadas. Creá la primera cuando necesites anotar algo.') + '</div>';
+      return;
+    }
+    root.innerHTML = filtered.map(function(note){
+      const client = notesClients.find(function(c){return c.id === note.client_id;});
+      const reminder = note.reminder_at ? '<span class="note-chip">◷ ' + escapeHtml(formatNoteDate(note.reminder_at)) + '</span>' : '';
+      const clientChip = client ? '<span class="note-chip">♙ ' + escapeHtml(client.name) + '</span>' : '';
+      return '<article class="note-card" data-note-id="' + escapeHtml(note.id) + '">'
+        + '<p class="note-card-content">' + escapeHtml(note.content) + '</p>'
+        + '<div class="note-card-meta">' + clientChip + reminder + '<span>Actualizada ' + escapeHtml(formatNoteDate(note.updated_at || note.created_at)) + '</span></div>'
+        + '<div class="note-card-actions"><button type="button" data-note-edit="' + escapeHtml(note.id) + '">Editar</button><button type="button" data-note-delete="' + escapeHtml(note.id) + '">Eliminar</button></div>'
+        + '</article>';
+    }).join('');
+    root.querySelectorAll('[data-note-edit]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        const note = notesCache.find(function(item){return item.id === btn.getAttribute('data-note-edit');});
+        if(note) openNoteEditor(note);
+      });
+    });
+    root.querySelectorAll('[data-note-delete]').forEach(function(btn){
+      btn.addEventListener('click',async function(){
+        const id = btn.getAttribute('data-note-delete');
+        if(!window.confirm('¿Querés eliminar esta nota? Esta acción no se puede deshacer.')) return;
+        btn.disabled = true;
+        const result = await sb.from('notes').delete().eq('id',id);
+        if(result.error){ btn.disabled=false; showToast('No se pudo eliminar la nota.'); return; }
+        notesCache = notesCache.filter(function(item){return item.id !== id;});
+        renderNotes();
+        showToast('Nota eliminada');
+      });
+    });
+  }
+
+  async function loadNotes(){
+    if(!sb || !entered) return;
+    const root = document.getElementById('notesList');
+    if(root) root.innerHTML = '<div class="notes-empty">Cargando tus notas…</div>';
+    try{
+      const [notesResult, clientsResult] = await Promise.all([
+        sb.from('notes').select('id,content,client_id,reminder_at,created_at,updated_at').order('updated_at',{ascending:false}),
+        sb.from('clients').select('id,name').order('name',{ascending:true})
+      ]);
+      if(notesResult.error) throw notesResult.error;
+      if(clientsResult.error) throw clientsResult.error;
+      notesCache = notesResult.data || [];
+      notesClients = clientsResult.data || [];
+      const select = document.getElementById('noteClient');
+      const current = select.value;
+      select.innerHTML = '<option value="">Sin cliente asociado</option>' + notesClients.map(function(client){
+        return '<option value="' + escapeHtml(client.id) + '">' + escapeHtml(client.name) + '</option>';
+      }).join('');
+      if(notesClients.some(function(client){return client.id === current;})) select.value = current;
+      renderNotes();
+    }catch(error){
+      console.error('No se pudieron cargar las notas:',error);
+      if(root) root.innerHTML = '<div class="notes-empty">No se pudieron cargar las notas. Verificá que esté aplicada la migración de Notas en Supabase.</div>';
+    }
+  }
+
+  document.getElementById('newNoteBtn').addEventListener('click',function(){openNoteEditor(null);});
+  document.getElementById('closeNoteEditor').addEventListener('click',closeNoteEditor);
+  document.getElementById('cancelNoteBtn').addEventListener('click',closeNoteEditor);
+  document.getElementById('noteReminderEnabled').addEventListener('change',function(){
+    document.getElementById('noteReminderFields').hidden = !this.checked;
+  });
+  document.getElementById('notesSearch').addEventListener('input',renderNotes);
+  document.getElementById('noteForm').addEventListener('submit',async function(event){
+    event.preventDefault();
+    if(!sb || !entered) return;
+    const content = document.getElementById('noteContent').value.trim();
+    if(!content){ showToast('Escribí el contenido de la nota.'); return; }
+    const clientId = document.getElementById('noteClient').value || null;
+    let reminderAt = null;
+    if(document.getElementById('noteReminderEnabled').checked){
+      const date = document.getElementById('noteReminderDate').value;
+      const time = document.getElementById('noteReminderTime').value;
+      if(!date || !time){ showToast('Completá la fecha y la hora del recordatorio.'); return; }
+      const parsed = new Date(date + 'T' + time);
+      if(Number.isNaN(parsed.getTime()) || parsed.getTime() <= Date.now()){
+        showToast('Elegí una fecha y hora futuras para el recordatorio.'); return;
+      }
+      reminderAt = parsed.toISOString();
+    }
+    const payload = {content:content,client_id:clientId,reminder_at:reminderAt,updated_at:new Date().toISOString()};
+    const save = document.getElementById('saveNoteBtn');
+    save.disabled = true;
+    try{
+      const result = editingNoteId
+        ? await sb.from('notes').update(payload).eq('id',editingNoteId).select('id,content,client_id,reminder_at,created_at,updated_at').single()
+        : await sb.from('notes').insert(payload).select('id,content,client_id,reminder_at,created_at,updated_at').single();
+      if(result.error) throw result.error;
+      const saved = result.data;
+      if(editingNoteId) notesCache = notesCache.map(function(item){return item.id === saved.id ? saved : item;});
+      else notesCache.unshift(saved);
+      closeNoteEditor();
+      renderNotes();
+      showToast('Nota guardada');
+    }catch(error){
+      console.error('No se pudo guardar la nota:',error);
+      showToast('No se pudo guardar. Verificá la migración de Notas y volvé a intentar.');
+    }finally{
+      save.disabled = false;
+    }
+  });
 
   function csvEscape(val){
     val = String(val === null || val === undefined ? '' : val);
