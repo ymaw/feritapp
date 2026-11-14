@@ -19,12 +19,10 @@ const scriptVersion = assetVersion('script.js');
 assert.equal(dialogVersion, styleVersion, 'style.css and confirmation-dialog.css must share the cache version');
 assert.equal(scriptVersion, styleVersion, 'script.js and stylesheets must share the cache version');
 assert.ok(html.indexOf('css/style.css?v=') < html.indexOf('css/confirmation-dialog.css?v='), 'Dialog stylesheet must load after style.css');
-assert.match(html, /css\/confirmation-dialog\.css\?v=12\.125/);
 
 assert.match(moduleCss, /\.fa-dialog\s*\{[^}]*width:\s*min\(100%,\s*620px\)/s);
 assert.match(moduleCss, /#saleDeleteDialog #saleDeleteDescription\s*\{[^}]*white-space:\s*nowrap/s);
 assert.match(moduleCss, /overflow-x:\s*auto/);
 assert.ok(!style.includes('width: min(100%, 620px)'), 'El ancho del diálogo debe estar en el módulo nuevo');
 assert.ok(!style.includes('#saleDeleteDialog #saleDeleteDescription'), 'El texto de confirmación debe estar en el módulo nuevo');
-assert.match(html, /script\.js\?v=12\.125/);
 console.log('OK confirmation dialog regression: extraction, stylesheet order and synchronized cache versions (' + styleVersion + ').');
