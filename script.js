@@ -582,6 +582,7 @@ document.addEventListener('DOMContentLoaded', function(){
       else button.removeAttribute('data-settings-open');
       button.innerHTML = '<span class="nav-icon">' + option.icon + '</span><span class="nav-label">' + escapeHtml(option.label) + '</span>';
       button.setAttribute('aria-label',option.label);
+      button.classList.toggle('active',option.view === currentView);
     });
     document.querySelectorAll('#sidebar .sidebar-item[data-nav-key]').forEach(function(button){
       button.classList.toggle('active',button.getAttribute('data-view') === currentView);
