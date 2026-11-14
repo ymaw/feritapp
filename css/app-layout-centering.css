@@ -178,3 +178,90 @@
     box-shadow: none;
   }
 }
+
+
+/* V11 — alineación puntual de estado vacío y vistas de gestión.
+   No modifica el contenedor del sidebar ni las vistas Inicio/Configuración. */
+#viewDashboard > .dashboard-tasks-section #dashboardTasks {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+#viewDashboard > .dashboard-tasks-section #dashboardTasks > .dashboard-task.is-clear {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 16px 18px 0 !important;
+}
+#viewDashboard > .dashboard-tasks-section #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+/* Las tres vistas usan la misma caja central que las subsecciones de Inicio. */
+#viewSales > .view-hero,
+#viewSales > .section-block,
+#viewClients > .view-hero,
+#viewClients > .section-block,
+#viewRanking > .view-hero,
+#viewRanking > .section-block {
+  display: block !important;
+  float: none !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+  width: min(1120px, calc(100% - 48px)) !important;
+  max-width: 1120px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Ventas: encabezado compacto, con título y descripción en un mismo eje. */
+#viewSales > .view-hero.sales-hero {
+  width: min(760px, calc(100% - 48px)) !important;
+  max-width: 760px !important;
+  padding: 18px 24px !important;
+  text-align: center !important;
+}
+#viewSales > .view-hero.sales-hero h2,
+#viewSales > .view-hero.sales-hero p,
+#viewSales > .view-hero.sales-hero .view-hero-kicker {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+}
+#viewSales > .view-hero.sales-hero p {
+  margin-top: 7px !important;
+}
+
+@media (max-width: 899px) {
+  #viewDashboard > .dashboard-tasks-section #dashboardTasks > .dashboard-task.is-clear {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 14px 15px 0 !important;
+  }
+
+  #viewSales > .view-hero,
+  #viewSales > .section-block,
+  #viewClients > .view-hero,
+  #viewClients > .section-block,
+  #viewRanking > .view-hero,
+  #viewRanking > .section-block {
+    width: calc(100% - 28px) !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  #viewSales > .view-hero.sales-hero {
+    width: calc(100% - 28px) !important;
+    max-width: none !important;
+    padding: 16px 18px !important;
+  }
+}
