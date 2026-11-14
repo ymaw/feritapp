@@ -18,6 +18,7 @@ const dialogVersion = assetVersion('css/confirmation-dialog.css');
 const scriptVersion = assetVersion('script.js');
 assert.equal(dialogVersion, styleVersion, 'style.css and confirmation-dialog.css must share the cache version');
 assert.equal(scriptVersion, styleVersion, 'script.js and stylesheets must share the cache version');
+assert.ok(html.indexOf('css/style.css?v=') < html.indexOf('css/confirmation-dialog.css?v='), 'Dialog stylesheet must load after style.css');
 assert.match(html, /css\/confirmation-dialog\.css\?v=12\.125/);
 
 for (const selector of ['.fa-dialog-backdrop', '.fa-dialog-icon', '.fa-dialog-actions', '.fa-dialog-cancel', '.fa-dialog-confirm', 'body.fa-dialog-open', '@keyframes fa-dialog-in']) assert.ok(moduleCss.includes(selector), `Missing extracted selector: ${selector}`);
