@@ -6,7 +6,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const script = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const migration = fs.readFileSync(path.join(root, 'supabase/migrations/20261114011000_add_navigation_preferences.sql'), 'utf8');
 const nav = html.match(/<nav aria-label="Navegación principal" class="bottom-nav"[^>]*>[\s\S]*?<\/nav>/)?.[0] || '';
-assert.equal((nav.match(/class="nav-item"/g) || []).length, 4, 'Mobile navigation must expose exactly four configurable slots');
+assert.equal((nav.match(/class="nav-item(?: active)?"/g) || []).length, 4, 'Mobile navigation must expose exactly four configurable slots');
 assert.ok(nav.indexOf('data-nav-slot="2"') < nav.indexOf('id="openSheet"') && nav.indexOf('id="openSheet"') < nav.indexOf('data-nav-slot="3"'), 'The central create action must remain between the two pairs of slots');
 assert.match(html, /id="settingsPanelPersonalization"/);
 for (let i=1;i<=4;i++) assert.match(html,new RegExp('id="navigationSlot'+i+'"'));
