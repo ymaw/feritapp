@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   /* ---------------- menú desplegable / vistas ---------------- */
-  const moreBtn = document.getElementById('moreBtn');
+  const headerMoreBtn = document.getElementById('headerMoreBtn');
   const menuDropdown = document.getElementById('menuDropdown');
   const globalBackBtn = document.getElementById('globalBackBtn');
   let currentView = 'dashboard';
@@ -415,15 +415,16 @@ document.addEventListener('DOMContentLoaded', function(){
     openMenuFrom(anchorEl);
   }
 
-  function closeMoreMenu(){ menuDropdown.style.display = 'none'; moreBtn.setAttribute('aria-expanded','false'); moreBtn.querySelector('.nav-icon').textContent = '⋯'; }
+  function closeMoreMenu(){
+    menuDropdown.style.display = 'none';
+    if(headerMoreBtn) headerMoreBtn.setAttribute('aria-expanded','false');
+  }
   const menuCloseBtn = document.getElementById('menuCloseBtn');
   if(menuCloseBtn) menuCloseBtn.addEventListener('click', function(e){ e.stopPropagation(); closeMoreMenu(); });
-  moreBtn.addEventListener('click', function(e){
+  if(headerMoreBtn) headerMoreBtn.addEventListener('click', function(e){
     e.stopPropagation();
-    toggleMenuFrom(moreBtn);
-    const opened = menuDropdown.style.display === 'block';
-    moreBtn.setAttribute('aria-expanded', String(opened));
-    moreBtn.querySelector('.nav-icon').textContent = opened ? '×' : '⋯';
+    toggleMenuFrom(headerMoreBtn);
+    headerMoreBtn.setAttribute('aria-expanded', String(menuDropdown.style.display === 'block'));
   });
   menuDropdown.addEventListener('click', function(e){ e.stopPropagation(); });
   document.addEventListener('click', function(){ closeMoreMenu(); });
