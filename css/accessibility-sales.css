@@ -1,4 +1,8 @@
-/* V12.121 — Contraste accesible en la vista de Ventas y Clientes integrados. */
+/* V12.127 — Contraste accesible en la vista de Ventas y Clientes integrados. */
+#viewSales .sales-hero .view-hero-kicker {
+  color: var(--primary);
+}
+
 #viewSales #managementWeekTotal {
   color: #047857;
 }
