@@ -26,4 +26,4 @@ assert.match(moduleCss, /overflow-x:\s*auto/);
 assert.ok(!style.includes('width: min(100%, 620px)'), 'El ancho del diálogo debe estar en el módulo nuevo');
 assert.ok(!style.includes('#saleDeleteDialog #saleDeleteDescription'), 'El texto de confirmación debe estar en el módulo nuevo');
 assert.match(html, /script\.js\?v=12\.125/);
-console.log('OK confirmation dialog regression: extraction, stylesheet order and synchronized cache versions (${styleVersion}).');
+console.log('OK confirmation dialog regression: extraction, stylesheet order and synchronized cache versions (' + styleVersion + ').');
