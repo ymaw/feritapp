@@ -246,6 +246,12 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
 test('desktop views share the same centered content axis as the header brand', async ({ page }) => {
   await openAuthenticatedApp(page);
 
+  const mainViewsInsideAppRoot = await page.evaluate(() =>
+    ['viewDashboard', 'viewSettings', 'viewRanking', 'viewClients', 'viewSales', 'viewDeliveries']
+      .map(id => document.getElementById(id)?.parentElement?.id === 'appRoot')
+  );
+  expect(mainViewsInsideAppRoot.every(Boolean), 'all primary views must be direct children of #appRoot').toBe(true);
+
   async function expectCenteredOnBrand(selectors, viewName) {
     const result = await page.evaluate((targets) => {
       const brand = document.querySelector('#appRoot > header > .brand-lockup');
