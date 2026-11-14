@@ -11,8 +11,4 @@ alter table public.user_settings
   check (
     jsonb_typeof(navigation_slots) = 'array'
     and jsonb_array_length(navigation_slots) = 4
-    and (
-      select count(distinct value) = 4
-      from jsonb_array_elements_text(navigation_slots) as value
-    )
   );
