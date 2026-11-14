@@ -9,6 +9,10 @@ alter table public.user_settings
 alter table public.user_settings
   add constraint user_settings_navigation_slots_valid
   check (
-    jsonb_typeof(navigation_slots) = 'array'
-    and jsonb_array_length(navigation_slots) = 4
+    case
+      when jsonb_typeof(navigation_slots) = 'array'
+      then jsonb_array_length(navigation_slots) = 4
+        and navigation_slots <@ '["dashboard","sales","deliveries","notes","ranking","settings","settings:profile","settings:appearance","settings:notifications","settings:week","settings:receipt","settings:backup"]'::jsonb
+      else false
+    end
   );
