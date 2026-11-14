@@ -268,6 +268,7 @@ test('desktop views share the same centered content axis as the header brand', a
 
   for (const width of [1024, 1280, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
+    await navigateToView(page, 'dashboard', width);
 
     await expectCenteredOnBrand([
       '#viewDashboard > .ticket-wrap',
