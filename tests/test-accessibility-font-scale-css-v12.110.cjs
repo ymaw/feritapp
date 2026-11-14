@@ -10,7 +10,7 @@ function assetVersion(assetPath) {
   const marker = assetPath + '?v=';
   const start = html.indexOf(marker);
   assert.notEqual(start, -1, `Falta la referencia versionada de ${assetPath}`);
-  const version = html.slice(start + marker.length).match(/^([^"\\s]+)/);
+  const version = html.slice(start + marker.length).match(/^([^"]+)/);
   assert.ok(version, `No se pudo leer la versión de ${assetPath}`);
   return version[1];
 }
