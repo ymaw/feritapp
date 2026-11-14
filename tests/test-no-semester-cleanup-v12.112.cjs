@@ -8,9 +8,8 @@ const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const emptyCss = fs.readFileSync(path.join(root, 'css/empty-states.css'), 'utf8');
 
 function assetVersion(assetPath) {
-  const escapedPath = assetPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = html.match(new RegExp(escapedPath + '\\?v=([^"\\s]+)'));
-  assert.ok(match, `Missing cache-busted asset reference: ${assetPath}`);
+  const match = html.match(new RegExp(assetPath.replaceAll('.', '\\.') + '\\?v=([^"\\s]+)'));
+  assert.ok(match, 'Missing cache-busted asset reference: ' + assetPath);
   return match[1];
 }
 
@@ -22,8 +21,8 @@ const emptyStatesVersion = assetVersion('css/empty-states.css');
 const scriptVersion = assetVersion('script.js');
 assert.equal(emptyStatesVersion, styleVersion, 'empty-states.css and style.css cache versions must match');
 assert.equal(scriptVersion, styleVersion, 'script.js and style.css cache versions must match');
-assert.ok(html.indexOf(`css/style.css?v=${styleVersion}`) < html.indexOf(`css/empty-states.css?v=${emptyStatesVersion}`));
+assert.ok(html.indexOf('css/style.css?v=' + styleVersion) < html.indexOf('css/empty-states.css?v=' + emptyStatesVersion));
 assert.doesNotMatch(style, /\.empty-inline\s*\{|#viewClients \.empty-inline|\.empty\s*\{/);
 assert.match(emptyCss, /\.empty-inline\s*\{/);
 assert.match(emptyCss, /#viewClients \.empty-inline/);
-console.log(`OK: borrado semestral desactivado, exportación manual intacta y extracción de estados vacíos verificada (cache ${styleVersion}).`);
+console.log('OK: borrado semestral desactivado, exportación manual intacta y extracción de estados vacíos verificada (cache ' + styleVersion + ').');
