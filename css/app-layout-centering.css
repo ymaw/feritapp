@@ -1,20 +1,34 @@
-/* FeritApp — eje común alineado con el branding del header.
-   Desktop: sidebar real de 240px + padding horizontal del header de 20px. */
+/* FeritApp — contenedor horizontal compartido por header y todas las vistas.
+   El contenido se centra en el área útil; el inicio del contenedor coincide
+   con el lockup de marca (logo + FeritApp) del header. */
 @media (min-width: 900px) {
-  /* Header y vistas comparten el mismo origen después del sidebar. */
   #appRoot > header,
-  #appRoot > .app-view {
-    box-sizing: border-box !important;
+  #appRoot > .app-view,
+  #appRoot > .install-banner {
     margin-left: 240px !important;
   }
 
+  #appRoot > header,
   #appRoot > .app-view {
     width: calc(100% - 240px) !important;
     max-width: none !important;
+    box-sizing: border-box !important;
     margin-right: 0 !important;
   }
 
-  /* El borde/contorno de cada bloque empieza exactamente debajo del logo. */
+  /* El header y el contenido usan exactamente el mismo ancho máximo
+     y centrado. De esta forma el logo y cada página comparten eje. */
+  #appRoot > header > .brand-lockup,
+  #appRoot > header > .eyebrow,
+  #appRoot > header > #viewHeading,
+  #appRoot > header > .session-email {
+    width: min(1120px, 100%) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+  }
+
   #viewDashboard > .greeting-badge,
   #viewDashboard > .ticket-wrap,
   #viewDashboard > .section-block,
@@ -33,32 +47,28 @@
     box-sizing: border-box !important;
     width: min(1120px, calc(100% - 40px)) !important;
     max-width: 1120px !important;
-    margin-left: 20px !important;
-    margin-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
-  /* Los bloques de Inicio mantienen el borde exterior y el contenido en el
-     mismo eje que el logo; no se agrega una segunda sangría interna. */
+  #viewSettings .settings-panel .section-block {
+    width: min(920px, calc(100% - 40px)) !important;
+    max-width: 920px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Las subsecciones de Inicio comparten el mismo borde y ancho.
+     Se conserva el padding interior del diseño base. */
   #viewDashboard > .section-block {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
   }
-
   #viewDashboard > .ticket-wrap {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
 
-  /* Los paneles internos de Configuración conservan un ancho de lectura menor,
-     pero parten del mismo eje horizontal que el header. */
-  #viewSettings .settings-panel .section-block {
-    width: min(920px, calc(100% - 40px)) !important;
-    max-width: 920px !important;
-    margin-left: 20px !important;
-    margin-right: 0 !important;
-  }
-
-  /* Encabezados de las vistas: mismo origen; el texto sigue centrado dentro. */
   #viewSales > .view-hero,
   #viewClients > .view-hero,
   #viewDeliveries > .view-hero,
@@ -101,7 +111,6 @@
     text-align: center !important;
   }
 
-  /* Saludo: avatar y texto en una fila y alineados al eje del resto. */
   #viewDashboard .greeting-badge {
     display: flex !important;
     flex-direction: row !important;
@@ -123,23 +132,21 @@
     min-width: 0 !important;
   }
 
-  /* Estado vacío: título y descripción alineados con el texto de las
-     subsecciones (después del icono y del separador vertical). */
+  /* El estado vacío se presenta como una fila/separador, sin tarjeta
+     independiente, dentro del mismo ancho de la sección contenedora. */
   #viewDashboard #dashboardTasks,
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     box-sizing: border-box !important;
     width: 100% !important;
-    margin-right: 0 !important;
-  }
-  #viewDashboard #dashboardTasks {
     margin-left: 0 !important;
+    margin-right: 0 !important;
   }
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     display: grid !important;
     grid-template-columns: 36px minmax(0, 1fr) !important;
     align-items: center !important;
     gap: 12px !important;
-    margin: 16px 0 0 !important;
+    margin-top: 16px !important;
     padding: 16px 0 0 !important;
     border: 0 !important;
     border-top: 1px solid var(--border) !important;
@@ -158,8 +165,6 @@
   }
 }
 
-/* En mobile/tablet se conserva el layout existente y solo el estado vacío
-   mantiene el tratamiento sin tarjeta adicional. */
 @media (max-width: 899px) {
   #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
     display: grid;
