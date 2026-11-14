@@ -70,6 +70,11 @@
   /* Ventas conserva la misma jerarquía editorial que Clientes y Ranking:
      kicker, título y descripción alineados al borde izquierdo del contenido. */
   #viewSales > .view-hero.sales-hero {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
     text-align: left;
   }
 
