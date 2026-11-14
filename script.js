@@ -642,8 +642,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
   document.getElementById('saveNavigationBtn').addEventListener('click',saveNavigationSlots);
   document.getElementById('resetNavigationBtn').addEventListener('click',function(){
-    navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
-    fillNavigationSelectors();
+    // Restablecer modifica solo el borrador visible; la navegación activa
+    // cambia únicamente cuando el usuario confirma con Guardar.
+    DEFAULT_NAVIGATION_SLOTS.forEach(function(key,index){
+      const select = document.getElementById('navigationSlot' + (index + 1));
+      if(select) select.value = key;
+    });
   });
 
   let currentUserEmail = null;
@@ -1131,11 +1135,20 @@ document.addEventListener('DOMContentLoaded', function(){
         const id = btn.getAttribute('data-note-delete');
         if(!window.confirm('¿Querés eliminar esta nota? Esta acción no se puede deshacer.')) return;
         btn.disabled = true;
-        const result = await sb.from('notes').delete().eq('id',id);
-        if(result.error){ btn.disabled=false; showToast('No se pudo eliminar la nota.'); return; }
-        notesCache = notesCache.filter(function(item){return item.id !== id;});
-        renderNotes();
-        showToast('Nota eliminada');
+        try{
+          const result = await sb.from('notes').delete().eq('id',id);
+          if(result.error) throw result.error;
+          notesCache = notesCache.filter(function(item){return item.id !== id;});
+          renderNotes();
+          showToast('Nota eliminada');
+        }catch(error){
+          console.error('No se pudo eliminar la nota:',error);
+          showToast('No se pudo eliminar la nota. Revisá tu conexión e intentá nuevamente.');
+        }finally{
+          // El botón puede desaparecer si la eliminación fue exitosa; si falla,
+          // siempre vuelve a quedar disponible para reintentar.
+          if(btn.isConnected) btn.disabled = false;
+        }
       });
     });
   }
