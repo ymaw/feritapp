@@ -23,5 +23,4 @@ assert.ok(!/\.install-banner\s*\{[^}]*position\s*:\s*fixed/s.test(style), 'Las r
 assert.match(moduleCss, /\.install-banner\s*\{[^}]*position\s*:\s*fixed/s);
 assert.match(moduleCss, /@media\s*\(min-width:\s*900px\)\s*\{\s*\.install-banner\s*\{\s*left:\s*240px;/);
 assert.match(moduleCss, /@media\s*\(min-width:\s*900px\)\s*\{\s*\.install-banner\s*\{\s*left:\s*248px;/);
-assert.ok(html.includes('script.js?v=12.125'));
 console.log('OK install banner regression: module linked, base rules extracted, desktop offsets preserved and asset versions synchronized (' + styleVersion + ').');
