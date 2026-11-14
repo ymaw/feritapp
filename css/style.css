@@ -1682,7 +1682,7 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 
 
 /* V12.20 interaction and card-layout polish */
-#viewSales .sales-hero{padding:0!important;margin:10px 0 18px!important;background:transparent!important;border:0!important;box-shadow:none!important;}
+#viewSales .sales-hero{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;}
 #viewSales .sales-heading-card{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;padding:18px 20px;border:1px solid var(--border);border-radius:20px;background:var(--surface);box-shadow:0 8px 24px rgba(20,16,40,.06);}
 #viewSales .sales-heading-mark{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:15px;background:rgba(var(--primary-rgb),.13);color:var(--primary-soft);font-size: calc((24px) * var(--font-scale, 1));}
 #viewSales .sales-heading-card h2{margin:0 0 5px;font-size: calc((clamp(18px,2vw,24px)) * var(--font-scale, 1));line-height:1.2;color:var(--text);}
@@ -1932,7 +1932,7 @@ header.has-back-button .header-back-btn {
   left: 16px !important;
   transform: none !important;
 }
-header.has-back-button { padding-left: 0 !important; }
+header.has-back-button { padding-left: 30px !important; }
 header.has-back-button .brand-lockup,
 header.has-back-button .eyebrow,
 header.has-back-button h1,
