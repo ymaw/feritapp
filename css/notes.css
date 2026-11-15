@@ -54,3 +54,36 @@
 .notes-field-heading label{margin:0;}
 .notes-field-heading .notes-label-create-btn{flex:0 0 auto;margin:0;line-height:1.2;}
 .notes-type-field>.notes-label-create-btn{display:inline-flex;align-items:center;margin-top:7px;padding:4px 0;font-size:12px;}
+
+
+/* Ajustes de alineación y filtros compactos — Notas. */
+.notes-label-grid{align-items:start;}
+.notes-label-grid>.notes-field{
+  align-self:start;
+  align-content:start;
+  grid-template-rows:22px 44px auto;
+  row-gap:7px;
+}
+.notes-label-grid .notes-field-heading{min-height:22px;}
+.notes-type-field>.notes-label-create-btn{margin-top:0;padding:2px 0;font-size:11px;}
+.notes-filters{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:0 0 12px;
+}
+.notes-filters select{
+  flex:0 1 190px;
+  width:auto;
+  min-width:0;
+  min-height:34px;
+  padding:6px 9px;
+  border-radius:9px;
+  font-size:12px;
+}
+@media(max-width:560px){
+  .notes-label-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .notes-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+  .notes-filters select{width:100%;min-height:34px;font-size:11px;padding:6px 7px;}
+}
