@@ -40,6 +40,7 @@
   #viewRanking > .section-block,
   #viewDeliveries > .view-hero,
   #viewDeliveries > .section-block,
+  #viewNotes > .section-block,
   #viewSettings > #settingsMenu > .section-block {
     box-sizing: border-box;
     width: min(1120px, calc(100% - 60px));
@@ -154,5 +155,28 @@
      el espacio original para el botón Volver. */
   header.has-back-button {
     padding-left: 0 !important;
+  }
+}
+
+
+/* Notas comparte el mismo rail centrado que el resto de las vistas. */
+@media (min-width: 900px) {
+  #viewNotes > .section-block {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 899px) {
+  #viewNotes > .section-block {
+    box-sizing: border-box;
+    width: calc(100% - 40px);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
