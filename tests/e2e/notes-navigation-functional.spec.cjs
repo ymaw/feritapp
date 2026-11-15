@@ -153,10 +153,9 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   await page.locator('#createNoteTypeBtn').click();
   await page.locator('#noteLabelName').fill('Retiro');
   await page.locator('#saveNoteLabelBtn').click();
-  await page.locator('#createNoteImportanceBtn').click();
-  await page.locator('#noteLabelName').fill('Urgente');
-  await page.locator('#noteLabelColor').fill('#EF4444');
-  await page.locator('#saveNoteLabelBtn').click();
+  await expect(page.locator('#noteImportance option')).toHaveText(['Sin importancia','Alta','Baja','Media','Urgente']);
+  await expect(page.locator('#createNoteImportanceBtn')).toHaveCount(0);
+  await expect(page.locator('#noteLabelColor')).toHaveCount(0);
   await page.locator('#noteType').selectOption({label:'Retiro'});
   await page.locator('#noteImportance').selectOption({label:'Urgente'});
   await page.locator('#noteContent').fill('Recordatorio libre para revisar el inventario');
@@ -166,10 +165,12 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   await expect(freeNote).not.toContainText('Cliente de prueba');
   await expect(freeNote).toContainText('Retiro');
   await expect(freeNote).toContainText('Urgente');
-  await expect(freeNote).toHaveAttribute('style',/--note-type-color:/);
+  await expect(freeNote).toHaveAttribute('style',/--note-type-color:#[0-9A-F]{6}/i);
+  const savedTypeColor = await freeNote.evaluate(node => node.style.getPropertyValue('--note-type-color'));
 
   await page.locator('#newNoteBtn').click();
   await page.locator('#noteContent').fill('Llamar al cliente por el pedido');
+  await page.locator('#noteType').selectOption({label:'Retiro'});
   await page.locator('#noteClient').selectOption('qa-client-1');
   await page.locator('#noteReminderEnabled').check();
   const future = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
@@ -181,6 +182,7 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   const linkedNote = page.locator('.note-card').filter({ hasText: 'Llamar al cliente por el pedido' });
   await expect(linkedNote).toBeVisible();
   await expect(linkedNote).toContainText('Cliente de prueba');
+  await expect(linkedNote).toHaveAttribute('style',new RegExp('--note-type-color:'+savedTypeColor));
   await expect(linkedNote.locator('.note-chip')).toHaveCount(2);
 
   await page.locator('#notesSearch').fill('cliente de prueba');
