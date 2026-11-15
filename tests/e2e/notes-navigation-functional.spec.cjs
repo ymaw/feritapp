@@ -145,6 +145,9 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   page.on('dialog', dialog => dialog.accept());
   await openIsolatedApp(page);
   await openNotes(page);
+  await page.locator('#headerHomeBtn').click();
+  await expect(page.locator('#viewDashboard')).toBeVisible();
+  await openNotes(page);
 
   await page.locator('#newNoteBtn').click();
   await page.locator('#createNoteTypeBtn').click();
@@ -229,6 +232,8 @@ test('navigation preferences persist and reset only applies after saving', async
   await expect(page.locator('#menuProfileBtn')).toBeVisible();
   await expect(page.locator('#menuSettingsBtn')).toBeVisible();
   await page.locator('#headerMoreBtn').click();
+  await page.locator('#headerHomeBtn').click();
+  await expect(page.locator('#viewDashboard')).toBeVisible();
 
   await openNavigationSettings(page);
   await page.locator('#resetNavigationBtn').click();
