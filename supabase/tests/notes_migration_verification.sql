@@ -49,12 +49,23 @@ END $$;
 BEGIN;
 SET LOCAL ROLE authenticated;
 SET LOCAL request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
-INSERT INTO public.notes(content,client_id) VALUES ('Nota propia','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+INSERT INTO public.note_labels(kind,name,color) VALUES ('type','Retiro','#8B5CF6'),('importance','Urgente','#EF4444');
+INSERT INTO public.notes(content,client_id,type_label_id,importance_label_id)
+VALUES (
+  'Nota propia','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  (SELECT id FROM public.note_labels WHERE kind='type' AND name='Retiro'),
+  (SELECT id FROM public.note_labels WHERE kind='importance' AND name='Urgente')
+);
 DO $$
 DECLARE visible_count integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.notes;
   IF visible_count <> 1 THEN RAISE EXCEPTION 'Owner cannot read own note'; END IF;
+  SELECT count(*) INTO visible_count FROM public.note_labels;
+  IF visible_count <> 2 THEN RAISE EXCEPTION 'Owner cannot read own labels'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.notes WHERE type_label_id IS NOT NULL AND importance_label_id IS NOT NULL) THEN
+    RAISE EXCEPTION 'Note type and importance labels were not persisted';
+  END IF;
 END $$;
 SET LOCAL request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 DO $$
