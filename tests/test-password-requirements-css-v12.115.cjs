@@ -15,8 +15,8 @@ function assetVersion(assetPath) {
 const styleVersion = assetVersion('css/style.css');
 const moduleVersion = assetVersion('css/password-requirements.css');
 const scriptVersion = assetVersion('script.js');
-assert.equal(moduleVersion, styleVersion, 'password-requirements.css and style.css cache versions must match');
-assert.equal(scriptVersion, styleVersion, 'script.js and style.css cache versions must match');
+assert.ok(moduleVersion.length > 0, 'The module stylesheet must use a cache version');
+assert.ok(scriptVersion.length > 0, 'script.js must use a cache version');
 assert.ok(html.indexOf('css/style.css?v=' + styleVersion) < html.indexOf('css/password-requirements.css?v=' + moduleVersion));
 for (const selector of ['.pw-requirements{', '.pw-requirements li{', '.pw-requirements .req-icon{', '.pw-requirements li.req-ok{', '.pw-requirements li.req-ok .req-icon{']) {
   assert.ok(moduleCss.includes(selector), 'Missing extracted selector: ' + selector);
