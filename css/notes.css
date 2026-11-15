@@ -8,6 +8,7 @@
 .notes-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
 .note-card{min-width:0;padding:15px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:0 3px 12px rgba(20,30,55,.035)}
 .note-card-content{margin:0;color:var(--text);font-size:calc(14px * var(--font-scale,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.note-card-reminder{display:flex;align-items:center;gap:7px;margin-top:10px;padding-top:9px;border-top:1px solid var(--border);color:var(--text-muted);font-size:calc(11px * var(--font-scale,1));line-height:1.4}
 .note-card-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;color:var(--text-muted);font-size:calc(11px * var(--font-scale,1))}
 .note-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-muted)}
 .note-card-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
