@@ -32,7 +32,7 @@ assert.match(script,/headerHomeBtn/);
 assert.match(script,/menuSettingsBtn/);
 assert.match(script,/menuProfileBtn/);
 assert.match(optionalHomeMigration,/drop constraint if exists user_settings_navigation_slots_valid/i);
-assert.match(optionalHomeMigration,/'dashboard','sales','deliveries','notes','ranking'/i);
+assert.match(optionalHomeMigration,/'\["dashboard","sales","deliveries","notes","ranking"\]'::jsonb/i);
 assert.match(noteLabelsMigration,/create table if not exists public\.note_labels/i);
 assert.match(noteLabelsMigration,/enable row level security/i);
 assert.match(script,/type_label_id/);
