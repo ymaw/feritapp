@@ -163,8 +163,6 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   await expect(freeNote).not.toContainText('Cliente de prueba');
   await expect(freeNote).toContainText('Retiro');
   await expect(freeNote).toContainText('Urgente');
-  await expect(freeNote).toContainText('Retiro');
-  await expect(freeNote).toContainText('Urgente');
   await expect(freeNote).toHaveAttribute('style',/--note-type-color:/);
 
   await page.locator('#newNoteBtn').click();
@@ -207,9 +205,13 @@ test('navigation preferences persist and reset only applies after saving', async
   await openIsolatedApp(page);
   await openNavigationSettings(page);
 
+  await page.locator('#navigationSlot1').selectOption('sales');
   await page.locator('#navigationSlot2').selectOption('ranking');
   await page.locator('#saveNavigationBtn').click();
+  await expect(page.locator('#bottomNav [data-nav-slot="1"]')).toHaveAttribute('data-nav-key', 'sales');
+  await expect(page.locator('#bottomNav [data-nav-slot="1"]')).toHaveAttribute('data-nav-key', 'sales');
   await expect(page.locator('#bottomNav [data-nav-slot="2"]')).toHaveAttribute('data-nav-key', 'ranking');
+  await expect(page.locator('#headerHomeBtn')).toBeVisible();
 
   await page.reload();
   await expect(page.locator('#authGate')).toBeVisible();
@@ -222,7 +224,10 @@ test('navigation preferences persist and reset only applies after saving', async
   await page.locator('#headerMoreBtn').click();
   await expect(page.locator('#menuDropdown')).toBeVisible();
   await expect(page.locator('#moreDynamicItems [data-nav-key="ranking"]')).toHaveCount(0);
-  await expect(page.locator('#moreDynamicItems [data-nav-key="sales"]')).toHaveCount(1);
+  await expect(page.locator('#moreDynamicItems [data-nav-key="sales"]')).toHaveCount(0);
+  await expect(page.locator('#moreDynamicItems [data-nav-key="dashboard"]')).toHaveCount(1);
+  await expect(page.locator('#menuProfileBtn')).toBeVisible();
+  await expect(page.locator('#menuSettingsBtn')).toBeVisible();
   await page.locator('#headerMoreBtn').click();
 
   await openNavigationSettings(page);
