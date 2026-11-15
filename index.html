@@ -156,7 +156,7 @@
 <div id="appRoot" style="display:none;">
 <header>
 <button aria-label="Volver" class="header-back-btn" hidden="" id="globalBackBtn" title="Volver" type="button"><span aria-hidden="true">←</span></button>
-<div class="brand-lockup"><img alt="" aria-hidden="true" class="brand-logo" src="assets/images/feritapp-icon.png"/><span class="brand-word">Ferit<b>App</b></span></div><p class="eyebrow">Vendé. Organizá. Crecé.</p>
+<div aria-label="Ir a Inicio" class="brand-lockup header-home-link" id="headerHomeBtn" role="button" tabindex="0"><img alt="" aria-hidden="true" class="brand-logo" src="assets/images/feritapp-icon.png"/><span class="brand-word">Ferit<b>App</b></span></div><p class="eyebrow">Vendé. Organizá. Crecé.</p>
 <h1 id="viewHeading">Registro semanal</h1>
 <p class="session-email" id="sessionEmail"></p>
 <button aria-expanded="false" aria-label="Abrir menú Más" class="header-more-btn" id="headerMoreBtn" type="button"><span aria-hidden="true" class="header-more-icon">⋮</span></button>
@@ -164,8 +164,11 @@
 </header>
 <div aria-label="Menú Más" class="menu-dropdown" id="menuDropdown" style="display:none;">
 <div class="menu-dropdown-heading"><span aria-hidden="true" class="menu-heading-icon">⌘</span><div><strong>Más</strong></div><button aria-label="Cerrar menú Más" class="menu-close-btn" id="menuCloseBtn" title="Cerrar" type="button">×</button></div>
-<div class="menu-dropdown-group-label">GESTIÓN</div>
+<div class="menu-dropdown-group-label">SECCIONES</div>
 <div id="moreDynamicItems"></div>
+<div class="menu-dropdown-group-label">CUENTA Y CONFIGURACIÓN</div>
+<button class="menu-item" id="menuProfileBtn" type="button"><span class="menu-item-icon">👤</span><span><strong>Mi Perfil</strong></span><span class="menu-item-arrow">›</span></button>
+<button class="menu-item" id="menuSettingsBtn" type="button"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong></span><span class="menu-item-arrow">›</span></button>
 <div class="menu-dropdown-group-label">AYUDA Y ACCESO</div>
 <button class="menu-item" id="menuInstallBtn" style="display:none;" type="button"><span class="menu-item-icon">↓</span><span><strong>Instalar FeritApp</strong><small>Acceso directo en tu dispositivo</small></span><span class="menu-item-arrow">›</span></button>
 <button class="menu-item menu-item-danger" id="logoutBtn" type="button"><span class="menu-item-icon">↪</span><span><strong>Cerrar sesión</strong><small>Salir de tu cuenta</small></span><span class="menu-item-arrow">›</span></button>
@@ -268,7 +271,7 @@
 <div class="settings-panel app-view" id="settingsPanelPersonalization" style="display:none;">
 <div class="section-block">
 <button class="settings-back-btn" data-settings-back="" type="button">← Configuración</button>
-<div class="settings-panel-heading"><div class="settings-panel-kicker">PERSONALIZACIÓN</div><p class="section-title">Personalizar navegación</p><p class="settings-panel-description">Elegí los cuatro accesos que querés tener siempre a mano. Inicio es obligatorio y el botón + permanece fijo en el centro.</p></div>
+<div class="settings-panel-heading"><div class="settings-panel-kicker">PERSONALIZACIÓN</div><p class="section-title">Personalizar navegación</p><p class="settings-panel-description">Elegí cuatro accesos para tener siempre a mano. El botón + permanece fijo en el centro y podés volver a Inicio tocando el logo FeritApp del encabezado.</p></div>
 <div class="settings-card settings-card-featured">
 <div class="field"><label for="navigationSlot1">Acceso 1</label><select id="navigationSlot1" class="navigation-slot-select"></select></div>
 <div class="field"><label for="navigationSlot2">Acceso 2</label><select id="navigationSlot2" class="navigation-slot-select"></select></div>
