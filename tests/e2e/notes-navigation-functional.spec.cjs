@@ -183,7 +183,8 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   await expect(linkedNote).toBeVisible();
   await expect(linkedNote).toContainText('Cliente de prueba');
   await expect(linkedNote).toHaveAttribute('style',new RegExp('--note-type-color:'+savedTypeColor));
-  await expect(linkedNote.locator('.note-chip')).toHaveCount(2);
+  await expect(linkedNote.locator('.note-chip')).toHaveCount(1);
+  await expect(linkedNote.locator('.note-card-reminder')).toContainText('12:30');
 
   await page.locator('#notesSearch').fill('cliente de prueba');
   await expect(linkedNote).toBeVisible();
@@ -213,7 +214,6 @@ test('navigation preferences persist and reset only applies after saving', async
   await page.locator('#navigationSlot1').selectOption('sales');
   await page.locator('#navigationSlot2').selectOption('ranking');
   await page.locator('#saveNavigationBtn').click();
-  await expect(page.locator('#bottomNav [data-nav-slot="1"]')).toHaveAttribute('data-nav-key', 'sales');
   await expect(page.locator('#bottomNav [data-nav-slot="1"]')).toHaveAttribute('data-nav-key', 'sales');
   await expect(page.locator('#bottomNav [data-nav-slot="2"]')).toHaveAttribute('data-nav-key', 'ranking');
   await expect(page.locator('#headerHomeBtn')).toBeVisible();
