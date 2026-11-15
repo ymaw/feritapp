@@ -22,6 +22,21 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'authenticated is missing Notes CRUD privileges';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_class WHERE oid='public.note_labels'::regclass AND relrowsecurity) THEN
+    RAISE EXCEPTION 'RLS is not enabled on public.note_labels';
+  END IF;
+  IF (SELECT count(*) FROM pg_policies WHERE schemaname='public' AND tablename='note_labels') <> 4 THEN
+    RAISE EXCEPTION 'Expected four owner-scoped note label policies';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='notes' AND column_name='type_label_id'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='notes' AND column_name='importance_label_id'
+  ) THEN
+    RAISE EXCEPTION 'Notes label columns were not created';
+  END IF;
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_schema='public' AND table_name='user_settings' AND column_name='navigation_slots'
