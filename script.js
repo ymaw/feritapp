@@ -543,6 +543,18 @@ document.addEventListener('DOMContentLoaded', function(){
   const headerProfileBtn = document.getElementById('headerProfileBtn');
   function openProfile(){ switchView('settings'); showSettingsPanel('profile'); }
   if(headerProfileBtn) headerProfileBtn.addEventListener('click', openProfile);
+  const headerHomeBtn = document.getElementById('headerHomeBtn');
+  function openHome(){ switchView('dashboard'); closeMoreMenu(); }
+  if(headerHomeBtn){
+    headerHomeBtn.addEventListener('click',openHome);
+    headerHomeBtn.addEventListener('keydown',function(event){
+      if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); openHome(); }
+    });
+  }
+  const menuProfileBtn = document.getElementById('menuProfileBtn');
+  if(menuProfileBtn) menuProfileBtn.addEventListener('click',function(){ openProfile(); closeMoreMenu(); });
+  const menuSettingsBtn = document.getElementById('menuSettingsBtn');
+  if(menuSettingsBtn) menuSettingsBtn.addEventListener('click',function(){ switchView('settings'); closeMoreMenu(); });
   const greetingAvatarBtn = document.getElementById('greetingAvatar');
   if(greetingAvatarBtn){
     greetingAvatarBtn.setAttribute('role','button');
@@ -559,14 +571,7 @@ document.addEventListener('DOMContentLoaded', function(){
     sales:{label:'Ventas',icon:'▤',view:'sales'},
     deliveries:{label:'Entregas',icon:'▧',view:'deliveries'},
     notes:{label:'Notas',icon:'✎',view:'notes'},
-    ranking:{label:'Ranking',icon:'♕',view:'ranking'},
-    settings:{label:'Configuración',icon:'⚙',view:'settings'},
-    'settings:profile':{label:'Mi Perfil',icon:'👤',view:'settings',settings:'profile'},
-    'settings:appearance':{label:'Apariencia',icon:'🎨',view:'settings',settings:'appearance'},
-    'settings:notifications':{label:'Notificaciones',icon:'🔔',view:'settings',settings:'notifications'},
-    'settings:week':{label:'Semana de ventas',icon:'📅',view:'settings',settings:'week'},
-    'settings:receipt':{label:'Mensaje del comprobante',icon:'🧾',view:'settings',settings:'receipt'},
-    'settings:backup':{label:'Copia de seguridad',icon:'💾',view:'settings',settings:'backup'}
+    ranking:{label:'Ranking',icon:'♕',view:'ranking'}
   };
   const DEFAULT_NAVIGATION_SLOTS = ['dashboard','sales','deliveries','notes'];
   let navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
@@ -596,15 +601,12 @@ document.addEventListener('DOMContentLoaded', function(){
     const pinned = new Set(navigationSlots);
     root.innerHTML = Object.keys(NAVIGATION_OPTIONS).filter(function(key){return !pinned.has(key);}).map(function(key){
       const option = NAVIGATION_OPTIONS[key];
-      const settingsAttr = option.settings ? ' data-settings-open="' + option.settings + '"' : '';
-      return '<button class="menu-item" type="button" data-view="' + option.view + '" data-nav-key="' + key + '"' + settingsAttr + '>'
+      return '<button class="menu-item" type="button" data-view="' + option.view + '" data-nav-key="' + key + '">'
         + '<span class="menu-item-icon">' + option.icon + '</span><span><strong>' + escapeHtml(option.label) + '</strong></span><span class="menu-item-arrow">›</span></button>';
     }).join('');
     root.querySelectorAll('[data-view]').forEach(function(button){
       button.addEventListener('click',function(){
         switchView(button.getAttribute('data-view'));
-        const target = button.getAttribute('data-settings-open');
-        if(target) showSettingsPanel(target);
         closeMoreMenu();
       });
     });
@@ -624,7 +626,6 @@ document.addEventListener('DOMContentLoaded', function(){
   async function saveNavigationSlots(){
     const selected = [1,2,3,4].map(function(i){return document.getElementById('navigationSlot'+i).value;});
     if(new Set(selected).size !== 4){ showToast('Elegí cuatro accesos diferentes.'); return; }
-    if(!selected.includes('dashboard')){ showToast('Inicio debe permanecer entre los cuatro accesos.'); return; }
     const button = document.getElementById('saveNavigationBtn');
     button.disabled = true;
     try{
