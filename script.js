@@ -1212,12 +1212,12 @@ document.addEventListener('DOMContentLoaded', function(){
       const safeColor = typeLabel && /^#[0-9a-f]{6}$/i.test(typeLabel.color) ? typeLabel.color : 'var(--border)';
       const typeChip = typeLabel ? '<span class="note-type-chip">' + escapeHtml(typeLabel.name) + '</span>' : '';
       const importanceChip = importanceLabel ? '<span class="note-importance-chip" style="color:' + escapeHtml(importanceLabel.color) + ';border-color:' + escapeHtml(importanceLabel.color) + '">⚑ ' + escapeHtml(importanceLabel.name) + '</span>' : '';
-      const reminder = note.reminder_at ? '<span class="note-chip">◷ ' + escapeHtml(formatNoteDate(note.reminder_at)) + '</span>' : '';
+      const reminder = note.reminder_at ? '<span class="note-chip">◷ Recordatorio: ' + escapeHtml(formatNoteDate(note.reminder_at)) + '</span>' : '';
       const clientChip = client ? '<span class="note-chip">♙ ' + escapeHtml(client.name) + '</span>' : '';
       return '<article class="note-card" data-note-id="' + escapeHtml(note.id) + '" style="--note-type-color:' + safeColor + '">'
         + '<div class="note-card-heading">' + typeChip + importanceChip + '</div>'
         + '<p class="note-card-content">' + escapeHtml(note.content) + '</p>'
-        + '<div class="note-card-meta">' + clientChip + reminder + '<span>Actualizada ' + escapeHtml(formatNoteDate(note.updated_at || note.created_at)) + '</span></div>'
+        + '<div class="note-card-meta">' + clientChip + reminder + '</div>'
         + '<div class="note-card-actions"><button type="button" data-note-edit="' + escapeHtml(note.id) + '">Editar</button><button type="button" data-note-delete="' + escapeHtml(note.id) + '">Eliminar</button></div>'
         + '</article>';
     }).join('');
