@@ -1271,10 +1271,19 @@ document.addEventListener('DOMContentLoaded', function(){
       if(missingImportance.length){
         const seeded = await sb.from('note_labels').insert(missingImportance.map(function(item){return {kind:'importance',name:item.name,color:item.color};})).select('id,kind,name,color');
         if(seeded.error && seeded.error.code !== '23505') throw seeded.error;
-        const refreshed = await sb.from('note_labels').select('id,kind,name,color').order('name',{ascending:true});
-        if(refreshed.error) throw refreshed.error;
-        notesLabels = refreshed.data || [];
       }
+      // Los colores de importancia son parte del sistema visual y no dependen
+      // de una elección del usuario ni de etiquetas antiguas creadas libremente.
+      for(const item of DEFAULT_NOTE_IMPORTANCE){
+        const current = notesLabels.find(function(label){return label.kind === 'importance' && label.name === item.name;});
+        if(current && current.color !== item.color){
+          const normalized = await sb.from('note_labels').update({color:item.color}).eq('id',current.id);
+          if(normalized.error) throw normalized.error;
+        }
+      }
+      const refreshed = await sb.from('note_labels').select('id,kind,name,color').order('name',{ascending:true});
+      if(refreshed.error) throw refreshed.error;
+      notesLabels = refreshed.data || [];
       fillNoteLabelSelects();
       const select = document.getElementById('noteClient');
       const current = select.value;
