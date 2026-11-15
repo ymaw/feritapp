@@ -153,7 +153,7 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   await page.locator('#createNoteTypeBtn').click();
   await page.locator('#noteLabelName').fill('Retiro');
   await page.locator('#saveNoteLabelBtn').click();
-  await expect(page.locator('#noteImportance option')).toHaveText(['Sin importancia','Alta','Baja','Media','Urgente']);
+  await expect(page.locator('#noteImportance option')).toHaveText(['Sin importancia','Baja','Media','Alta','Urgente']);
   await expect(page.locator('#createNoteImportanceBtn')).toHaveCount(0);
   await expect(page.locator('#noteLabelColor')).toHaveCount(0);
   await page.locator('#noteType').selectOption({label:'Retiro'});
