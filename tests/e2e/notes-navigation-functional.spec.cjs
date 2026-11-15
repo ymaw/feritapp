@@ -8,6 +8,7 @@ async function openIsolatedApp(page) {
       categories: [{ id: 'qa-category', name: 'Indumentaria' }],
       clients: [{ id: 'qa-client-1', name: 'Cliente de prueba' }],
       notes: [],
+      note_labels: [],
       user_settings: [{
         user_id: 'qa-user',
         week_start_day: 1,
@@ -132,7 +133,7 @@ async function openNavigationSettings(page) {
   // En viewport móvil, Configuración se alcanza desde el menú Más; el sidebar está oculto.
   await page.locator('#headerMoreBtn').click();
   await expect(page.locator('#menuDropdown')).toBeVisible();
-  await page.locator('#moreDynamicItems [data-nav-key="settings"]').click();
+  await page.locator('#menuSettingsBtn').click();
   await expect(page.locator('#viewSettings')).toBeVisible();
   await page.locator('#viewSettings [data-settings="personalization"]').click();
   await expect(page.locator('#settingsPanelPersonalization')).toBeVisible();
@@ -144,11 +145,23 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   await openNotes(page);
 
   await page.locator('#newNoteBtn').click();
+  await page.locator('#createNoteTypeBtn').click();
+  await page.locator('#noteLabelName').fill('Retiro');
+  await page.locator('#saveNoteLabelBtn').click();
+  await page.locator('#createNoteImportanceBtn').click();
+  await page.locator('#noteLabelName').fill('Urgente');
+  await page.locator('#noteLabelColor').fill('#EF4444');
+  await page.locator('#saveNoteLabelBtn').click();
+  await page.locator('#noteType').selectOption({label:'Retiro'});
+  await page.locator('#noteImportance').selectOption({label:'Urgente'});
   await page.locator('#noteContent').fill('Recordatorio libre para revisar el inventario');
   await page.locator('#saveNoteBtn').click();
   const freeNote = page.locator('.note-card').filter({ hasText: 'Recordatorio libre para revisar el inventario' });
   await expect(freeNote).toBeVisible();
   await expect(freeNote).not.toContainText('Cliente de prueba');
+  await expect(freeNote).toContainText('Retiro');
+  await expect(freeNote).toContainText('Urgente');
+  await expect(freeNote).toHaveAttribute('style',/--note-type-color:/);
 
   await page.locator('#newNoteBtn').click();
   await page.locator('#noteContent').fill('Llamar al cliente por el pedido');
