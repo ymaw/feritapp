@@ -1123,6 +1123,9 @@ document.addEventListener('DOMContentLoaded', function(){
     editingNoteId = null;
     const form = document.getElementById('noteForm');
     if(form) form.reset();
+    const labelCreator = document.getElementById('noteLabelCreator');
+    if(labelCreator) labelCreator.hidden = true;
+    noteLabelCreationKind = null;
     const reminderFields = document.getElementById('noteReminderFields');
     if(reminderFields) reminderFields.hidden = true;
     const title = document.getElementById('notesEditorTitle');
