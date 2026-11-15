@@ -29,3 +29,19 @@
 .notes-editor-actions .notes-save{border-color:transparent;background:var(--primary);color:#fff}
 .notes-feedback{margin:0 0 12px;color:var(--text-muted);font-size:12px}
 @media(max-width:560px){.notes-toolbar{align-items:flex-start}.notes-new-btn{min-height:40px;padding:0 12px}.notes-reminder-fields{grid-template-columns:1fr}}
+
+/* Etiquetas de tipo e importancia: borde coloreado, superficie neutra y filtros claros. */
+.notes-filters,.notes-label-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px;}
+.notes-filters select{min-width:0;min-height:42px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;}
+.notes-label-grid .notes-field{min-width:0;}
+.notes-label-create-btn{justify-self:start;padding:3px 0;border:0;background:transparent;color:var(--primary);font:700 11px var(--body);cursor:pointer;}
+.notes-label-creator{margin:0 0 14px;padding:13px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);}
+.notes-label-creator[hidden]{display:none;}
+.notes-label-creator>strong{display:block;margin-bottom:10px;color:var(--text);font-size:13px;}
+.notes-label-creator input[type=color]{min-height:42px;padding:4px;}
+.note-card{border:1.5px solid var(--note-type-color,var(--border));}
+.note-card-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.note-type-chip,.note-importance-chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:4px 8px;border:1px solid currentColor;border-radius:999px;font-size:10px;font-weight:750;line-height:1.25;overflow-wrap:anywhere;}
+.note-type-chip{color:var(--note-type-color,var(--text-muted));background:color-mix(in srgb,var(--note-type-color,var(--surface-2)) 10%,transparent);}
+.note-importance-chip{margin-left:auto;}
+@media(max-width:560px){.notes-filters,.notes-label-grid{grid-template-columns:1fr;gap:7px}.notes-filters{margin-bottom:12px}}
