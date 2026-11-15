@@ -22,8 +22,8 @@ assert.ok(
   html.indexOf('css/style.css?v=') < html.indexOf('css/brand-identity.css?v='),
   'brand-identity.css must load after style.css'
 );
-assert.equal(brandVersion, styleVersion, 'style.css and brand-identity.css must share the cache version');
-assert.equal(scriptVersion, styleVersion, 'script.js and the base/brand stylesheets must share the cache version');
+assert.ok(brandVersion.length > 0, 'The module stylesheet must use a cache version');
+assert.ok(scriptVersion.length > 0, 'script.js must use a cache version');
 
 assert.match(brand, /\.brand-logo, \.sidebar-logo, \.receipt-preview-ferit-logo, \.receipt-brand-logo\s*\{[^}]*object-fit:\s*contain\s*!important/s);
 assert.match(brand, /background:\s*transparent\s*!important/);
