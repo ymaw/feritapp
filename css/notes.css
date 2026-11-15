@@ -45,3 +45,6 @@
 .note-type-chip{color:var(--note-type-color,var(--text-muted));background:color-mix(in srgb,var(--note-type-color,var(--surface-2)) 10%,transparent);}
 .note-importance-chip{margin-left:auto;}
 @media(max-width:560px){.notes-filters,.notes-label-grid{grid-template-columns:1fr;gap:7px}.notes-filters{margin-bottom:12px}}
+
+.notes-label-color-hint{margin:0 0 12px;color:var(--text-muted);font-size:12px;line-height:1.45;}
+.notes-label-creator .notes-field{margin-bottom:10px;}
