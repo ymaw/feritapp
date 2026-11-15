@@ -1058,7 +1058,57 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ---------------- Notas personales ---------------- */
   let notesCache = [];
   let notesClients = [];
+  let notesLabels = [];
   let editingNoteId = null;
+  let noteLabelCreationKind = null;
+
+  function findNoteLabel(id){
+    return notesLabels.find(function(label){return label.id === id;}) || null;
+  }
+
+  function fillNoteLabelSelects(){
+    const typeSelect = document.getElementById('noteType');
+    const importanceSelect = document.getElementById('noteImportance');
+    const typeFilter = document.getElementById('notesTypeFilter');
+    const importanceFilter = document.getElementById('notesImportanceFilter');
+    if(typeSelect) typeSelect.innerHTML = '<option value="">Sin tipo</option>' + notesLabels.filter(function(label){return label.kind === 'type';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    if(importanceSelect) importanceSelect.innerHTML = '<option value="">Sin importancia</option>' + notesLabels.filter(function(label){return label.kind === 'importance';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    if(typeFilter) typeFilter.innerHTML = '<option value="">Todos los tipos</option>' + notesLabels.filter(function(label){return label.kind === 'type';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    if(importanceFilter) importanceFilter.innerHTML = '<option value="">Todas las importancias</option>' + notesLabels.filter(function(label){return label.kind === 'importance';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+  }
+
+  function openNoteLabelCreator(kind){
+    noteLabelCreationKind = kind;
+    const panel = document.getElementById('noteLabelCreator');
+    document.getElementById('noteLabelCreatorTitle').textContent = kind === 'type' ? 'Crear tipo de nota' : 'Crear importancia';
+    document.getElementById('noteLabelName').value = '';
+    document.getElementById('noteLabelColor').value = kind === 'type' ? '#8B5CF6' : '#EF4444';
+    panel.hidden = false;
+    document.getElementById('noteLabelName').focus();
+  }
+
+  async function saveNoteLabel(){
+    const name = document.getElementById('noteLabelName').value.trim();
+    const color = document.getElementById('noteLabelColor').value;
+    if(!name || !noteLabelCreationKind){showToast('Ingresá un nombre para la etiqueta.');return;}
+    if(notesLabels.some(function(label){return label.kind === noteLabelCreationKind && label.name.toLocaleLowerCase('es') === name.toLocaleLowerCase('es');})){
+      showToast('Ya existe una etiqueta con ese nombre.');return;
+    }
+    const button = document.getElementById('saveNoteLabelBtn');
+    button.disabled = true;
+    try{
+      const result = await sb.from('note_labels').insert({kind:noteLabelCreationKind,name:name,color:color}).select('id,kind,name,color').single();
+      if(result.error) throw result.error;
+      notesLabels.push(result.data);
+      fillNoteLabelSelects();
+      document.getElementById(noteLabelCreationKind === 'type' ? 'noteType' : 'noteImportance').value = result.data.id;
+      document.getElementById('noteLabelCreator').hidden = true;
+      showToast('Etiqueta creada');
+    }catch(error){
+      console.error('No se pudo crear la etiqueta:',error);
+      showToast('No se pudo crear la etiqueta. Revisá tu conexión e intentá nuevamente.');
+    }finally{button.disabled = false;}
+  }
 
   function formatNoteDate(value){
     if(!value) return '';
@@ -1088,6 +1138,8 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('notesEditorTitle').textContent = note ? 'Editar nota' : 'Nueva nota';
     document.getElementById('noteContent').value = note ? note.content : '';
     document.getElementById('noteClient').value = note && note.client_id ? note.client_id : '';
+    document.getElementById('noteType').value = note && note.type_label_id ? note.type_label_id : '';
+    document.getElementById('noteImportance').value = note && note.importance_label_id ? note.importance_label_id : '';
     const enabled = !!(note && note.reminder_at);
     document.getElementById('noteReminderEnabled').checked = enabled;
     document.getElementById('noteReminderFields').hidden = !enabled;
@@ -1106,10 +1158,18 @@ document.addEventListener('DOMContentLoaded', function(){
     const root = document.getElementById('notesList');
     if(!root) return;
     const term = (document.getElementById('notesSearch').value || '').trim().toLocaleLowerCase('es');
+    const typeFilter = document.getElementById('notesTypeFilter').value;
+    const importanceFilter = document.getElementById('notesImportanceFilter').value;
     const filtered = notesCache.filter(function(note){
       const client = notesClients.find(function(c){return c.id === note.client_id;});
-      return (note.content || '').toLocaleLowerCase('es').includes(term)
-        || (client && client.name.toLocaleLowerCase('es').includes(term));
+      const typeLabel = findNoteLabel(note.type_label_id);
+      const importanceLabel = findNoteLabel(note.importance_label_id);
+      const matchesText = !term || (note.content || '').toLocaleLowerCase('es').includes(term)
+        || (client && client.name.toLocaleLowerCase('es').includes(term))
+        || (typeLabel && typeLabel.name.toLocaleLowerCase('es').includes(term))
+        || (importanceLabel && importanceLabel.name.toLocaleLowerCase('es').includes(term));
+      return matchesText && (!typeFilter || note.type_label_id === typeFilter)
+        && (!importanceFilter || note.importance_label_id === importanceFilter);
     });
     if(!filtered.length){
       root.innerHTML = '<div class="notes-empty">' + (term ? 'No encontramos notas que coincidan con tu búsqueda.' : 'Todavía no tenés notas guardadas. Creá la primera cuando necesites anotar algo.') + '</div>';
@@ -1117,9 +1177,15 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     root.innerHTML = filtered.map(function(note){
       const client = notesClients.find(function(c){return c.id === note.client_id;});
+      const typeLabel = findNoteLabel(note.type_label_id);
+      const importanceLabel = findNoteLabel(note.importance_label_id);
+      const safeColor = typeLabel && /^#[0-9a-f]{6}$/i.test(typeLabel.color) ? typeLabel.color : 'var(--border)';
+      const typeChip = typeLabel ? '<span class="note-type-chip">' + escapeHtml(typeLabel.name) + '</span>' : '';
+      const importanceChip = importanceLabel ? '<span class="note-importance-chip" style="color:' + escapeHtml(importanceLabel.color) + ';border-color:' + escapeHtml(importanceLabel.color) + '">⚑ ' + escapeHtml(importanceLabel.name) + '</span>' : '';
       const reminder = note.reminder_at ? '<span class="note-chip">◷ ' + escapeHtml(formatNoteDate(note.reminder_at)) + '</span>' : '';
       const clientChip = client ? '<span class="note-chip">♙ ' + escapeHtml(client.name) + '</span>' : '';
-      return '<article class="note-card" data-note-id="' + escapeHtml(note.id) + '">'
+      return '<article class="note-card" data-note-id="' + escapeHtml(note.id) + '" style="--note-type-color:' + safeColor + '">'
+        + '<div class="note-card-heading">' + typeChip + importanceChip + '</div>'
         + '<p class="note-card-content">' + escapeHtml(note.content) + '</p>'
         + '<div class="note-card-meta">' + clientChip + reminder + '<span>Actualizada ' + escapeHtml(formatNoteDate(note.updated_at || note.created_at)) + '</span></div>'
         + '<div class="note-card-actions"><button type="button" data-note-edit="' + escapeHtml(note.id) + '">Editar</button><button type="button" data-note-delete="' + escapeHtml(note.id) + '">Eliminar</button></div>'
@@ -1159,14 +1225,18 @@ document.addEventListener('DOMContentLoaded', function(){
     const root = document.getElementById('notesList');
     if(root) root.innerHTML = '<div class="notes-empty">Cargando tus notas…</div>';
     try{
-      const [notesResult, clientsResult] = await Promise.all([
-        sb.from('notes').select('id,content,client_id,reminder_at,created_at,updated_at').order('updated_at',{ascending:false}),
-        sb.from('clients').select('id,name').order('name',{ascending:true})
+      const [notesResult, clientsResult, labelsResult] = await Promise.all([
+        sb.from('notes').select('id,content,client_id,type_label_id,importance_label_id,reminder_at,created_at,updated_at').order('updated_at',{ascending:false}),
+        sb.from('clients').select('id,name').order('name',{ascending:true}),
+        sb.from('note_labels').select('id,kind,name,color').order('name',{ascending:true})
       ]);
       if(notesResult.error) throw notesResult.error;
       if(clientsResult.error) throw clientsResult.error;
+      if(labelsResult.error) throw labelsResult.error;
       notesCache = notesResult.data || [];
       notesClients = clientsResult.data || [];
+      notesLabels = labelsResult.data || [];
+      fillNoteLabelSelects();
       const select = document.getElementById('noteClient');
       const current = select.value;
       select.innerHTML = '<option value="">Sin cliente asociado</option>' + notesClients.map(function(client){
@@ -1187,6 +1257,12 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('noteReminderFields').hidden = !this.checked;
   });
   document.getElementById('notesSearch').addEventListener('input',renderNotes);
+  document.getElementById('notesTypeFilter').addEventListener('change',renderNotes);
+  document.getElementById('notesImportanceFilter').addEventListener('change',renderNotes);
+  document.getElementById('createNoteTypeBtn').addEventListener('click',function(){openNoteLabelCreator('type');});
+  document.getElementById('createNoteImportanceBtn').addEventListener('click',function(){openNoteLabelCreator('importance');});
+  document.getElementById('saveNoteLabelBtn').addEventListener('click',saveNoteLabel);
+  document.getElementById('cancelNoteLabelBtn').addEventListener('click',function(){document.getElementById('noteLabelCreator').hidden=true;noteLabelCreationKind=null;});
   document.getElementById('noteForm').addEventListener('submit',async function(event){
     event.preventDefault();
     if(!sb || !entered) return;
@@ -1204,13 +1280,13 @@ document.addEventListener('DOMContentLoaded', function(){
       }
       reminderAt = parsed.toISOString();
     }
-    const payload = {content:content,client_id:clientId,reminder_at:reminderAt,updated_at:new Date().toISOString()};
+    const payload = {content:content,client_id:clientId,type_label_id:document.getElementById('noteType').value || null,importance_label_id:document.getElementById('noteImportance').value || null,reminder_at:reminderAt,updated_at:new Date().toISOString()};
     const save = document.getElementById('saveNoteBtn');
     save.disabled = true;
     try{
       const result = editingNoteId
-        ? await sb.from('notes').update(payload).eq('id',editingNoteId).select('id,content,client_id,reminder_at,created_at,updated_at').single()
-        : await sb.from('notes').insert(payload).select('id,content,client_id,reminder_at,created_at,updated_at').single();
+        ? await sb.from('notes').update(payload).eq('id',editingNoteId).select('id,content,client_id,type_label_id,importance_label_id,reminder_at,created_at,updated_at').single()
+        : await sb.from('notes').insert(payload).select('id,content,client_id,type_label_id,importance_label_id,reminder_at,created_at,updated_at').single();
       if(result.error) throw result.error;
       const saved = result.data;
       if(editingNoteId) notesCache = notesCache.map(function(item){return item.id === saved.id ? saved : item;});
