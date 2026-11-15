@@ -53,3 +53,4 @@
 .notes-field-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px;}
 .notes-field-heading label{margin:0;}
 .notes-field-heading .notes-label-create-btn{flex:0 0 auto;margin:0;line-height:1.2;}
+.notes-type-field>.notes-label-create-btn{display:inline-flex;align-items:center;margin-top:7px;padding:4px 0;font-size:12px;}
