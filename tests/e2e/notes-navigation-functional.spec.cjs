@@ -122,6 +122,8 @@ async function openIsolatedApp(page) {
   await page.locator('#loginBtn').click();
   await expect(page.locator('#appRoot')).toBeVisible();
   await expect(page.locator('#viewDashboard')).toBeVisible();
+  await page.locator('#headerHomeBtn').click();
+  await expect(page.locator('#viewDashboard')).toBeVisible();
 }
 
 async function openNotes(page) {
@@ -159,6 +161,8 @@ test('Notes supports create, optional client/reminder, search, edit and delete i
   const freeNote = page.locator('.note-card').filter({ hasText: 'Recordatorio libre para revisar el inventario' });
   await expect(freeNote).toBeVisible();
   await expect(freeNote).not.toContainText('Cliente de prueba');
+  await expect(freeNote).toContainText('Retiro');
+  await expect(freeNote).toContainText('Urgente');
   await expect(freeNote).toContainText('Retiro');
   await expect(freeNote).toContainText('Urgente');
   await expect(freeNote).toHaveAttribute('style',/--note-type-color:/);
