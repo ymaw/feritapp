@@ -4085,3 +4085,21 @@ textarea,
 .header-more-btn:focus-visible{outline:3px solid var(--primary-soft);outline-offset:3px;}
 @media(max-width:899px){.header-more-btn{display:inline-flex;}header .header-profile-btn,header.has-back-button .header-profile-btn{right:68px!important;}header .eyebrow,header h1,header .session-email{margin-right:112px!important;}}
 @media(min-width:900px){.header-more-btn{display:none!important;}}
+
+
+/* Alineación del encabezado móvil: Atrás y Más comparten eje vertical y dimensiones. */
+@media(max-width:899px){
+  header .header-back-btn,
+  header .header-more-btn{
+    top:calc(24px + env(safe-area-inset-top))!important;
+    width:40px!important;
+    height:40px!important;
+    box-sizing:border-box;
+  }
+  header .header-more-btn{
+    right:16px!important;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+}
