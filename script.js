@@ -1312,7 +1312,10 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('cancelNoteLabelBtn').addEventListener('click',function(){document.getElementById('noteLabelCreator').hidden=true;noteLabelCreationKind=null;});
   document.getElementById('noteForm').addEventListener('submit',async function(event){
     event.preventDefault();
-    if(!sb || !entered) return;
+    if(!sb || !entered){
+      showToast('Tu sesión no está activa. Iniciá sesión nuevamente para guardar la nota.');
+      return;
+    }
     const content = document.getElementById('noteContent').value.trim();
     if(!content){ showToast('Escribí el contenido de la nota.'); return; }
     const clientId = document.getElementById('noteClient').value || null;
@@ -1343,7 +1346,15 @@ document.addEventListener('DOMContentLoaded', function(){
       showToast('Nota guardada');
     }catch(error){
       console.error('No se pudo guardar la nota:',error);
-      showToast('No se pudo guardar. Verificá la migración de Notas y volvé a intentar.');
+      const errorCode = error && error.code;
+      const errorMessage = String(error && error.message || '');
+      if(['PGRST204','PGRST205','42703','42P01'].includes(errorCode)){
+        showToast('Falta aplicar la migración de etiquetas de Notas en Supabase. La nota no se guardó.');
+      }else if(error instanceof TypeError || /failed to fetch|network|fetch failed/i.test(errorMessage)){
+        showToast('No se pudo conectar con Supabase. Revisá tu conexión e intentá nuevamente.');
+      }else{
+        showToast('No se pudo guardar la nota. Revisá los datos e intentá nuevamente.');
+      }
     }finally{
       save.disabled = false;
     }
