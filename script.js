@@ -1061,6 +1061,12 @@ document.addEventListener('DOMContentLoaded', function(){
   let notesLabels = [];
   let editingNoteId = null;
   let noteLabelCreationKind = null;
+  const DEFAULT_NOTE_IMPORTANCE = [
+    {name:'Baja',color:'#16A34A'},
+    {name:'Media',color:'#EAB308'},
+    {name:'Alta',color:'#F97316'},
+    {name:'Urgente',color:'#DC2626'}
+  ];
 
   function findNoteLabel(id){
     return notesLabels.find(function(label){return label.id === id;}) || null;
@@ -1072,25 +1078,46 @@ document.addEventListener('DOMContentLoaded', function(){
     const typeFilter = document.getElementById('notesTypeFilter');
     const importanceFilter = document.getElementById('notesImportanceFilter');
     if(typeSelect) typeSelect.innerHTML = '<option value="">Sin tipo</option>' + notesLabels.filter(function(label){return label.kind === 'type';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
-    if(importanceSelect) importanceSelect.innerHTML = '<option value="">Sin importancia</option>' + notesLabels.filter(function(label){return label.kind === 'importance';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    const importanceLabels = DEFAULT_NOTE_IMPORTANCE.map(function(item){
+      return notesLabels.find(function(label){return label.kind === 'importance' && label.name === item.name;});
+    }).filter(Boolean);
+    if(importanceSelect) importanceSelect.innerHTML = '<option value="">Sin importancia</option>' + importanceLabels.map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
     if(typeFilter) typeFilter.innerHTML = '<option value="">Todos los tipos</option>' + notesLabels.filter(function(label){return label.kind === 'type';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
-    if(importanceFilter) importanceFilter.innerHTML = '<option value="">Todas las importancias</option>' + notesLabels.filter(function(label){return label.kind === 'importance';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    if(importanceFilter) importanceFilter.innerHTML = '<option value="">Todas las importancias</option>' + importanceLabels.map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+  }
+
+  function generateTypeLabelColor(){
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = 68;
+    const lightness = 43;
+    const chroma = (1 - Math.abs(2 * lightness / 100 - 1)) * saturation / 100;
+    const section = hue / 60;
+    const x = chroma * (1 - Math.abs(section % 2 - 1));
+    let rgb = [0,0,0];
+    if(section < 1) rgb = [chroma,x,0];
+    else if(section < 2) rgb = [x,chroma,0];
+    else if(section < 3) rgb = [0,chroma,x];
+    else if(section < 4) rgb = [0,x,chroma];
+    else if(section < 5) rgb = [x,0,chroma];
+    else rgb = [chroma,0,x];
+    const m = lightness / 100 - chroma / 2;
+    return '#' + rgb.map(function(value){return Math.round((value + m) * 255).toString(16).padStart(2,'0');}).join('').toUpperCase();
   }
 
   function openNoteLabelCreator(kind){
-    noteLabelCreationKind = kind;
+    if(kind !== 'type'){showToast('Las importancias son predeterminadas.');return;}
+    noteLabelCreationKind = 'type';
     const panel = document.getElementById('noteLabelCreator');
-    document.getElementById('noteLabelCreatorTitle').textContent = kind === 'type' ? 'Crear tipo de nota' : 'Crear importancia';
+    document.getElementById('noteLabelCreatorTitle').textContent = 'Crear tipo de nota';
     document.getElementById('noteLabelName').value = '';
-    document.getElementById('noteLabelColor').value = kind === 'type' ? '#8B5CF6' : '#EF4444';
     panel.hidden = false;
     document.getElementById('noteLabelName').focus();
   }
 
   async function saveNoteLabel(){
     const name = document.getElementById('noteLabelName').value.trim();
-    const color = document.getElementById('noteLabelColor').value;
-    if(!name || !noteLabelCreationKind){showToast('Ingresá un nombre para la etiqueta.');return;}
+    const color = generateTypeLabelColor();
+    if(!name || noteLabelCreationKind !== 'type'){showToast('Ingresá un nombre para el tipo.');return;}
     if(notesLabels.some(function(label){return label.kind === noteLabelCreationKind && label.name.toLocaleLowerCase('es') === name.toLocaleLowerCase('es');})){
       showToast('Ya existe una etiqueta con ese nombre.');return;
     }
@@ -1101,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if(result.error) throw result.error;
       notesLabels.push(result.data);
       fillNoteLabelSelects();
-      document.getElementById(noteLabelCreationKind === 'type' ? 'noteType' : 'noteImportance').value = result.data.id;
+      document.getElementById('noteType').value = result.data.id;
       document.getElementById('noteLabelCreator').hidden = true;
       showToast('Etiqueta creada');
     }catch(error){
@@ -1239,6 +1266,15 @@ document.addEventListener('DOMContentLoaded', function(){
       notesCache = notesResult.data || [];
       notesClients = clientsResult.data || [];
       notesLabels = labelsResult.data || [];
+      const existingImportance = new Set(notesLabels.filter(function(label){return label.kind === 'importance';}).map(function(label){return label.name;}));
+      const missingImportance = DEFAULT_NOTE_IMPORTANCE.filter(function(item){return !existingImportance.has(item.name);});
+      if(missingImportance.length){
+        const seeded = await sb.from('note_labels').insert(missingImportance.map(function(item){return {kind:'importance',name:item.name,color:item.color};})).select('id,kind,name,color');
+        if(seeded.error && seeded.error.code !== '23505') throw seeded.error;
+        const refreshed = await sb.from('note_labels').select('id,kind,name,color').order('name',{ascending:true});
+        if(refreshed.error) throw refreshed.error;
+        notesLabels = refreshed.data || [];
+      }
       fillNoteLabelSelects();
       const select = document.getElementById('noteClient');
       const current = select.value;
@@ -1263,7 +1299,6 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('notesTypeFilter').addEventListener('change',renderNotes);
   document.getElementById('notesImportanceFilter').addEventListener('change',renderNotes);
   document.getElementById('createNoteTypeBtn').addEventListener('click',function(){openNoteLabelCreator('type');});
-  document.getElementById('createNoteImportanceBtn').addEventListener('click',function(){openNoteLabelCreator('importance');});
   document.getElementById('saveNoteLabelBtn').addEventListener('click',saveNoteLabel);
   document.getElementById('cancelNoteLabelBtn').addEventListener('click',function(){document.getElementById('noteLabelCreator').hidden=true;noteLabelCreationKind=null;});
   document.getElementById('noteForm').addEventListener('submit',async function(event){
