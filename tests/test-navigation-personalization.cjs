@@ -38,4 +38,7 @@ assert.ok(noteDeleteHandler.includes('if(btn.isConnected) btn.disabled = false')
 assert.match(migration,/add column if not exists navigation_slots jsonb not null/i);
 assert.match(migration,/jsonb_array_length\(navigation_slots\) = 4/i);
 assert.ok(!/select\s+count\(distinct/i.test(migration),'Migration must not use subqueries in CHECK constraints');
-console.log('OK navigation personalization: four slots, fixed central create action, account persistence and dynamic More menu.');
+assert.match(script,/note_labels/);
+assert.match(script,/type_label_id/);
+assert.match(script,/importance_label_id/);
+console.log('OK navigation personalization and Notes labels: four optional slots, fixed create action, account persistence, focused More menu and label-aware notes.');
