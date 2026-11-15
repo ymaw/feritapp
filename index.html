@@ -521,8 +521,14 @@
         <div class="notes-field"><label for="noteContent">Nota</label><textarea id="noteContent" maxlength="10000" required placeholder="Escribí lo que necesitás recordar…"></textarea></div>
         <div class="notes-field"><label for="noteClient">Vincular con un cliente (opcional)</label><select id="noteClient"><option value="">Sin cliente asociado</option></select></div>
         <div class="notes-label-grid">
-          <div class="notes-field"><label for="noteType">Tipo</label><select id="noteType"><option value="">Sin tipo</option></select><button class="notes-label-create-btn" id="createNoteTypeBtn" type="button">＋ Crear tipo</button></div>
-          <div class="notes-field"><label for="noteImportance">Importancia</label><select id="noteImportance"><option value="">Sin importancia</option></select></div>
+          <div class="notes-field">
+            <div class="notes-field-heading"><label for="noteType">Tipo</label><button class="notes-label-create-btn" id="createNoteTypeBtn" type="button">＋ Crear tipo</button></div>
+            <select id="noteType"><option value="">Sin tipo</option></select>
+          </div>
+          <div class="notes-field">
+            <div class="notes-field-heading"><label for="noteImportance">Importancia</label></div>
+            <select id="noteImportance"><option value="">Sin importancia</option></select>
+          </div>
         </div>
         <section class="notes-label-creator" id="noteLabelCreator" hidden>
           <strong id="noteLabelCreatorTitle">Nueva etiqueta</strong>
