@@ -1026,7 +1026,6 @@ document.addEventListener('DOMContentLoaded', function(){
       const savedSlots = navigationRes.data && navigationRes.data.navigation_slots;
       if(Array.isArray(savedSlots) && savedSlots.length === 4
         && new Set(savedSlots).size === 4
-        && savedSlots.includes('dashboard')
         && savedSlots.every(function(key){return Object.prototype.hasOwnProperty.call(NAVIGATION_OPTIONS,key);})){
         navigationSlots = savedSlots.slice();
       }else{
