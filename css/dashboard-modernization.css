@@ -467,7 +467,6 @@
 }
 #viewDashboard .dashboard-section-toggle {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 14px;
   width: 100%;
@@ -489,12 +488,6 @@
   gap: 12px;
   min-width: 0;
   flex: 1 1 auto;
-}
-#viewDashboard .dashboard-toggle-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 3px;
 }
 #viewDashboard .dashboard-toggle-copy .section-title {
   margin: 0;
@@ -522,7 +515,6 @@
 #viewDashboard .dashboard-section-toggle.expanded .dashboard-toggle-chevron { transform: rotate(180deg); }
 #viewDashboard .dashboard-collapsible-content {
   min-width: 0;
-  padding: 14px 16px 16px;
   border-top: 1px solid var(--border);
 }
 #viewDashboard .dashboard-collapsible-content[hidden] { display: none !important; }
