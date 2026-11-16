@@ -137,6 +137,7 @@ jobs:
           psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261114011000_add_navigation_preferences.sql
           psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261115010000_allow_optional_home_navigation.sql
           psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261115011000_add_note_labels.sql
+          psql -h localhost -p 5432 -U postgres -d feritapp_notes_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261115012000_enforce_note_importance_catalog.sql
       - name: Verify Notes RLS, grants and tenant isolation
         env:
           PGPASSWORD: postgres
