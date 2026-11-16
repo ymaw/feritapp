@@ -117,10 +117,16 @@ async function openIsolatedApp(page) {
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
   await page.goto('/');
   await expect(page.locator('#authGate')).toBeVisible();
+  if (await page.evaluate(() => window.innerWidth >= 900)) {
+    await expect(page.locator('#sidebar')).toBeHidden();
+  }
   await page.locator('#gateEmail').fill('qa@example.test');
   await page.locator('#gatePin').fill('Clave123!');
   await page.locator('#loginBtn').click();
   await expect(page.locator('#appRoot')).toBeVisible();
+  if (await page.evaluate(() => window.innerWidth >= 900)) {
+    await expect(page.locator('#sidebar')).toBeVisible();
+  }
   await expect(page.locator('#viewDashboard')).toBeVisible();
   await page.locator('#headerHomeBtn').click();
   await expect(page.locator('#viewDashboard')).toBeVisible();
