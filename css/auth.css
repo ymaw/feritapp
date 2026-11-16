@@ -279,3 +279,15 @@
     animation-duration:.01ms!important;
   }
 }
+
+
+/* Desktop authentication state: navigation is available only after sign-in. */
+@media (min-width: 900px) {
+  body.auth-locked #sidebar {
+    display: none !important;
+  }
+  body.auth-locked #authGate,
+  body.auth-locked #onboardingGate {
+    padding-left: 24px !important;
+  }
+}
