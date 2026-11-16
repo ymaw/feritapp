@@ -4162,3 +4162,37 @@ textarea,
     padding-right: 0;
   }
 }
+
+
+/* V12.132: los controles Atrás y Más comparten exactamente la misma línea superior en mobile. */
+@media (max-width: 899px) {
+  #appRoot > header {
+    position: relative;
+  }
+
+  #appRoot > header .header-back-btn,
+  #appRoot > header .header-more-btn {
+    position: absolute !important;
+    top: calc(24px + env(safe-area-inset-top)) !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px;
+    min-height: 40px;
+    box-sizing: border-box;
+    margin: 0 !important;
+    transform: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #appRoot > header .header-back-btn {
+    left: 16px !important;
+    right: auto !important;
+  }
+
+  #appRoot > header .header-more-btn {
+    right: 16px !important;
+    left: auto !important;
+  }
+}
