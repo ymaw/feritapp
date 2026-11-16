@@ -119,7 +119,6 @@
   box-shadow: none;
 }
 #viewDashboard .weekly-summary-heading {
-  width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
@@ -991,7 +990,6 @@
 #viewDashboard .weekly-summary-heading {
   display: flex;
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
 }
 #viewDashboard .weekly-summary-main {
