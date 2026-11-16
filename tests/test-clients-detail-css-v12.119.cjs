@@ -23,7 +23,7 @@ for (const selector of ['.client-detail-panel{', '.client-detail-head{', '.clien
   assert.ok(clients.includes(selector), `Missing client selector: ${selector}`);
   assert.ok(!style.split(/\r?\n/).some(line => line.startsWith(selector)), `Selector remains in style.css: ${selector}`);
 }
-assert.ok(clients.indexOf('.client-detail-actions{display:grid;') < clients.indexOf('.client-detail-actions{grid-template-columns:'), 'Base rule must precede its override');
+assert.match(clients, /\.client-detail-actions\{[^}]*display:grid;[^}]*grid-template-columns:minmax\(0,\.8fr\) minmax\(0,1\.2fr\)/, 'Consolidated base rule must retain the grid layout and its two-column proportions');
 assert.ok(clients.includes('@media(max-width:520px){.client-detail-actions{grid-template-columns:1fr;}}'), 'Mobile detail actions layout must be preserved');
 assert.ok(html.includes('id="viewClients"'), 'Clients view markup must remain present');
 
