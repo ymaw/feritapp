@@ -569,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const NAVIGATION_OPTIONS = {
     dashboard:{label:'Inicio',icon:'⌂',view:'dashboard'},
     sales:{label:'Ventas',icon:'▤',view:'sales'},
-    deliveries:{label:'Entregas',icon:'▧',view:'deliveries'},
+    deliveries:{label:'Entregas',icon:'<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg>',view:'deliveries'},
     notes:{label:'Notas',icon:'✎',view:'notes'},
     ranking:{label:'Ranking',icon:'♕',view:'ranking'}
   };
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function(){
       button.setAttribute('data-view',option.view);
       if(option.settings) button.setAttribute('data-settings-open',option.settings);
       else button.removeAttribute('data-settings-open');
-      button.innerHTML = '<span class="nav-icon">' + option.icon + '</span><span class="nav-label">' + escapeHtml(option.label) + '</span>';
+      button.innerHTML = '<span class="nav-icon' + (key === 'deliveries' ? ' delivery-nav-icon' : '') + '">' + option.icon + '</span><span class="nav-label">' + escapeHtml(option.label) + '</span>';
       button.setAttribute('aria-label',option.label);
       button.classList.toggle('active',option.view === currentView);
     });
