@@ -4103,3 +4103,62 @@ textarea,
     justify-content:center;
   }
 }
+
+
+/* V12.131: encabezados móviles unificados para Ventas y Notas. */
+@media (max-width: 899px) {
+  #viewSales > .view-hero.sales-hero,
+  #viewNotes > .view-hero.notes-hero {
+    display: block;
+    box-sizing: border-box;
+    width: calc(100% - 32px);
+    max-width: 720px;
+    margin: 18px auto 14px !important;
+    padding: 17px 18px !important;
+    border: 1px solid rgba(var(--primary-rgb),.22) !important;
+    border-radius: 18px !important;
+    background: linear-gradient(135deg,rgba(var(--primary-rgb),.13),var(--surface) 72%) !important;
+    box-shadow: 0 8px 22px rgba(15,23,42,.055) !important;
+    text-align: left;
+  }
+
+  #viewSales > .view-hero.sales-hero::after,
+  #viewNotes > .view-hero.notes-hero::after {
+    display: none;
+  }
+
+  #viewSales > .view-hero.sales-hero .view-hero-kicker,
+  #viewNotes > .view-hero.notes-hero .view-hero-kicker {
+    margin-bottom: 5px;
+    font-size: calc((10px) * var(--font-scale, 1));
+    letter-spacing: .13em;
+    font-weight: 800;
+    color: var(--primary-soft);
+  }
+
+  #viewSales > .view-hero.sales-hero h2,
+  #viewNotes > .view-hero.notes-hero h2 {
+    margin: 0 0 5px !important;
+    font-size: calc((clamp(18px,2.4vw,23px)) * var(--font-scale, 1)) !important;
+    line-height: 1.2 !important;
+    color: var(--text) !important;
+  }
+
+  #viewSales > .view-hero.sales-hero p,
+  #viewNotes > .view-hero.notes-hero p {
+    max-width: 62ch;
+    margin: 0 !important;
+    font-size: calc((12px) * var(--font-scale, 1)) !important;
+    line-height: 1.45 !important;
+    color: var(--text-muted) !important;
+  }
+
+  #viewNotes > .section-block {
+    width: calc(100% - 32px);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
