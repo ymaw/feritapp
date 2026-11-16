@@ -51,6 +51,14 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Fixed importance catalog constraint is missing or unexpectedly validated';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid='public.user_settings'::regclass
+      AND conname='user_settings_navigation_slots_valid'
+      AND convalidated
+  ) THEN
+    RAISE EXCEPTION 'Navigation slots constraint is missing or not validated';
+  END IF;
 END $$;
 
 -- Verify tenant isolation and optional client ownership through RLS.
@@ -69,6 +77,15 @@ DECLARE visible_count integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.notes;
   IF visible_count <> 1 THEN RAISE EXCEPTION 'Owner cannot read own note'; END IF;
+  -- La base también debe impedir cuatro accesos con claves repetidas.
+  BEGIN
+    UPDATE public.user_settings
+    SET navigation_slots='["dashboard","sales","sales","notes"]'::jsonb
+    WHERE user_id='11111111-1111-4111-8111-111111111111';
+    RAISE EXCEPTION 'Duplicate navigation slots were accepted';
+  EXCEPTION WHEN check_violation THEN
+    NULL;
+  END;
   SELECT count(*) INTO visible_count FROM public.note_labels;
   IF visible_count <> 2 THEN RAISE EXCEPTION 'Owner cannot read own labels'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.notes WHERE type_label_id IS NOT NULL AND importance_label_id IS NOT NULL) THEN
