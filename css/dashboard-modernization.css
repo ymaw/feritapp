@@ -1063,8 +1063,6 @@
   min-width: 0;
 }
 @media (max-width: 899px) {
-  #viewDashboard .weekly-summary-heading {
-  }
   #viewDashboard .weekly-summary-main,
   #viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
     gap: 9px;
@@ -1078,8 +1076,6 @@
   #viewDashboard .weekly-summary-heading .dashboard-heading-divider,
   #viewDashboard .dashboard-section-heading-static .dashboard-heading-divider {
     min-height: 31px;
-  }
-  #viewDashboard .dashboard-tasks-section .section-heading-row.dashboard-section-heading-static {
   }
 }
 @media (max-width: 380px) {
