@@ -275,7 +275,11 @@ test('Notes create and edit flow remains usable on mobile without horizontal ove
     notesClient: document.querySelector('#viewNotes').clientWidth,
     offenders: [...document.querySelectorAll('body *')].map(element => {
       const rect = element.getBoundingClientRect();
-      return { selector: element.id ? '#' + element.id : element.className?.toString?.() || element.tagName, left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
+      const ancestors = [];
+      for (let node = element; node && ancestors.length < 5; node = node.parentElement) {
+        ancestors.push({ tag: node.tagName, id: node.id, className: node.className?.toString?.() || '', left: Math.round(node.getBoundingClientRect().left), right: Math.round(node.getBoundingClientRect().right), width: Math.round(node.getBoundingClientRect().width), scrollWidth: node.scrollWidth, clientWidth: node.clientWidth });
+      }
+      return { selector: element.id ? '#' + element.id : element.className?.toString?.() || element.tagName, left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, ancestors };
     }).filter(item => item.right > document.documentElement.clientWidth + 1 || item.left < -1).slice(0, 12)
   }));
   expect(dimensions.document, `mobile Notes must not overflow the page horizontally: ${JSON.stringify(dimensions)}`).toBeLessThanOrEqual(dimensions.viewport);
