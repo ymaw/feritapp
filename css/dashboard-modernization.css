@@ -914,9 +914,6 @@
 #viewDashboard .dashboard-collapsible-content {
   padding: 0 18px 18px;
 }
-#viewDashboard .dashboard-collapsible-content[hidden] {
-  display: none !important;
-}
 @media (max-width: 899px) {
   #viewDashboard .dashboard-section-toggle {
     min-height: 64px;
