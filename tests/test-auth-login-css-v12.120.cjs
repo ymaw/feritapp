@@ -50,3 +50,7 @@ assert.match(style, /--primary-rgb:/);
 assert.match(style, /--secondary-rgb:/);
 assert.match(style, /--danger-rgb:/);
 console.log(`OK login regression: stylesheet order, independently versioned assets (${styleVersion}), responsive/reduced-motion rules, brand and auth hooks preserved.`);
+
+// Desktop navigation must remain outside the unauthenticated surface.
+assert.match(css, /body\.auth-locked #sidebar\s*\{\s*display:\s*none\s*!important;/);
+assert.match(css, /body\.auth-locked #authGate[\s\S]*?padding-left:\s*24px\s*!important;/);
