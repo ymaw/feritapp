@@ -4524,3 +4524,47 @@ textarea,
     font-size: calc((12px) * var(--font-scale, 1)) !important;
   }
 }
+
+/* V12.156 — Ventas replica la estructura exterior de la cabecera de Entregas.
+   La decoración pertenece al .view-hero; el contenido interior solo organiza icono y texto. */
+#viewSales > .view-hero.sales-hero {
+  box-sizing: border-box !important;
+  width: min(1120px, calc(100% - 60px)) !important;
+  max-width: 1120px !important;
+  margin: 18px auto 14px !important;
+  padding: 18px 20px !important;
+  border: 1px solid rgba(var(--primary-rgb), .22) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .13), var(--surface) 72%) !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .055) !important;
+  overflow: hidden !important;
+}
+#viewSales > .view-hero.sales-hero::after {
+  display: block !important;
+}
+#viewSales > .view-hero.sales-hero > .sales-heading-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+@media (max-width: 640px) {
+  #viewSales > .view-hero.sales-hero {
+    width: calc(100% - 32px) !important;
+    max-width: 720px !important;
+    margin: 18px auto 14px !important;
+    padding: 15px !important;
+    border-radius: 18px !important;
+  }
+  #viewSales > .view-hero.sales-hero > .sales-heading-card {
+    align-items: flex-start !important;
+    gap: 11px !important;
+  }
+}
