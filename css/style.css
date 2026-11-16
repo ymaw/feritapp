@@ -4338,3 +4338,26 @@ textarea,
     right: 16px !important;
   }
 }
+
+
+/* V12.140: alinear controles con el lockup; el header reserva 24px superiores y el logo mide 44px. */
+@media (max-width: 899px) {
+  #appRoot > header { position: relative !important; }
+  #appRoot > header > #globalBackBtn,
+  #appRoot > header > #headerMoreBtn {
+    position: absolute !important;
+    top: calc(26px + env(safe-area-inset-top)) !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  #appRoot > header > #globalBackBtn { left: 16px !important; right: auto !important; }
+  #appRoot > header > #headerMoreBtn { left: auto !important; right: 16px !important; }
+}
