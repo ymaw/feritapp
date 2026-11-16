@@ -79,7 +79,7 @@ END $$;
 SET LOCAL request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 INSERT INTO public.note_labels(id,kind,name,color)
 VALUES ('cccccccc-cccc-4ccc-8ccc-cccccccccccc','type','Propio usuario 2','#0EA5E9');
-DO $
+DO $$
 DECLARE visible_count integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.notes;
@@ -89,11 +89,11 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Cross-user note label visibility detected';
   END IF;
-END $;
+END $$;
 
 -- No se puede crear una nota con cliente ni etiqueta pertenecientes a otro usuario.
 SET LOCAL request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
-DO $
+DO $$
 DECLARE rejected boolean := false;
 BEGIN
   BEGIN
@@ -132,5 +132,5 @@ BEGIN
   EXCEPTION WHEN check_violation THEN rejected := true;
   END;
   IF NOT rejected THEN RAISE EXCEPTION 'Non-catalog importance label was accepted'; END IF;
-END $;
+END $$;
 ROLLBACK;
