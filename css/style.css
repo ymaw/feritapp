@@ -2149,7 +2149,7 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 }
 
 /* Fase 1: ajustes acotados a Inicio y presentación mobile de Nueva Venta. */
-header.view-dashboard .header-profile-btn { display: none !important; }
+header.view-dashboard .header-profile-btn { display: inline-flex !important; }
 #greetingAvatar { cursor: pointer; border: 0; font: inherit; }
 #greetingAvatar:focus-visible { outline: 3px solid var(--primary-soft); outline-offset: 3px; }
 #weeklySummaryContent .sales-group-statuses {
@@ -4195,4 +4195,16 @@ textarea,
     right: 16px !important;
     left: auto !important;
   }
+}
+
+
+/* V12.133: mantener visibles los controles de perfil y navegación en sus breakpoints. */
+@media (max-width: 899px) {
+  #appRoot .bottom-nav { display: flex !important; }
+  #appRoot > header .header-profile-btn { display: inline-flex !important; }
+}
+@media (min-width: 900px) {
+  #appRoot .sidebar { display: flex !important; }
+  #appRoot .bottom-nav { display: none !important; }
+  #appRoot > header .header-profile-btn { display: inline-flex !important; }
 }
