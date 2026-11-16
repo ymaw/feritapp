@@ -272,9 +272,13 @@ test('Notes create and edit flow remains usable on mobile without horizontal ove
     viewport: document.documentElement.clientWidth,
     document: document.documentElement.scrollWidth,
     notes: document.querySelector('#viewNotes').scrollWidth,
-    notesClient: document.querySelector('#viewNotes').clientWidth
+    notesClient: document.querySelector('#viewNotes').clientWidth,
+    offenders: [...document.querySelectorAll('body *')].map(element => {
+      const rect = element.getBoundingClientRect();
+      return { selector: element.id ? '#' + element.id : element.className?.toString?.() || element.tagName, left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth };
+    }).filter(item => item.right > document.documentElement.clientWidth + 1 || item.left < -1).slice(0, 12)
   }));
-  expect(dimensions.document, 'mobile Notes must not overflow the page horizontally').toBeLessThanOrEqual(dimensions.viewport);
+  expect(dimensions.document, `mobile Notes must not overflow the page horizontally: ${JSON.stringify(dimensions)}`).toBeLessThanOrEqual(dimensions.viewport);
   expect(dimensions.notes, 'mobile Notes must not overflow its view horizontally').toBeLessThanOrEqual(dimensions.notesClient);
 
   await note.locator('[data-note-edit]').click();
