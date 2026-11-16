@@ -4346,7 +4346,7 @@ textarea,
   #appRoot > header > #globalBackBtn,
   #appRoot > header > #headerMoreBtn {
     position: absolute !important;
-    top: calc(26px + env(safe-area-inset-top)) !important;
+    top: calc(29px + env(safe-area-inset-top)) !important;
     bottom: auto !important;
     transform: none !important;
     width: 40px !important;
