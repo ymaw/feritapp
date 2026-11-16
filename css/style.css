@@ -4087,20 +4087,25 @@ textarea,
 @media(min-width:900px){.header-more-btn{display:none!important;}}
 
 
-/* Alineación del encabezado móvil: Atrás y Más comparten eje vertical y dimensiones. */
-@media(max-width:899px){
+/* V12.138: Atrás y Más centrados sobre el mismo eje que el logo de FeritApp. */
+@media (max-width: 899px) {
   header .header-back-btn,
-  header .header-more-btn{
-    top:calc(24px + env(safe-area-inset-top))!important;
-    width:40px!important;
-    height:40px!important;
-    box-sizing:border-box;
+  header .header-more-btn {
+    top: calc(28px + env(safe-area-inset-top)) !important;
+    width: 40px !important;
+    height: 40px !important;
+    box-sizing: border-box;
   }
-  header .header-more-btn{
-    right:16px!important;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
+  header .header-back-btn {
+    left: 16px !important;
+    right: auto !important;
+  }
+  header .header-more-btn {
+    right: 16px !important;
+    left: auto !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
