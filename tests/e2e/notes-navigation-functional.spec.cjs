@@ -244,3 +244,42 @@ test('navigation preferences persist and reset only applies after saving', async
   await page.locator('#saveNavigationBtn').click();
   await expect(page.locator('#bottomNav [data-nav-slot="2"]')).toHaveAttribute('data-nav-key', 'sales');
 });
+
+test('Notes create and edit flow remains usable on mobile without horizontal overflow', async ({ page }) => {
+  page.on('dialog', dialog => dialog.accept());
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openIsolatedApp(page);
+  await expect(page.locator('#bottomNav [data-nav-key="notes"]')).toBeVisible();
+  await page.locator('#bottomNav [data-nav-key="notes"]').click();
+  await expect(page.locator('#viewNotes')).toBeVisible();
+
+  await page.locator('#newNoteBtn').click();
+  await page.locator('#noteContent').fill('Nota creada desde móvil');
+  await page.locator('#noteClient').selectOption('qa-client-1');
+  await page.locator('#noteReminderEnabled').check();
+  const future = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  const date = [future.getFullYear(), String(future.getMonth() + 1).padStart(2, '0'), String(future.getDate()).padStart(2, '0')].join('-');
+  await page.locator('#noteReminderDate').fill(date);
+  await page.locator('#noteReminderTime').fill('09:45');
+  await page.locator('#saveNoteBtn').click();
+
+  const note = page.locator('.note-card').filter({ hasText: 'Nota creada desde móvil' });
+  await expect(note).toBeVisible();
+  await expect(note).toContainText('Cliente de prueba');
+  await expect(note.locator('.note-card-reminder')).toContainText('09:45');
+
+  const dimensions = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    document: document.documentElement.scrollWidth,
+    notes: document.querySelector('#viewNotes').scrollWidth,
+    notesClient: document.querySelector('#viewNotes').clientWidth
+  }));
+  expect(dimensions.document, 'mobile Notes must not overflow the page horizontally').toBeLessThanOrEqual(dimensions.viewport);
+  expect(dimensions.notes, 'mobile Notes must not overflow its view horizontally').toBeLessThanOrEqual(dimensions.notesClient);
+
+  await note.locator('[data-note-edit]').click();
+  await expect(page.locator('#notesEditorTitle')).toHaveText('Editar nota');
+  await page.locator('#noteContent').fill('Nota móvil editada');
+  await page.locator('#saveNoteBtn').click();
+  await expect(page.locator('.note-card').filter({ hasText: 'Nota móvil editada' })).toBeVisible();
+});
