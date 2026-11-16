@@ -583,7 +583,6 @@
     flex-basis: 32px; width: 32px; height: 32px;
   }
   #viewDashboard .dashboard-collapsible-content { padding: 12px; }
-  #viewDashboard #weeksContainer.weeks { padding: 0; }
   #viewDashboard #topCategoryChart { flex-direction: column; gap: 12px; }
   #viewDashboard #topCategoryChart .chart-box-doughnut {
     flex-basis: 136px; width: 136px; height: 136px; min-height: 136px;
