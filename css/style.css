@@ -207,7 +207,7 @@ h1{
 .client-summary .owed-value.zero{ color:var(--success); }
 
 .client-list{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
-.client-row{ display:flex; align-items:stretch; gap:6px; }
+.client-row{ display:flex; }
 .client-list-item{
   flex:1; min-width:0; text-align:left; background:var(--table-bg); border:1px solid var(--table-border);
   color:var(--text); font-family:var(--body); font-size: calc((14px) * var(--font-scale, 1)); font-weight:600;
@@ -1090,7 +1090,6 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
   border-radius:16px;padding:16px 17px;box-shadow:0 4px 14px rgba(15,23,42,.035);
 }
 #viewClients .client-list{gap:9px;}
-#viewClients .client-row{gap:7px;}
 #viewClients .client-list-item{
   min-height:50px;padding:14px 16px;border-radius:14px;box-shadow:0 3px 10px rgba(15,23,42,.025);
 }
