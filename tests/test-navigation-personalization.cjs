@@ -43,7 +43,7 @@ assert.match(script,/DEFAULT_NOTE_IMPORTANCE/);
 assert.match(script,/generateTypeLabelColor/);
 assert.ok(!script.includes("createNoteImportanceBtn"), 'Importance labels must not be user-created');
 assert.ok(!script.includes("noteLabelColor"), 'Type colors must be generated automatically');
-assert.match(notesCss,/\.note-card\{border:1px solid var\(--note-type-color/);
+assert.match(notesCss,/\.note-card\{[^}]*border:1px solid var\(--note-type-color,var\(--border\)\)/, 'Note cards must keep their type-colored border with the shared border fallback');
 assert.match(notesCss,/\.note-card\{[^}]*box-shadow:none/);
 assert.match(notesCss,/\.note-type-chip,\.note-importance-chip\{[^}]*font-size:11px/);
 const centeringCss = fs.readFileSync(path.join(root, 'css/app-layout-centering.css'), 'utf8');
