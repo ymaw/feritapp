@@ -14,14 +14,9 @@
 .client-purchase-main strong{font-size: calc((13px) * var(--font-scale, 1));overflow-wrap:anywhere;}
 .client-purchase-main small{font-size: calc((11px) * var(--font-scale, 1));color:var(--text-muted);}
 .client-purchase-price{font: 600 calc((12px) * var(--font-scale, 1)) var(--mono);white-space:nowrap;}
-.client-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
-.messenger-action-btn,.share-client-btn{min-height:42px;padding:10px;border-radius:11px;border:1px solid var(--border);font: 600 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
-.messenger-action-btn{background:var(--surface-2);color:var(--primary-soft);}
-.share-client-btn{background:var(--primary);border-color:var(--primary);color:#fff;}
-.client-detail-actions{grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr);gap:10px;}
-.copy-client-name-btn,.share-client-btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:46px;border-radius:13px;font: 700 calc((12px) * var(--font-scale, 1)) var(--body);transition:transform .16s ease,filter .16s ease;}
-.copy-client-name-btn{border:1px solid var(--border);background:var(--surface-2);color:var(--primary-soft);}
-.share-client-btn{display:flex;align-items:center;justify-content:center;gap:9px;}
+.client-detail-actions{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:10px;margin-top:14px;}
+.share-client-btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:10px;border:1px solid var(--primary);border-radius:13px;background:var(--primary);color:#fff;font:700 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;transition:transform .16s ease,filter .16s ease;}
+.copy-client-name-btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:46px;border:1px solid var(--border);border-radius:13px;padding:10px;background:var(--surface-2);color:var(--primary-soft);font:700 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;transition:transform .16s ease,filter .16s ease;}
 .copy-client-name-btn:hover,.share-client-btn:hover{filter:brightness(1.04);transform:translateY(-1px);}
 
 /* Conserva el ajuste responsive que antes estaba en el bloque general de style.css. */
