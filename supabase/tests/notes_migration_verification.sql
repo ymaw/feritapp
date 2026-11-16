@@ -57,7 +57,7 @@ END $$;
 BEGIN;
 SET LOCAL ROLE authenticated;
 SET LOCAL request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
-INSERT INTO public.note_labels(kind,name,color) VALUES ('type','Retiro','#8B5CF6'),('importance','Urgente','#EF4444');
+INSERT INTO public.note_labels(kind,name,color) VALUES ('type','Retiro','#8B5CF6'),('importance','Urgente','#DC2626');
 INSERT INTO public.notes(content,client_id,type_label_id,importance_label_id)
 VALUES (
   'Nota propia','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
