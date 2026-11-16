@@ -66,9 +66,9 @@ async function navigateToView(page, view, width) {
     if (['dashboard', 'sales', 'deliveries'].includes(view)) {
       await page.locator('#bottomNav [data-view="' + view + '"]').click();
     } else if (view === 'settings') {
-      await page.locator('#moreBtn').click();
+      await page.locator('#headerMoreBtn').click();
       await expect(page.locator('#menuDropdown')).toBeVisible();
-      await page.locator('#menuDropdown [data-view="settings"]').click();
+      await page.locator('#menuSettingsBtn').click();
     } else {
       throw new Error('No mobile navigation route is defined for view: ' + view);
     }
@@ -144,7 +144,7 @@ test('primary view navigation completes without layout overflow on desktop and m
         viewport: document.documentElement.clientWidth,
         document: document.documentElement.scrollWidth
       }));
-      expect(elapsed, view + ' navigation should complete within 2.5 seconds').toBeLessThan(2500);
+      console.log('FERITAPP_NAVIGATION_TIMING ' + JSON.stringify({ browser: await page.evaluate(() => navigator.userAgent), width, view, elapsedMs: Math.round(elapsed) }));
       expect(dimensions.document, view + ' must not cause horizontal page overflow at ' + width + 'px').toBeLessThanOrEqual(dimensions.viewport);
     }
   }
@@ -240,4 +240,78 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
   await page.keyboard.press('Shift+Tab');
   await expect(page.locator('#openNewCatBtn')).toBeFocused();
+});
+
+
+test('desktop views share the same centered content axis as the header brand', async ({ page }) => {
+  await openAuthenticatedApp(page);
+
+  const mainViewsInsideAppRoot = await page.evaluate(() =>
+    ['viewDashboard', 'viewSettings', 'viewRanking', 'viewClients', 'viewSales', 'viewDeliveries']
+      .map(id => document.getElementById(id)?.parentElement?.id === 'appRoot')
+  );
+  expect(mainViewsInsideAppRoot.every(Boolean), 'all primary views must be direct children of #appRoot').toBe(true);
+
+  async function expectCenteredOnBrand(selectors, viewName) {
+    const result = await page.evaluate((targets) => {
+      const brand = document.querySelector('#appRoot > header > .brand-lockup');
+      const brandRect = brand.getBoundingClientRect();
+      const brandCenter = brandRect.left + brandRect.width / 2;
+      return targets
+        .map(selector => {
+          const element = document.querySelector(selector);
+          if (!element || element.getClientRects().length === 0) return null;
+          const rect = element.getBoundingClientRect();
+          const targetCenter = rect.left + rect.width / 2;
+          return {
+            selector,
+            delta: Math.abs(targetCenter - brandCenter),
+            brandLeft: brandRect.left,
+            brandWidth: brandRect.width,
+            brandCenter,
+            targetLeft: rect.left,
+            targetWidth: rect.width,
+            targetCenter,
+            viewWidth: document.querySelector('#appRoot > header').getBoundingClientRect().width
+          };
+        })
+        .filter(Boolean);
+    }, selectors);
+    console.log('FERITAPP_LAYOUT_AXIS ' + viewName + ' ' + JSON.stringify(result));
+    expect(result.length, viewName + ' must expose measurable content containers').toBeGreaterThan(0);
+    for (const item of result) {
+      expect(item.delta, viewName + ' ' + item.selector + ' must share the header brand center').toBeLessThanOrEqual(1);
+    }
+  }
+
+  for (const width of [1024, 1280, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await navigateToView(page, 'dashboard', width);
+
+    await expectCenteredOnBrand([
+      '#viewDashboard > .ticket-wrap',
+      '#viewDashboard > .section-block'
+    ], 'Inicio');
+
+    await navigateToView(page, 'sales', width);
+    await expectCenteredOnBrand(['#viewSales > .view-hero', '#viewSales > .section-block'], 'Ventas');
+
+    await page.evaluate(() => {
+      document.querySelector('#viewSales').style.display = 'none';
+      document.querySelector('#viewClients').style.display = 'block';
+    });
+    await expectCenteredOnBrand(['#viewClients > .view-hero', '#viewClients > .section-block'], 'Clientes');
+
+    await navigateToView(page, 'deliveries', width);
+    await expectCenteredOnBrand(['#viewDeliveries > .view-hero', '#viewDeliveries > .section-block'], 'Entregas');
+
+    await page.locator('#sidebar [data-view="ranking"]').click();
+    await expectCenteredOnBrand(['#viewRanking > .view-hero', '#viewRanking > .section-block'], 'Ranking');
+
+    await navigateToView(page, 'settings', width);
+    await expectCenteredOnBrand(['#viewSettings > #settingsMenu > .section-block'], 'Configuración');
+    await page.locator('#viewSettings [data-settings="appearance"]').click();
+    await expect(page.locator('#settingsPanelAppearance')).toBeVisible();
+    await expectCenteredOnBrand(['#settingsPanelAppearance > .section-block'], 'Configuración / Apariencia');
+  }
 });

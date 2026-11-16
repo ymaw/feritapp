@@ -1,0 +1,245 @@
+/* FeritApp — desktop content rail.
+   The sidebar is 248px. Header identity and each view share one centered
+   content column, using the header's 30px horizontal inset and 1120px cap. */
+
+@media (min-width: 900px) {
+  #appRoot > header,
+  #appRoot > .app-view {
+    box-sizing: border-box;
+    width: calc(100% - 248px);
+    max-width: none;
+    margin-left: 248px;
+    margin-right: 0;
+  }
+
+  #appRoot > .install-banner {
+    margin-left: 248px;
+  }
+
+  #appRoot > header > .brand-lockup,
+  #appRoot > header > .eyebrow,
+  #appRoot > header > #viewHeading,
+  #appRoot > header > .session-email {
+    box-sizing: border-box;
+    width: min(1120px, 100%);
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* One shared rail for every primary view. The 60px subtraction mirrors
+     the desktop header's 30px padding on each side. */
+  #viewDashboard > .greeting-badge,
+  #viewDashboard > .ticket-wrap,
+  #viewDashboard > .section-block,
+  #viewSales > .view-hero,
+  #viewSales > .section-block,
+  #viewClients > .view-hero,
+  #viewClients > .section-block,
+  #viewRanking > .view-hero,
+  #viewRanking > .section-block,
+  #viewDeliveries > .view-hero,
+  #viewDeliveries > .section-block,
+  #viewNotes > .section-block,
+  #viewSettings > #settingsMenu > .section-block {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #viewSettings .settings-panel .section-block {
+    box-sizing: border-box;
+    width: min(920px, calc(100% - 60px));
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    display: block;
+  }
+
+  #viewSales > .view-hero.sales-hero.ranking-hero {
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin: 18px auto 14px;
+  }
+
+  /* Ventas conserva la misma jerarquía editorial que Clientes y Ranking:
+     kicker, título y descripción alineados al borde izquierdo del contenido. */
+  #viewSales > .view-hero.sales-hero {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  #viewSales > .view-hero.sales-hero h2,
+  #viewSales > .view-hero.sales-hero .view-hero-kicker,
+  #viewSales > .view-hero.sales-hero p {
+    text-align: left;
+  }
+
+  #viewSales > .view-hero.sales-hero p {
+    margin-top: 7px;
+  }
+
+  /* "Todo listo por ahora": mantener el separador y eliminar la tarjeta. */
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 16px 18px 16px;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
+    min-width: 0;
+    margin: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* Mobile layout is intentionally unchanged; keep the empty state as a
+   horizontal separator and preserve the compact Sales hero gutters. */
+@media (max-width: 899px) {
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    margin: 14px 0 0;
+    padding: 14px 0 14px;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear .dashboard-task-copy {
+    min-width: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  #viewSales > .view-hero.sales-hero.ranking-hero {
+    box-sizing: border-box;
+    width: calc(100% - 40px);
+    max-width: none;
+    margin: 18px 20px 14px;
+    padding: 20px;
+  }
+
+  /* El padding asimétrico sólo se usa en desktop; en mobile se conserva
+     el espacio original para el botón Volver. */
+  header.has-back-button {
+    padding-left: 0 !important;
+  }
+}
+
+
+/* Notas comparte el mismo rail centrado que el resto de las vistas. */
+@media (min-width: 900px) {
+  #viewNotes > .section-block {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 899px) {
+  #viewNotes > .section-block {
+    box-sizing: border-box;
+    width: calc(100% - 40px);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+
+/* Encabezado móvil: marca, lema y estado de sesión comparten el eje central. */
+@media (max-width: 899px) {
+  #appRoot > header {
+    text-align: center;
+  }
+
+  #appRoot > header .header-home-link {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin: 0 auto 6px !important;
+  }
+
+  #appRoot > header > .eyebrow,
+  #appRoot > header > .session-email {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center;
+  }
+
+  #appRoot > header > .eyebrow {
+    margin-bottom: 6px;
+  }
+
+  #appRoot > header > .session-email {
+    margin-top: 9px !important;
+    overflow-wrap: anywhere;
+  }
+
+  /* Los botones flotantes no deben desplazar el eje del contenido. */
+  #appRoot > header.has-back-button {
+    padding-left: 20px !important;
+  }
+}
+
+
+/* V22: estado vacío alineado al mismo borde interno que las demás tarjetas del dashboard. */
+@media (min-width: 900px) {
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+}
+@media (max-width: 899px) {
+  #viewDashboard #dashboardTasks > .dashboard-task.is-clear {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+}

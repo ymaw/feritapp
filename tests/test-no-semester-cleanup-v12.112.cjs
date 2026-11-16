@@ -6,14 +6,23 @@ const js = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const emptyCss = fs.readFileSync(path.join(root, 'css/empty-states.css'), 'utf8');
+
+function assetVersion(assetPath) {
+  const match = html.match(new RegExp(assetPath.replaceAll('.', '\\.') + '\\?v=([^"\\s]+)'));
+  assert.ok(match, 'Missing cache-busted asset reference: ' + assetPath);
+  return match[1];
+}
+
 assert.doesNotMatch(js, /checkSemesterCleanup|last_purge_semester|Mantenimiento semestral/);
 assert.doesNotMatch(html, /Cada semestre se descarga uno automático/);
 assert.match(html, /Exportá una copia periódicamente/);
-assert.match(html, /css\/empty-states\.css\?v=12\.123/);
-assert.ok(html.indexOf('css/style.css?v=12.123') < html.indexOf('css/empty-states.css?v=12.123'));
+const styleVersion = assetVersion('css/style.css');
+const emptyStatesVersion = assetVersion('css/empty-states.css');
+const scriptVersion = assetVersion('script.js');
+assert.ok(emptyStatesVersion.length > 0, 'The module stylesheet must use a cache version');
+assert.ok(scriptVersion.length > 0, 'script.js must use a cache version');
+assert.ok(html.indexOf('css/style.css?v=' + styleVersion) < html.indexOf('css/empty-states.css?v=' + emptyStatesVersion));
 assert.doesNotMatch(style, /\.empty-inline\s*\{|#viewClients \.empty-inline|\.empty\s*\{/);
 assert.match(emptyCss, /\.empty-inline\s*\{/);
 assert.match(emptyCss, /#viewClients \.empty-inline/);
-assert.match(html, /script\.js\?v=12\.123/);
-for (const m of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) assert.equal(m[1], '12.123', 'cache versions must be uniform');
-console.log('OK V12.123: borrado semestral desactivado, exportación manual intacta y extracción de estados vacíos verificada.');
+console.log('OK: borrado semestral desactivado, exportación manual intacta y extracción de estados vacíos verificada (cache ' + styleVersion + ').');

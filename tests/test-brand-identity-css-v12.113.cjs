@@ -5,12 +5,29 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
 const brand = fs.readFileSync(path.join(root, 'css/brand-identity.css'), 'utf8');
-assert.match(html, /css\/brand-identity\.css\?v=12\.123/);
-assert.ok(html.indexOf('css/style.css?v=12.123') < html.indexOf('css/brand-identity.css?v=12.123'));
+
+function assetVersion(assetPath) {
+  const marker = assetPath + '?v=';
+  const start = html.indexOf(marker);
+  assert.notEqual(start, -1, `Missing versioned reference for ${assetPath}`);
+  const match = html.slice(start + marker.length).match(/^([^"']+)/);
+  assert.ok(match, `Could not read cache version for ${assetPath}`);
+  return match[1];
+}
+
+const styleVersion = assetVersion('css/style.css');
+const brandVersion = assetVersion('css/brand-identity.css');
+const scriptVersion = assetVersion('script.js');
+assert.ok(
+  html.indexOf('css/style.css?v=') < html.indexOf('css/brand-identity.css?v='),
+  'brand-identity.css must load after style.css'
+);
+assert.ok(brandVersion.length > 0, 'The module stylesheet must use a cache version');
+assert.ok(scriptVersion.length > 0, 'script.js must use a cache version');
+
 assert.match(brand, /\.brand-logo, \.sidebar-logo, \.receipt-preview-ferit-logo, \.receipt-brand-logo\s*\{[^}]*object-fit:\s*contain\s*!important/s);
 assert.match(brand, /background:\s*transparent\s*!important/);
 assert.match(brand, /box-shadow:\s*none\s*!important/);
 assert.match(brand, /\.brand-logo, \.sidebar-logo, \.receipt-brand-logo\s*\{\s*border-radius:\s*0\s*!important/s);
 assert.ok(!/\.brand-logo, \.sidebar-logo, \.receipt-preview-ferit-logo, \.receipt-brand-logo\s*\{[^}]*object-fit:\s*contain\s*!important/s.test(style), 'Las reglas de identidad deben residir en el módulo nuevo');
-assert.match(html, /script\.js\?v=12\.123/);
-console.log('OK V12.123: identidad CSS extraída sin alterar reglas y con orden de carga conservado.');
+console.log(`OK brand identity regression: extraction and load order preserved with synchronized cache versions (${styleVersion}).`);

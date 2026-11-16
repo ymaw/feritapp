@@ -1,0 +1,1213 @@
+/* FeritApp — modernización visual de Inicio.
+   Solo presentación: conserva el markup, los datos y los controladores existentes. */
+
+#viewDashboard {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 4px 0 34px;
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(var(--primary-rgb), .055), transparent 42%),
+    var(--bg);
+}
+
+#viewDashboard .greeting-badge {
+  margin: 18px 20px 0;
+  padding: 17px 19px;
+  min-height: 84px;
+  border: 1px solid rgba(var(--primary-rgb), .2);
+  border-radius: 20px;
+  background: linear-gradient(115deg, rgba(var(--primary-rgb), .105), rgba(var(--secondary-rgb), .07));
+  box-shadow: 0 5px 18px rgba(38, 28, 74, .045);
+}
+#viewDashboard .greeting-avatar {
+  width: 54px;
+  height: 54px;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .24), 0 4px 12px rgba(38, 28, 74, .12);
+}
+#viewDashboard .greeting-title { font-size: calc(21px * var(--font-scale, 1)); }
+#viewDashboard .greeting-sub { color: var(--text-muted); line-height: 1.45; }
+
+#viewDashboard .ticket-wrap,
+#viewDashboard > .section-block {
+  width: calc(100% - 40px);
+  max-width: 1120px;
+  margin: 17px auto 0;
+  padding: 20px;
+  border: 1px solid var(--table-border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 5px 20px rgba(30, 27, 46, .045);
+}
+#viewDashboard .ticket-wrap { padding: 21px; }
+#viewDashboard .section-block { padding-top: 20px; }
+#viewDashboard .section-block .section-title {
+  margin-bottom: 13px;
+  font-size: calc(17px * var(--font-scale, 1));
+  letter-spacing: -.025em;
+}
+#viewDashboard .section-block .section-title::before {
+  height: 18px;
+  width: 3px;
+  flex-basis: 3px;
+}
+
+#viewDashboard .summary-heading {
+  padding: 0 1px 13px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+#viewDashboard .stat-cards-label {
+  color: var(--primary);
+  font-size: calc(10px * var(--font-scale, 1));
+  letter-spacing: .12em;
+}
+#viewDashboard .summary-period {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: calc(12px * var(--font-scale, 1));
+}
+#viewDashboard .stat-cards { gap: 10px; }
+#viewDashboard .stat-card {
+  min-height: 102px;
+  padding: 14px 15px;
+  gap: 5px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: none;
+}
+#viewDashboard .stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(var(--primary-rgb), .07);
+}
+#viewDashboard .stat-card-icon { font-size: calc(17px * var(--font-scale, 1)); }
+#viewDashboard .stat-card-label {
+  color: var(--text-muted);
+  font-size: calc(11px * var(--font-scale, 1));
+  line-height: 1.3;
+}
+#viewDashboard .stat-card-value {
+  font-size: calc(19px * var(--font-scale, 1));
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+#viewDashboard .stat-card.primary {
+  border-color: rgba(var(--primary-rgb), .24);
+  background: linear-gradient(145deg, rgba(var(--primary-rgb), .075), var(--surface) 78%);
+}
+#viewDashboard .stat-card.success {
+  border-color: rgba(var(--success-rgb), .25);
+  background: linear-gradient(145deg, rgba(var(--success-rgb), .07), var(--surface) 78%);
+}
+#viewDashboard .stat-card.warning {
+  border-color: rgba(var(--warning-rgb), .25);
+  background: linear-gradient(145deg, rgba(var(--warning-rgb), .075), var(--surface) 78%);
+}
+
+#viewDashboard .dashboard-tasks-section .section-heading-row { margin-bottom: 12px; }
+#viewDashboard .section-subtitle,
+#viewDashboard .dashboard-history-subtitle {
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+#viewDashboard .dashboard-history-card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+#viewDashboard .weekly-summary-heading {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+#viewDashboard .weekly-summary-heading-copy .section-title { margin-bottom: 5px; }
+#viewDashboard .weekly-summary-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface-2);
+  color: var(--primary);
+  transition: transform .18s ease, background .18s ease;
+}
+#viewDashboard .weekly-summary-heading.expanded .weekly-summary-chevron {
+  background: var(--surface-3);
+}
+#viewDashboard .weekly-summary-content {
+  margin-top: 15px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+#viewDashboard .weekly-summary-content[hidden] { display: none !important; }
+
+#viewDashboard .dashboard-history-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+#viewDashboard .dashboard-history-heading .section-title { margin-bottom: 6px; }
+#viewDashboard .dashboard-history-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(var(--primary-rgb), .16);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--primary);
+}
+#viewDashboard .weeks { padding: 12px 0 0; }
+#viewDashboard .week-toggle {
+  padding: 13px 4px;
+  border-bottom-color: var(--border);
+}
+#viewDashboard .week-toggle:last-of-type { border-bottom: 0; }
+#viewDashboard .week-toggle .lbl {
+  color: var(--text);
+  font-family: var(--body);
+  font-size: calc(13px * var(--font-scale, 1));
+}
+#viewDashboard .week-toggle .sub {
+  color: var(--text-muted);
+  font-size: calc(11px * var(--font-scale, 1));
+}
+#viewDashboard .week-toggle.week-latest .lbl { color: var(--primary); }
+
+#viewDashboard #topCategoryChart {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+#viewDashboard #topCategoryChart .chart-box-doughnut {
+  flex: 0 0 132px;
+  width: 132px;
+  height: 132px;
+  min-height: 132px;
+  padding: 4px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+#viewDashboard #topCategoryChart .doughnut-center { pointer-events: none; }
+#viewDashboard #topCategoryChart .doughnut-total {
+  font-size: calc(21px * var(--font-scale, 1));
+}
+#viewDashboard #topCategoryChart .doughnut-label {
+  font-size: calc(9px * var(--font-scale, 1));
+  color: var(--text-muted);
+}
+#viewDashboard #topCategoryChart .cat-legend {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+}
+#viewDashboard #topCategoryChart .cat-legend-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+#viewDashboard #topCategoryChart .cat-legend-row:last-child { border-bottom: 0; }
+#viewDashboard #topCategoryChart .cat-legend-name {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+#viewDashboard #topCategoryChart .cat-legend-count {
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: calc(10px * var(--font-scale, 1));
+}
+
+#viewDashboard .seg.seg-spaced-bottom {
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 12px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+#viewDashboard .period-opt {
+  min-height: 36px;
+  padding: 8px 15px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--text-muted);
+  font-weight: 650;
+}
+#viewDashboard .period-opt.active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: 0 2px 7px rgba(30, 27, 46, .09);
+}
+#viewDashboard #periodCompare .comparison-chart-heading {
+  margin: 13px 1px 8px;
+}
+#viewDashboard #periodCompare .comparison-chart-heading strong {
+  color: var(--text);
+  font-size: calc(12px * var(--font-scale, 1));
+}
+#viewDashboard #periodCompare .comparison-chart-heading span {
+  color: var(--text-muted);
+  font-size: calc(10px * var(--font-scale, 1));
+}
+#viewDashboard #periodCompare .chart-box {
+  height: 142px;
+  min-height: 142px;
+  padding: 9px 7px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface-2);
+  box-shadow: none;
+}
+#viewDashboard #periodCompare .chart-box-doughnut {
+  height: 112px;
+  min-height: 112px;
+}
+#viewDashboard #periodCompare .payment-chart-heading { margin-top: 15px; }
+#viewDashboard #periodCompare .payment-chart-layout {
+  gap: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+#viewDashboard #periodCompare .payment-doughnut {
+  flex: 0 0 108px;
+  width: 108px;
+  max-width: 108px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+#viewDashboard #periodCompare .payment-chart-center strong {
+  font-size: calc(12px * var(--font-scale, 1));
+}
+#viewDashboard #periodCompare .payment-chart-legend > div {
+  grid-template-columns: 9px minmax(0, 1fr);
+  gap: 5px 8px;
+}
+#viewDashboard #periodCompare .payment-chart-legend strong {
+  grid-column: 2;
+  font-size: calc(11px * var(--font-scale, 1));
+}
+#viewDashboard #periodCompare .compare-row {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 13px 13px 0 0;
+  background: var(--surface-2);
+}
+#viewDashboard #periodCompare .compare-select {
+  min-height: 42px;
+  border-radius: 10px;
+  background-color: var(--surface);
+  color: var(--text);
+}
+#viewDashboard #periodCompare .compare-table-card {
+  border-color: var(--border);
+  border-radius: 0 0 13px 13px;
+  background: var(--surface);
+}
+#viewDashboard #periodCompare .compare-table td { border-top-color: var(--border); }
+#viewDashboard #periodCompare .compare-table td.label { color: var(--text-muted); }
+#viewDashboard #periodCompare .compare-table td.num { color: var(--text); }
+
+[data-theme="dark"] #viewDashboard {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(var(--primary-rgb), .09), transparent 44%),
+    var(--bg);
+}
+[data-theme="dark"] #viewDashboard .ticket-wrap,
+[data-theme="dark"] #viewDashboard > .section-block {
+  border-color: var(--border);
+  box-shadow: 0 7px 22px rgba(0, 0, 0, .14);
+}
+[data-theme="dark"] #viewDashboard .stat-card,
+[data-theme="dark"] #viewDashboard .stat-card.primary,
+[data-theme="dark"] #viewDashboard .stat-card.success,
+[data-theme="dark"] #viewDashboard .stat-card.warning {
+  background-color: var(--surface);
+}
+[data-theme="dark"] #viewDashboard .weekly-summary-chevron,
+[data-theme="dark"] #viewDashboard #periodCompare .chart-box,
+[data-theme="dark"] #viewDashboard #periodCompare .payment-chart-layout,
+[data-theme="dark"] #viewDashboard #periodCompare .compare-row {
+  background: var(--surface-2);
+}
+
+@media (min-width: 900px) {
+  #viewDashboard .greeting-badge {
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 520px) {
+  #viewDashboard .ticket-wrap,
+  #viewDashboard > .section-block {
+    width: calc(100% - 28px);
+    margin-top: 13px;
+    padding: 16px;
+    border-radius: 17px;
+  }
+  #viewDashboard .greeting-badge {
+    margin: 14px 14px 0;
+    padding: 14px;
+    border-radius: 17px;
+  }
+  #viewDashboard .stat-card {
+    min-height: 96px;
+    padding: 12px;
+  }
+  #viewDashboard .stat-card-value { font-size: calc(17px * var(--font-scale, 1)); }
+  #viewDashboard #topCategoryChart { gap: 10px; }
+  #viewDashboard #topCategoryChart .chart-box-doughnut {
+    flex-basis: 112px;
+    width: 112px;
+    height: 112px;
+    min-height: 112px;
+  }
+  #viewDashboard #topCategoryChart .cat-legend-row { gap: 6px; }
+  #viewDashboard #topCategoryChart .cat-legend-count { white-space: nowrap; }
+  #viewDashboard #periodCompare .chart-box { height: 126px; min-height: 126px; }
+  #viewDashboard #periodCompare .payment-chart-layout { padding: 9px; gap: 9px; }
+  #viewDashboard #periodCompare .payment-doughnut {
+    flex-basis: 94px;
+    width: 94px;
+    max-width: 94px;
+    height: 94px;
+    min-height: 94px;
+  }
+  #viewDashboard #periodCompare .compare-table td {
+    padding: 9px 4px;
+    font-size: calc(11px * var(--font-scale, 1));
+  }
+}
+@media (max-width: 360px) {
+  #viewDashboard #topCategoryChart { align-items: flex-start; }
+  #viewDashboard #topCategoryChart .chart-box-doughnut {
+    flex-basis: 94px;
+    width: 94px;
+    height: 94px;
+    min-height: 94px;
+  }
+  #viewDashboard #topCategoryChart .cat-legend-count {
+    font-size: calc(9px * var(--font-scale, 1));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #viewDashboard .weekly-summary-chevron,
+  #viewDashboard .stat-card { transition: none !important; }
+}
+
+/* Ajustes de dimensiones frente a las reglas heredadas de Chart.js. */
+#viewDashboard #topCategoryChart .chart-box-doughnut {
+  margin: 0 !important;
+}
+#viewDashboard #topCategoryChart .cat-legend {
+  margin-top: 0;
+}
+#viewDashboard #periodCompare .chart-box.chart-box-modern {
+  height: 142px !important;
+  min-height: 142px !important;
+}
+#viewDashboard #periodCompare .payment-chart-layout {
+  grid-template-columns: minmax(0, 108px) minmax(0, 1fr);
+}
+#viewDashboard #periodCompare .payment-doughnut {
+  width: 108px !important;
+  max-width: 108px !important;
+  height: 112px !important;
+  min-height: 112px !important;
+}
+@media (max-width: 520px) {
+  #viewDashboard #periodCompare .chart-box.chart-box-modern {
+    height: 126px !important;
+    min-height: 126px !important;
+  }
+  #viewDashboard #periodCompare .payment-chart-layout {
+    grid-template-columns: minmax(0, 94px) minmax(0, 1fr);
+  }
+  #viewDashboard #periodCompare .payment-doughnut {
+    width: 94px !important;
+    max-width: 94px !important;
+    height: 98px !important;
+    min-height: 98px !important;
+  }
+}
+
+
+/* V2 — alineación consistente y subsecciones plegables del dashboard. */
+#viewDashboard { box-sizing: border-box; }
+#viewDashboard, #viewDashboard * { box-sizing: border-box; }
+#viewDashboard .ticket-wrap,
+#viewDashboard > .section-block {
+  width: min(1120px, calc(100% - 48px));
+  margin-left: auto;
+  margin-right: auto;
+}
+#viewDashboard .section-block { min-width: 0; }
+#viewDashboard .dashboard-collapsible-card {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+#viewDashboard .dashboard-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  padding: 15px 16px;
+  border: 0;
+  background: linear-gradient(110deg, rgba(var(--primary-rgb), .055), transparent 70%);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+#viewDashboard .dashboard-section-toggle:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: -3px;
+}
+#viewDashboard .dashboard-toggle-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+#viewDashboard .dashboard-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+#viewDashboard .dashboard-toggle-copy .section-title {
+  margin: 0;
+  line-height: 1.3;
+}
+#viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle { margin: 0; }
+#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+  flex: 0 0 36px;
+  margin: 0;
+}
+#viewDashboard .dashboard-toggle-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--primary);
+  font-size: 20px;
+  transition: transform .18s ease;
+}
+#viewDashboard .dashboard-section-toggle.expanded .dashboard-toggle-chevron { transform: rotate(180deg); }
+#viewDashboard .dashboard-collapsible-content {
+  min-width: 0;
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--border);
+}
+#viewDashboard .dashboard-collapsible-content[hidden] { display: none !important; }
+#viewDashboard #weeksContainer.weeks { padding: 0; }
+#viewDashboard #topCategoryChart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+#viewDashboard #topCategoryChart .chart-box-doughnut {
+  flex: 0 0 150px;
+  width: 150px;
+  height: 150px;
+  min-height: 150px;
+}
+#viewDashboard .dashboard-payment-card { width: 100%; margin-top: 12px; }
+#viewDashboard .dashboard-payment-toggle { padding: 12px 14px; border: 1px solid var(--border); border-radius: 14px; }
+#viewDashboard .dashboard-payment-card .dashboard-collapsible-content {
+  padding: 14px 0 0;
+  border-top: 0;
+}
+#viewDashboard #periodCompare .payment-chart-heading { display: none; }
+#viewDashboard #periodCompare .payment-chart-layout {
+  display: grid;
+  grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  min-width: 0;
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+#viewDashboard #periodCompare .payment-doughnut {
+  width: 190px !important;
+  max-width: 190px !important;
+  height: 190px !important;
+  min-height: 190px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+#viewDashboard #periodCompare .payment-chart-legend { gap: 18px; }
+#viewDashboard #periodCompare .payment-chart-legend > div strong {
+  font-size: calc(14px * var(--font-scale, 1));
+}
+#viewDashboard #periodCompare .payment-chart-legend > div span:nth-child(2) {
+  font-size: calc(12px * var(--font-scale, 1));
+}
+@media (max-width: 760px) {
+  #viewDashboard .ticket-wrap,
+  #viewDashboard > .section-block { width: calc(100% - 28px); }
+  #viewDashboard .dashboard-section-toggle { padding: 13px 12px; gap: 9px; }
+  #viewDashboard .dashboard-toggle-main { gap: 9px; }
+  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+    flex-basis: 32px; width: 32px; height: 32px;
+  }
+  #viewDashboard .dashboard-collapsible-content { padding: 12px; }
+  #viewDashboard #weeksContainer.weeks { padding: 0; }
+  #viewDashboard #topCategoryChart { flex-direction: column; gap: 12px; }
+  #viewDashboard #topCategoryChart .chart-box-doughnut {
+    flex-basis: 136px; width: 136px; height: 136px; min-height: 136px;
+  }
+  #viewDashboard #topCategoryChart .cat-legend { width: 100%; }
+  #viewDashboard #periodCompare .payment-chart-layout {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 12px;
+    padding: 14px;
+  }
+  #viewDashboard #periodCompare .payment-doughnut {
+    width: 184px !important; max-width: 184px !important;
+    height: 184px !important; min-height: 184px !important;
+  }
+  #viewDashboard #periodCompare .payment-chart-legend {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%; gap: 10px;
+  }
+  #viewDashboard #periodCompare .payment-chart-legend > div {
+    padding: 10px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface);
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .dashboard-toggle-copy .section-title { font-size: calc(15px * var(--font-scale, 1)); }
+  #viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle { font-size: calc(10px * var(--font-scale, 1)); }
+  #viewDashboard #periodCompare .payment-chart-legend { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #viewDashboard .dashboard-toggle-chevron { transition: none; }
+}
+
+
+/* V3 — correcciones de composición desktop y alineación de encabezados. */
+@media (min-width: 900px) {
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    display: block;
+    float: none;
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+    vertical-align: initial;
+  }
+  #viewDashboard > .section-block {
+    clear: both;
+  }
+  #viewDashboard .summary-heading {
+    width: 100%;
+    max-width: none;
+  }
+  #viewDashboard .summary-heading > div {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+}
+#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
+  align-items: flex-start;
+}
+#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+  align-self: flex-start;
+  margin-top: 0;
+}
+#viewDashboard .dashboard-toggle-copy {
+  align-self: flex-start;
+  min-width: 0;
+}
+#viewDashboard .dashboard-toggle-copy .section-title,
+#viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+#viewDashboard .summary-heading .stat-cards-label,
+#viewDashboard .summary-heading .summary-period {
+  max-width: 100%;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 899px) {
+  #viewDashboard .summary-heading { max-width: none; }
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    display: block;
+    width: calc(100% - 28px);
+    max-width: none;
+  }
+}
+
+
+/* V4 — saludo más limpio y alineación de subsecciones consistente en todos los tamaños. */
+#viewDashboard .greeting-badge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: min(1120px, calc(100% - 48px));
+  max-width: 1120px;
+  min-width: 0;
+  min-height: 82px;
+  margin: 18px auto 0;
+  padding: 15px 20px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 4px 16px rgba(30, 27, 46, .035);
+}
+#viewDashboard .greeting-avatar {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12);
+}
+#viewDashboard .greeting-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#viewDashboard .greeting-title {
+  margin: 0;
+  font-size: calc(20px * var(--font-scale, 1));
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+#viewDashboard .greeting-sub {
+  margin-top: 5px;
+  font-size: calc(12px * var(--font-scale, 1));
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* El icono toma siempre la primera línea del bloque de título, también en mobile. */
+#viewDashboard .dashboard-section-toggle,
+#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
+  align-items: flex-start;
+}
+#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+  align-self: flex-start;
+  flex: 0 0 36px;
+  margin: 1px 0 0;
+}
+#viewDashboard .dashboard-toggle-copy {
+  align-self: flex-start;
+  min-width: 0;
+}
+#viewDashboard .dashboard-toggle-copy .section-title {
+  display: block;
+  min-width: 0;
+  line-height: 1.35;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+#viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle {
+  display: block;
+  min-width: 0;
+  line-height: 1.4;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 899px) {
+  #viewDashboard .greeting-badge {
+    width: calc(100% - 28px);
+    margin: 16px auto 0;
+    padding: 13px 15px;
+    gap: 13px;
+    min-height: 72px;
+  }
+  #viewDashboard .greeting-avatar {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  #viewDashboard .greeting-title {
+    font-size: calc(18px * var(--font-scale, 1));
+  }
+  #viewDashboard .greeting-sub {
+    font-size: calc(11px * var(--font-scale, 1));
+  }
+  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .greeting-badge {
+    gap: 11px;
+    padding: 12px;
+  }
+  #viewDashboard .greeting-avatar {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+  #viewDashboard .greeting-title {
+    font-size: calc(16px * var(--font-scale, 1));
+  }
+}
+
+
+/* V5 — composición desktop en una sola columna y separador icono/título. */
+@media (min-width: 900px) {
+  #viewDashboard > .section-block {
+    display: block !important;
+    float: none !important;
+    clear: both !important;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    vertical-align: initial !important;
+  }
+  #viewDashboard > .ticket-wrap {
+    display: block !important;
+    float: none !important;
+    clear: both !important;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start !important;
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+  align-self: flex-start !important;
+  flex: 0 0 36px;
+  margin: 1px 0 0 !important;
+}
+#viewDashboard .dashboard-heading-divider {
+  display: block;
+  align-self: stretch;
+  flex: 0 0 2px;
+  width: 2px;
+  min-height: 34px;
+  margin: 1px 0 0;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+}
+#viewDashboard .dashboard-toggle-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start !important;
+  min-width: 0;
+  gap: 3px;
+  text-align: left;
+}
+#viewDashboard .dashboard-toggle-copy .section-title {
+  display: block;
+  width: 100%;
+  margin: 0 !important;
+  line-height: 1.35;
+  text-align: left;
+}
+#viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle {
+  display: block;
+  width: 100%;
+  margin: 0 !important;
+  line-height: 1.4;
+  text-align: left;
+}
+@media (max-width: 899px) {
+  #viewDashboard > .section-block,
+  #viewDashboard > .ticket-wrap {
+    width: calc(100% - 28px) !important;
+    max-width: none !important;
+  }
+  #viewDashboard .dashboard-section-toggle .dashboard-toggle-main { gap: 9px; }
+  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  #viewDashboard .dashboard-heading-divider {
+    min-height: 31px;
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .dashboard-section-toggle .dashboard-toggle-main { gap: 7px; }
+  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
+    flex-basis: 29px;
+    width: 29px;
+    height: 29px;
+  }
+  #viewDashboard .dashboard-heading-divider {
+    flex-basis: 2px;
+    width: 2px;
+    min-height: 29px;
+  }
+}
+
+
+/* V6 — una única superficie por subsección, con el patrón de Resumen Semanal. */
+#viewDashboard > .section-block.dashboard-history-section,
+#viewDashboard > .section-block.dashboard-category-section,
+#viewDashboard > .section-block.dashboard-comparison-section {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* La tarjeta interior pasa a ser la única superficie visible. */
+#viewDashboard .dashboard-history-section .dashboard-collapsible-card,
+#viewDashboard .dashboard-category-section .dashboard-collapsible-card,
+#viewDashboard .dashboard-comparison-section .dashboard-collapsible-card {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(30, 20, 70, .05);
+}
+
+/* Mismo ritmo y jerarquía de encabezado que Resumen Semanal. */
+#viewDashboard .dashboard-section-toggle {
+  min-height: 68px;
+  padding: 16px 18px;
+  background: transparent;
+}
+#viewDashboard .dashboard-collapsible-content {
+  padding: 0 18px 18px;
+}
+#viewDashboard .dashboard-collapsible-content[hidden] {
+  display: none !important;
+}
+@media (max-width: 899px) {
+  #viewDashboard .dashboard-section-toggle {
+    min-height: 64px;
+    padding: 14px 15px;
+  }
+  #viewDashboard .dashboard-collapsible-content {
+    padding: 0 15px 15px;
+  }
+}
+
+
+/* V7 — espacio interior del resumen actual y separación del selector de períodos. */
+#viewDashboard .dashboard-current-ticket {
+  box-sizing: border-box;
+  padding: 18px 22px 16px !important;
+}
+#viewDashboard .dashboard-current-ticket .summary-heading {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 7px 9px 15px !important;
+  margin: 0 0 16px !important;
+  border-bottom: 1px solid var(--border);
+}
+#viewDashboard .dashboard-current-ticket .summary-heading > div {
+  min-width: 0;
+  padding: 0;
+}
+#viewDashboard .dashboard-current-ticket .stat-cards-label {
+  display: block;
+  margin: 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+#viewDashboard .dashboard-current-ticket .summary-period {
+  display: block;
+  margin: 5px 0 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+#viewDashboard #dashboardCompareContent {
+  padding-top: 15px;
+}
+#viewDashboard #dashboardCompareContent .seg.seg-spaced-bottom {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  margin: 0 0 18px;
+  padding: 4px;
+}
+#viewDashboard #dashboardCompareContent .period-opt {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+@media (max-width: 899px) {
+  #viewDashboard .dashboard-current-ticket {
+    padding: 16px 16px 14px !important;
+  }
+  #viewDashboard .dashboard-current-ticket .summary-heading {
+    padding: 6px 7px 13px !important;
+    margin-bottom: 14px !important;
+  }
+  #viewDashboard #dashboardCompareContent {
+    padding-top: 13px;
+  }
+  #viewDashboard #dashboardCompareContent .seg.seg-spaced-bottom {
+    margin-bottom: 16px;
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .dashboard-current-ticket {
+    padding: 14px 12px 12px !important;
+  }
+  #viewDashboard .dashboard-current-ticket .summary-heading {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+  }
+}
+
+
+/* V8 — encabezados unificados: resumen, atención y subsecciones. */
+#viewDashboard .weekly-summary-heading {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 68px;
+  padding: 16px 18px;
+}
+#viewDashboard .weekly-summary-main {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 12px;
+}
+#viewDashboard .weekly-summary-heading-copy {
+  min-width: 0;
+}
+#viewDashboard .weekly-summary-heading .dashboard-history-icon {
+  align-self: flex-start;
+  flex: 0 0 36px;
+  margin-top: 1px;
+}
+#viewDashboard .weekly-summary-heading .dashboard-heading-divider {
+  align-self: stretch;
+  flex: 0 0 2px;
+  min-height: 34px;
+  margin-top: 1px;
+}
+#viewDashboard .weekly-summary-heading .weekly-summary-chevron {
+  flex: 0 0 auto;
+  margin-left: 12px;
+}
+#viewDashboard .dashboard-tasks-section .section-heading-row.dashboard-section-heading-static {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 68px;
+  padding: 16px 18px;
+  margin: 0;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  gap: 12px;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-history-icon {
+  flex: 0 0 36px;
+  align-self: flex-start;
+  margin-top: 1px;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-heading-divider {
+  flex: 0 0 2px;
+  align-self: stretch;
+  min-height: 34px;
+  margin-top: 1px;
+}
+#viewDashboard .dashboard-section-heading-static .dashboard-toggle-copy {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  #viewDashboard .greeting-badge {
+    width: min(1120px, calc(100% - 48px));
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 899px) {
+  #viewDashboard .weekly-summary-heading {
+    min-height: 64px;
+    padding: 14px 15px;
+  }
+  #viewDashboard .weekly-summary-main,
+  #viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
+    gap: 9px;
+  }
+  #viewDashboard .weekly-summary-heading .dashboard-history-icon,
+  #viewDashboard .dashboard-section-heading-static .dashboard-history-icon {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  #viewDashboard .weekly-summary-heading .dashboard-heading-divider,
+  #viewDashboard .dashboard-section-heading-static .dashboard-heading-divider {
+    min-height: 31px;
+  }
+  #viewDashboard .dashboard-tasks-section .section-heading-row.dashboard-section-heading-static {
+    min-height: 64px;
+    padding: 14px 15px;
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .weekly-summary-main,
+  #viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
+    gap: 7px;
+  }
+  #viewDashboard .weekly-summary-heading .dashboard-history-icon,
+  #viewDashboard .dashboard-section-heading-static .dashboard-history-icon {
+    flex-basis: 29px;
+    width: 29px;
+    height: 29px;
+  }
+}
+
+/* V9 — alineación geométrica común y encabezado semanal del mismo tamaño. */
+#viewDashboard > .section-block {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#viewDashboard > .section-block.dashboard-tasks-section,
+#viewDashboard > .section-block.weekly-summary-section {
+  padding: 0 !important;
+}
+#viewDashboard .weekly-summary-section,
+#viewDashboard .dashboard-tasks-section {
+  box-sizing: border-box;
+  width: 100%;
+}
+#viewDashboard .weekly-summary-card {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 0 !important;
+  margin: 0;
+}
+#viewDashboard .weekly-summary-heading {
+  box-sizing: border-box;
+  height: 68px;
+  min-height: 68px;
+  max-height: 68px;
+  padding: 16px 18px;
+}
+#viewDashboard .dashboard-tasks-section .dashboard-section-heading-static {
+  box-sizing: border-box;
+  height: 68px;
+  min-height: 68px;
+  padding: 16px 18px;
+}
+@media (min-width: 900px) {
+  #viewDashboard .greeting-badge {
+    box-sizing: border-box;
+    width: min(1120px, calc(100% - 60px));
+    max-width: 1120px;
+    margin: 18px auto 0;
+  }
+}
+@media (max-width: 899px) {
+  #viewDashboard > .section-block {
+    width: calc(100% - 28px);
+    max-width: none;
+  }
+  #viewDashboard .weekly-summary-heading {
+    height: 64px;
+    min-height: 64px;
+    max-height: 64px;
+    padding: 14px 15px;
+  }
+  #viewDashboard .dashboard-tasks-section .dashboard-section-heading-static {
+    height: 64px;
+    min-height: 64px;
+    padding: 14px 15px;
+  }
+}
+@media (max-width: 380px) {
+  #viewDashboard .weekly-summary-heading {
+    padding: 12px;
+  }
+  #viewDashboard .dashboard-tasks-section .dashboard-section-heading-static {
+    padding: 12px;
+  }
+}
+
+/* V10 — mismo ancho exterior para saludo, resumen general y subsecciones en desktop. */
+@media (min-width: 900px) {
+  #viewDashboard .greeting-badge,
+  #viewDashboard > .ticket-wrap,
+  #viewDashboard > .section-block {
+    box-sizing: border-box !important;
+    width: min(1120px, calc(100% - 48px)) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}

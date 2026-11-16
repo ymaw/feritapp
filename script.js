@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   /* ---------------- menú desplegable / vistas ---------------- */
-  const moreBtn = document.getElementById('moreBtn');
+  const headerMoreBtn = document.getElementById('headerMoreBtn');
   const menuDropdown = document.getElementById('menuDropdown');
   const globalBackBtn = document.getElementById('globalBackBtn');
   let currentView = 'dashboard';
@@ -415,15 +415,16 @@ document.addEventListener('DOMContentLoaded', function(){
     openMenuFrom(anchorEl);
   }
 
-  function closeMoreMenu(){ menuDropdown.style.display = 'none'; moreBtn.setAttribute('aria-expanded','false'); moreBtn.querySelector('.nav-icon').textContent = '⋯'; }
+  function closeMoreMenu(){
+    menuDropdown.style.display = 'none';
+    if(headerMoreBtn) headerMoreBtn.setAttribute('aria-expanded','false');
+  }
   const menuCloseBtn = document.getElementById('menuCloseBtn');
   if(menuCloseBtn) menuCloseBtn.addEventListener('click', function(e){ e.stopPropagation(); closeMoreMenu(); });
-  moreBtn.addEventListener('click', function(e){
+  if(headerMoreBtn) headerMoreBtn.addEventListener('click', function(e){
     e.stopPropagation();
-    toggleMenuFrom(moreBtn);
-    const opened = menuDropdown.style.display === 'block';
-    moreBtn.setAttribute('aria-expanded', String(opened));
-    moreBtn.querySelector('.nav-icon').textContent = opened ? '×' : '⋯';
+    toggleMenuFrom(headerMoreBtn);
+    headerMoreBtn.setAttribute('aria-expanded', String(menuDropdown.style.display === 'block'));
   });
   menuDropdown.addEventListener('click', function(e){ e.stopPropagation(); });
   document.addEventListener('click', function(){ closeMoreMenu(); });
@@ -444,9 +445,10 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewClients').style.display = 'none';
     document.getElementById('viewDeliveries').style.display = (view === 'deliveries') ? 'block' : 'none';
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
+    document.getElementById('viewNotes').style.display = (view === 'notes') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
@@ -456,6 +458,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if(view === 'sales'){ renderManagementList(); }
     if(view === 'deliveries'){ renderDeliveriesView(); }
     if(view === 'ranking'){ rankingVisibleCount = 5; renderTopClients(); }
+    if(view === 'notes'){ loadNotes(); }
     if(view === 'settings'){ syncNotifyControls(); showSettingsMenu(); }
   }
 
@@ -493,6 +496,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- Configuración: menú de dos niveles ---------------- */
   const SETTINGS_PANEL_IDS = {
+    personalization: 'settingsPanelPersonalization',
     appearance: 'settingsPanelAppearance',
     profile: 'settingsPanelProfile',
     notifications: 'settingsPanelNotifications',
@@ -512,6 +516,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function showSettingsPanel(key){
     let panelId = SETTINGS_PANEL_IDS[key];
     if(!panelId) return;
+    if(key === 'personalization') fillNavigationSelectors();
     document.getElementById('settingsMenu').style.display = 'none';
     Object.keys(SETTINGS_PANEL_IDS).forEach(function(k){
       document.getElementById(SETTINGS_PANEL_IDS[k]).style.display = (k === key) ? 'block' : 'none';
@@ -530,12 +535,26 @@ document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('[data-view]').forEach(function(btn){
     btn.addEventListener('click', function(){
       switchView(btn.getAttribute('data-view'));
-      menuDropdown.style.display = 'none';
+      const settingsTarget = btn.getAttribute('data-settings-open');
+      if(settingsTarget) showSettingsPanel(settingsTarget);
+      closeMoreMenu();
     });
   });
   const headerProfileBtn = document.getElementById('headerProfileBtn');
   function openProfile(){ switchView('settings'); showSettingsPanel('profile'); }
   if(headerProfileBtn) headerProfileBtn.addEventListener('click', openProfile);
+  const headerHomeBtn = document.getElementById('headerHomeBtn');
+  function openHome(){ switchView('dashboard'); closeMoreMenu(); }
+  if(headerHomeBtn){
+    headerHomeBtn.addEventListener('click',openHome);
+    headerHomeBtn.addEventListener('keydown',function(event){
+      if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); openHome(); }
+    });
+  }
+  const menuProfileBtn = document.getElementById('menuProfileBtn');
+  if(menuProfileBtn) menuProfileBtn.addEventListener('click',function(){ openProfile(); closeMoreMenu(); });
+  const menuSettingsBtn = document.getElementById('menuSettingsBtn');
+  if(menuSettingsBtn) menuSettingsBtn.addEventListener('click',function(){ switchView('settings'); closeMoreMenu(); });
   const greetingAvatarBtn = document.getElementById('greetingAvatar');
   if(greetingAvatarBtn){
     greetingAvatarBtn.setAttribute('role','button');
@@ -544,6 +563,93 @@ document.addEventListener('DOMContentLoaded', function(){
     greetingAvatarBtn.addEventListener('click', openProfile);
     greetingAvatarBtn.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openProfile(); } });
   }
+
+
+  /* ---------------- Navegación móvil personalizable ---------------- */
+  const NAVIGATION_OPTIONS = {
+    dashboard:{label:'Inicio',icon:'⌂',view:'dashboard'},
+    sales:{label:'Ventas',icon:'▤',view:'sales'},
+    deliveries:{label:'Entregas',icon:'▧',view:'deliveries'},
+    notes:{label:'Notas',icon:'✎',view:'notes'},
+    ranking:{label:'Ranking',icon:'♕',view:'ranking'}
+  };
+  const DEFAULT_NAVIGATION_SLOTS = ['dashboard','sales','deliveries','notes'];
+  let navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
+
+  function applyNavigationSlots(){
+    const buttons = Array.from(document.querySelectorAll('#bottomNav .nav-item[data-nav-slot]'));
+    buttons.forEach(function(button,index){
+      const key = navigationSlots[index] || DEFAULT_NAVIGATION_SLOTS[index];
+      const option = NAVIGATION_OPTIONS[key] || NAVIGATION_OPTIONS[DEFAULT_NAVIGATION_SLOTS[index]];
+      button.setAttribute('data-nav-key',key);
+      button.setAttribute('data-view',option.view);
+      if(option.settings) button.setAttribute('data-settings-open',option.settings);
+      else button.removeAttribute('data-settings-open');
+      button.innerHTML = '<span class="nav-icon">' + option.icon + '</span><span class="nav-label">' + escapeHtml(option.label) + '</span>';
+      button.setAttribute('aria-label',option.label);
+      button.classList.toggle('active',option.view === currentView);
+    });
+    document.querySelectorAll('#sidebar .sidebar-item[data-nav-key]').forEach(function(button){
+      button.classList.toggle('active',button.getAttribute('data-view') === currentView);
+    });
+    renderMoreMenu();
+  }
+
+  function renderMoreMenu(){
+    const root = document.getElementById('moreDynamicItems');
+    if(!root) return;
+    const pinned = new Set(navigationSlots);
+    root.innerHTML = Object.keys(NAVIGATION_OPTIONS).filter(function(key){return !pinned.has(key);}).map(function(key){
+      const option = NAVIGATION_OPTIONS[key];
+      return '<button class="menu-item" type="button" data-view="' + option.view + '" data-nav-key="' + key + '">'
+        + '<span class="menu-item-icon">' + option.icon + '</span><span><strong>' + escapeHtml(option.label) + '</strong></span><span class="menu-item-arrow">›</span></button>';
+    }).join('');
+    root.querySelectorAll('[data-view]').forEach(function(button){
+      button.addEventListener('click',function(){
+        switchView(button.getAttribute('data-view'));
+        closeMoreMenu();
+      });
+    });
+  }
+
+  function fillNavigationSelectors(){
+    for(let i=1;i<=4;i++){
+      const select = document.getElementById('navigationSlot'+i);
+      if(!select) continue;
+      select.innerHTML = Object.keys(NAVIGATION_OPTIONS).map(function(key){
+        return '<option value="' + key + '">' + escapeHtml(NAVIGATION_OPTIONS[key].label) + '</option>';
+      }).join('');
+      select.value = navigationSlots[i-1];
+    }
+  }
+
+  async function saveNavigationSlots(){
+    const selected = [1,2,3,4].map(function(i){return document.getElementById('navigationSlot'+i).value;});
+    if(new Set(selected).size !== 4){ showToast('Elegí cuatro accesos diferentes.'); return; }
+    const button = document.getElementById('saveNavigationBtn');
+    button.disabled = true;
+    try{
+      const result = await sb.from('user_settings').upsert({navigation_slots:selected},{onConflict:'user_id'});
+      if(result.error) throw result.error;
+      navigationSlots = selected;
+      applyNavigationSlots();
+      showToast('Navegación personalizada');
+      showSettingsMenu();
+    }catch(error){
+      console.error('No se pudieron guardar los accesos:',error);
+      showToast('No se pudo guardar. Aplicá la migración de preferencias de navegación.');
+    }finally{ button.disabled = false; }
+  }
+
+  document.getElementById('saveNavigationBtn').addEventListener('click',saveNavigationSlots);
+  document.getElementById('resetNavigationBtn').addEventListener('click',function(){
+    // Restablecer modifica solo el borrador visible; la navegación activa
+    // cambia únicamente cuando el usuario confirma con Guardar.
+    DEFAULT_NAVIGATION_SLOTS.forEach(function(key,index){
+      const select = document.getElementById('navigationSlot' + (index + 1));
+      if(select) select.value = key;
+    });
+  });
 
   let currentUserEmail = null;
 
@@ -723,6 +829,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('onboardingGate').style.display = 'none';
       return;
     }
+    document.body.classList.add('auth-locked');
     document.getElementById('appRoot').style.display = 'none';
     document.getElementById('onboardingGate').style.display = 'flex';
   }
@@ -741,6 +848,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let profileInput = document.getElementById('profileStoreName');
     if(profileInput){ profileInput.value = val; }
     document.getElementById('onboardingGate').style.display = 'none';
+    document.body.classList.remove('auth-locked');
     document.getElementById('appRoot').style.display = 'block';
     updateGreeting();
     updateAvatarDisplay();
@@ -915,6 +1023,21 @@ document.addEventListener('DOMContentLoaded', function(){
     }catch(e){
       weekStartDay = 1;
     }
+    try{
+      const navigationRes = await sb.from('user_settings').select('navigation_slots').maybeSingle();
+      const savedSlots = navigationRes.data && navigationRes.data.navigation_slots;
+      if(Array.isArray(savedSlots) && savedSlots.length === 4
+        && new Set(savedSlots).size === 4
+        && savedSlots.every(function(key){return Object.prototype.hasOwnProperty.call(NAVIGATION_OPTIONS,key);})){
+        navigationSlots = savedSlots.slice();
+      }else{
+        navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
+      }
+    }catch(error){
+      navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
+    }
+    applyNavigationSlots();
+    fillNavigationSelectors();
     let weekStartSelect = document.getElementById('weekStartSelect');
     if(weekStartSelect){ weekStartSelect.value = String(weekStartDay); }
     let receiptMessageInput = document.getElementById('receiptMessageInput');
@@ -931,6 +1054,313 @@ document.addEventListener('DOMContentLoaded', function(){
     render();
     resetForm();
   }
+
+
+  /* ---------------- Notas personales ---------------- */
+  let notesCache = [];
+  let notesClients = [];
+  let notesLabels = [];
+  let editingNoteId = null;
+  let noteLabelCreationKind = null;
+  const DEFAULT_NOTE_IMPORTANCE = [
+    {name:'Baja',color:'#16A34A'},
+    {name:'Media',color:'#EAB308'},
+    {name:'Alta',color:'#F97316'},
+    {name:'Urgente',color:'#DC2626'}
+  ];
+
+  function findNoteLabel(id){
+    return notesLabels.find(function(label){return label.id === id;}) || null;
+  }
+
+  function fillNoteLabelSelects(){
+    const typeSelect = document.getElementById('noteType');
+    const importanceSelect = document.getElementById('noteImportance');
+    const typeFilter = document.getElementById('notesTypeFilter');
+    const importanceFilter = document.getElementById('notesImportanceFilter');
+    if(typeSelect) typeSelect.innerHTML = '<option value="">Sin tipo</option>' + notesLabels.filter(function(label){return label.kind === 'type';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    const importanceLabels = DEFAULT_NOTE_IMPORTANCE.map(function(item){
+      return notesLabels.find(function(label){return label.kind === 'importance' && label.name === item.name;});
+    }).filter(Boolean);
+    if(importanceSelect) importanceSelect.innerHTML = '<option value="">Sin importancia</option>' + importanceLabels.map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    if(typeFilter) typeFilter.innerHTML = '<option value="">Todos los tipos</option>' + notesLabels.filter(function(label){return label.kind === 'type';}).map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+    if(importanceFilter) importanceFilter.innerHTML = '<option value="">Todas las importancias</option>' + importanceLabels.map(function(label){return '<option value="' + escapeHtml(label.id) + '">' + escapeHtml(label.name) + '</option>';}).join('');
+  }
+
+  function generateTypeLabelColor(){
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = 68;
+    const lightness = 43;
+    const chroma = (1 - Math.abs(2 * lightness / 100 - 1)) * saturation / 100;
+    const section = hue / 60;
+    const x = chroma * (1 - Math.abs(section % 2 - 1));
+    let rgb = [0,0,0];
+    if(section < 1) rgb = [chroma,x,0];
+    else if(section < 2) rgb = [x,chroma,0];
+    else if(section < 3) rgb = [0,chroma,x];
+    else if(section < 4) rgb = [0,x,chroma];
+    else if(section < 5) rgb = [x,0,chroma];
+    else rgb = [chroma,0,x];
+    const m = lightness / 100 - chroma / 2;
+    return '#' + rgb.map(function(value){return Math.round((value + m) * 255).toString(16).padStart(2,'0');}).join('').toUpperCase();
+  }
+
+  function openNoteLabelCreator(kind){
+    if(kind !== 'type'){showToast('Las importancias son predeterminadas.');return;}
+    noteLabelCreationKind = 'type';
+    const panel = document.getElementById('noteLabelCreator');
+    document.getElementById('noteLabelCreatorTitle').textContent = 'Crear tipo de nota';
+    document.getElementById('noteLabelName').value = '';
+    panel.hidden = false;
+    document.getElementById('noteLabelName').focus();
+  }
+
+  async function saveNoteLabel(){
+    const name = document.getElementById('noteLabelName').value.trim();
+    const color = generateTypeLabelColor();
+    if(!name || noteLabelCreationKind !== 'type'){showToast('Ingresá un nombre para el tipo.');return;}
+    if(notesLabels.some(function(label){return label.kind === noteLabelCreationKind && label.name.toLocaleLowerCase('es') === name.toLocaleLowerCase('es');})){
+      showToast('Ya existe una etiqueta con ese nombre.');return;
+    }
+    const button = document.getElementById('saveNoteLabelBtn');
+    button.disabled = true;
+    try{
+      const result = await sb.from('note_labels').insert({kind:noteLabelCreationKind,name:name,color:color}).select('id,kind,name,color').single();
+      if(result.error) throw result.error;
+      notesLabels.push(result.data);
+      fillNoteLabelSelects();
+      document.getElementById('noteType').value = result.data.id;
+      document.getElementById('noteLabelCreator').hidden = true;
+      showToast('Etiqueta creada');
+    }catch(error){
+      console.error('No se pudo crear la etiqueta:',error);
+      showToast('No se pudo crear la etiqueta. Revisá tu conexión e intentá nuevamente.');
+    }finally{button.disabled = false;}
+  }
+
+  function formatNoteDate(value){
+    if(!value) return '';
+    const date = new Date(value);
+    if(Number.isNaN(date.getTime())) return '';
+    return date.toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
+  }
+
+  function closeNoteEditor(){
+    const editor = document.getElementById('notesEditor');
+    if(editor) editor.hidden = true;
+    editingNoteId = null;
+    const form = document.getElementById('noteForm');
+    if(form) form.reset();
+    const labelCreator = document.getElementById('noteLabelCreator');
+    if(labelCreator) labelCreator.hidden = true;
+    noteLabelCreationKind = null;
+    const reminderFields = document.getElementById('noteReminderFields');
+    if(reminderFields) reminderFields.hidden = true;
+    const title = document.getElementById('notesEditorTitle');
+    if(title) title.textContent = 'Nueva nota';
+  }
+
+  function openNoteEditor(note){
+    const editor = document.getElementById('notesEditor');
+    const form = document.getElementById('noteForm');
+    if(!editor || !form) return;
+    form.reset();
+    editingNoteId = note ? note.id : null;
+    document.getElementById('notesEditorTitle').textContent = note ? 'Editar nota' : 'Nueva nota';
+    document.getElementById('noteContent').value = note ? note.content : '';
+    document.getElementById('noteClient').value = note && note.client_id ? note.client_id : '';
+    document.getElementById('noteType').value = note && note.type_label_id ? note.type_label_id : '';
+    document.getElementById('noteImportance').value = note && note.importance_label_id ? note.importance_label_id : '';
+    const enabled = !!(note && note.reminder_at);
+    document.getElementById('noteReminderEnabled').checked = enabled;
+    document.getElementById('noteReminderFields').hidden = !enabled;
+    if(enabled){
+      const date = new Date(note.reminder_at);
+      const local = new Date(date.getTime() - date.getTimezoneOffset()*60000);
+      document.getElementById('noteReminderDate').value = local.toISOString().slice(0,10);
+      document.getElementById('noteReminderTime').value = local.toISOString().slice(11,16);
+    }
+    editor.hidden = false;
+    document.getElementById('noteContent').focus();
+    editor.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function renderNotes(){
+    const root = document.getElementById('notesList');
+    if(!root) return;
+    const term = (document.getElementById('notesSearch').value || '').trim().toLocaleLowerCase('es');
+    const typeFilter = document.getElementById('notesTypeFilter').value;
+    const importanceFilter = document.getElementById('notesImportanceFilter').value;
+    const filtered = notesCache.filter(function(note){
+      const client = notesClients.find(function(c){return c.id === note.client_id;});
+      const typeLabel = findNoteLabel(note.type_label_id);
+      const importanceLabel = findNoteLabel(note.importance_label_id);
+      const matchesText = !term || (note.content || '').toLocaleLowerCase('es').includes(term)
+        || (client && client.name.toLocaleLowerCase('es').includes(term))
+        || (typeLabel && typeLabel.name.toLocaleLowerCase('es').includes(term))
+        || (importanceLabel && importanceLabel.name.toLocaleLowerCase('es').includes(term));
+      return matchesText && (!typeFilter || note.type_label_id === typeFilter)
+        && (!importanceFilter || note.importance_label_id === importanceFilter);
+    });
+    if(!filtered.length){
+      root.innerHTML = '<div class="notes-empty">' + (term ? 'No encontramos notas que coincidan con tu búsqueda.' : 'Todavía no tenés notas guardadas. Creá la primera cuando necesites anotar algo.') + '</div>';
+      return;
+    }
+    root.innerHTML = filtered.map(function(note){
+      const client = notesClients.find(function(c){return c.id === note.client_id;});
+      const typeLabel = findNoteLabel(note.type_label_id);
+      const importanceLabel = findNoteLabel(note.importance_label_id);
+      const safeColor = typeLabel && /^#[0-9a-f]{6}$/i.test(typeLabel.color) ? typeLabel.color : 'var(--border)';
+      const typeChip = typeLabel ? '<span class="note-type-chip">' + escapeHtml(typeLabel.name) + '</span>' : '';
+      const importanceChip = importanceLabel ? '<span class="note-importance-chip" style="color:' + escapeHtml(importanceLabel.color) + ';border-color:' + escapeHtml(importanceLabel.color) + '">⚑ ' + escapeHtml(importanceLabel.name) + '</span>' : '';
+      const reminder = note.reminder_at ? '<div class="note-card-reminder">◷ <span>' + escapeHtml(formatNoteDate(note.reminder_at)) + '</span></div>' : '';
+      const clientChip = client ? '<span class="note-chip">♙ ' + escapeHtml(client.name) + '</span>' : '';
+      return '<article class="note-card" data-note-id="' + escapeHtml(note.id) + '" style="--note-type-color:' + safeColor + '">'
+        + '<div class="note-card-heading">' + typeChip + importanceChip + '</div>'
+        + '<p class="note-card-content">' + escapeHtml(note.content) + '</p>'
+        + (clientChip ? '<div class="note-card-meta">' + clientChip + '</div>' : '')
+        + reminder
+        + '<div class="note-card-actions"><button type="button" data-note-edit="' + escapeHtml(note.id) + '">Editar</button><button type="button" data-note-delete="' + escapeHtml(note.id) + '">Eliminar</button></div>'
+        + '</article>';
+    }).join('');
+    root.querySelectorAll('[data-note-edit]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        const note = notesCache.find(function(item){return item.id === btn.getAttribute('data-note-edit');});
+        if(note) openNoteEditor(note);
+      });
+    });
+    root.querySelectorAll('[data-note-delete]').forEach(function(btn){
+      btn.addEventListener('click',async function(){
+        const id = btn.getAttribute('data-note-delete');
+        if(!window.confirm('¿Querés eliminar esta nota? Esta acción no se puede deshacer.')) return;
+        btn.disabled = true;
+        try{
+          const result = await sb.from('notes').delete().eq('id',id);
+          if(result.error) throw result.error;
+          notesCache = notesCache.filter(function(item){return item.id !== id;});
+          renderNotes();
+          showToast('Nota eliminada');
+        }catch(error){
+          console.error('No se pudo eliminar la nota:',error);
+          showToast('No se pudo eliminar la nota. Revisá tu conexión e intentá nuevamente.');
+        }finally{
+          // El botón puede desaparecer si la eliminación fue exitosa; si falla,
+          // siempre vuelve a quedar disponible para reintentar.
+          if(btn.isConnected) btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  async function loadNotes(){
+    if(!sb || !entered) return;
+    const root = document.getElementById('notesList');
+    if(root) root.innerHTML = '<div class="notes-empty">Cargando tus notas…</div>';
+    try{
+      const [notesResult, clientsResult, labelsResult] = await Promise.all([
+        sb.from('notes').select('id,content,client_id,type_label_id,importance_label_id,reminder_at,created_at,updated_at').order('updated_at',{ascending:false}),
+        sb.from('clients').select('id,name').order('name',{ascending:true}),
+        sb.from('note_labels').select('id,kind,name,color').order('name',{ascending:true})
+      ]);
+      if(notesResult.error) throw notesResult.error;
+      if(clientsResult.error) throw clientsResult.error;
+      if(labelsResult.error) throw labelsResult.error;
+      notesCache = notesResult.data || [];
+      notesClients = clientsResult.data || [];
+      notesLabels = labelsResult.data || [];
+      const existingImportance = new Set(notesLabels.filter(function(label){return label.kind === 'importance';}).map(function(label){return label.name;}));
+      const missingImportance = DEFAULT_NOTE_IMPORTANCE.filter(function(item){return !existingImportance.has(item.name);});
+      if(missingImportance.length){
+        const seeded = await sb.from('note_labels').insert(missingImportance.map(function(item){return {kind:'importance',name:item.name,color:item.color};})).select('id,kind,name,color');
+        if(seeded.error && seeded.error.code !== '23505') throw seeded.error;
+      }
+      // Los colores de importancia son parte del sistema visual y no dependen
+      // de una elección del usuario ni de etiquetas antiguas creadas libremente.
+      for(const item of DEFAULT_NOTE_IMPORTANCE){
+        const current = notesLabels.find(function(label){return label.kind === 'importance' && label.name === item.name;});
+        if(current && current.color !== item.color){
+          const normalized = await sb.from('note_labels').update({color:item.color}).eq('id',current.id);
+          if(normalized.error) throw normalized.error;
+        }
+      }
+      const refreshed = await sb.from('note_labels').select('id,kind,name,color').order('name',{ascending:true});
+      if(refreshed.error) throw refreshed.error;
+      notesLabels = refreshed.data || [];
+      fillNoteLabelSelects();
+      const select = document.getElementById('noteClient');
+      const current = select.value;
+      select.innerHTML = '<option value="">Sin cliente asociado</option>' + notesClients.map(function(client){
+        return '<option value="' + escapeHtml(client.id) + '">' + escapeHtml(client.name) + '</option>';
+      }).join('');
+      if(notesClients.some(function(client){return client.id === current;})) select.value = current;
+      renderNotes();
+    }catch(error){
+      console.error('No se pudieron cargar las notas:',error);
+      if(root) root.innerHTML = '<div class="notes-empty">No se pudieron cargar las notas. Verificá que esté aplicada la migración de Notas en Supabase.</div>';
+    }
+  }
+
+  document.getElementById('newNoteBtn').addEventListener('click',function(){openNoteEditor(null);});
+  document.getElementById('closeNoteEditor').addEventListener('click',closeNoteEditor);
+  document.getElementById('cancelNoteBtn').addEventListener('click',closeNoteEditor);
+  document.getElementById('noteReminderEnabled').addEventListener('change',function(){
+    document.getElementById('noteReminderFields').hidden = !this.checked;
+  });
+  document.getElementById('notesSearch').addEventListener('input',renderNotes);
+  document.getElementById('notesTypeFilter').addEventListener('change',renderNotes);
+  document.getElementById('notesImportanceFilter').addEventListener('change',renderNotes);
+  document.getElementById('createNoteTypeBtn').addEventListener('click',function(){openNoteLabelCreator('type');});
+  document.getElementById('saveNoteLabelBtn').addEventListener('click',saveNoteLabel);
+  document.getElementById('cancelNoteLabelBtn').addEventListener('click',function(){document.getElementById('noteLabelCreator').hidden=true;noteLabelCreationKind=null;});
+  document.getElementById('noteForm').addEventListener('submit',async function(event){
+    event.preventDefault();
+    if(!sb || !entered){
+      showToast('Tu sesión no está activa. Iniciá sesión nuevamente para guardar la nota.');
+      return;
+    }
+    const content = document.getElementById('noteContent').value.trim();
+    if(!content){ showToast('Escribí el contenido de la nota.'); return; }
+    const clientId = document.getElementById('noteClient').value || null;
+    let reminderAt = null;
+    if(document.getElementById('noteReminderEnabled').checked){
+      const date = document.getElementById('noteReminderDate').value;
+      const time = document.getElementById('noteReminderTime').value;
+      if(!date || !time){ showToast('Completá la fecha y la hora del recordatorio.'); return; }
+      const parsed = new Date(date + 'T' + time);
+      if(Number.isNaN(parsed.getTime()) || parsed.getTime() <= Date.now()){
+        showToast('Elegí una fecha y hora futuras para el recordatorio.'); return;
+      }
+      reminderAt = parsed.toISOString();
+    }
+    const payload = {content:content,client_id:clientId,type_label_id:document.getElementById('noteType').value || null,importance_label_id:document.getElementById('noteImportance').value || null,reminder_at:reminderAt,updated_at:new Date().toISOString()};
+    const save = document.getElementById('saveNoteBtn');
+    save.disabled = true;
+    try{
+      const result = editingNoteId
+        ? await sb.from('notes').update(payload).eq('id',editingNoteId).select('id,content,client_id,type_label_id,importance_label_id,reminder_at,created_at,updated_at').single()
+        : await sb.from('notes').insert(payload).select('id,content,client_id,type_label_id,importance_label_id,reminder_at,created_at,updated_at').single();
+      if(result.error) throw result.error;
+      const saved = result.data;
+      if(editingNoteId) notesCache = notesCache.map(function(item){return item.id === saved.id ? saved : item;});
+      else notesCache.unshift(saved);
+      closeNoteEditor();
+      renderNotes();
+      showToast('Nota guardada');
+    }catch(error){
+      console.error('No se pudo guardar la nota:',error);
+      const errorCode = error && error.code;
+      const errorMessage = String(error && error.message || '');
+      if(['PGRST204','PGRST205','42703','42P01'].includes(errorCode)){
+        showToast('Falta aplicar la migración de etiquetas de Notas en Supabase. La nota no se guardó.');
+      }else if(error instanceof TypeError || /failed to fetch|network|fetch failed/i.test(errorMessage)){
+        showToast('No se pudo conectar con Supabase. Revisá tu conexión e intentá nuevamente.');
+      }else{
+        showToast('No se pudo guardar la nota. Revisá los datos e intentá nuevamente.');
+      }
+    }finally{
+      save.disabled = false;
+    }
+  });
 
   function csvEscape(val){
     val = String(val === null || val === undefined ? '' : val);
@@ -1771,9 +2201,13 @@ document.addEventListener('DOMContentLoaded', function(){
     let chartHighlight = chartKeys.indexOf(thisWeekKey);
     let latestStats = wStats[chartKeys[chartKeys.length - 1]] || {cobrado:0,pendiente:0};
     let chartHtml = '<div class="comparison-chart-heading"><strong>Importe vendido por semana</strong><span>Últimas 6 semanas</span></div><div class="chart-box chart-box-modern"><canvas id="periodChartCanvas"></canvas></div>' +
-      '<div class="comparison-chart-heading payment-chart-heading"><strong>Cobrado vs. pendiente</strong><span>Semana más reciente con ventas</span></div>' +
+      '<div class="dashboard-payment-card">' +
+      '<button class="dashboard-section-toggle dashboard-payment-toggle" type="button" data-dashboard-toggle aria-controls="weeklyPaymentContent" aria-expanded="false">' +
+      '<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">◒</span><span class="dashboard-toggle-copy"><span class="section-title">Cobrado vs. pendiente</span><span class="dashboard-history-subtitle">Semana más reciente con ventas</span></span></span>' +
+      '<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span></button>' +
+      '<div class="dashboard-collapsible-content" id="weeklyPaymentContent" hidden>' +
       '<div class="payment-chart-layout"><div class="chart-box chart-box-doughnut payment-doughnut"><canvas id="weeklyPaymentChartCanvas"></canvas><div class="payment-chart-center"><small>Total vendido</small><strong id="weeklyPaymentTotal">'+money(latestStats.cobrado+latestStats.pendiente)+'</strong></div></div>' +
-      '<div class="payment-chart-legend"><div><span class="payment-legend-dot collected"></span><span>Cobrado</span><strong>'+money(latestStats.cobrado)+'</strong></div><div><span class="payment-legend-dot outstanding"></span><span>Pendiente</span><strong>'+money(latestStats.pendiente)+'</strong></div></div></div>';
+      '<div class="payment-chart-legend"><div><span class="payment-legend-dot collected"></span><span>Cobrado</span><strong>'+money(latestStats.cobrado)+'</strong></div><div><span class="payment-legend-dot outstanding"></span><span>Pendiente</span><strong>'+money(latestStats.pendiente)+'</strong></div></div></div></div></div>';
 
     if(!compareWeekA || keys.indexOf(compareWeekA) === -1){ compareWeekA = keys[keys.length - 1]; }
     if(!compareWeekB || keys.indexOf(compareWeekB) === -1){ compareWeekB = keys.length > 1 ? keys[keys.length - 2] : keys[keys.length - 1]; }
@@ -1937,6 +2371,23 @@ document.addEventListener('DOMContentLoaded', function(){
         renderTopClients();
       });
     }
+  }
+
+  // Secciones del dashboard: alternancia accesible con delegación para sobrevivir a los re-renderizados.
+  const dashboardView = document.getElementById('viewDashboard');
+  if(dashboardView && !dashboardView.dataset.collapsibleReady){
+    dashboardView.dataset.collapsibleReady = 'true';
+    dashboardView.addEventListener('click', function(event){
+      const toggle = event.target.closest('[data-dashboard-toggle]');
+      if(!toggle || !dashboardView.contains(toggle)) return;
+      const contentId = toggle.getAttribute('aria-controls');
+      const content = contentId ? document.getElementById(contentId) : null;
+      if(!content) return;
+      const opening = content.hidden;
+      content.hidden = !opening;
+      toggle.setAttribute('aria-expanded', String(opening));
+      toggle.classList.toggle('expanded', opening);
+    });
   }
 
   const toggleRankingMoneyBtn = document.getElementById('toggleRankingMoney');

@@ -39,23 +39,27 @@
 <title>FeritApp</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="css/receipt.css?v=12.123" rel="stylesheet"/>
-<link href="css/style.css?v=12.123" rel="stylesheet"/>
-<link href="css/clients.css?v=12.123" rel="stylesheet"/>
-<link href="css/empty-states.css?v=12.123" rel="stylesheet"/>
-<link href="css/category-picker.css?v=12.123" rel="stylesheet"/>
-<link href="css/weekly-summary-menu.css?v=12.123" rel="stylesheet"/>
-<link href="css/toast-actions.css?v=12.123" rel="stylesheet"/>
-<link href="css/install-banner.css?v=12.123" rel="stylesheet"/>
-<link href="css/accessibility-font-scale.css?v=12.123" rel="stylesheet"/>
-<link href="css/confirmation-dialog.css?v=12.123" rel="stylesheet"/>
-<link href="css/brand-identity.css?v=12.123" rel="stylesheet"/>
-<link href="css/password-requirements.css?v=12.123" rel="stylesheet"/>
-<link href="css/auth.css?v=12.123" rel="stylesheet"/>
-<link href="css/accessibility-dashboard.css?v=12.123" rel="stylesheet"/>
-<link href="css/accessibility-sales.css?v=12.123" rel="stylesheet"/>
-<link href="css/accessibility-deliveries.css?v=12.123" rel="stylesheet"/>
-<link href="css/accessibility-settings.css?v=12.123" rel="stylesheet"/>
+<link href="css/receipt.css?v=12.126" rel="stylesheet"/>
+<link href="css/style.css?v=12.141" rel="stylesheet"/>
+<link href="css/notes.css?v=7" rel="stylesheet"/>
+<link href="css/navigation-personalization.css?v=1" rel="stylesheet"/>
+<link href="css/clients.css?v=12.126" rel="stylesheet"/>
+<link href="css/empty-states.css?v=12.126" rel="stylesheet"/>
+<link href="css/category-picker.css?v=12.126" rel="stylesheet"/>
+<link href="css/weekly-summary-menu.css?v=12.126" rel="stylesheet"/>
+<link href="css/toast-actions.css?v=12.126" rel="stylesheet"/>
+<link href="css/install-banner.css?v=12.126" rel="stylesheet"/>
+<link href="css/accessibility-font-scale.css?v=12.130" rel="stylesheet"/>
+<link href="css/confirmation-dialog.css?v=12.126" rel="stylesheet"/>
+<link href="css/brand-identity.css?v=12.126" rel="stylesheet"/>
+<link href="css/password-requirements.css?v=12.126" rel="stylesheet"/>
+<link href="css/auth.css?v=12.127" rel="stylesheet"/>
+<link href="css/accessibility-dashboard.css?v=12.126" rel="stylesheet"/>
+<link href="css/dashboard-modernization.css?v=3" rel="stylesheet"/>
+<link href="css/accessibility-sales.css?v=12.127" rel="stylesheet"/>
+<link href="css/accessibility-deliveries.css?v=12.126" rel="stylesheet"/>
+<link href="css/accessibility-settings.css?v=12.126" rel="stylesheet"/>
+<link href="css/app-layout-centering.css?v=22" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js"></script>
 </head>
 <body>
@@ -152,16 +156,19 @@
 <div id="appRoot" style="display:none;">
 <header>
 <button aria-label="Volver" class="header-back-btn" hidden="" id="globalBackBtn" title="Volver" type="button"><span aria-hidden="true">←</span></button>
-<div class="brand-lockup"><img alt="" aria-hidden="true" class="brand-logo" src="assets/images/feritapp-icon.png"/><span class="brand-word">Ferit<b>App</b></span></div><p class="eyebrow">Vendé. Organizá. Crecé.</p>
+<div aria-label="Ir a Inicio" class="brand-lockup header-home-link" id="headerHomeBtn" role="button" tabindex="0"><img alt="" aria-hidden="true" class="brand-logo" src="assets/images/feritapp-icon.png"/><span class="brand-word">Ferit<b>App</b></span></div><p class="eyebrow">Vendé. Organizá. Crecé.</p>
 <h1 id="viewHeading">Registro semanal</h1>
 <p class="session-email" id="sessionEmail"></p>
+<button aria-expanded="false" aria-label="Abrir menú Más" class="header-more-btn" id="headerMoreBtn" type="button"><span aria-hidden="true" class="header-more-icon">⋮</span></button>
 <button aria-label="Abrir perfil" class="header-profile-btn" id="headerProfileBtn" type="button"><img alt="Foto de perfil" id="headerProfileAvatar" src="assets/images/feritapp-icon.png"/></button>
 </header>
 <div aria-label="Menú Más" class="menu-dropdown" id="menuDropdown" style="display:none;">
 <div class="menu-dropdown-heading"><span aria-hidden="true" class="menu-heading-icon">⌘</span><div><strong>Más</strong></div><button aria-label="Cerrar menú Más" class="menu-close-btn" id="menuCloseBtn" title="Cerrar" type="button">×</button></div>
-<div class="menu-dropdown-group-label">GESTIÓN</div>
-<button class="menu-item" data-view="ranking" type="button"><span class="menu-item-icon">♕</span><span><strong>Ranking de clientes</strong><small>Clientes destacados</small></span><span class="menu-item-arrow">›</span></button>
-<button class="menu-item" data-view="settings" type="button"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong><small>Perfil y preferencias</small></span><span class="menu-item-arrow">›</span></button>
+<div class="menu-dropdown-group-label">SECCIONES</div>
+<div id="moreDynamicItems"></div>
+<div class="menu-dropdown-group-label">CUENTA Y CONFIGURACIÓN</div>
+<button class="menu-item" id="menuProfileBtn" type="button"><span class="menu-item-icon">👤</span><span><strong>Mi Perfil</strong></span><span class="menu-item-arrow">›</span></button>
+<button class="menu-item" id="menuSettingsBtn" type="button"><span class="menu-item-icon">⚙</span><span><strong>Configuración</strong></span><span class="menu-item-arrow">›</span></button>
 <div class="menu-dropdown-group-label">AYUDA Y ACCESO</div>
 <button class="menu-item" id="menuInstallBtn" style="display:none;" type="button"><span class="menu-item-icon">↓</span><span><strong>Instalar FeritApp</strong><small>Acceso directo en tu dispositivo</small></span><span class="menu-item-arrow">›</span></button>
 <button class="menu-item menu-item-danger" id="logoutBtn" type="button"><span class="menu-item-icon">↪</span><span><strong>Cerrar sesión</strong><small>Salir de tu cuenta</small></span><span class="menu-item-arrow">›</span></button>
@@ -177,39 +184,58 @@
 </div>
 <div class="ticket-wrap dashboard-current-ticket" id="currentTicket"></div>
 <div class="section-block dashboard-tasks-section">
-<div class="section-heading-row">
-<div><p class="section-title">Lo que requiere tu atención</p><p class="section-subtitle">Acciones rápidas para terminar tus pendientes.</p></div>
+<div class="section-heading-row dashboard-section-heading-static">
+<div class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">✓</span><span class="dashboard-heading-divider" aria-hidden="true"></span><span class="dashboard-toggle-copy"><span class="section-title">Lo que requiere tu atención</span><span class="dashboard-history-subtitle">Acciones rápidas para terminar tus pendientes.</span></span></div>
 </div>
 <div id="dashboardTasks"></div>
 </div>
 <div class="section-block weekly-summary-section">
 <div class="dashboard-history-card weekly-summary-card">
 <button aria-controls="weeklySummaryContent" aria-expanded="false" class="weekly-summary-heading" id="weeklySummaryToggle" type="button">
-<span class="weekly-summary-heading-copy"><span class="section-title">Resumen Semanal</span><span class="dashboard-history-subtitle" id="weeklySummaryMeta">Ventas de la semana anterior</span></span>
+<span class="dashboard-toggle-main weekly-summary-main"><span class="dashboard-history-icon" aria-hidden="true">▧</span><span class="dashboard-heading-divider" aria-hidden="true"></span><span class="weekly-summary-heading-copy dashboard-toggle-copy"><span class="section-title">Resumen Semanal</span><span class="dashboard-history-subtitle" id="weeklySummaryMeta">Ventas de la semana anterior</span></span></span>
 <span aria-hidden="true" class="weekly-summary-chevron">⌄</span>
 </button>
 <div class="weekly-summary-content" hidden="" id="weeklySummaryContent"></div>
 </div>
 </div>
-<div class="section-block dashboard-history-section"><div class="dashboard-history-card"><div class="dashboard-history-heading"><div><p class="section-title">Historial semanal</p><p class="dashboard-history-subtitle">Consultá los artículos y totales de las últimas tres semanas.</p></div><span aria-hidden="true" class="dashboard-history-icon">▦</span></div><div class="weeks" id="weeksContainer"></div></div></div>
-<div class="section-block">
-<p class="section-title">Categoría más vendida del mes</p>
-<div id="topCategoryChart"></div>
-</div>
-<div class="section-block">
-<p class="section-title">Comparar ventas</p>
+<div class="section-block dashboard-history-section">
+<div class="dashboard-history-card dashboard-collapsible-card">
+<button class="dashboard-section-toggle" type="button" data-dashboard-toggle aria-controls="weeksContainer" aria-expanded="false">
+<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">▦</span><span class="dashboard-heading-divider" aria-hidden="true"></span><span class="dashboard-toggle-copy"><span class="section-title">Historial semanal</span><span class="dashboard-history-subtitle">Consultá los artículos y totales de las últimas tres semanas.</span></span></span>
+<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span>
+</button>
+<div class="dashboard-collapsible-content weeks" id="weeksContainer" hidden></div>
+</div></div>
+<div class="section-block dashboard-category-section">
+<div class="dashboard-collapsible-card">
+<button class="dashboard-section-toggle" type="button" data-dashboard-toggle aria-controls="topCategoryChart" aria-expanded="false">
+<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">▤</span><span class="dashboard-heading-divider" aria-hidden="true"></span><span class="dashboard-toggle-copy"><span class="section-title">Categoría más vendida del mes</span><span class="dashboard-history-subtitle">Distribución de artículos por categoría.</span></span></span>
+<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span>
+</button>
+<div class="dashboard-collapsible-content" id="topCategoryChart" hidden></div>
+</div></div>
+<div class="section-block dashboard-comparison-section">
+<div class="dashboard-collapsible-card">
+<button class="dashboard-section-toggle" type="button" data-dashboard-toggle aria-controls="dashboardCompareContent" aria-expanded="false">
+<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">↗</span><span class="dashboard-heading-divider" aria-hidden="true"></span><span class="dashboard-toggle-copy"><span class="section-title">Comparar ventas</span><span class="dashboard-history-subtitle">Evolución y comparación de períodos.</span></span></span>
+<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span>
+</button>
+<div class="dashboard-collapsible-content" id="dashboardCompareContent" hidden>
 <div class="seg seg-spaced-bottom">
 <button class="period-opt active" data-period="week" type="button">Semanal</button>
 <button class="period-opt" data-period="month" type="button">Mensual</button>
 </div>
 <div id="periodCompare"></div>
 </div>
+</div></div>
 </div>
 <div class="app-view" id="viewSettings" style="display:none;">
 <div id="settingsMenu">
 <div class="section-block">
 <p class="section-title">Configuración</p>
 <p class="settings-menu-intro">Personalizá tu experiencia, tu cuenta y la forma en que trabajás con tus ventas.</p>
+<div class="settings-group-label">PERSONALIZACIÓN</div>
+<div class="settings-menu-list"><button class="settings-menu-item settings-menu-primary" data-settings="personalization" type="button"><span class="settings-menu-main"><span class="settings-menu-icon">☷</span><span><strong>Personalización</strong><small>Elegí tus accesos directos</small></span></span><span class="settings-menu-arrow">›</span></button></div>
 <div class="settings-group-label">CUENTA Y EXPERIENCIA</div>
 <div class="settings-menu-list">
 <button class="settings-menu-item settings-menu-primary" data-settings="profile" type="button">
@@ -239,6 +265,20 @@
 <button class="settings-menu-item settings-menu-danger" data-settings="danger" type="button">
 <span class="settings-menu-main"><span class="settings-menu-icon">⚠️</span><span><strong>Zona crítica</strong><small>Acciones permanentes sobre tus datos</small></span></span><span class="settings-menu-arrow">›</span>
 </button>
+</div>
+</div>
+</div>
+<div class="settings-panel app-view" id="settingsPanelPersonalization" style="display:none;">
+<div class="section-block">
+<button class="settings-back-btn" data-settings-back="" type="button">← Configuración</button>
+<div class="settings-panel-heading"><div class="settings-panel-kicker">PERSONALIZACIÓN</div><p class="section-title">Personalizar navegación</p><p class="settings-panel-description">Elegí cuatro accesos para tener siempre a mano. El botón + permanece fijo en el centro y podés volver a Inicio tocando el logo FeritApp del encabezado.</p></div>
+<div class="settings-card settings-card-featured">
+<div class="field"><label for="navigationSlot1">Acceso 1</label><select id="navigationSlot1" class="navigation-slot-select"></select></div>
+<div class="field"><label for="navigationSlot2">Acceso 2</label><select id="navigationSlot2" class="navigation-slot-select"></select></div>
+<div class="field"><label for="navigationSlot3">Acceso 3</label><select id="navigationSlot3" class="navigation-slot-select"></select></div>
+<div class="field"><label for="navigationSlot4">Acceso 4</label><select id="navigationSlot4" class="navigation-slot-select"></select></div>
+<p class="hint">No se muestran en «Más» los accesos que ya estén fijados en la barra. Las acciones críticas no se pueden fijar.</p>
+<div class="notes-editor-actions"><button id="resetNavigationBtn" type="button">Restablecer</button><button class="notes-save" id="saveNavigationBtn" type="button">Guardar cambios</button></div>
 </div>
 </div>
 </div>
@@ -390,7 +430,6 @@
 <button class="save-btn" id="saveReceiptMessageBtn" type="button">Guardar mensaje</button>
 </div></div>
 </div>
-</div>
 <div class="settings-panel app-view" id="settingsPanelBackup" style="display:none;">
 <div class="section-block">
 <button class="settings-back-btn" data-settings-back="" type="button">← Configuración</button>
@@ -445,7 +484,7 @@
 </div>
 </div>
 <div class="app-view" id="viewSales">
-<div class="view-hero sales-hero ranking-hero"><div class="view-hero-kicker">VENTAS</div><h2>Clientes y Ventas</h2><p>Organizá tus ventas, controlá los cobros y encontrá cada cliente rápidamente.</p></div>
+<div class="view-hero sales-hero"><div class="view-hero-kicker">VENTAS</div><h2>Tus ventas</h2><p>Organizá tus ventas, controlá los cobros y encontrá cada cliente rápidamente.</p></div>
 <div class="section-block">
 <div class="management-stat-grid">
 <article class="management-stat"><span>Total de clientes</span><strong id="managementClientCount">0</strong></article>
@@ -465,20 +504,65 @@
 <div class="view-hero deliveries-hero"><div class="sales-heading-card deliveries-heading-card"><span aria-hidden="true" class="sales-heading-mark deliveries-heading-mark"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span><div><h2>Entregas</h2><p>Controlá qué pedidos faltan entregar y cuáles ya fueron entregados.</p></div></div></div>
 <div class="section-block"><div id="deliveriesList"></div></div>
 </div>
+<div class="app-view" id="viewNotes" style="display:none;">
+  <div class="view-hero notes-hero"><div class="view-hero-kicker">NOTAS</div><h2>Mis notas</h2><p>Anotá algo rápido y encontralo cuando lo necesites.</p></div>
+  <div class="section-block">
+    <div class="notes-toolbar">
+      <div class="notes-toolbar-copy"><h2>Mis notas</h2></div>
+      <button class="notes-new-btn" id="newNoteBtn" type="button">＋ Nueva nota</button>
+    </div>
+    <input class="notes-search" id="notesSearch" type="search" placeholder="Buscar en mis notas…" aria-label="Buscar notas"/>
+    <div class="notes-filters">
+      <select id="notesTypeFilter" aria-label="Filtrar por tipo"><option value="">Todos los tipos</option></select>
+      <select id="notesImportanceFilter" aria-label="Filtrar por importancia"><option value="">Todas las importancias</option></select>
+    </div>
+    <section class="notes-editor" id="notesEditor" hidden aria-labelledby="notesEditorTitle">
+      <div class="notes-editor-heading"><h3 id="notesEditorTitle">Nueva nota</h3><button class="notes-editor-close" id="closeNoteEditor" type="button" aria-label="Cerrar editor">×</button></div>
+      <form id="noteForm">
+        <div class="notes-field"><label for="noteContent">Nota</label><textarea id="noteContent" maxlength="10000" required placeholder="Escribí lo que necesitás recordar…"></textarea></div>
+        <div class="notes-field"><label for="noteClient">Vincular con un cliente (opcional)</label><select id="noteClient"><option value="">Sin cliente asociado</option></select></div>
+        <div class="notes-label-grid">
+          <div class="notes-field notes-type-field">
+            <div class="notes-field-heading"><label for="noteType">Tipo</label></div>
+            <select id="noteType"><option value="">Sin tipo</option></select>
+            <button class="notes-label-create-btn" id="createNoteTypeBtn" type="button">＋ Crear tipo</button>
+          </div>
+          <div class="notes-field">
+            <div class="notes-field-heading"><label for="noteImportance">Importancia</label></div>
+            <select id="noteImportance"><option value="">Sin importancia</option></select>
+          </div>
+        </div>
+        <section class="notes-label-creator" id="noteLabelCreator" hidden>
+          <strong id="noteLabelCreatorTitle">Nueva etiqueta</strong>
+          <div class="notes-field"><label for="noteLabelName">Nombre</label><input id="noteLabelName" maxlength="32" placeholder="Ej.: Retiro, Reserva, Arreglo"/></div>
+          <p class="notes-label-color-hint">El color se asigna automáticamente al crear el tipo y se conserva para todas sus notas.</p>
+          <div class="notes-editor-actions"><button id="cancelNoteLabelBtn" type="button">Cancelar</button><button class="notes-save" id="saveNoteLabelBtn" type="button">Crear etiqueta</button></div>
+        </section>
+        <label class="notes-reminder-row"><input id="noteReminderEnabled" type="checkbox"/> Agregar recordatorio (opcional)</label>
+        <div class="notes-reminder-fields" id="noteReminderFields" hidden>
+          <div class="notes-field"><label for="noteReminderDate">Fecha</label><input id="noteReminderDate" type="date"/></div>
+          <div class="notes-field"><label for="noteReminderTime">Hora</label><input id="noteReminderTime" type="time"/></div>
+        </div>
+        <p class="notes-feedback" id="notesReminderInfo">El recordatorio se guardará con la nota. La entrega de notificaciones push se habilitará en una fase posterior.</p>
+        <div class="notes-editor-actions"><button id="cancelNoteBtn" type="button">Cancelar</button><button class="notes-save" id="saveNoteBtn" type="submit">Guardar nota</button></div>
+      </form>
+    </section>
+    <div class="notes-list" id="notesList" aria-live="polite"><div class="notes-empty">Todavía no tenés notas guardadas.</div></div>
+  </div>
+</div>
+</div>
 <nav aria-label="Navegación principal" class="bottom-nav" id="bottomNav">
-<button class="nav-item active" data-view="dashboard" type="button">
+<button class="nav-item active" data-nav-slot="1" data-nav-key="dashboard" data-view="dashboard" type="button">
 <span class="nav-icon">⌂</span><span class="nav-label">Inicio</span>
 </button>
-<button class="nav-item" data-view="sales" type="button">
+<button class="nav-item" data-nav-slot="2" data-nav-key="sales" data-view="sales" type="button">
 <span class="nav-icon">▤</span><span class="nav-label">Ventas</span>
 </button>
 <button aria-label="Agregar venta" class="nav-fab" id="openSheet">+</button>
-<button class="nav-item" data-view="deliveries" type="button">
+<button class="nav-item" data-nav-slot="3" data-nav-key="deliveries" data-view="deliveries" type="button">
 <span aria-hidden="true" class="nav-icon delivery-nav-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span><span class="nav-label">Entregas</span>
 </button>
-<button aria-expanded="false" aria-label="Más opciones" class="nav-item" id="moreBtn" type="button">
-<span class="nav-icon">⋯</span><span class="nav-label">Más</span>
-</button>
+<button class="nav-item" data-nav-slot="4" data-nav-key="notes" data-view="notes" type="button"><span class="nav-icon">✎</span><span class="nav-label">Notas</span></button>
 </nav>
 <nav class="sidebar" id="sidebar">
 <div class="sidebar-brand">
@@ -486,11 +570,12 @@
 </div>
 <button class="sidebar-cta" id="sidebarOpenSheet" type="button">+ Nueva venta</button>
 <div class="sidebar-links">
-<button class="sidebar-item active" data-view="dashboard" type="button">⌂ Inicio</button>
-<button class="sidebar-item" data-view="sales" type="button">▤ Ventas</button>
-<button class="sidebar-item" data-view="deliveries" type="button"><span aria-hidden="true" class="sidebar-delivery-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span> Entregas</button>
-<button class="sidebar-item" data-view="ranking" type="button">♕ Ranking</button>
-<button class="sidebar-item" data-view="settings" type="button">⚙ Configuración</button>
+<button class="sidebar-item active" data-view="dashboard" data-nav-key="dashboard" type="button">⌂ Inicio</button>
+<button class="sidebar-item" data-view="sales" data-nav-key="sales" type="button">▤ Ventas</button>
+<button class="sidebar-item" data-view="notes" data-nav-key="notes" type="button">✎ Notas</button>
+<button class="sidebar-item" data-view="deliveries" data-nav-key="deliveries" type="button"><span aria-hidden="true" class="sidebar-delivery-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span> Entregas</button>
+<button class="sidebar-item" data-view="ranking" data-nav-key="ranking" type="button">♕ Ranking</button>
+<button class="sidebar-item" data-view="settings" data-nav-key="settings" type="button">⚙ Configuración</button>
 </div>
 <button class="sidebar-item sidebar-logout" id="sidebarLogoutBtn" type="button">🚪 Cerrar sesión</button>
 </nav>
@@ -572,8 +657,9 @@
 </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+</div>
 <!-- /appRoot -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-<script src="script.js?v=12.123"></script>
+<script src="script.js?v=12.132"></script>
 </body>
 </html>

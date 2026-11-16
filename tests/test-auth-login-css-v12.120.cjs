@@ -5,14 +5,28 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'css/auth.css'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'css/style.css'), 'utf8');
-const version = '12.123';
 
-// The new stylesheet is loaded after the existing styles and uses the same cache version.
-assert.match(html, /css\/auth\.css\?v=12\.123/);
-assert.ok(html.indexOf('css/style.css?v=12.123') < html.indexOf('css/auth.css?v=12.123'));
-for (const match of html.matchAll(/(?:css\/[\w-]+\.css|script\.js)\?v=(12\.\d+)/g)) {
-  assert.equal(match[1], version, 'All app CSS/JS cache versions must match');
+function assetVersion(assetPath) {
+  const marker = assetPath + '?v=';
+  const start = html.indexOf(marker);
+  assert.notEqual(start, -1, `Missing versioned reference for ${assetPath}`);
+  const match = html.slice(start + marker.length).match(/^([^"']+)/);
+  assert.ok(match, `Could not read cache version for ${assetPath}`);
+  return match[1];
 }
+
+const styleVersion = assetVersion('css/style.css');
+const authVersion = assetVersion('css/auth.css');
+const scriptVersion = assetVersion('script.js');
+
+// The authentication stylesheet must load after the base stylesheet.
+// Cache versions are independent because each asset changes on its own release cadence.
+assert.ok(
+  html.indexOf('css/style.css?v=') < html.indexOf('css/auth.css?v='),
+  'auth.css must load after style.css'
+);
+assert.ok(authVersion.length > 0, 'auth.css must use a cache version');
+assert.ok(scriptVersion.length > 0, 'script.js must use a cache version');
 
 // Preserve the official logo, brand name, slogan, and all authentication flow hooks.
 for (const required of [
@@ -35,4 +49,8 @@ assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
 assert.match(style, /--primary-rgb:/);
 assert.match(style, /--secondary-rgb:/);
 assert.match(style, /--danger-rgb:/);
-console.log('OK V12.123: login stylesheet, cache version, responsive/reduced-motion rules, brand and auth hooks preserved.');
+console.log(`OK login regression: stylesheet order, independently versioned assets (${styleVersion}), responsive/reduced-motion rules, brand and auth hooks preserved.`);
+
+// Desktop navigation must remain outside the unauthenticated surface.
+assert.match(css, /body\.auth-locked #sidebar,[\s\S]*?body\.auth-locked > nav#sidebar\.sidebar\s*\{\s*display:\s*none\s*!important;/);
+assert.match(css, /body\.auth-locked #authGate[\s\S]*?padding-left:\s*24px\s*!important;/);

@@ -1,0 +1,299 @@
+const { test, expect } = require('@playwright/test');
+
+async function openIsolatedApp(page) {
+  await page.addInitScript(() => {
+    const storageKey = 'feritapp-e2e-isolated-db';
+    const initial = {
+      sales: [],
+      categories: [{ id: 'qa-category', name: 'Indumentaria' }],
+      clients: [{ id: 'qa-client-1', name: 'Cliente de prueba' }],
+      notes: [],
+      note_labels: [],
+      user_settings: [{
+        user_id: 'qa-user',
+        week_start_day: 1,
+        notify_enabled: false,
+        notify_days_overdue: 4,
+        receipt_message: 'Gracias por tu compra',
+        store_name: 'Tienda QA',
+        avatar_url: '',
+        navigation_slots: ['dashboard', 'sales', 'deliveries', 'notes']
+      }]
+    };
+    if (!localStorage.getItem(storageKey)) localStorage.setItem(storageKey, JSON.stringify(initial));
+    const db = JSON.parse(localStorage.getItem(storageKey));
+    const persist = () => localStorage.setItem(storageKey, JSON.stringify(db));
+    let nextId = 1;
+
+    function makeClient(table) {
+      let action = 'select';
+      let payload = null;
+      let filters = [];
+      const builder = {
+        select() { return this; },
+        insert(value) { action = 'insert'; payload = value; return this; },
+        update(value) { action = 'update'; payload = value; return this; },
+        delete() { action = 'delete'; return this; },
+        upsert(value) { action = 'upsert'; payload = value; return this; },
+        eq(column, value) { filters.push([column, value]); return this; },
+        neq() { return this; },
+        order() { return this; },
+        limit() { return this; },
+        gte() { return this; },
+        lte() { return this; },
+        in() { return this; },
+        is() { return this; },
+        async maybeSingle() {
+          const result = await execute();
+          return { data: result.data[0] || null, error: result.error };
+        },
+        async single() {
+          const result = await execute();
+          return { data: result.data[0] || null, error: result.error };
+        },
+        then(resolve, reject) { return execute().then(resolve, reject); }
+      };
+
+      async function execute() {
+        db[table] ||= [];
+        const rows = db[table];
+        const matches = row => filters.every(([column, value]) => row[column] === value);
+        if (action === 'select') return { data: rows.filter(matches).map(row => ({ ...row })), error: null };
+        if (action === 'insert') {
+          const values = Array.isArray(payload) ? payload : [payload];
+          const inserted = values.map(value => ({
+            id: value.id || 'qa-row-' + nextId++,
+            created_at: value.created_at || new Date().toISOString(),
+            updated_at: value.updated_at || new Date().toISOString(),
+            ...value
+          }));
+          rows.push(...inserted);
+          persist();
+          return { data: inserted.map(row => ({ ...row })), error: null };
+        }
+        if (action === 'update') {
+          const updated = rows.filter(matches).map(row => Object.assign(row, payload));
+          persist();
+          return { data: updated.map(row => ({ ...row })), error: null };
+        }
+        if (action === 'delete') {
+          const removed = rows.filter(matches);
+          db[table] = rows.filter(row => !matches(row));
+          persist();
+          return { data: removed, error: null };
+        }
+        if (action === 'upsert') {
+          const current = rows[0];
+          if (current) Object.assign(current, payload);
+          else rows.push({ user_id: 'qa-user', ...payload });
+          persist();
+          return { data: rows.map(row => ({ ...row })), error: null };
+        }
+        return { data: [], error: null };
+      }
+      return builder;
+    }
+
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+          getSession: async () => ({ data: { session: null } }),
+          signInWithPassword: async () => ({
+            error: null,
+            data: { user: { id: 'qa-user', email: 'qa@example.test' } }
+          }),
+          signOut: async () => ({ error: null })
+        },
+        from: makeClient
+      })
+    };
+  });
+
+  await page.route('https://cdn.jsdelivr.net/**', route =>
+    route.fulfill({ contentType: 'application/javascript', body: '' })
+  );
+  await page.route('https://fonts.googleapis.com/**', route => route.abort());
+  await page.route('https://fonts.gstatic.com/**', route => route.abort());
+  await page.goto('/');
+  await expect(page.locator('#authGate')).toBeVisible();
+  if (await page.evaluate(() => window.innerWidth >= 900)) {
+    await expect(page.locator('#sidebar')).toBeHidden();
+  }
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.locator('#gatePin').fill('Clave123!');
+  await page.locator('#loginBtn').click();
+  await expect(page.locator('#appRoot')).toBeVisible();
+  if (await page.evaluate(() => window.innerWidth >= 900)) {
+    await expect(page.locator('#sidebar')).toBeVisible();
+  }
+  await expect(page.locator('#viewDashboard')).toBeVisible();
+  await page.locator('#headerHomeBtn').click();
+  await expect(page.locator('#viewDashboard')).toBeVisible();
+}
+
+async function openNotes(page) {
+  await page.locator('#sidebar [data-view="notes"]').click();
+  await expect(page.locator('#viewNotes')).toBeVisible();
+}
+
+async function openNavigationSettings(page) {
+  // En viewport móvil, Configuración se alcanza desde el menú Más; el sidebar está oculto.
+  await page.locator('#headerMoreBtn').click();
+  await expect(page.locator('#menuDropdown')).toBeVisible();
+  await page.locator('#menuSettingsBtn').click();
+  await expect(page.locator('#viewSettings')).toBeVisible();
+  await page.locator('#viewSettings [data-settings="personalization"]').click();
+  await expect(page.locator('#settingsPanelPersonalization')).toBeVisible();
+}
+
+test('Notes supports create, optional client/reminder, search, edit and delete in isolated storage', async ({ page }) => {
+  page.on('dialog', dialog => dialog.accept());
+  await openIsolatedApp(page);
+  await openNotes(page);
+  await page.locator('#headerHomeBtn').click();
+  await expect(page.locator('#viewDashboard')).toBeVisible();
+  await openNotes(page);
+
+  await page.locator('#newNoteBtn').click();
+  await page.locator('#createNoteTypeBtn').click();
+  await page.locator('#noteLabelName').fill('Retiro');
+  await page.locator('#saveNoteLabelBtn').click();
+  await expect(page.locator('#noteImportance option')).toHaveText(['Sin importancia','Baja','Media','Alta','Urgente']);
+  await expect(page.locator('#createNoteImportanceBtn')).toHaveCount(0);
+  await expect(page.locator('#noteLabelColor')).toHaveCount(0);
+  await page.locator('#noteType').selectOption({label:'Retiro'});
+  await page.locator('#noteImportance').selectOption({label:'Urgente'});
+  await page.locator('#noteContent').fill('Recordatorio libre para revisar el inventario');
+  await page.locator('#saveNoteBtn').click();
+  const freeNote = page.locator('.note-card').filter({ hasText: 'Recordatorio libre para revisar el inventario' });
+  await expect(freeNote).toBeVisible();
+  await expect(freeNote).not.toContainText('Cliente de prueba');
+  await expect(freeNote).toContainText('Retiro');
+  await expect(freeNote).toContainText('Urgente');
+  await expect(freeNote).toHaveAttribute('style',/--note-type-color:#[0-9A-F]{6}/i);
+  const savedTypeColor = await freeNote.evaluate(node => node.style.getPropertyValue('--note-type-color'));
+
+  await page.locator('#newNoteBtn').click();
+  await page.locator('#noteContent').fill('Llamar al cliente por el pedido');
+  await page.locator('#noteType').selectOption({label:'Retiro'});
+  await page.locator('#noteClient').selectOption('qa-client-1');
+  await page.locator('#noteReminderEnabled').check();
+  const future = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+  const date = [future.getFullYear(), String(future.getMonth() + 1).padStart(2, '0'), String(future.getDate()).padStart(2, '0')].join('-');
+  await page.locator('#noteReminderDate').fill(date);
+  await page.locator('#noteReminderTime').fill('12:30');
+  await page.locator('#saveNoteBtn').click();
+
+  const linkedNote = page.locator('.note-card').filter({ hasText: 'Llamar al cliente por el pedido' });
+  await expect(linkedNote).toBeVisible();
+  await expect(linkedNote).toContainText('Cliente de prueba');
+  await expect(linkedNote).toHaveAttribute('style',new RegExp('--note-type-color:'+savedTypeColor));
+  await expect(linkedNote.locator('.note-chip')).toHaveCount(1);
+  await expect(linkedNote.locator('.note-card-reminder')).toContainText('12:30');
+
+  await page.locator('#notesSearch').fill('cliente de prueba');
+  await expect(linkedNote).toBeVisible();
+  await expect(freeNote).toHaveCount(0);
+  await page.locator('#notesSearch').fill('inventario');
+  await expect(freeNote).toBeVisible();
+
+  await freeNote.locator('[data-note-edit]').click();
+  await expect(page.locator('#notesEditorTitle')).toHaveText('Editar nota');
+  await page.locator('#noteContent').fill('Inventario revisado y actualizado');
+  await page.locator('#saveNoteBtn').click();
+  await expect(page.locator('.note-card').filter({ hasText: 'Inventario revisado y actualizado' })).toBeVisible();
+
+  // Quitar el filtro de búsqueda para volver a mostrar la nota vinculada antes de eliminarla.
+  await page.locator('#notesSearch').fill('');
+  await expect(linkedNote).toBeVisible();
+  await linkedNote.locator('[data-note-delete]').click();
+  await expect(page.locator('.note-card').filter({ hasText: 'Llamar al cliente por el pedido' })).toHaveCount(0);
+});
+
+test('navigation preferences persist and reset only applies after saving', async ({ page }) => {
+  // Esta cobertura verifica la barra inferior y el menú móvil, no el sidebar de escritorio.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openIsolatedApp(page);
+  await openNavigationSettings(page);
+
+  await page.locator('#navigationSlot1').selectOption('sales');
+  await page.locator('#navigationSlot2').selectOption('ranking');
+  await page.locator('#saveNavigationBtn').click();
+  await expect(page.locator('#bottomNav [data-nav-slot="1"]')).toHaveAttribute('data-nav-key', 'sales');
+  await expect(page.locator('#bottomNav [data-nav-slot="2"]')).toHaveAttribute('data-nav-key', 'ranking');
+  await expect(page.locator('#headerHomeBtn')).toBeVisible();
+
+  await page.reload();
+  await expect(page.locator('#authGate')).toBeVisible();
+  await page.locator('#gateEmail').fill('qa@example.test');
+  await page.locator('#gatePin').fill('Clave123!');
+  await page.locator('#loginBtn').click();
+  await expect(page.locator('#appRoot')).toBeVisible();
+  await expect(page.locator('#bottomNav [data-nav-slot="2"]')).toHaveAttribute('data-nav-key', 'ranking');
+
+  await page.locator('#headerMoreBtn').click();
+  await expect(page.locator('#menuDropdown')).toBeVisible();
+  await expect(page.locator('#moreDynamicItems [data-nav-key="ranking"]')).toHaveCount(0);
+  await expect(page.locator('#moreDynamicItems [data-nav-key="sales"]')).toHaveCount(0);
+  await expect(page.locator('#moreDynamicItems [data-nav-key="dashboard"]')).toHaveCount(1);
+  await expect(page.locator('#menuProfileBtn')).toBeVisible();
+  await expect(page.locator('#menuSettingsBtn')).toBeVisible();
+  await page.locator('#headerMoreBtn').click();
+  await page.locator('#headerHomeBtn').click();
+  await expect(page.locator('#viewDashboard')).toBeVisible();
+
+  await openNavigationSettings(page);
+  await page.locator('#resetNavigationBtn').click();
+  await expect(page.locator('#navigationSlot2')).toHaveValue('sales');
+  await expect(page.locator('#bottomNav [data-nav-slot="2"]')).toHaveAttribute('data-nav-key', 'ranking');
+  await page.locator('#saveNavigationBtn').click();
+  await expect(page.locator('#bottomNav [data-nav-slot="2"]')).toHaveAttribute('data-nav-key', 'sales');
+});
+
+test('Notes create and edit flow remains usable on mobile without horizontal overflow', async ({ page }) => {
+  page.on('dialog', dialog => dialog.accept());
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openIsolatedApp(page);
+  await expect(page.locator('#bottomNav [data-nav-key="notes"]')).toBeVisible();
+  await page.locator('#bottomNav [data-nav-key="notes"]').click();
+  await expect(page.locator('#viewNotes')).toBeVisible();
+
+  await page.locator('#newNoteBtn').click();
+  await page.locator('#noteContent').fill('Nota creada desde móvil');
+  await page.locator('#noteClient').selectOption('qa-client-1');
+  await page.locator('#noteReminderEnabled').check();
+  const future = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  const date = [future.getFullYear(), String(future.getMonth() + 1).padStart(2, '0'), String(future.getDate()).padStart(2, '0')].join('-');
+  await page.locator('#noteReminderDate').fill(date);
+  await page.locator('#noteReminderTime').fill('09:45');
+  await page.locator('#saveNoteBtn').click();
+
+  const note = page.locator('.note-card').filter({ hasText: 'Nota creada desde móvil' });
+  await expect(note).toBeVisible();
+  await expect(note).toContainText('Cliente de prueba');
+  await expect(note.locator('.note-card-reminder')).toContainText(/\b0?9:45\b/);
+
+  const dimensions = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    document: document.documentElement.scrollWidth,
+    notes: document.querySelector('#viewNotes').scrollWidth,
+    notesClient: document.querySelector('#viewNotes').clientWidth,
+    offenders: [...document.querySelectorAll('body *')].map(element => {
+      const rect = element.getBoundingClientRect();
+      const ancestors = [];
+      for (let node = element; node && ancestors.length < 5; node = node.parentElement) {
+        ancestors.push({ tag: node.tagName, id: node.id, className: node.className?.toString?.() || '', left: Math.round(node.getBoundingClientRect().left), right: Math.round(node.getBoundingClientRect().right), width: Math.round(node.getBoundingClientRect().width), scrollWidth: node.scrollWidth, clientWidth: node.clientWidth });
+      }
+      return { selector: element.id ? '#' + element.id : element.className?.toString?.() || element.tagName, left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width), scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, ancestors };
+    }).filter(item => item.right > document.documentElement.clientWidth + 1 || item.left < -1).slice(0, 12)
+  }));
+  expect(dimensions.document, `mobile Notes must not overflow the page horizontally: ${JSON.stringify(dimensions)}`).toBeLessThanOrEqual(dimensions.viewport);
+  expect(dimensions.notes, 'mobile Notes must not overflow its view horizontally').toBeLessThanOrEqual(dimensions.notesClient);
+
+  await note.locator('[data-note-edit]').click();
+  await expect(page.locator('#notesEditorTitle')).toHaveText('Editar nota');
+  await page.locator('#noteContent').fill('Nota móvil editada');
+  await page.locator('#saveNoteBtn').click();
+  await expect(page.locator('.note-card').filter({ hasText: 'Nota móvil editada' })).toBeVisible();
+});

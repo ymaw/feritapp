@@ -1,0 +1,90 @@
+
+/* Notas — conserva tokens, superficies y tipografía de FeritApp. */
+.notes-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px}
+.notes-toolbar-copy{min-width:0}.notes-toolbar-copy h2{margin:0;color:var(--text);font-size:calc(20px * var(--font-scale,1))}
+.notes-toolbar-copy p{margin:5px 0 0;color:var(--text-muted);font-size:calc(12px * var(--font-scale,1))}
+.notes-new-btn{flex:0 0 auto;min-height:42px;padding:0 15px;border:0;border-radius:12px;background:var(--primary);color:#fff;font:700 calc(13px * var(--font-scale,1)) var(--body);cursor:pointer}
+.notes-search{width:100%;min-height:44px;margin:0 0 14px;padding:10px 13px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font:inherit}
+.notes-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
+.note-card{min-width:0;padding:15px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:none}
+.note-card-content{margin:0;color:var(--text);font-size:calc(14px * var(--font-scale,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.note-card-reminder{display:flex;align-items:center;gap:7px;margin-top:10px;padding-top:9px;border-top:1px solid var(--border);color:var(--text-muted);font-size:calc(11px * var(--font-scale,1));line-height:1.4}
+.note-card-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;color:var(--text-muted);font-size:calc(11px * var(--font-scale,1))}
+.note-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-muted)}
+.note-card-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.note-card-actions button{min-height:34px;padding:6px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font:600 12px var(--body);cursor:pointer}
+.notes-empty{padding:30px 18px;border:1px dashed var(--border);border-radius:16px;color:var(--text-muted);text-align:center;line-height:1.5}
+.notes-editor{padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
+.notes-editor[hidden]{display:none}
+.notes-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+.notes-editor-heading h3{margin:0;color:var(--text);font-size:calc(17px * var(--font-scale,1))}
+.notes-editor-close{width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:20px;cursor:pointer}
+.notes-field{display:grid;gap:7px;margin:0 0 14px}
+.notes-field label{color:var(--text);font-size:calc(12px * var(--font-scale,1));font-weight:700}
+.notes-field textarea,.notes-field select,.notes-field input{box-sizing:border-box;width:100%;min-height:44px;padding:11px 12px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);font:inherit}
+.notes-field textarea{min-height:140px;resize:vertical;line-height:1.5}
+.notes-reminder-row{display:flex;align-items:center;gap:9px;margin:0 0 12px;color:var(--text);font-size:13px}
+.notes-reminder-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.notes-editor-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:14px}
+.notes-editor-actions button{min-height:42px;padding:0 14px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text);font:700 13px var(--body);cursor:pointer}
+.notes-editor-actions .notes-save{border-color:transparent;background:var(--primary);color:#fff}
+.notes-feedback{margin:0 0 12px;color:var(--text-muted);font-size:12px}
+@media(max-width:560px){.notes-toolbar{align-items:flex-start}.notes-new-btn{min-height:40px;padding:0 12px}.notes-reminder-fields{grid-template-columns:1fr}}
+
+/* Etiquetas de tipo e importancia: borde coloreado, superficie neutra y filtros claros. */
+.notes-filters,.notes-label-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px;}
+.notes-filters select{min-width:0;min-height:42px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;}
+.notes-label-grid .notes-field{min-width:0;}
+.notes-label-create-btn{justify-self:start;padding:3px 0;border:0;background:transparent;color:var(--primary);font:700 11px var(--body);cursor:pointer;}
+.notes-label-creator{margin:0 0 14px;padding:13px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);}
+.notes-label-creator[hidden]{display:none;}
+.notes-label-creator>strong{display:block;margin-bottom:10px;color:var(--text);font-size:13px;}
+.notes-label-creator input[type=color]{min-height:42px;padding:4px;}
+.note-card{border:1px solid var(--note-type-color,var(--border));}
+.note-card-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.note-type-chip,.note-importance-chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:4px 8px;border:1px solid currentColor;border-radius:999px;font-size:11px;font-weight:750;line-height:1.3;overflow-wrap:anywhere;}
+.note-type-chip{color:var(--note-type-color,var(--text-muted));background:color-mix(in srgb,var(--note-type-color,var(--surface-2)) 10%,transparent);}
+.note-importance-chip{margin-left:auto;}
+@media(max-width:560px){.notes-filters,.notes-label-grid{grid-template-columns:1fr;gap:7px}.notes-filters{margin-bottom:12px}}
+
+.notes-label-color-hint{margin:0 0 12px;color:var(--text-muted);font-size:12px;line-height:1.45;}
+.notes-label-creator .notes-field{margin-bottom:10px;}
+
+/* Encabezados de Tipo e Importancia comparten altura; los selects quedan alineados. */
+.notes-field-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px;}
+.notes-field-heading label{margin:0;}
+.notes-field-heading .notes-label-create-btn{flex:0 0 auto;margin:0;line-height:1.2;}
+.notes-type-field>.notes-label-create-btn{display:inline-flex;align-items:center;margin-top:7px;padding:4px 0;font-size:12px;}
+
+
+/* Ajustes de alineación y filtros compactos — Notas. */
+.notes-label-grid{align-items:start;}
+.notes-label-grid>.notes-field{
+  align-self:start;
+  align-content:start;
+  grid-template-rows:22px 44px auto;
+  row-gap:7px;
+}
+.notes-label-grid .notes-field-heading{min-height:22px;}
+.notes-type-field>.notes-label-create-btn{margin-top:0;padding:2px 0;font-size:11px;}
+.notes-filters{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:0 0 12px;
+}
+.notes-filters select{
+  flex:0 1 190px;
+  width:auto;
+  min-width:0;
+  min-height:34px;
+  padding:6px 9px;
+  border-radius:9px;
+  font-size:12px;
+}
+@media(max-width:560px){
+  .notes-label-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .notes-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+  .notes-filters select{width:100%;min-height:34px;font-size:11px;padding:6px 7px;}
+}
