@@ -4243,35 +4243,6 @@ textarea,
 }
 
 
-/* V12.135: #sidebar es hermano de #appRoot, no un hijo suyo. Forzar su layout desde body. */
-@media (min-width: 900px) {
-  body > nav#sidebar.sidebar {
-    display: flex !important;
-    flex-direction: column !important;
-    position: fixed !important;
-    inset: 0 auto 0 0 !important;
-    box-sizing: border-box !important;
-    width: 248px !important;
-    min-width: 248px !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    padding: 24px 16px !important;
-    overflow-y: auto !important;
-    background: var(--surface-2) !important;
-    border-right: 1px solid var(--border) !important;
-    z-index: 10000 !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: none !important;
-  }
-  body > nav#bottomNav.bottom-nav { display: none !important; }
-}
-@media (max-width: 899px) {
-  body > nav#sidebar.sidebar { display: none !important; }
-}
-
-
 /* V12.137: la navegación es hermana de las vistas dentro de #appRoot,
    no debe quedar anidada en #viewNotes ni depender de body como padre. */
 @media (min-width: 900px) {
