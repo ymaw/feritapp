@@ -4267,20 +4267,30 @@ textarea,
 }
 
 
-/* V12.136: navegación responsive en sus nodos reales, hermanos de #appRoot. */
+/* V12.137: la navegación es hermana de las vistas dentro de #appRoot,
+   no debe quedar anidada en #viewNotes ni depender de body como padre. */
 @media (min-width: 900px) {
-  body > nav#sidebar.sidebar {
+  #appRoot > nav#sidebar.sidebar {
     display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    box-sizing: border-box !important;
+    width: 248px !important;
+    min-width: 248px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 10000 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
   }
-  body > nav#bottomNav.bottom-nav {
-    display: none !important;
-  }
+  #appRoot > nav#bottomNav.bottom-nav { display: none !important; }
 }
 @media (max-width: 899px) {
-  body > nav#sidebar.sidebar {
-    display: none !important;
-  }
-  body > nav#bottomNav.bottom-nav {
+  #appRoot > nav#sidebar.sidebar { display: none !important; }
+  #appRoot > nav#bottomNav.bottom-nav {
     display: flex !important;
     position: fixed !important;
     right: 0 !important;
