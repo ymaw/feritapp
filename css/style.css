@@ -215,14 +215,6 @@ h1{
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .client-list-item:hover{ border-color:var(--primary); color:var(--primary-soft); }
-.client-edit-btn, .client-del-btn{
-  flex-shrink:0; width:42px; background:var(--table-bg); border:1px solid var(--table-border);
-  border-radius:12px; font-size: calc((15px) * var(--font-scale, 1)); cursor:pointer;
-}
-.client-edit-btn{ color:var(--text-muted); }
-.client-edit-btn:hover{ border-color:var(--primary); color:var(--primary-soft); }
-.client-del-btn{ color:var(--danger); }
-.client-del-btn:hover{ background:rgba(var(--warning-rgb),.15); border-color:var(--warning); }
 
 /* ---------- categoría más vendida del mes ---------- */
 .cat-chart{ display:flex; flex-direction:column; gap:10px; }
@@ -1093,7 +1085,6 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
 #viewClients .client-list-item{
   min-height:50px;padding:14px 16px;border-radius:14px;box-shadow:0 3px 10px rgba(15,23,42,.025);
 }
-#viewClients .client-edit-btn,#viewClients .client-del-btn{width:46px;border-radius:13px;}
 
 /* Ranking */
 #viewRanking .section-block{padding-top:24px;}
@@ -1566,8 +1557,6 @@ header.has-back-button .session-email{
 /* V12.16: resumen estadístico en Inicio y hero semanal en Ventas. */
 #viewDashboard .dashboard-current-ticket{padding-top:14px;padding-bottom:10px;margin:0 auto;max-width:1180px;}
 #viewDashboard .dashboard-current-ticket .summary-heading{margin-bottom:12px;}
-#viewSales .sales-summary-hero{margin-top:8px;margin-bottom:12px;padding:16px 20px;}
-#viewSales .sales-summary-hero::after{width:90px;height:90px;right:-42px;bottom:-54px;}
 .receipt-preview-brand{position:relative;padding-right:82px;min-height:76px;flex-wrap:wrap;}
 .receipt-preview-brand .receipt-store-avatar{flex:0 0 34px;}
 .receipt-preview-ferit-logo{position:absolute;top:-3px;right:0;width:78px;height:78px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(35,45,100,.08));}
@@ -1577,7 +1566,6 @@ header.has-back-button .session-email{
 
 
 /* V12.17 — tarjetas semanales a ancho completo, ranking renovado y logo de recibo más visible */
-#viewSales .sales-summary-hero{width:100%;max-width:none;box-sizing:border-box;}
 #viewSales .weekly-summary-card{width:100%;max-width:none;box-sizing:border-box;margin:0 0 18px!important;}
 #viewSales .sales-hero{width:100%;max-width:none;}
 #viewSales .weekly-summary-content{padding:14px 16px 16px;}
@@ -1614,11 +1602,9 @@ header.has-back-button .session-email{
 /* V12.17: el contenedor de Ventas deja de comprimir las dos tarjetas semanales */
 #viewSales .view-hero.sales-hero{margin:12px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;}
 #viewSales .view-hero.sales-hero::after{display:none;}
-#viewSales .view-hero.sales-hero .sales-summary-hero{margin:0 12px 12px;padding:16px 18px;width:auto;}
 #viewSales .weekly-summary-card{width:auto;margin:0 12px 18px!important;}
 #viewSales .weekly-summary-content .sales-client-groups{gap:10px;}
 #viewSales .weekly-summary-content .sales-client-group-trigger{flex-wrap:wrap;}
-@media(min-width:900px){#viewSales .view-hero.sales-hero .sales-summary-hero{margin-left:24px;margin-right:24px;}#viewSales .weekly-summary-card{margin-left:24px!important;margin-right:24px!important;}}
 
 /* V12.18: alineación centrada del ranking */
 #viewRanking .rank-item{align-items:center!important;}
@@ -1647,9 +1633,6 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .management-filter{flex:0 0 auto;padding:9px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text-muted);font: 700 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
 .management-filter.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(var(--primary-rgb),.22);}
 .sales-group-statuses{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
-.management-client-actions{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--border);}
-.management-client-actions button{border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);padding:8px 10px;font: 700 calc((11px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
-.management-client-actions button:hover{border-color:var(--primary);color:var(--primary-soft);}
 .delivery-management-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:0 5px 16px rgba(20,20,50,.04);}
 .delivery-management-main{display:flex;align-items:flex-start;gap:11px;min-width:0;}
 .delivery-management-main>div{min-width:0;display:flex;flex-direction:column;gap:5px;}
