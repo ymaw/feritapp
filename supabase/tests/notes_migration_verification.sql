@@ -43,6 +43,14 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'navigation_slots column was not created';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid='public.note_labels'::regclass
+      AND conname='note_labels_importance_catalog_valid'
+      AND NOT convalidated
+  ) THEN
+    RAISE EXCEPTION 'Fixed importance catalog constraint is missing or unexpectedly validated';
+  END IF;
 END $$;
 
 -- Verify tenant isolation and optional client ownership through RLS.
@@ -67,11 +75,60 @@ BEGIN
     RAISE EXCEPTION 'Note type and importance labels were not persisted';
   END IF;
 END $$;
+-- El segundo usuario crea una etiqueta propia para probar referencias cruzadas.
 SET LOCAL request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
-DO $$
+INSERT INTO public.note_labels(id,kind,name,color)
+VALUES ('cccccccc-cccc-4ccc-8ccc-cccccccccccc','type','Propio usuario 2','#0EA5E9');
+DO $
 DECLARE visible_count integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.notes;
   IF visible_count <> 0 THEN RAISE EXCEPTION 'Cross-user Notes visibility detected'; END IF;
-END $$;
+  IF EXISTS (SELECT 1 FROM public.note_labels WHERE id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') THEN
+    RAISE EXCEPTION 'Cross-user note label visibility detected';
+  END IF;
+END $;
+
+-- No se puede crear una nota con cliente ni etiqueta pertenecientes a otro usuario.
+SET LOCAL request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
+DO $
+DECLARE rejected boolean := false;
+BEGIN
+  BEGIN
+    INSERT INTO public.notes(content,client_id) VALUES ('Cliente ajeno','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+  EXCEPTION WHEN insufficient_privilege THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Cross-user client reference was accepted on insert'; END IF;
+
+  rejected := false;
+  BEGIN
+    INSERT INTO public.notes(content,type_label_id)
+    VALUES ('Etiqueta ajena','cccccccc-cccc-4ccc-8ccc-cccccccccccc');
+  EXCEPTION WHEN insufficient_privilege THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Cross-user type label reference was accepted on insert'; END IF;
+
+  rejected := false;
+  BEGIN
+    UPDATE public.notes SET client_id='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+    WHERE content='Nota propia';
+  EXCEPTION WHEN insufficient_privilege THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Cross-user client reference was accepted on update'; END IF;
+
+  rejected := false;
+  BEGIN
+    UPDATE public.notes SET type_label_id='cccccccc-cccc-4ccc-8ccc-cccccccccccc'
+    WHERE content='Nota propia';
+  EXCEPTION WHEN insufficient_privilege THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Cross-user type label reference was accepted on update'; END IF;
+
+  rejected := false;
+  BEGIN
+    INSERT INTO public.note_labels(kind,name,color) VALUES ('importance','Crítica','#FFFFFF');
+  EXCEPTION WHEN check_violation THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Non-catalog importance label was accepted'; END IF;
+END $;
 ROLLBACK;
