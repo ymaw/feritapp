@@ -1155,14 +1155,6 @@
   min-height: 68px;
   padding: 16px 18px;
 }
-@media (min-width: 900px) {
-  #viewDashboard .greeting-badge {
-    box-sizing: border-box;
-    width: min(1120px, calc(100% - 60px));
-    max-width: 1120px;
-    margin: 18px auto 0;
-  }
-}
 @media (max-width: 899px) {
   #viewDashboard > .section-block {
     width: calc(100% - 28px);
