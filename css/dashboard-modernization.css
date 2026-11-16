@@ -645,10 +645,6 @@
   align-self: flex-start;
   margin-top: 0;
 }
-#viewDashboard .dashboard-toggle-copy {
-  align-self: flex-start;
-  min-width: 0;
-}
 #viewDashboard .dashboard-toggle-copy .section-title,
 #viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle {
   overflow: visible;
