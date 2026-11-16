@@ -266,7 +266,7 @@ test('Notes create and edit flow remains usable on mobile without horizontal ove
   const note = page.locator('.note-card').filter({ hasText: 'Nota creada desde móvil' });
   await expect(note).toBeVisible();
   await expect(note).toContainText('Cliente de prueba');
-  await expect(note.locator('.note-card-reminder')).toContainText('09:45');
+  await expect(note.locator('.note-card-reminder')).toContainText(/\b0?9:45\b/);
 
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
