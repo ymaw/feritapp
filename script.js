@@ -2200,10 +2200,10 @@ document.addEventListener('DOMContentLoaded', function(){
     let latestStats = wStats[chartKeys[chartKeys.length - 1]] || {cobrado:0,pendiente:0};
     let chartHtml = '<div class="comparison-chart-heading"><strong>Importe vendido por semana</strong><span>Últimas 6 semanas</span></div><div class="chart-box chart-box-modern"><canvas id="periodChartCanvas"></canvas></div>' +
       '<div class="dashboard-payment-card">' +
-      '<button class="dashboard-section-toggle dashboard-payment-toggle" type="button" data-dashboard-toggle aria-controls="weeklyPaymentContent" aria-expanded="true">' +
+      '<button class="dashboard-section-toggle dashboard-payment-toggle" type="button" data-dashboard-toggle aria-controls="weeklyPaymentContent" aria-expanded="false">' +
       '<span class="dashboard-toggle-main"><span class="dashboard-history-icon" aria-hidden="true">◒</span><span class="dashboard-toggle-copy"><span class="section-title">Cobrado vs. pendiente</span><span class="dashboard-history-subtitle">Semana más reciente con ventas</span></span></span>' +
       '<span class="dashboard-toggle-chevron" aria-hidden="true">⌄</span></button>' +
-      '<div class="dashboard-collapsible-content" id="weeklyPaymentContent">' +
+      '<div class="dashboard-collapsible-content" id="weeklyPaymentContent" hidden>' +
       '<div class="payment-chart-layout"><div class="chart-box chart-box-doughnut payment-doughnut"><canvas id="weeklyPaymentChartCanvas"></canvas><div class="payment-chart-center"><small>Total vendido</small><strong id="weeklyPaymentTotal">'+money(latestStats.cobrado+latestStats.pendiente)+'</strong></div></div>' +
       '<div class="payment-chart-legend"><div><span class="payment-legend-dot collected"></span><span>Cobrado</span><strong>'+money(latestStats.cobrado)+'</strong></div><div><span class="payment-legend-dot outstanding"></span><span>Pendiente</span><strong>'+money(latestStats.pendiente)+'</strong></div></div></div></div></div>';
 
