@@ -1885,9 +1885,6 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .weekly-summary-client-group [data-edit],
 .weekly-summary-client-group [data-del],
 .weekly-summary-client-group [data-toggle-pay] { display: none !important; }
-/* El estado de entrega debe ser visible exclusivamente en Inicio > Resumen Semanal. */
-#weeklySummaryContent .weekly-summary-delivery-status {
-}
 
 /* Encabezado de la app: marca centrada y controles laterales alineados */
 header {
@@ -2287,8 +2284,6 @@ header.view-dashboard .header-profile-btn { display: inline-flex !important; }
   padding-left: 0 !important;
   padding-top: 40px;
   gap: 6px !important;
-}
-#weeklySummaryContent .sales-group-statuses .delivery-status {
 }
 #weeklySummaryContent .sales-group-chevron { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
 @media (max-width: 640px) {
@@ -3362,16 +3357,6 @@ textarea,
 #sheet.new-sale-mode .item-field .input-row,
 #sheet.edit-sale-mode .item-field .input-row {
   min-width: 0;
-}
-#sheet.new-sale-mode .item-field .input-row,
-#sheet.edit-sale-mode .item-field .input-row {
-}
-#sheet.new-sale-mode .item-field .row-articulo,
-#sheet.new-sale-mode .item-field .row-precio,
-#sheet.new-sale-mode .item-field .row-categoria,
-#sheet.edit-sale-mode .item-field .row-articulo,
-#sheet.edit-sale-mode .item-field .row-precio,
-#sheet.edit-sale-mode .item-field .row-categoria {
 }
 #sheet.new-sale-mode .item-field .row-categoria,
 #sheet.edit-sale-mode .item-field .row-categoria {
