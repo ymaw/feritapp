@@ -1453,7 +1453,6 @@ header{position:relative;}
 @media(max-width:420px){.menu-dropdown{width:min(280px,calc(100vw - 20px));}.menu-dropdown .menu-item{min-height:45px;}}
 
 /* V12.10 — Entregas unificadas y tarjetas expansibles */
-#viewSales .salestab-opt[data-salestab="items"]{width:100%;}
 .sales-client-groups{display:flex;flex-direction:column;gap:10px;}
 .sales-client-group{border:1px solid var(--border);background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(30,20,70,.04);}
 .sales-client-group-trigger{display:flex;align-items:center;gap:11px;width:100%;padding:13px;background:transparent;border:0;text-align:left;color:var(--text);cursor:pointer;}
