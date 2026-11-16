@@ -721,18 +721,8 @@
 }
 
 /* El icono toma siempre la primera línea del bloque de título, también en mobile. */
-#viewDashboard .dashboard-section-toggle,
-#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
+#viewDashboard .dashboard-section-toggle {
   align-items: flex-start;
-}
-#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
-  align-self: flex-start;
-  flex: 0 0 36px;
-  margin: 1px 0 0;
-}
-#viewDashboard .dashboard-toggle-copy {
-  align-self: flex-start;
-  min-width: 0;
 }
 #viewDashboard .dashboard-toggle-copy .section-title {
   display: block;
@@ -770,11 +760,6 @@
   }
   #viewDashboard .greeting-sub {
     font-size: calc(11px * var(--font-scale, 1));
-  }
-  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
-    flex-basis: 32px;
-    width: 32px;
-    height: 32px;
   }
 }
 @media (max-width: 380px) {
