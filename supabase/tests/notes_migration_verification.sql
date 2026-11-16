@@ -84,7 +84,9 @@ DECLARE visible_count integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.notes;
   IF visible_count <> 0 THEN RAISE EXCEPTION 'Cross-user Notes visibility detected'; END IF;
-  IF EXISTS (SELECT 1 FROM public.note_labels WHERE id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') THEN
+  IF (SELECT count(*) FROM public.note_labels) <> 1 OR NOT EXISTS (
+    SELECT 1 FROM public.note_labels WHERE id='cccccccc-cccc-4ccc-8ccc-cccccccccccc'
+  ) THEN
     RAISE EXCEPTION 'Cross-user note label visibility detected';
   END IF;
 END $;
