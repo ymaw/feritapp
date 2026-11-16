@@ -829,6 +829,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('onboardingGate').style.display = 'none';
       return;
     }
+    document.body.classList.add('auth-locked');
     document.getElementById('appRoot').style.display = 'none';
     document.getElementById('onboardingGate').style.display = 'flex';
   }
@@ -847,6 +848,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let profileInput = document.getElementById('profileStoreName');
     if(profileInput){ profileInput.value = val; }
     document.getElementById('onboardingGate').style.display = 'none';
+    document.body.classList.remove('auth-locked');
     document.getElementById('appRoot').style.display = 'block';
     updateGreeting();
     updateAvatarDisplay();
