@@ -4298,3 +4298,156 @@ textarea,
   #appRoot > header > #globalBackBtn { left: 16px !important; right: auto !important; }
   #appRoot > header > #headerMoreBtn { left: auto !important; right: 16px !important; }
 }
+
+
+/* V12.151 — encabezados de vistas con iconografía consistente.
+   Ventas conserva una sola card interior; el resto integra el icono en su hero. */
+#viewRanking .sales-heading-card,
+#viewNotes .sales-heading-card,
+#viewClients .sales-heading-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--primary-rgb), .22);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .13), var(--surface) 72%);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+}
+#viewRanking .sales-heading-mark,
+#viewNotes .sales-heading-mark,
+#viewClients .sales-heading-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: rgba(var(--primary-rgb), .13);
+  color: var(--primary-soft);
+}
+#viewRanking .sales-heading-mark svg,
+#viewNotes .sales-heading-mark svg,
+#viewClients .sales-heading-mark svg,
+#viewSales .sales-heading-mark svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#viewRanking .sales-heading-copy,
+#viewNotes .sales-heading-copy,
+#viewClients .sales-heading-copy,
+#viewSales .sales-heading-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#viewRanking .sales-heading-card h2,
+#viewNotes .sales-heading-card h2,
+#viewClients .sales-heading-card h2 {
+  margin: 0 0 3px !important;
+  color: var(--text) !important;
+  font-size: calc((clamp(18px, 2vw, 22px)) * var(--font-scale, 1)) !important;
+  line-height: 1.2 !important;
+}
+#viewRanking .sales-heading-card p,
+#viewNotes .sales-heading-card p,
+#viewClients .sales-heading-card p {
+  margin: 0 !important;
+  color: var(--text-muted) !important;
+  font-size: calc((13px) * var(--font-scale, 1)) !important;
+  line-height: 1.45 !important;
+}
+#viewSales > .view-hero.sales-hero {
+  box-sizing: border-box;
+  display: block;
+  width: min(1120px, calc(100% - 48px));
+  max-width: 1120px;
+  margin: 18px auto 14px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+#viewSales > .view-hero.sales-hero::after { display: none !important; }
+#viewSales .sales-heading-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(20, 16, 40, .06);
+}
+#viewSales .sales-heading-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: rgba(var(--primary-rgb), .13);
+  color: var(--primary-soft);
+}
+#viewSales .sales-heading-card h2 {
+  margin: 0 0 3px !important;
+  color: var(--text) !important;
+  font-size: calc((clamp(18px, 2vw, 22px)) * var(--font-scale, 1)) !important;
+  line-height: 1.2 !important;
+}
+#viewSales .sales-heading-card p {
+  margin: 0 !important;
+  color: var(--text-muted) !important;
+  font-size: calc((13px) * var(--font-scale, 1)) !important;
+  line-height: 1.45 !important;
+}
+@media (max-width: 640px) {
+  #viewSales .sales-heading-card,
+  #viewRanking .sales-heading-card,
+  #viewNotes .sales-heading-card,
+  #viewClients .sales-heading-card {
+    align-items: flex-start;
+    gap: 11px;
+    padding: 15px;
+  }
+  #viewSales .sales-heading-mark,
+  #viewRanking .sales-heading-mark,
+  #viewNotes .sales-heading-mark,
+  #viewClients .sales-heading-mark {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+  #viewSales .sales-heading-mark svg,
+  #viewRanking .sales-heading-mark svg,
+  #viewNotes .sales-heading-mark svg,
+  #viewClients .sales-heading-mark svg {
+    width: 21px;
+    height: 21px;
+  }
+  #viewSales .sales-heading-card p,
+  #viewRanking .sales-heading-card p,
+  #viewNotes .sales-heading-card p,
+  #viewClients .sales-heading-card p {
+    font-size: calc((12px) * var(--font-scale, 1)) !important;
+  }
+  #viewSales > .view-hero.sales-hero {
+    width: calc(100% - 32px);
+    max-width: 720px;
+    margin: 18px auto 14px !important;
+  }
+}
