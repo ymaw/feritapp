@@ -1083,14 +1083,6 @@
 #viewDashboard .dashboard-section-heading-static .dashboard-toggle-copy {
   min-width: 0;
 }
-@media (min-width: 900px) {
-  #viewDashboard .greeting-badge {
-    width: min(1120px, calc(100% - 48px));
-    max-width: 1120px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
 @media (max-width: 899px) {
   #viewDashboard .weekly-summary-heading {
     min-height: 64px;
