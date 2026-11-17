@@ -20,7 +20,7 @@ assert.match(style, /\.delivery-management-main\{display:flex;align-items:flex-s
   'The base delivery content row must retain its flex layout');
 assert.match(style, /\.delivery-management-card\{grid-template-columns:minmax\(0,1fr\);gap:14px;padding:14px;\}/,
   'The mobile single-column card layout must remain present');
-assert.ok(html.includes('css/style.css?v=12.162'), 'The main stylesheet cache key must be refreshed');
+assert.ok(html.includes('css/style.css?v=12.163'), 'The main stylesheet cache key must be refreshed');
 const deliveriesHero = html.split('id="viewDeliveries"')[1]?.split('id="viewNotes"')[0] || '';
 assert.ok(deliveriesHero.includes('class="view-hero-kicker">ENTREGAS</div>'), 'The deliveries heading card must include its mini title');
 assert.ok(deliveriesHero.indexOf('class="view-hero-kicker">ENTREGAS</div>') < deliveriesHero.indexOf('<h2>Entregas</h2>'), 'The deliveries mini title must appear above the main title');
