@@ -6,9 +6,9 @@ const root = path.resolve(__dirname, '..');
 const layout = fs.readFileSync(path.join(root, 'css/app-layout-centering.css'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
-assert.ok(!/header\\.has-back-button\\s*\\{\\s*padding-left:\\s*0\\s*!important;\\s*\\}/.test(layout),
+assert.ok(!layout.includes('header.has-back-button {\n    padding-left: 0 !important;'),
   'The lower-specificity mobile header padding override must not return');
-assert.match(layout, /#appRoot > header\\.has-back-button\\s*\\{\\s*padding-left:\\s*20px\\s*!important;\\s*\\}/,
+assert.ok(layout.includes('#appRoot > header.has-back-button {\n    padding-left: 20px !important;'),
   'The canonical mobile back-button header spacing must remain');
 assert.ok(html.includes('css/app-layout-centering.css?v=24'),
   'The layout stylesheet cache key must be refreshed');
