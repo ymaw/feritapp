@@ -22,7 +22,7 @@ assert.ok(html.includes('css/dashboard-modernization.css?v=15'), 'The dashboard 
 const legacyHeadingRule = legacyStyle.match(/\.weekly-summary-heading\s*\{([^}]*)\}/);
 assert.ok(legacyHeadingRule, 'The legacy weekly summary heading base rule must remain available');
 assert.doesNotMatch(legacyHeadingRule[1], /padding\s*:/, 'The legacy heading rule must not retain superseded padding');
-const legacyMobileRules = [...legacyStyle.matchAll(/@media\\s*\\(max-width:\\s*520px\\)\\s*\\{([^}]*)\\}/g)].map((rule) => rule[1]);
+const legacyMobileRules = [...legacyStyle.matchAll(/@media\s*\(max-width:\s*520px\)\s*\{([^}]*)\}/g)].map((rule) => rule[1]);
 const legacyMobileRule = legacyMobileRules.find((rule) => rule.includes('weekly-summary-content'));
 assert.ok(legacyMobileRule, 'The legacy mobile media query must remain for content spacing');
 assert.doesNotMatch(legacyMobileRule, /weekly-summary-heading/, 'The legacy mobile query must not override dashboard heading padding');
