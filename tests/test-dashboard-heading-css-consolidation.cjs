@@ -22,9 +22,10 @@ assert.ok(html.includes('css/dashboard-modernization.css?v=15'), 'The dashboard 
 const legacyHeadingRule = legacyStyle.match(/\.weekly-summary-heading\s*\{([^}]*)\}/);
 assert.ok(legacyHeadingRule, 'The legacy weekly summary heading base rule must remain available');
 assert.doesNotMatch(legacyHeadingRule[1], /padding\s*:/, 'The legacy heading rule must not retain superseded padding');
-const legacyMobileRule = legacyStyle.match(/@media\s*\(max-width:\s*520px\)\s*\{([^}]*)\}/);
+const legacyMobileRules = [...legacyStyle.matchAll(/@media\\s*\\(max-width:\\s*520px\\)\\s*\\{([^}]*)\\}/g)].map((rule) => rule[1]);
+const legacyMobileRule = legacyMobileRules.find((rule) => rule.includes('weekly-summary-content'));
 assert.ok(legacyMobileRule, 'The legacy mobile media query must remain for content spacing');
-assert.doesNotMatch(legacyMobileRule[1], /weekly-summary-heading/, 'The legacy mobile query must not override dashboard heading padding');
+assert.doesNotMatch(legacyMobileRule, /weekly-summary-heading/, 'The legacy mobile query must not override dashboard heading padding');
 const headingLayoutRules = [...css.matchAll(/#viewDashboard \.weekly-summary-heading\s*\{([^}]*)\}/g)].map((rule) => rule[1]);
 assert.ok(headingLayoutRules.some((rule) => /height:\s*68px;/.test(rule) && /padding:\s*16px 18px;/.test(rule)), 'Desktop heading dimensions must remain unchanged');
 assert.match(css, /@media \(max-width:\s*899px\)\s*\{[^}]*#viewDashboard \.weekly-summary-heading\s*\{[^}]*height:\s*64px;[^}]*padding:\s*14px 15px;/s, 'Mobile heading dimensions must remain unchanged');
