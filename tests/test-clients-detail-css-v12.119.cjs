@@ -25,6 +25,7 @@ for (const selector of ['.client-detail-panel{', '.client-detail-head{', '.clien
 }
 assert.match(clients, /\.client-detail-actions\{[^}]*display:grid;[^}]*grid-template-columns:minmax\(0,\.8fr\) minmax\(0,1\.2fr\)/, 'Consolidated base rule must retain the grid layout and its two-column proportions');
 assert.ok(clients.includes('@media(max-width:520px){.client-detail-actions{grid-template-columns:1fr;}}'), 'Mobile detail actions layout must be preserved');
+assert.ok(!style.includes('.client-detail-actions{grid-template-columns:1fr 1fr;}'), 'Superseded two-column mobile override must not return to style.css');
 assert.ok(html.includes('id="viewClients"'), 'Clients view markup must remain present');
 
 console.log('OK client detail regression: extraction, stylesheet order and synchronized cache versions (' + styleVersion + ').');
