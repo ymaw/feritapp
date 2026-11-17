@@ -1403,7 +1403,7 @@ body.auth-locked{overflow:hidden;height:100%;}
 .receipt-edit-modal>.hint{margin-top:8px;font-size: calc((10px) * var(--font-scale, 1));line-height:1.5;}
 .receipt-edit-actions{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);margin-top:16px;}
 .receipt-edit-actions .save-btn{border-radius:13px;box-shadow:0 6px 15px rgba(var(--primary-rgb),.2);}
-@media(max-width:520px){.client-row-actions{gap:5px;padding-right:7px;}.client-inline-copy,.client-inline-share{width:34px;height:34px;min-height:34px;border-radius:10px;}.client-detail-actions{grid-template-columns:1fr 1fr;}.copy-client-name-btn,.share-client-btn{padding:10px 7px;font-size: calc((11px) * var(--font-scale, 1));}.receipt-edit-scrim{padding:10px;align-items:flex-end;}.receipt-edit-modal{max-height:94dvh;padding:17px;border-radius:22px 22px 16px 16px;}.receipt-preview-card{padding:16px;}}
+@media(max-width:520px){.client-row-actions{gap:5px;padding-right:7px;}.client-inline-copy,.client-inline-share{width:34px;height:34px;min-height:34px;border-radius:10px;}.copy-client-name-btn,.share-client-btn{padding:10px 7px;font-size: calc((11px) * var(--font-scale, 1));}.receipt-edit-scrim{padding:10px;align-items:flex-end;}.receipt-edit-modal{max-height:94dvh;padding:17px;border-radius:22px 22px 16px 16px;}.receipt-preview-card{padding:16px;}}
 @media(max-width:360px){.receipt-preview-badge{font-size: calc((7px) * var(--font-scale, 1));padding:5px 6px;}.receipt-edit-actions{grid-template-columns:1fr;}.receipt-edit-actions .save-btn{order:-1;}}
 
 /* V12.6: icono de marca Messenger en acciones de cliente */
