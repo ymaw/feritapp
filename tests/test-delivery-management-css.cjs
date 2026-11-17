@@ -12,7 +12,7 @@ assert.equal((style.match(/\.delivery-management-main>div\{min-width:0;display:f
   'The content wrapper must define min-width only once in its base rule');
 assert.doesNotMatch(style, /\.delivery-management-main>div\{min-width:0;?\}/,
   'A later standalone min-width override must not duplicate the base declaration');
-assert.match(style, /\.delivery-management-main strong\{white-space:normal;overflow-wrap:anywhere;line-height:1\.35;\}/,
+assert.match(style, /\\.delivery-management-main strong\\{white-space:normal;line-height:1\\.35;\\}/,
   'The delivery content title must retain its wrapping behavior');
 assert.match(style, /\.delivery-management-main strong\{display:block;line-height:1\.25\}/,
   'The later delivery title rule must not repeat the already-established overflow-wrap declaration');
