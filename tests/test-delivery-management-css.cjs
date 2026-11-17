@@ -20,6 +20,6 @@ assert.match(style, /\.delivery-management-main\{display:flex;align-items:flex-s
   'The base delivery content row must retain its flex layout');
 assert.match(style, /\.delivery-management-card\{grid-template-columns:minmax\(0,1fr\);gap:14px;padding:14px;\}/,
   'The mobile single-column card layout must remain present');
-assert.ok(html.includes('css/style.css?v=12.160'), 'The main stylesheet cache key must be refreshed');
+assert.ok(html.includes('css/style.css?v=12.161'), 'The main stylesheet cache key must be refreshed');
 
 console.log('OK delivery CSS regression: duplicate width override removed; base and responsive layouts preserved.');
