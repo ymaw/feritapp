@@ -12,6 +12,10 @@ assert.equal((style.match(/\.delivery-management-main>div\{min-width:0;display:f
   'The content wrapper must define min-width only once in its base rule');
 assert.doesNotMatch(style, /\.delivery-management-main>div\{min-width:0;?\}/,
   'A later standalone min-width override must not duplicate the base declaration');
+assert.match(style, /\.delivery-management-main strong\{white-space:normal;overflow-wrap:anywhere;line-height:1\.35;\}/,
+  'The delivery content title must retain its wrapping behavior');
+assert.match(style, /\.delivery-management-main strong\{display:block;line-height:1\.25\}/,
+  'The later delivery title rule must not repeat the already-established overflow-wrap declaration');
 assert.match(style, /\.delivery-management-main\{display:flex;align-items:flex-start;gap:11px;min-width:0;\}/,
   'The base delivery content row must retain its flex layout');
 assert.match(style, /\.delivery-management-card\{grid-template-columns:minmax\(0,1fr\);gap:14px;padding:14px;\}/,
