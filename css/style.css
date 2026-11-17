@@ -2056,7 +2056,7 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 .weekly-summary-card { overflow: hidden; }
 .weekly-summary-heading {
   display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 16px 18px; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer;
+  border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer;
 }
 .weekly-summary-heading-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .weekly-summary-heading .section-title { margin: 0; font-size: calc((15px) * var(--font-scale, 1)); font-weight: 850; }
@@ -2065,7 +2065,7 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 .weekly-summary-content { padding: 0 14px 14px; min-width: 0; }
 .weekly-summary-content[hidden] { display: none !important; }
 #weeklySummaryContent .weekly-summary-delivery-status { display: inline-flex !important; visibility: visible !important; opacity: 1 !important; flex: 0 0 auto; align-items: center; justify-content: center; position: relative; z-index: 1; }
-@media (max-width: 520px) { .weekly-summary-heading { padding: 14px; } .weekly-summary-content { padding: 0 8px 10px; } }
+@media (max-width: 520px) { .weekly-summary-content { padding: 0 8px 10px; } }
 
 
 /* V12.40: estados persistentes y layout legible en Inicio > Resumen Semanal. */
