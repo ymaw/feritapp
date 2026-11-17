@@ -8,9 +8,9 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 assert.match(style, /\.delivery-management-main>div\{min-width:0;display:flex;flex-direction:column;gap:5px;\}/,
   'The original delivery content wrapper must retain its width and column layout');
-assert.match(style, /\.delivery-management-main>div\{min-width:0;\}/,
+assert.match(style, /\.delivery-management-main>div\{min-width:0;?\}/,
   'The later delivery layout refinement must continue to constrain the content width');
-assert.equal((style.match(/\.delivery-management-main>div\{min-width:0;\}/g) || []).length, 1,
+assert.equal((style.match(/\.delivery-management-main>div\{min-width:0;?\}/g) || []).length, 1,
   'Only the later standalone min-width refinement should remain; the intermediate duplicate is redundant');
 assert.match(style, /\.delivery-management-main\{display:flex;align-items:flex-start;gap:11px;min-width:0;\}/,
   'The base delivery content row must retain its flex layout');
