@@ -823,7 +823,6 @@
   display: block;
   width: 100%;
   margin: 0 !important;
-  line-height: 1.4;
   text-align: left;
 }
 @media (max-width: 899px) {
