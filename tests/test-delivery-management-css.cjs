@@ -21,5 +21,6 @@ assert.match(style, /\.delivery-management-main\{display:flex;align-items:flex-s
 assert.match(style, /\.delivery-management-card\{grid-template-columns:minmax\(0,1fr\);gap:14px;padding:14px;\}/,
   'The mobile single-column card layout must remain present');
 assert.ok(html.includes('css/style.css?v=12.161'), 'The main stylesheet cache key must be refreshed');
+assert.match(html, /class="view-hero deliveries-hero"[\\s\\S]*?class="view-hero-kicker">ENTREGAS<\\/div>[\\s\\S]*?<h2>Entregas<\\/h2>/, 'The deliveries heading card must include its mini title above the main title');
 
 console.log('OK delivery CSS regression: duplicate width override removed; base and responsive layouts preserved.');
