@@ -2231,7 +2231,7 @@ header.view-dashboard .header-profile-btn { display: inline-flex !important; }
   .sheet .sheet-save-total { min-width: 70px; }
   .sheet .sheet-save-total strong { font-size: calc((16px) * var(--font-scale, 1)); }
   .sheet .sheet-save-bar .save-btn { min-height: 50px; }
-  .chart-box { border-radius: 16px; background: linear-gradient(180deg, var(--surface-2), var(--table-bg)); }
+  .chart-box { background: linear-gradient(180deg, var(--surface-2), var(--table-bg)); }
 }
 .chart-box { overflow: hidden; border-radius: 16px; box-shadow: 0 5px 18px rgba(18, 48, 92, .035); }
 .chart-box-doughnut { border-radius: 18px; }
