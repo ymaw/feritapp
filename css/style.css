@@ -1692,7 +1692,6 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 #viewSales .sales-group-statuses .delivery-status:not(:first-child){display:none!important;}
 .delivery-management-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;width:100%;box-sizing:border-box;padding:16px 18px;border-radius:18px;}
 .delivery-management-main{align-items:center;min-width:0;}
-.delivery-management-main>div{min-width:0;}
 .delivery-management-main strong{white-space:normal;overflow-wrap:anywhere;line-height:1.35;}
 .delivery-management-badges{margin-top:3px;}
 .delivery-state-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:220px;padding:4px;border:1px solid var(--border);border-radius:14px;background:var(--paper-2,var(--surface));}
