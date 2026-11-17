@@ -12,6 +12,6 @@ assert.ok(!style.includes('.chart-box { border-radius: 16px; background: linear-
   'The mobile rule must not repeat the radius already defined by the later shared chart rule');
 assert.match(style, /\.chart-box\s*\{\s*overflow:\s*hidden;\s*border-radius:\s*16px;/,
   'The shared chart rule must continue to provide the 16px radius at every breakpoint');
-assert.ok(html.includes('css/style.css?v=12.162'), 'The main stylesheet cache key must be refreshed');
+assert.ok(html.includes('css/style.css?v=12.163'), 'The main stylesheet cache key must be refreshed');
 
 console.log('OK chart CSS regression: redundant mobile radius removed; theme and shared radius preserved.');
