@@ -49,16 +49,16 @@ function findMediaBlocks(source, maxWidth) {
 }
 
 const mobileHeadingRule = findMediaBlocks(css, 899)
-  .map((block) => block.match(/#viewDashboard \\.weekly-summary-heading\\s*\\{([^}]*)\\}/))
+  .map((block) => block.match(/#viewDashboard \.weekly-summary-heading\s*\{([^}]*)\}/))
   .find(Boolean);
 assert.ok(mobileHeadingRule, 'The 899px media query must retain its weekly summary heading rule');
-assert.match(mobileHeadingRule[1], /height:\\s*64px;/, 'Mobile heading height must remain 64px');
-assert.match(mobileHeadingRule[1], /padding:\\s*14px 15px;/, 'Mobile heading padding must remain unchanged');
+assert.match(mobileHeadingRule[1], /height:\s*64px;/, 'Mobile heading height must remain 64px');
+assert.match(mobileHeadingRule[1], /padding:\s*14px 15px;/, 'Mobile heading padding must remain unchanged');
 
 const narrowHeadingRule = findMediaBlocks(css, 380)
-  .map((block) => block.match(/#viewDashboard \\.weekly-summary-heading\\s*\\{([^}]*)\\}/))
+  .map((block) => block.match(/#viewDashboard \.weekly-summary-heading\s*\{([^}]*)\}/))
   .find(Boolean);
 assert.ok(narrowHeadingRule, 'The 380px media query must retain its weekly summary heading rule');
-assert.match(narrowHeadingRule[1], /padding:\\s*12px;/, 'Narrow mobile heading padding must remain unchanged');
+assert.match(narrowHeadingRule[1], /padding:\s*12px;/, 'Narrow mobile heading padding must remain unchanged');
 
 console.log('OK dashboard CSS regression: repeated subtitle line-height removed; layout and cache key preserved.');
