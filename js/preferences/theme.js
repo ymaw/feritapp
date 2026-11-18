@@ -13,10 +13,10 @@ export function resolveThemeIsDark(choice, systemPrefersDark) {
 
 export function initThemePreferences() {
   function applyTheme(choice) {
-    const isDark = resolveThemeIsDark(
-      choice,
-      window.matchMedia('(prefers-color-scheme: dark)').matches
-    );
+    const systemPrefersDark = choice === 'dark' || choice === 'light'
+      ? false
+      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = resolveThemeIsDark(choice, systemPrefersDark);
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     document.querySelectorAll('.theme-opt').forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === choice);
