@@ -14,20 +14,20 @@ const NUM_WORDS = {
 };
 
 function stripAccents(value) {
-  return value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
 function wordsToNumber(text) {
   const clean = stripAccents(text.toLowerCase())
-    .replace(/pesos|peso|con\\s*\\d+\\s*centavos?/g, ' ')
-    .replace(/[^a-z0-9\\s]/g, ' ');
-  const words = clean.split(/\\s+/).filter(Boolean);
+    .replace(/pesos|peso|con\s*\d+\s*centavos?/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ');
+  const words = clean.split(/\s+/).filter(Boolean);
   let total = 0;
   let current = 0;
   let found = false;
 
   words.forEach(function(word) {
-    if (/^\\d+$/.test(word)) {
+    if (/^\d+$/.test(word)) {
       current += parseInt(word, 10);
       found = true;
       return;
@@ -58,7 +58,7 @@ function wordsToNumber(text) {
 }
 
 export function extractPrice(transcript) {
-  const digitMatch = transcript.replace(/[.,](?=\\d{3}\\b)/g, '').match(/\\d+/g);
+  const digitMatch = transcript.replace(/[.,](?=\d{3}\b)/g, '').match(/\d+/g);
   if (digitMatch) {
     // Preserve the original rule: use only the first digit group.
     return parseInt(digitMatch[0], 10);
