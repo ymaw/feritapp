@@ -4567,3 +4567,29 @@ textarea,
     gap: 11px !important;
   }
 }
+
+
+/* V12.139: reservar espacio para la marca cuando el zoom reduce el viewport móvil. */
+@media (max-width: 899px) {
+  header .brand-lockup {
+    position: relative;
+    left: -34px;
+    box-sizing: border-box;
+    width: fit-content;
+    max-width: calc(100% - 192px);
+    min-width: 0;
+    gap: clamp(5px, 1.8vw, 10px);
+  }
+
+  header .brand-logo {
+    flex: 0 0 clamp(28px, 9vw, 36px);
+    width: clamp(28px, 9vw, 36px);
+    height: clamp(28px, 9vw, 36px);
+  }
+
+  header .brand-word {
+    min-width: 0;
+    white-space: nowrap;
+    font-size: clamp(15px, calc(21px * var(--font-scale, 1)), 23px);
+  }
+}
