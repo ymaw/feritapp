@@ -1,3 +1,5 @@
+import { csvEscape } from './js/utils/csv.js';
+
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
 
@@ -1361,20 +1363,6 @@ document.addEventListener('DOMContentLoaded', function(){
       save.disabled = false;
     }
   });
-
-  function csvEscape(val){
-    val = String(val === null || val === undefined ? '' : val);
-    // Protección contra "inyección de fórmulas": si el valor empieza con
-    // un carácter que Excel/Sheets interpreta como inicio de fórmula,
-    // le antepongo un apóstrofe para que se trate siempre como texto.
-    if(/^[=+\-@\t\r]/.test(val)){
-      val = "'" + val;
-    }
-    if(/[",\n;]/.test(val)){
-      val = '"' + val.replace(/"/g, '""') + '"';
-    }
-    return val;
-  }
 
   function exportSalesToCSV(items, filename){
     if(!items || items.length === 0) return false;
