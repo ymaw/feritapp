@@ -502,7 +502,6 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ---------------- Configuración: menú de dos niveles ---------------- */
   const SETTINGS_PANEL_IDS = {
     personalization: 'settingsPanelPersonalization',
-    appearance: 'settingsPanelAppearance',
     profile: 'settingsPanelProfile',
     notifications: 'settingsPanelNotifications',
     week: 'settingsPanelWeek',
