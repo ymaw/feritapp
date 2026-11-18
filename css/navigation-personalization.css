@@ -7,3 +7,6 @@
 /* El logotipo del encabezado funciona como acceso global a Inicio. */
 header .header-home-link{cursor:pointer;}
 header .header-home-link:focus-visible{outline:3px solid var(--primary-soft);outline-offset:5px;border-radius:10px;}
+
+/* El violeta del tema oscuro requiere texto oscuro para conservar contraste WCAG AA. */
+[data-theme="dark"] #saveNavigationBtn{color:#14101f;}
