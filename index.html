@@ -40,8 +40,8 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="css/receipt.css?v=12.126" rel="stylesheet"/>
-<link href="css/style.css?v=12.141" rel="stylesheet"/>
-<link href="css/notes.css?v=7" rel="stylesheet"/>
+<link href="css/style.css?v=12.163" rel="stylesheet"/>
+<link href="css/notes.css?v=9" rel="stylesheet"/>
 <link href="css/navigation-personalization.css?v=1" rel="stylesheet"/>
 <link href="css/clients.css?v=12.126" rel="stylesheet"/>
 <link href="css/empty-states.css?v=12.126" rel="stylesheet"/>
@@ -55,11 +55,11 @@
 <link href="css/password-requirements.css?v=12.126" rel="stylesheet"/>
 <link href="css/auth.css?v=12.127" rel="stylesheet"/>
 <link href="css/accessibility-dashboard.css?v=12.126" rel="stylesheet"/>
-<link href="css/dashboard-modernization.css?v=3" rel="stylesheet"/>
+<link href="css/dashboard-modernization.css?v=15" rel="stylesheet"/>
 <link href="css/accessibility-sales.css?v=12.127" rel="stylesheet"/>
 <link href="css/accessibility-deliveries.css?v=12.126" rel="stylesheet"/>
 <link href="css/accessibility-settings.css?v=12.126" rel="stylesheet"/>
-<link href="css/app-layout-centering.css?v=22" rel="stylesheet"/>
+<link href="css/app-layout-centering.css?v=24" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js"></script>
 </head>
 <body>
@@ -455,11 +455,7 @@
 </div>
 
 <div class="app-view" id="viewRanking" style="display:none;">
-<div class="view-hero ranking-hero">
-<div class="view-hero-kicker">RANKING</div>
-<h2>Tus clientes destacados</h2>
-<p>Conocé quiénes compran más y usá esta información para priorizar tus entregas y ventas.</p>
-</div>
+<div class="view-hero ranking-hero sales-heading-card"><span aria-hidden="true" class="sales-heading-mark"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5v2a4 4 0 0 0 4 4M16 6h3v2a4 4 0 0 1-4 4M12 12v5M8 20h8M9 17h6"></path></svg></span><div class="sales-heading-copy"><div class="view-hero-kicker">RANKING</div><h2>Tus clientes destacados</h2><p>Conocé quiénes compran más y usá esta información para priorizar tus entregas y ventas.</p></div></div>
 <div class="section-block">
 <div class="ranking-actions"><p class="section-title">Clientes que más compraron</p><button class="ranking-share-btn" id="shareRankingBtn" type="button"><span aria-hidden="true">↗</span> Compartir ranking</button></div>
 <button class="reset-link ranking-money-toggle" id="toggleRankingMoney" type="button">💰 Mostrar montos gastados</button>
@@ -467,11 +463,7 @@
 </div>
 </div>
 <div class="app-view" id="viewClients" style="display:none;">
-<div class="view-hero clients-hero">
-<div class="view-hero-kicker">CLIENTES</div>
-<h2>Tu cartera de clientes</h2>
-<p>Buscá, consultá y administrá las personas que compran en tu tienda.</p>
-</div>
+<div class="view-hero clients-hero sales-heading-card"><span aria-hidden="true" class="sales-heading-mark"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"></path><circle cx="9.5" cy="7" r="3.5"></circle><path d="M17 11a3.5 3.5 0 0 0 0-7M17 14.5a4 4 0 0 1 4 4V20"></path></svg></span><div class="sales-heading-copy"><div class="view-hero-kicker">CLIENTES</div><h2>Tu cartera de clientes</h2><p>Buscá, consultá y administrá las personas que compran en tu tienda.</p></div></div>
 <div class="section-block">
 <p class="section-title">Clientes</p>
 <div class="input-row">
@@ -484,7 +476,7 @@
 </div>
 </div>
 <div class="app-view" id="viewSales">
-<div class="view-hero sales-hero"><div class="view-hero-kicker">VENTAS</div><h2>Tus ventas</h2><p>Organizá tus ventas, controlá los cobros y encontrá cada cliente rápidamente.</p></div>
+<div class="view-hero sales-hero"><div class="sales-heading-card"><span aria-hidden="true" class="sales-heading-mark"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"></path><path d="m7 15 4-4 3 2 5-6"></path><path d="M16 7h3v3"></path></svg></span><div class="sales-heading-copy"><div class="view-hero-kicker">VENTAS</div><h2>Tus ventas</h2><p>Organizá tus ventas, controlá los cobros y encontrá cada cliente rápidamente.</p></div></div></div>
 <div class="section-block">
 <div class="management-stat-grid">
 <article class="management-stat"><span>Total de clientes</span><strong id="managementClientCount">0</strong></article>
@@ -501,11 +493,11 @@
 </div>
 </div>
 <div class="app-view" id="viewDeliveries" style="display:none;">
-<div class="view-hero deliveries-hero"><div class="sales-heading-card deliveries-heading-card"><span aria-hidden="true" class="sales-heading-mark deliveries-heading-mark"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span><div><h2>Entregas</h2><p>Controlá qué pedidos faltan entregar y cuáles ya fueron entregados.</p></div></div></div>
+<div class="view-hero deliveries-hero"><div class="sales-heading-card deliveries-heading-card"><span aria-hidden="true" class="sales-heading-mark deliveries-heading-mark"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span><div class="sales-heading-copy"><div class="view-hero-kicker">ENTREGAS</div><h2>Entregas</h2><p>Controlá qué pedidos faltan entregar y cuáles ya fueron entregados.</p></div></div></div>
 <div class="section-block"><div id="deliveriesList"></div></div>
 </div>
 <div class="app-view" id="viewNotes" style="display:none;">
-  <div class="view-hero notes-hero"><div class="view-hero-kicker">NOTAS</div><h2>Mis notas</h2><p>Anotá algo rápido y encontralo cuando lo necesites.</p></div>
+  <div class="view-hero notes-hero sales-heading-card"><span aria-hidden="true" class="sales-heading-mark"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"></path><path d="M15 3v5h5M9 12h6M9 16h6"></path></svg></span><div class="sales-heading-copy"><div class="view-hero-kicker">NOTAS</div><h2>Mis notas</h2><p>Anotá algo rápido y encontralo cuando lo necesites.</p></div></div>
   <div class="section-block">
     <div class="notes-toolbar">
       <div class="notes-toolbar-copy"><h2>Mis notas</h2></div>
@@ -660,6 +652,6 @@
 </div>
 <!-- /appRoot -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-<script src="script.js?v=12.132"></script>
+<script src="script.js?v=12.132-delivery-icon"></script>
 </body>
 </html>

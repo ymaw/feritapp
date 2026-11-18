@@ -119,7 +119,6 @@
   box-shadow: none;
 }
 #viewDashboard .weekly-summary-heading {
-  width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
@@ -468,7 +467,6 @@
 }
 #viewDashboard .dashboard-section-toggle {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 14px;
   width: 100%;
@@ -490,12 +488,6 @@
   gap: 12px;
   min-width: 0;
   flex: 1 1 auto;
-}
-#viewDashboard .dashboard-toggle-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 3px;
 }
 #viewDashboard .dashboard-toggle-copy .section-title {
   margin: 0;
@@ -523,7 +515,6 @@
 #viewDashboard .dashboard-section-toggle.expanded .dashboard-toggle-chevron { transform: rotate(180deg); }
 #viewDashboard .dashboard-collapsible-content {
   min-width: 0;
-  padding: 14px 16px 16px;
   border-top: 1px solid var(--border);
 }
 #viewDashboard .dashboard-collapsible-content[hidden] { display: none !important; }
@@ -583,7 +574,6 @@
     flex-basis: 32px; width: 32px; height: 32px;
   }
   #viewDashboard .dashboard-collapsible-content { padding: 12px; }
-  #viewDashboard #weeksContainer.weeks { padding: 0; }
   #viewDashboard #topCategoryChart { flex-direction: column; gap: 12px; }
   #viewDashboard #topCategoryChart .chart-box-doughnut {
     flex-basis: 136px; width: 136px; height: 136px; min-height: 136px;
@@ -624,10 +614,6 @@
   #viewDashboard > .ticket-wrap {
     display: block;
     float: none;
-    width: min(1120px, calc(100% - 48px));
-    max-width: 1120px;
-    margin-left: auto;
-    margin-right: auto;
     vertical-align: initial;
   }
   #viewDashboard > .section-block {
@@ -642,17 +628,6 @@
     min-width: 0;
     width: 100%;
   }
-}
-#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
-  align-items: flex-start;
-}
-#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
-  align-self: flex-start;
-  margin-top: 0;
-}
-#viewDashboard .dashboard-toggle-copy {
-  align-self: flex-start;
-  min-width: 0;
 }
 #viewDashboard .dashboard-toggle-copy .section-title,
 #viewDashboard .dashboard-toggle-copy .dashboard-history-subtitle {
@@ -673,6 +648,8 @@
   #viewDashboard > .section-block,
   #viewDashboard > .ticket-wrap {
     display: block;
+  }
+  #viewDashboard > .ticket-wrap {
     width: calc(100% - 28px);
     max-width: none;
   }
@@ -723,18 +700,8 @@
 }
 
 /* El icono toma siempre la primera línea del bloque de título, también en mobile. */
-#viewDashboard .dashboard-section-toggle,
-#viewDashboard .dashboard-section-toggle .dashboard-toggle-main {
+#viewDashboard .dashboard-section-toggle {
   align-items: flex-start;
-}
-#viewDashboard .dashboard-section-toggle .dashboard-history-icon {
-  align-self: flex-start;
-  flex: 0 0 36px;
-  margin: 1px 0 0;
-}
-#viewDashboard .dashboard-toggle-copy {
-  align-self: flex-start;
-  min-width: 0;
 }
 #viewDashboard .dashboard-toggle-copy .section-title {
   display: block;
@@ -772,11 +739,6 @@
   }
   #viewDashboard .greeting-sub {
     font-size: calc(11px * var(--font-scale, 1));
-  }
-  #viewDashboard .dashboard-section-toggle .dashboard-history-icon {
-    flex-basis: 32px;
-    width: 32px;
-    height: 32px;
   }
 }
 @media (max-width: 380px) {
@@ -861,7 +823,6 @@
   display: block;
   width: 100%;
   margin: 0 !important;
-  line-height: 1.4;
   text-align: left;
 }
 @media (max-width: 899px) {
@@ -930,9 +891,6 @@
 }
 #viewDashboard .dashboard-collapsible-content {
   padding: 0 18px 18px;
-}
-#viewDashboard .dashboard-collapsible-content[hidden] {
-  display: none !important;
 }
 @media (max-width: 899px) {
   #viewDashboard .dashboard-section-toggle {
@@ -1023,10 +981,7 @@
 #viewDashboard .weekly-summary-heading {
   display: flex;
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
-  min-height: 68px;
-  padding: 16px 18px;
 }
 #viewDashboard .weekly-summary-main {
   display: flex;
@@ -1058,8 +1013,6 @@
   align-items: center;
   box-sizing: border-box;
   width: 100%;
-  min-height: 68px;
-  padding: 16px 18px;
   margin: 0;
 }
 #viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
@@ -1083,19 +1036,7 @@
 #viewDashboard .dashboard-section-heading-static .dashboard-toggle-copy {
   min-width: 0;
 }
-@media (min-width: 900px) {
-  #viewDashboard .greeting-badge {
-    width: min(1120px, calc(100% - 48px));
-    max-width: 1120px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
 @media (max-width: 899px) {
-  #viewDashboard .weekly-summary-heading {
-    min-height: 64px;
-    padding: 14px 15px;
-  }
   #viewDashboard .weekly-summary-main,
   #viewDashboard .dashboard-section-heading-static .dashboard-toggle-main {
     gap: 9px;
@@ -1109,10 +1050,6 @@
   #viewDashboard .weekly-summary-heading .dashboard-heading-divider,
   #viewDashboard .dashboard-section-heading-static .dashboard-heading-divider {
     min-height: 31px;
-  }
-  #viewDashboard .dashboard-tasks-section .section-heading-row.dashboard-section-heading-static {
-    min-height: 64px;
-    padding: 14px 15px;
   }
 }
 @media (max-width: 380px) {
@@ -1164,14 +1101,6 @@
   height: 68px;
   min-height: 68px;
   padding: 16px 18px;
-}
-@media (min-width: 900px) {
-  #viewDashboard .greeting-badge {
-    box-sizing: border-box;
-    width: min(1120px, calc(100% - 60px));
-    max-width: 1120px;
-    margin: 18px auto 0;
-  }
 }
 @media (max-width: 899px) {
   #viewDashboard > .section-block {

@@ -207,7 +207,7 @@ h1{
 .client-summary .owed-value.zero{ color:var(--success); }
 
 .client-list{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
-.client-row{ display:flex; align-items:stretch; gap:6px; }
+.client-row{ display:flex; }
 .client-list-item{
   flex:1; min-width:0; text-align:left; background:var(--table-bg); border:1px solid var(--table-border);
   color:var(--text); font-family:var(--body); font-size: calc((14px) * var(--font-scale, 1)); font-weight:600;
@@ -215,14 +215,6 @@ h1{
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .client-list-item:hover{ border-color:var(--primary); color:var(--primary-soft); }
-.client-edit-btn, .client-del-btn{
-  flex-shrink:0; width:42px; background:var(--table-bg); border:1px solid var(--table-border);
-  border-radius:12px; font-size: calc((15px) * var(--font-scale, 1)); cursor:pointer;
-}
-.client-edit-btn{ color:var(--text-muted); }
-.client-edit-btn:hover{ border-color:var(--primary); color:var(--primary-soft); }
-.client-del-btn{ color:var(--danger); }
-.client-del-btn:hover{ background:rgba(var(--warning-rgb),.15); border-color:var(--warning); }
 
 /* ---------- categoría más vendida del mes ---------- */
 .cat-chart{ display:flex; flex-direction:column; gap:10px; }
@@ -1090,11 +1082,9 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
   border-radius:16px;padding:16px 17px;box-shadow:0 4px 14px rgba(15,23,42,.035);
 }
 #viewClients .client-list{gap:9px;}
-#viewClients .client-row{gap:7px;}
 #viewClients .client-list-item{
   min-height:50px;padding:14px 16px;border-radius:14px;box-shadow:0 3px 10px rgba(15,23,42,.025);
 }
-#viewClients .client-edit-btn,#viewClients .client-del-btn{width:46px;border-radius:13px;}
 
 /* Ranking */
 #viewRanking .section-block{padding-top:24px;}
@@ -1343,28 +1333,28 @@ input:focus,.settings-select:focus,.settings-textarea:focus{
 
 
 /* V12.2: auth gate blocks access to the app behind it when logged out */
-#authGate{position:fixed;inset:0;z-index:10000;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);align-items:center;}
+#authGate{position:fixed;inset:0;z-index:10000;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);}
 body.auth-locked{overflow:hidden;height:100%;}
-#appRoot[style*="display: none"]{display:none!important;}
+
 
 /* V12.2: clickable client names and expanded client details */
 .client-name-link{appearance:none;background:none;border:0;padding:0;color:var(--primary-soft);font:inherit;font-weight:700;text-align:left;text-decoration:underline;text-decoration-color:rgba(var(--primary-rgb),.35);text-underline-offset:3px;cursor:pointer;}
 .rank-name.client-name-link{display:block;text-decoration:none;}
 .sale-card-client.client-name-link{display:block;font-size: calc((13px) * var(--font-scale, 1));margin-bottom:4px;}
-.client-row-actions{display:flex;align-items:center;gap:6px;padding-right:8px;}
-.client-inline-messenger,.client-inline-share{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:34px;border:1px solid var(--border);border-radius:10px;padding:6px 8px;background:var(--surface);color:var(--primary-soft);font: 600 calc((11px) * var(--font-scale, 1)) var(--body);cursor:pointer;white-space:nowrap;}
-.client-inline-share{width:34px;padding:0;font-size: calc((15px) * var(--font-scale, 1));}
-.app-modal-backdrop{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,8,24,.6);backdrop-filter:blur(5px);}
-.app-modal-backdrop[hidden]{display:none!important;}
-.app-modal-card{position:relative;width:min(100%,440px);max-height:calc(100dvh - 40px);overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:22px;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.28);}
-.app-modal-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size: calc((22px) * var(--font-scale, 1));cursor:pointer;}
-.messenger-modal-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#0866ff;color:#fff;margin-bottom:14px;font-size: calc((18px) * var(--font-scale, 1));}
-.app-modal-card h2{font: 700 calc((24px) * var(--font-scale, 1)) var(--display);margin:0 0 10px;}
-.app-modal-card label{display:block;font-size: calc((12px) * var(--font-scale, 1));font-weight:700;margin:14px 0 6px;}
-.app-modal-card input{width:100%;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);color:var(--text);padding:12px;font: calc((14px) * var(--font-scale, 1)) var(--body);}
-.messenger-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;}
-.messenger-copy-open{width:100%;margin-top:9px;padding:11px;border:0;background:transparent;color:var(--primary-soft);font: 600 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
-@media(max-width:520px){.client-row{align-items:center;}.client-row-actions{gap:4px;padding-right:5px;}.client-inline-messenger{padding:6px;}.client-inline-messenger span{display:none;}.client-detail-actions{grid-template-columns:1fr;}.app-modal-card{padding:20px;}#authGate{align-items:flex-start;padding-top:max(24px,env(safe-area-inset-top));}}
+.client-row-actions{display:flex;align-items:center;}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* V12.3: clickable customer names in dashboard attention lists */
 .dashboard-client-link{display:inline;max-width:100%;padding:0;border:0;background:transparent;color:var(--primary);font:inherit;font-weight:700;text-align:left;text-decoration:underline;text-decoration-color:rgba(var(--primary-rgb),.35);text-underline-offset:2px;cursor:pointer;overflow-wrap:anywhere;}
@@ -1390,7 +1380,7 @@ body.auth-locked{overflow:hidden;height:100%;}
 .receipt-preview-card{position:relative;overflow:hidden;padding:20px;border:1px solid rgba(var(--primary-rgb),.18);border-radius:20px;background:linear-gradient(155deg,#fff 0%,#fbfaff 70%,#f3f0ff 100%);color:#1b1b49;box-shadow:0 12px 28px rgba(55,38,130,.08);}
 .receipt-preview-card:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#6547f5,#9278ff,#43c7d9);}
 .receipt-preview-brand{display:flex;align-items:center;gap:9px;font-family:var(--display);font-size: calc((20px) * var(--font-scale, 1));color:#201d54;}
-.receipt-brand-logo{display:block;width:34px;height:34px;flex:0 0 34px;object-fit:cover;border-radius:10px;box-shadow:0 5px 12px rgba(101,71,245,.18);}
+
 .receipt-brand-name{min-width:0;overflow-wrap:anywhere;font-weight:800;letter-spacing:-.04em;color:#201d54;}
 .receipt-preview-badge{margin-left:auto;padding:6px 8px;border-radius:8px;background:#efecff;color:#6547f5;font: 800 calc((8px) * var(--font-scale, 1)) var(--body);letter-spacing:.08em;}
 .receipt-preview-title{margin-top:19px;font-size: calc((16px) * var(--font-scale, 1));letter-spacing:-.025em;color:#201d54;font-weight:800;}
@@ -1413,7 +1403,7 @@ body.auth-locked{overflow:hidden;height:100%;}
 .receipt-edit-modal>.hint{margin-top:8px;font-size: calc((10px) * var(--font-scale, 1));line-height:1.5;}
 .receipt-edit-actions{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);margin-top:16px;}
 .receipt-edit-actions .save-btn{border-radius:13px;box-shadow:0 6px 15px rgba(var(--primary-rgb),.2);}
-@media(max-width:520px){.client-row-actions{gap:5px;padding-right:7px;}.client-inline-copy,.client-inline-share{width:34px;height:34px;min-height:34px;border-radius:10px;}.client-detail-actions{grid-template-columns:1fr 1fr;}.copy-client-name-btn,.share-client-btn{padding:10px 7px;font-size: calc((11px) * var(--font-scale, 1));}.receipt-edit-scrim{padding:10px;align-items:flex-end;}.receipt-edit-modal{max-height:94dvh;padding:17px;border-radius:22px 22px 16px 16px;}.receipt-preview-card{padding:16px;}}
+@media(max-width:520px){.client-row-actions{gap:5px;padding-right:7px;}.client-inline-copy,.client-inline-share{width:34px;height:34px;min-height:34px;border-radius:10px;}.copy-client-name-btn,.share-client-btn{padding:10px 7px;font-size: calc((11px) * var(--font-scale, 1));}.receipt-edit-scrim{padding:10px;align-items:flex-end;}.receipt-edit-modal{max-height:94dvh;padding:17px;border-radius:22px 22px 16px 16px;}.receipt-preview-card{padding:16px;}}
 @media(max-width:360px){.receipt-preview-badge{font-size: calc((7px) * var(--font-scale, 1));padding:5px 6px;}.receipt-edit-actions{grid-template-columns:1fr;}.receipt-edit-actions .save-btn{order:-1;}}
 
 /* V12.6: icono de marca Messenger en acciones de cliente */
@@ -1463,7 +1453,6 @@ header{position:relative;}
 @media(max-width:420px){.menu-dropdown{width:min(280px,calc(100vw - 20px));}.menu-dropdown .menu-item{min-height:45px;}}
 
 /* V12.10 — Entregas unificadas y tarjetas expansibles */
-#viewSales .salestab-opt[data-salestab="items"]{width:100%;}
 .sales-client-groups{display:flex;flex-direction:column;gap:10px;}
 .sales-client-group{border:1px solid var(--border);background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(30,20,70,.04);}
 .sales-client-group-trigger{display:flex;align-items:center;gap:11px;width:100%;padding:13px;background:transparent;border:0;text-align:left;color:var(--text);cursor:pointer;}
@@ -1567,8 +1556,6 @@ header.has-back-button .session-email{
 /* V12.16: resumen estadístico en Inicio y hero semanal en Ventas. */
 #viewDashboard .dashboard-current-ticket{padding-top:14px;padding-bottom:10px;margin:0 auto;max-width:1180px;}
 #viewDashboard .dashboard-current-ticket .summary-heading{margin-bottom:12px;}
-#viewSales .sales-summary-hero{margin-top:8px;margin-bottom:12px;padding:16px 20px;}
-#viewSales .sales-summary-hero::after{width:90px;height:90px;right:-42px;bottom:-54px;}
 .receipt-preview-brand{position:relative;padding-right:82px;min-height:76px;flex-wrap:wrap;}
 .receipt-preview-brand .receipt-store-avatar{flex:0 0 34px;}
 .receipt-preview-ferit-logo{position:absolute;top:-3px;right:0;width:78px;height:78px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(35,45,100,.08));}
@@ -1578,7 +1565,6 @@ header.has-back-button .session-email{
 
 
 /* V12.17 — tarjetas semanales a ancho completo, ranking renovado y logo de recibo más visible */
-#viewSales .sales-summary-hero{width:100%;max-width:none;box-sizing:border-box;}
 #viewSales .weekly-summary-card{width:100%;max-width:none;box-sizing:border-box;margin:0 0 18px!important;}
 #viewSales .sales-hero{width:100%;max-width:none;}
 #viewSales .weekly-summary-content{padding:14px 16px 16px;}
@@ -1615,11 +1601,9 @@ header.has-back-button .session-email{
 /* V12.17: el contenedor de Ventas deja de comprimir las dos tarjetas semanales */
 #viewSales .view-hero.sales-hero{margin:12px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;}
 #viewSales .view-hero.sales-hero::after{display:none;}
-#viewSales .view-hero.sales-hero .sales-summary-hero{margin:0 12px 12px;padding:16px 18px;width:auto;}
 #viewSales .weekly-summary-card{width:auto;margin:0 12px 18px!important;}
 #viewSales .weekly-summary-content .sales-client-groups{gap:10px;}
 #viewSales .weekly-summary-content .sales-client-group-trigger{flex-wrap:wrap;}
-@media(min-width:900px){#viewSales .view-hero.sales-hero .sales-summary-hero{margin-left:24px;margin-right:24px;}#viewSales .weekly-summary-card{margin-left:24px!important;margin-right:24px!important;}}
 
 /* V12.18: alineación centrada del ranking */
 #viewRanking .rank-item{align-items:center!important;}
@@ -1648,9 +1632,6 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .management-filter{flex:0 0 auto;padding:9px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text-muted);font: 700 calc((12px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
 .management-filter.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(var(--primary-rgb),.22);}
 .sales-group-statuses{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
-.management-client-actions{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--border);}
-.management-client-actions button{border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);padding:8px 10px;font: 700 calc((11px) * var(--font-scale, 1)) var(--body);cursor:pointer;}
-.management-client-actions button:hover{border-color:var(--primary);color:var(--primary-soft);}
 .delivery-management-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:0 5px 16px rgba(20,20,50,.04);}
 .delivery-management-main{display:flex;align-items:flex-start;gap:11px;min-width:0;}
 .delivery-management-main>div{min-width:0;display:flex;flex-direction:column;gap:5px;}
@@ -1711,8 +1692,7 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 #viewSales .sales-group-statuses .delivery-status:not(:first-child){display:none!important;}
 .delivery-management-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;width:100%;box-sizing:border-box;padding:16px 18px;border-radius:18px;}
 .delivery-management-main{align-items:center;min-width:0;}
-.delivery-management-main>div{min-width:0;}
-.delivery-management-main strong{white-space:normal;overflow-wrap:anywhere;line-height:1.35;}
+.delivery-management-main strong{white-space:normal;line-height:1.35;}
 .delivery-management-badges{margin-top:3px;}
 .delivery-state-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;min-width:220px;padding:4px;border:1px solid var(--border);border-radius:14px;background:var(--paper-2,var(--surface));}
 .delivery-state-option{min-height:40px;padding:8px 11px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--text-muted);font: 750 calc((12px) * var(--font-scale, 1)) var(--body);white-space:nowrap;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease;}
@@ -1754,7 +1734,7 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .sales-client-group-copy{display:flex;flex-direction:column;gap:4px;min-width:0}.sales-client-group-copy strong,.sales-client-group-copy small{min-width:0;overflow-wrap:anywhere}.sales-client-group-copy strong{font-size: calc((15px) * var(--font-scale, 1));line-height:1.25}.sales-client-group-copy small{font-size: calc((12px) * var(--font-scale, 1));line-height:1.35;color:var(--text-muted)}
 .sales-group-statuses{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px}.sales-group-statuses .delivery-status{white-space:nowrap;font-size: calc((11px) * var(--font-scale, 1));padding:5px 9px;border-radius:999px}
 .delivery-state-switch{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap}.delivery-state-option{min-height:32px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);font-size: calc((11px) * var(--font-scale, 1));line-height:1.1;white-space:nowrap}.delivery-state-option.is-active{font-weight:700}.delivery-state-option.is-pending{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.45);color:#b77908}.delivery-state-option.is-delivered{background:rgba(16,185,129,.13);border-color:rgba(16,185,129,.42);color:#059669}
-.delivery-management-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 14px;margin-bottom:8px;border-radius:16px}.delivery-management-main{display:flex;align-items:center;gap:10px;min-width:0}.delivery-management-main>div{min-width:0}.delivery-management-main strong{display:block;line-height:1.25;overflow-wrap:anywhere}.delivery-management-main small{display:block;margin-top:3px;line-height:1.25}.delivery-state-switch{align-self:center}
+.delivery-management-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 14px;margin-bottom:8px;border-radius:16px}.delivery-management-main{display:flex;align-items:center;gap:10px;min-width:0}.delivery-management-main strong{display:block;line-height:1.25}.delivery-management-main small{display:block;margin-top:3px;line-height:1.25}.delivery-state-switch{align-self:center}
 #weeksContainer{width:100%;box-sizing:border-box;padding:0;margin:0}.week-toggle,.week-items{width:100%;box-sizing:border-box}.week-toggle{border-radius:16px}.week-items{overflow:hidden}.week-items.open{padding:10px 0 2px}.dashboard-history-section{min-width:0}
 header .brand-lockup{display:flex;align-items:center;justify-content:center;gap:9px}header .brand-logo{width:38px;height:38px;object-fit:contain;vertical-align:middle}header .brand-word{display:flex;align-items:center;line-height:1}header .header-profile-btn{top:50%;transform:translateY(-50%);width:46px;height:46px}header.has-back-button .header-profile-btn{right:68px}header .header-back-btn{left:auto!important;right:16px!important;top:50%;transform:translateY(-50%)}
 @media(max-width:520px){.sales-client-group-trigger{grid-template-columns:36px minmax(0,1fr) auto 14px;gap:8px;padding:12px 10px}.sales-group-statuses .delivery-status{font-size: calc((10px) * var(--font-scale, 1));padding:4px 7px}.delivery-management-card{grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:9px}.delivery-state-option{padding:6px 8px;font-size: calc((10px) * var(--font-scale, 1))}.delivery-management-main .client-avatar{width:34px;height:34px;flex:0 0 34px}header .brand-logo{width:32px;height:32px}header .header-profile-btn{width:38px;height:38px;right:58px}header.has-back-button .header-profile-btn{right:58px}header .header-back-btn{right:10px!important}}
@@ -1885,9 +1865,6 @@ header.has-back-button .brand-lockup,header.has-back-button .eyebrow,header.has-
 .weekly-summary-client-group [data-edit],
 .weekly-summary-client-group [data-del],
 .weekly-summary-client-group [data-toggle-pay] { display: none !important; }
-/* El estado de entrega debe ser visible exclusivamente en Inicio > Resumen Semanal. */
-#weeklySummaryContent .weekly-summary-delivery-status {
-}
 
 /* Encabezado de la app: marca centrada y controles laterales alineados */
 header {
@@ -2079,7 +2056,7 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 .weekly-summary-card { overflow: hidden; }
 .weekly-summary-heading {
   display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 16px 18px; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer;
+  border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer;
 }
 .weekly-summary-heading-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .weekly-summary-heading .section-title { margin: 0; font-size: calc((15px) * var(--font-scale, 1)); font-weight: 850; }
@@ -2088,7 +2065,7 @@ header.has-back-button .session-email { margin-left: 0 !important; margin-right:
 .weekly-summary-content { padding: 0 14px 14px; min-width: 0; }
 .weekly-summary-content[hidden] { display: none !important; }
 #weeklySummaryContent .weekly-summary-delivery-status { display: inline-flex !important; visibility: visible !important; opacity: 1 !important; flex: 0 0 auto; align-items: center; justify-content: center; position: relative; z-index: 1; }
-@media (max-width: 520px) { .weekly-summary-heading { padding: 14px; } .weekly-summary-content { padding: 0 8px 10px; } }
+@media (max-width: 520px) { .weekly-summary-content { padding: 0 8px 10px; } }
 
 
 /* V12.40: estados persistentes y layout legible en Inicio > Resumen Semanal. */
@@ -2254,7 +2231,7 @@ header.view-dashboard .header-profile-btn { display: inline-flex !important; }
   .sheet .sheet-save-total { min-width: 70px; }
   .sheet .sheet-save-total strong { font-size: calc((16px) * var(--font-scale, 1)); }
   .sheet .sheet-save-bar .save-btn { min-height: 50px; }
-  .chart-box { border-radius: 16px; background: linear-gradient(180deg, var(--surface-2), var(--table-bg)); }
+  .chart-box { background: linear-gradient(180deg, var(--surface-2), var(--table-bg)); }
 }
 .chart-box { overflow: hidden; border-radius: 16px; box-shadow: 0 5px 18px rgba(18, 48, 92, .035); }
 .chart-box-doughnut { border-radius: 18px; }
@@ -2287,8 +2264,6 @@ header.view-dashboard .header-profile-btn { display: inline-flex !important; }
   padding-left: 0 !important;
   padding-top: 40px;
   gap: 6px !important;
-}
-#weeklySummaryContent .sales-group-statuses .delivery-status {
 }
 #weeklySummaryContent .sales-group-chevron { grid-column: 2; grid-row: 1; justify-self: end; align-self: start; }
 @media (max-width: 640px) {
@@ -3363,16 +3338,6 @@ textarea,
 #sheet.edit-sale-mode .item-field .input-row {
   min-width: 0;
 }
-#sheet.new-sale-mode .item-field .input-row,
-#sheet.edit-sale-mode .item-field .input-row {
-}
-#sheet.new-sale-mode .item-field .row-articulo,
-#sheet.new-sale-mode .item-field .row-precio,
-#sheet.new-sale-mode .item-field .row-categoria,
-#sheet.edit-sale-mode .item-field .row-articulo,
-#sheet.edit-sale-mode .item-field .row-precio,
-#sheet.edit-sale-mode .item-field .row-categoria {
-}
 #sheet.new-sale-mode .item-field .row-categoria,
 #sheet.edit-sale-mode .item-field .row-categoria {
   padding-right: 40px;
@@ -4243,35 +4208,6 @@ textarea,
 }
 
 
-/* V12.135: #sidebar es hermano de #appRoot, no un hijo suyo. Forzar su layout desde body. */
-@media (min-width: 900px) {
-  body > nav#sidebar.sidebar {
-    display: flex !important;
-    flex-direction: column !important;
-    position: fixed !important;
-    inset: 0 auto 0 0 !important;
-    box-sizing: border-box !important;
-    width: 248px !important;
-    min-width: 248px !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    padding: 24px 16px !important;
-    overflow-y: auto !important;
-    background: var(--surface-2) !important;
-    border-right: 1px solid var(--border) !important;
-    z-index: 10000 !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    transform: none !important;
-  }
-  body > nav#bottomNav.bottom-nav { display: none !important; }
-}
-@media (max-width: 899px) {
-  body > nav#sidebar.sidebar { display: none !important; }
-}
-
-
 /* V12.137: la navegación es hermana de las vistas dentro de #appRoot,
    no debe quedar anidada en #viewNotes ni depender de body como padre. */
 @media (min-width: 900px) {
@@ -4360,4 +4296,274 @@ textarea,
   }
   #appRoot > header > #globalBackBtn { left: 16px !important; right: auto !important; }
   #appRoot > header > #headerMoreBtn { left: auto !important; right: 16px !important; }
+}
+
+
+/* V12.151 — encabezados de vistas con iconografía consistente.
+   Ventas conserva una sola card interior; el resto integra el icono en su hero. */
+#viewRanking .sales-heading-card,
+#viewNotes .sales-heading-card,
+#viewClients .sales-heading-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--primary-rgb), .22);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .13), var(--surface) 72%);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+}
+#viewRanking .sales-heading-mark,
+#viewNotes .sales-heading-mark,
+#viewClients .sales-heading-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: rgba(var(--primary-rgb), .13);
+  color: var(--primary-soft);
+}
+#viewRanking .sales-heading-mark svg,
+#viewNotes .sales-heading-mark svg,
+#viewClients .sales-heading-mark svg,
+#viewSales .sales-heading-mark svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#viewRanking .sales-heading-copy,
+#viewNotes .sales-heading-copy,
+#viewClients .sales-heading-copy,
+#viewSales .sales-heading-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#viewRanking .sales-heading-card h2,
+#viewNotes .sales-heading-card h2,
+#viewClients .sales-heading-card h2 {
+  margin: 0 0 3px !important;
+  color: var(--text) !important;
+  font-size: calc((clamp(18px, 2vw, 22px)) * var(--font-scale, 1)) !important;
+  line-height: 1.2 !important;
+}
+#viewRanking .sales-heading-card p,
+#viewNotes .sales-heading-card p,
+#viewClients .sales-heading-card p {
+  margin: 0 !important;
+  color: var(--text-muted) !important;
+  font-size: calc((13px) * var(--font-scale, 1)) !important;
+  line-height: 1.45 !important;
+}
+#viewSales > .view-hero.sales-hero {
+  box-sizing: border-box;
+  display: block;
+  width: min(1120px, calc(100% - 48px));
+  max-width: 1120px;
+  margin: 18px auto 14px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+#viewSales > .view-hero.sales-hero::after { display: none !important; }
+#viewSales .sales-heading-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 18px 20px !important;
+  border: 1px solid rgba(var(--primary-rgb), .22) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .13), var(--surface) 72%) !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .055) !important;
+}
+#viewSales .sales-heading-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: rgba(var(--primary-rgb), .13);
+  color: var(--primary-soft);
+}
+#viewSales .sales-heading-card h2 {
+  margin: 0 0 3px !important;
+  color: var(--text) !important;
+  font-size: calc((clamp(18px, 2vw, 22px)) * var(--font-scale, 1)) !important;
+  line-height: 1.2 !important;
+}
+#viewSales .sales-heading-card p {
+  margin: 0 !important;
+  color: var(--text-muted) !important;
+  font-size: calc((13px) * var(--font-scale, 1)) !important;
+  line-height: 1.45 !important;
+}
+@media (max-width: 640px) {
+  #viewSales .sales-heading-card,
+  #viewRanking .sales-heading-card,
+  #viewNotes .sales-heading-card,
+  #viewClients .sales-heading-card {
+    align-items: flex-start;
+    gap: 11px;
+    padding: 15px;
+  }
+  #viewSales .sales-heading-mark,
+  #viewRanking .sales-heading-mark,
+  #viewNotes .sales-heading-mark,
+  #viewClients .sales-heading-mark {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+  #viewSales .sales-heading-mark svg,
+  #viewRanking .sales-heading-mark svg,
+  #viewNotes .sales-heading-mark svg,
+  #viewClients .sales-heading-mark svg {
+    width: 21px;
+    height: 21px;
+  }
+  #viewSales .sales-heading-card p,
+  #viewRanking .sales-heading-card p,
+  #viewNotes .sales-heading-card p,
+  #viewClients .sales-heading-card p {
+    font-size: calc((12px) * var(--font-scale, 1)) !important;
+  }
+  #viewSales > .view-hero.sales-hero {
+    width: calc(100% - 32px);
+    max-width: 720px;
+    margin: 18px auto 14px !important;
+  }
+}
+
+
+/* V12.151 — Ventas: card de título unificada con el patrón de las demás vistas. */
+#viewSales > .view-hero.sales-hero.sales-heading-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  box-sizing: border-box !important;
+  width: min(1120px, calc(100% - 60px)) !important;
+  max-width: 1120px !important;
+  margin: 18px auto 14px !important;
+  padding: 18px 20px !important;
+  border: 1px solid rgba(var(--primary-rgb), .22) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .13), var(--surface) 72%) !important;
+  box-shadow: 0 8px 24px rgba(20, 16, 40, .06) !important;
+  text-align: left !important;
+}
+#viewSales > .view-hero.sales-hero.sales-heading-card .sales-heading-mark {
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 46px !important;
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 15px !important;
+  background: rgba(var(--primary-rgb), .13) !important;
+  color: var(--primary-soft) !important;
+}
+#viewSales > .view-hero.sales-hero.sales-heading-card .sales-heading-mark svg {
+  display: block !important;
+  width: 24px !important;
+  height: 24px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+#viewSales > .view-hero.sales-hero.sales-heading-card h2 {
+  margin: 0 0 3px !important;
+  color: var(--text) !important;
+  font-size: calc((clamp(18px, 2vw, 22px)) * var(--font-scale, 1)) !important;
+  line-height: 1.2 !important;
+}
+#viewSales > .view-hero.sales-hero.sales-heading-card p {
+  margin: 0 !important;
+  color: var(--text-muted) !important;
+  font-size: calc((13px) * var(--font-scale, 1)) !important;
+  line-height: 1.45 !important;
+}
+@media (max-width: 640px) {
+  #viewSales > .view-hero.sales-hero.sales-heading-card {
+    align-items: flex-start !important;
+    gap: 11px !important;
+    width: calc(100% - 32px) !important;
+    max-width: 720px !important;
+    margin: 18px auto 14px !important;
+    padding: 15px !important;
+  }
+  #viewSales > .view-hero.sales-hero.sales-heading-card .sales-heading-mark {
+    flex-basis: 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+  }
+  #viewSales > .view-hero.sales-hero.sales-heading-card .sales-heading-mark svg {
+    width: 21px !important;
+    height: 21px !important;
+  }
+  #viewSales > .view-hero.sales-hero.sales-heading-card p {
+    font-size: calc((12px) * var(--font-scale, 1)) !important;
+  }
+}
+
+/* V12.156 — Ventas replica la estructura exterior de la cabecera de Entregas.
+   La decoración pertenece al .view-hero; el contenido interior solo organiza icono y texto. */
+#viewSales > .view-hero.sales-hero {
+  box-sizing: border-box !important;
+  width: min(1120px, calc(100% - 60px)) !important;
+  max-width: 1120px !important;
+  margin: 18px auto 14px !important;
+  padding: 18px 20px !important;
+  border: 1px solid rgba(var(--primary-rgb), .22) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .13), var(--surface) 72%) !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .055) !important;
+  overflow: hidden !important;
+}
+#viewSales > .view-hero.sales-hero::after {
+  display: block !important;
+}
+#viewSales > .view-hero.sales-hero > .sales-heading-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+@media (max-width: 640px) {
+  #viewSales > .view-hero.sales-hero {
+    width: calc(100% - 32px) !important;
+    max-width: 720px !important;
+    margin: 18px auto 14px !important;
+    padding: 15px !important;
+    border-radius: 18px !important;
+  }
+  #viewSales > .view-hero.sales-hero > .sales-heading-card {
+    align-items: flex-start !important;
+    gap: 11px !important;
+  }
 }
