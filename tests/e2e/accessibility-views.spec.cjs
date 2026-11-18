@@ -111,10 +111,10 @@ test('main authenticated views have no serious or critical WCAG 2.1 A/AA violati
 
   await navigateToView(page, 'settings', 1280);
   await auditView(page, '#viewSettings', 'settings');
-  await page.locator('#viewSettings [data-settings="appearance"]').click();
-  await expect(page.locator('#settingsPanelAppearance')).toBeVisible();
+  await page.locator('#viewSettings [data-settings="personalization"]').click();
+  await expect(page.locator('#settingsPanelPersonalization')).toBeVisible();
   const appearanceResults = await new AxeBuilder({ page })
-    .include('#settingsPanelAppearance')
+    .include('#settingsPanelPersonalization')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();
   const severeAppearance = appearanceResults.violations.filter(v =>
@@ -127,7 +127,7 @@ test('main authenticated views have no serious or critical WCAG 2.1 A/AA violati
       }))
     }))
   ));
-  expect(severeAppearance, 'appearance settings must not contain serious or critical WCAG violations').toEqual([]);
+  expect(severeAppearance, 'personalization settings must not contain serious or critical WCAG violations').toEqual([]);
 });
 
 test('primary view navigation completes without layout overflow on desktop and mobile widths', async ({ page }) => {
@@ -171,9 +171,9 @@ test('authenticated views and new-sale form have no serious or critical WCAG 2.1
 
   await navigateToView(page, 'settings', 1280);
   await auditView(page, '#viewSettings', 'dark_settings');
-  await page.locator('#viewSettings [data-settings="appearance"]').click();
-  await expect(page.locator('#settingsPanelAppearance')).toBeVisible();
-  await auditView(page, '#settingsPanelAppearance', 'dark_appearance');
+  await page.locator('#viewSettings [data-settings="personalization"]').click();
+  await expect(page.locator('#settingsPanelPersonalization')).toBeVisible();
+  await auditView(page, '#settingsPanelPersonalization', 'dark_personalization');
 });
 
 test('new-sale form exposes labeled controls and supports keyboard traversal', async ({ page }) => {
@@ -310,8 +310,8 @@ test('desktop views share the same centered content axis as the header brand', a
 
     await navigateToView(page, 'settings', width);
     await expectCenteredOnBrand(['#viewSettings > #settingsMenu > .section-block'], 'Configuración');
-    await page.locator('#viewSettings [data-settings="appearance"]').click();
-    await expect(page.locator('#settingsPanelAppearance')).toBeVisible();
-    await expectCenteredOnBrand(['#settingsPanelAppearance > .section-block'], 'Configuración / Apariencia');
+    await page.locator('#viewSettings [data-settings="personalization"]').click();
+    await expect(page.locator('#settingsPanelPersonalization')).toBeVisible();
+    await expectCenteredOnBrand(['#settingsPanelPersonalization > .section-block'], 'Configuración / Personalización');
   }
 });
