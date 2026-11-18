@@ -1,4 +1,5 @@
 import { csvEscape } from './js/utils/csv.js';
+import { extractPrice } from './js/utils/number-parser.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -4089,46 +4090,6 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('voiceWarning').innerHTML =
       '<div class="voice-warning">El dictado por voz no está disponible en este navegador. Probá abrir la app con Chrome en Android para usar el micrófono, o cargá los datos escribiendo directamente.</div>';
     document.querySelectorAll('.mic-btn').forEach(function(b){ b.style.display = 'none'; });
-  }
-
-  const NUM_WORDS = {
-    'cero':0,'un':1,'uno':1,'una':1,'dos':2,'tres':3,'cuatro':4,'cinco':5,'seis':6,'siete':7,'ocho':8,'nueve':9,
-    'diez':10,'once':11,'doce':12,'trece':13,'catorce':14,'quince':15,'dieciseis':16,'diecisiete':17,'dieciocho':18,'diecinueve':19,
-    'veinte':20,'veintiun':21,'veintiuno':21,'veintidos':22,'veintitres':23,'veinticuatro':24,'veinticinco':25,'veintiseis':26,'veintisiete':27,'veintiocho':28,'veintinueve':29,
-    'treinta':30,'cuarenta':40,'cincuenta':50,'sesenta':60,'setenta':70,'ochenta':80,'noventa':90,
-    'cien':100,'ciento':100,'doscientos':200,'doscientas':200,'trescientos':300,'trescientas':300,
-    'cuatrocientos':400,'cuatrocientas':400,'quinientos':500,'quinientas':500,'seiscientos':600,'seiscientas':600,
-    'setecientos':700,'setecientas':700,'ochocientos':800,'ochocientas':800,'novecientos':900,'novecientas':900
-  };
-  function stripAccents(s){
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  }
-  function wordsToNumber(text){
-    let clean = stripAccents(text.toLowerCase())
-      .replace(/pesos|peso|con\s*\d+\s*centavos?/g, ' ')
-      .replace(/[^a-z0-9\s]/g,' ');
-    let words = clean.split(/\s+/).filter(Boolean);
-    let total = 0, current = 0, found = false;
-    words.forEach(function(w){
-      if(/^\d+$/.test(w)){ current += parseInt(w,10); found = true; return; }
-      if(w in NUM_WORDS){ current += NUM_WORDS[w]; found = true; return; }
-      if(w === 'mil'){ current = (current === 0 ? 1 : current) * 1000; total += current; current = 0; found = true; return; }
-      if(w === 'millon' || w === 'millones'){ current = (current === 0 ? 1 : current) * 1000000; total += current; current = 0; found = true; return; }
-      // ignore filler words like "y", "de"
-    });
-    total += current;
-    return found ? total : null;
-  }
-  function extractPrice(transcript){
-    let digitMatch = transcript.replace(/[.,](?=\d{3}\b)/g,'').match(/\d+/g);
-    if(digitMatch){
-      // Tomamos solo el primer grupo de dígitos (no los concatenamos todos).
-      // Si se concatenaran, un decimal accidental (ej: "1500.50" -> ["1500","50"])
-      // o un doble dictado por ruido terminarían formando un precio absurdo
-      // como 150050 en vez de 1500.
-      return parseInt(digitMatch[0], 10);
-    }
-    return wordsToNumber(transcript);
   }
 
   function resolveDictationInput(btn){
