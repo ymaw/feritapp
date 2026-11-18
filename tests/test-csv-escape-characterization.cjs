@@ -8,7 +8,7 @@ const match = script.match(/function csvEscape\(val\)\s*\{[\s\S]*?\n  \}/);
 
 assert.ok(match, 'The current script must expose the csvEscape function declaration for characterization');
 
-const csvEscape = vm.runInNewContext(`(${match[0]}; csvEscape)`);
+const csvEscape = vm.runInNewContext(`${match[0]}; csvEscape`);
 
 assert.equal(csvEscape(null), '', 'null values must become empty CSV fields');
 assert.equal(csvEscape(undefined), '', 'undefined values must become empty CSV fields');
