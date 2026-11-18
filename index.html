@@ -277,6 +277,37 @@
 <p class="hint">No se muestran en «Más» los accesos que ya estén fijados en la barra. Las acciones críticas no se pueden fijar.</p>
 <div class="notes-editor-actions"><button id="resetNavigationBtn" type="button">Restablecer</button><button class="notes-save" id="saveNavigationBtn" type="button">Guardar cambios</button></div>
 </div>
+<div class="settings-panel-heading settings-subsection-heading">
+<div class="settings-panel-kicker">APARIENCIA</div>
+<p class="section-title">Aspecto de la aplicación</p>
+<p class="settings-panel-description">Elegí el tema y el tamaño de letra para adaptar FeritApp a tu preferencia.</p>
+</div>
+<div class="settings-card settings-card-featured"><div class="settings-card-head"><span class="settings-card-icon">🎨</span><div><strong>Estilo de la aplicación</strong><small>Elegí cómo querés ver FeritApp</small></div></div><div class="field">
+<label>Elegí el tema que más te guste</label>
+<div class="theme-options">
+<button class="theme-opt" data-theme-choice="light" type="button">☀️<span>Claro</span></button>
+<button class="theme-opt" data-theme-choice="dark" type="button">🌙<span>Oscuro</span></button>
+<button class="theme-opt" data-theme-choice="system" type="button">💻<span>Sistema</span></button>
+</div>
+<p class="hint">"Sistema" usa el mismo modo claro/oscuro configurado en tu celular o compu.</p>
+</div></div>
+<div class="settings-card settings-card-featured font-size-settings-card">
+  <div class="settings-card-head"><span class="settings-card-icon" aria-hidden="true">🔎</span><div><strong>Tamaño de letra</strong><small>Elegí el tamaño más cómodo para leer</small></div></div>
+  <div class="field">
+    <span class="font-scale-label" id="fontScaleLabel">Tamaño actual: 100%</span>
+    <div class="font-scale-options" role="group" aria-labelledby="fontScaleLabel" aria-label="Tamaño de letra">
+      <button class="font-scale-option" data-font-scale="0.9" type="button" aria-pressed="false">90%<small>Más chico</small></button>
+      <button class="font-scale-option" data-font-scale="1" type="button" aria-pressed="true">100%<small>Normal</small></button>
+      <button class="font-scale-option" data-font-scale="1.15" type="button" aria-pressed="false">115%<small>Mediano</small></button>
+      <button class="font-scale-option" data-font-scale="1.3" type="button" aria-pressed="false">130%<small>Grande</small></button>
+      <button class="font-scale-option" data-font-scale="1.5" type="button" aria-pressed="false">150%<small>Muy grande</small></button>
+    </div>
+    <p class="hint">El cambio se aplica a los textos de la aplicación y se guarda en este dispositivo. También podés usar el zoom del navegador.</p>
+    <button class="reset-link font-scale-reset" id="resetFontScale" type="button">Restablecer tamaño de letra</button>
+  </div>
+</div>
+
+
 </div>
 </div>
 <div class="settings-panel app-view" id="settingsPanelProfile" style="display:none;">
