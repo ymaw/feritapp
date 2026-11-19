@@ -8,6 +8,7 @@ import { showToast } from './js/ui/toast.js';
 import { categoryColor } from './js/utils/category-color.js';
 import { parseDeliveryDate } from './js/utils/delivery-date.js';
 import { isValidEmail, isValidPassword } from './js/utils/validation.js';
+import { mapRowToSale } from './js/utils/sale-mapper.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -933,22 +934,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const sheet = document.getElementById('sheet');
   const scrim = document.getElementById('scrim');
 
-  function mapRowToSale(row){
-    return {
-      id: row.id,
-      fecha: row.fecha,
-      semana_asignada: row.semana_asignada || null,
-      cliente: row.cliente,
-      articulo: row.articulo,
-      precio: Number(row.precio),
-      pagado: row.pagado,
-      retira: row.retira,
-      tercero: row.tercero || '',
-      categoria: row.categoria || 'Sin categoría',
-      entregado: !!row.entregado,
-      entregado_en: row.entregado_en || null
-    };
-  }
+
 
   function refreshClientsDatalist(){
     let dl = document.getElementById('clientsDatalist');
