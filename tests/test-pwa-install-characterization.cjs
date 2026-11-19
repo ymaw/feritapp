@@ -34,6 +34,8 @@ const assert = require('node:assert/strict');
       installBannerBtn: makeElement(),
       installBannerClose: makeElement()
     };
+    // Mirrors index.html: the banner starts hidden before any install event.
+    elements.installBanner.style.display = 'none';
     const windowListeners = {};
     const storage = new Map();
     if (dismissed) storage.set('installBannerDismissed', '1');
