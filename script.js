@@ -2,6 +2,8 @@ import { csvEscape } from './js/utils/csv.js';
 import { extractPrice } from './js/utils/number-parser.js';
 import { initThemePreferences } from './js/preferences/theme.js';
 import { initFontScalePreferences } from './js/preferences/font-scale.js';
+import { initPwaInstall } from './js/pwa/install.js';
+import { registerServiceWorker } from './js/pwa/service-worker.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -4171,104 +4173,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   initGate();
 
-  /* ---------------- PWA: registrar service worker ---------------- */
-  if('serviceWorker' in navigator){
-    window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js').catch(function(){ /* si falla, la app sigue funcionando igual */ });
-    });
-  }
-
-  /* ---------------- PWA: banner propio de instalación ---------------- */
-  const installBanner = document.getElementById('installBanner');
-  const menuInstallBtn = document.getElementById('menuInstallBtn');
-  let deferredInstallPrompt = null;
-
-  function showInstallBanner(){
-    if(localStorage.getItem('installBannerDismissed') === '1') return;
-    installBanner.style.display = 'flex';
-    document.body.style.paddingTop = installBanner.offsetHeight + 'px';
-  }
-  // A diferencia de showInstallBanner(), esta versión ignora el "no
-  // volver a mostrar": se usa cuando el usuario pide instalar a
-  // propósito desde el menú, así que sí o sí hay que mostrárselo.
-  function forceShowInstallBanner(){
-    installBanner.style.display = 'flex';
-    document.body.style.paddingTop = installBanner.offsetHeight + 'px';
-  }
-  function hideInstallBanner(){
-    installBanner.style.display = 'none';
-    document.body.style.paddingTop = '';
-  }
-
-  function isIos(){
-    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-  }
-  function isStandalone(){
-    return (window.navigator.standalone === true) ||
-           (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  }
-
-  // Android/Chrome/Edge: Chrome nos avisa cuando la app cumple los
-  // requisitos de instalación disparando este evento. Lo interceptamos
-  // para mostrar NUESTRO banner en vez de esperar a que el usuario
-  // busque la opción en el menú de 3 puntitos.
-  window.addEventListener('beforeinstallprompt', function(e){
-    e.preventDefault();
-    deferredInstallPrompt = e;
-    document.getElementById('installBannerText').textContent = '📲 Instalá la app para acceso rápido';
-    document.getElementById('installBannerBtn').style.display = 'inline-block';
-    showInstallBanner();
-    menuInstallBtn.style.display = 'block';
-  });
-
-  document.getElementById('installBannerBtn').addEventListener('click', async function(){
-    if(!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    hideInstallBanner();
-    menuInstallBtn.style.display = 'none';
-  });
-
-  document.getElementById('installBannerClose').addEventListener('click', function(){
-    hideInstallBanner();
-    localStorage.setItem('installBannerDismissed', '1');
-    // Ojo: NO ocultamos menuInstallBtn acá — cerrar el banner no debe
-    // dejarte sin ninguna forma de instalar salvo por los 3 puntitos.
-  });
-
-  window.addEventListener('appinstalled', function(){
-    hideInstallBanner();
-    localStorage.setItem('installBannerDismissed', '1');
-    menuInstallBtn.style.display = 'none';
-    deferredInstallPrompt = null;
-  });
-
-  // Ítem del menú: siempre disponible una vez que Chrome ofreció instalar
-  // (Android) o directamente en iPhone (donde no hay evento programático).
-  menuInstallBtn.addEventListener('click', function(){
-    menuDropdown.style.display = 'none';
-    if(deferredInstallPrompt){
-      deferredInstallPrompt.prompt();
-      deferredInstallPrompt.userChoice.then(function(){
-        deferredInstallPrompt = null;
-        menuInstallBtn.style.display = 'none';
-      });
-    }else if(isIos() && !isStandalone()){
-      document.getElementById('installBannerText').textContent = '📲 Instalá FeritApp: tocá Compartir → Agregar a inicio';
-      document.getElementById('installBannerBtn').style.display = 'none';
-      forceShowInstallBanner();
-    }
-  });
-
-  // iOS/Safari: no existe beforeinstallprompt, así que mostramos
-  // instrucciones manuales. El ítem del menú queda siempre visible acá
-  // (no depende de si el banner se cerró antes), porque es la única
-  // forma de volver a ver el instructivo sin depender del banner.
-  if(isIos() && !isStandalone()){
-    menuInstallBtn.style.display = 'block';
-    document.getElementById('installBannerText').textContent = '📲 Instalá FeritApp: tocá Compartir → Agregar a inicio';
-    document.getElementById('installBannerBtn').style.display = 'none';
-    showInstallBanner();
-  }
+  /* ---------------- PWA: instalación y registro ---------------- */
+  registerServiceWorker();
+  initPwaInstall({ menuDropdown });
 });
