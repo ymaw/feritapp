@@ -6,11 +6,7 @@ self.addEventListener('install', function(event){
 });
 
 self.addEventListener('activate', function(event){
-  event.waitUntil(
-    caches.keys().then(function(keys){
-      return Promise.all(keys.map(function(k){ return caches.delete(k); }));
-    }).then(function(){
-      return self.clients.claim();
-    })
-  );
+  // No borrar caches del origen: pueden pertenecer a otras partes de la aplicación
+  // o a recursos compartidos. Este worker no crea ni administra caches propias.
+  event.waitUntil(self.clients.claim());
 });
