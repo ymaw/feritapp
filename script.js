@@ -4,6 +4,7 @@ import { initThemePreferences } from './js/preferences/theme.js';
 import { initFontScalePreferences } from './js/preferences/font-scale.js';
 import { initPwaInstall } from './js/pwa/install.js';
 import { registerServiceWorker } from './js/pwa/service-worker.js';
+import { showToast } from './js/ui/toast.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -3530,14 +3531,6 @@ document.addEventListener('DOMContentLoaded', function(){
     let d = document.createElement('div');
     d.textContent = str || '';
     return d.innerHTML.replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  function showToast(msg, duration){
-    let t = document.getElementById('toast');
-    t.classList.remove('has-action');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(function(){ if(!t.classList.contains('has-action')) t.classList.remove('show'); }, duration || 2200);
   }
 
   /* ---------------- sheet open/close ---------------- */
