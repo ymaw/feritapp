@@ -6,6 +6,7 @@ import { initPwaInstall } from './js/pwa/install.js';
 import { registerServiceWorker } from './js/pwa/service-worker.js';
 import { showToast } from './js/ui/toast.js';
 import { categoryColor } from './js/utils/category-color.js';
+import { parseDeliveryDate } from './js/utils/delivery-date.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -2944,24 +2945,6 @@ document.addEventListener('DOMContentLoaded', function(){
     wrap.innerHTML = renderSalesGroupedByClient(filtered, 'management');
     bindTableEvents(wrap);
   }
-  // Interpreta las columnas tipo DATE como fechas de calendario locales.
-  // new Date('YYYY-MM-DD') las interpreta como UTC y puede moverlas al día anterior
-  // en zonas horarias como Argentina, afectando el límite de la semana configurada.
-  function parseDeliveryDate(value){
-    if(!value) return null;
-    if(value instanceof Date){
-      return Number.isNaN(value.getTime()) ? null : new Date(value.getTime());
-    }
-    const text=String(value);
-    const dateOnly=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(dateOnly){
-      const localDate=new Date(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3]));
-      return Number.isNaN(localDate.getTime()) ? null : localDate;
-    }
-    const parsed=new Date(text);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-
   // Entregadas: solo siguen visibles durante la semana en que se registró
   // entregado_en. Pendientes: permanecen visibles dentro de la ventana móvil de 3 semanas.
   function isDeliveryItemVisible(item, visibleKeys, currentKey){
