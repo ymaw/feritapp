@@ -7,6 +7,7 @@ import { registerServiceWorker } from './js/pwa/service-worker.js';
 import { showToast } from './js/ui/toast.js';
 import { categoryColor } from './js/utils/category-color.js';
 import { parseDeliveryDate } from './js/utils/delivery-date.js';
+import { isValidEmail, isValidPassword } from './js/utils/validation.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -44,14 +45,6 @@ document.addEventListener('DOMContentLoaded', function(){
      contra Supabase (signInWithPassword) — sin reenviar nada.
   ========================================================= */
 
-  function isValidEmail(v){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  }
-  // Política alineada con Supabase Auth: mínimo 8 caracteres, minúscula,
-  // mayúscula, número y símbolo.
-  function isValidPassword(v){
-    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/.test(v);
-  }
   function showGateError(msg){
     let err = document.getElementById('gateError');
     err.textContent = msg;
