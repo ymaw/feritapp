@@ -5,6 +5,7 @@ import { initFontScalePreferences } from './js/preferences/font-scale.js';
 import { initPwaInstall } from './js/pwa/install.js';
 import { registerServiceWorker } from './js/pwa/service-worker.js';
 import { showToast } from './js/ui/toast.js';
+import { categoryColor } from './js/utils/category-color.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -937,14 +938,6 @@ document.addEventListener('DOMContentLoaded', function(){
   });
   const sheet = document.getElementById('sheet');
   const scrim = document.getElementById('scrim');
-  const CATEGORY_COLORS = ['#446DF6','#08A4BD','#17A897','#B23A52','#8C4A9C','#5FA8A0','#6C8EBF','#C9A15F'];
-
-  function categoryColor(name){
-    let str = String(name || '');
-    let hash = 0;
-    for(let i=0;i<str.length;i++){ hash = (hash * 31 + str.charCodeAt(i)) >>> 0; }
-    return CATEGORY_COLORS[hash % CATEGORY_COLORS.length];
-  }
 
   function mapRowToSale(row){
     return {
