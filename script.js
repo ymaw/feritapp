@@ -9,6 +9,7 @@ import { categoryColor } from './js/utils/category-color.js';
 import { parseDeliveryDate } from './js/utils/delivery-date.js';
 import { isValidEmail, isValidPassword } from './js/utils/validation.js';
 import { mapRowToSale } from './js/utils/sale-mapper.js';
+import { money } from './js/utils/money.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1950,9 +1951,6 @@ document.addEventListener('DOMContentLoaded', function(){
     let start = new Date(weekStartKey + "T00:00:00");
     let end = new Date(start); end.setDate(end.getDate()+6);
     return start.getDate() + " " + MESES[start.getMonth()] + " – " + end.getDate() + " " + MESES[end.getMonth()];
-  }
-  function money(n){
-    return "$" + Number(n||0).toLocaleString('es-AR');
   }
   function monthKey(d){
     let date = new Date(d);
