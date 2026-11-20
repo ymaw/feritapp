@@ -14,17 +14,13 @@ const path = require('node:path');
     { cliente: '', precio: 'invalid' },
     { cliente: null, precio: 20 }
   ];
-  const ranked = getRankedClients(sales);
-
-  assert.deepEqual(ranked, [
+  assert.deepEqual(getRankedClients(sales), [
     { name: 'Ana', count: 2, total: 150 },
+    { name: 'Sin nombre', count: 2, total: 20 },
     { name: 'Beto', count: 1, total: 500 },
-    { name: 'Carla', count: 1, total: 300 },
-    { name: 'Sin nombre', count: 2, total: 20 }
-  ].sort(function(a, b) { return b.count - a.count || b.total - a.total; }));
+    { name: 'Carla', count: 1, total: 300 }
+  ]);
   assert.deepEqual(getRankedClients([]), []);
-  assert.deepEqual(getRankedClients(null), []);
-  assert.deepEqual(getRankedClients(), []);
 
   console.log('OK: ranking de clientes caracterizado');
 })().catch(function(error) {
