@@ -14,6 +14,7 @@ import { escapeHtml } from './js/utils/html.js';
 import { wrapCanvasText, truncateCanvasText, drawDashedLine } from './js/utils/canvas.js';
 import { formatNoteDate } from './js/utils/note-date.js';
 import { weekStats } from './js/utils/week-stats.js';
+import { monthKey, monthLabel } from './js/utils/month-period.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1906,21 +1907,6 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
   const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  const MESES_LARGO = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-  function formatRange(weekStartKey){
-    let start = new Date(weekStartKey + "T00:00:00");
-    let end = new Date(start); end.setDate(end.getDate()+6);
-    return start.getDate() + " " + MESES[start.getMonth()] + " – " + end.getDate() + " " + MESES[end.getMonth()];
-  }
-  function monthKey(d){
-    let date = new Date(d);
-    return date.getFullYear() + "-" + String(date.getMonth()+1).padStart(2,'0');
-  }
-  function monthLabel(key){
-    let parts = key.split("-");
-    let y = parts[0], m = parseInt(parts[1],10) - 1;
-    return MESES_LARGO[m] + " " + y;
-  }
 
   /* ---------------- rendering ---------------- */
   function groupByWeek(useOperationalAssignment){
