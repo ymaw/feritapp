@@ -22,6 +22,7 @@ import { findNoteLabel } from './js/utils/note-labels.js';
 import { bindDashboardExpanders } from './js/ui/dashboard-expanders.js';
 import { isDeliveryItemVisible } from './js/features/deliveries/visibility.js';
 import { getRankedClients } from './js/features/dashboard/ranked-clients.js';
+import { salesForWeek as selectSalesForWeek } from './js/features/sales/sales-for-week.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1890,11 +1891,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   // Selección por fecha real: se conserva para comprobantes e historial cronológico.
   function salesForWeek(items, key){
-    return (items || []).filter(function(item){
-      if(!item || !item.fecha) return false;
-      const date = parseDeliveryDate(item.fecha);
-      return !!date && weekKey(date) === key;
-    });
+    return selectSalesForWeek(items, key, { parseDeliveryDate, weekKey });
   }
   const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
   
