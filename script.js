@@ -16,6 +16,7 @@ import { formatNoteDate } from './js/utils/note-date.js';
 import { weekStats } from './js/utils/week-stats.js';
 import { monthKey, monthLabel } from './js/utils/month-period.js';
 import { deltaHtml } from './js/utils/period-delta.js';
+import { formatRange, formatRangeShort } from './js/utils/week-range.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1908,11 +1909,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
   const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  function formatRange(weekStartKey){
-    let start = new Date(weekStartKey + "T00:00:00");
-    let end = new Date(start); end.setDate(end.getDate()+6);
-    return start.getDate() + " " + MESES[start.getMonth()] + " – " + end.getDate() + " " + MESES[end.getMonth()];
-  }
+  
 
   /* ---------------- rendering ---------------- */
   function groupByWeek(useOperationalAssignment){
@@ -2079,10 +2076,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  function formatRangeShort(weekStartKey){
-    let start = new Date(weekStartKey + "T00:00:00");
-    return start.getDate() + " " + MESES[start.getMonth()];
-  }
+  
 
   function renderWeekComparison(){
     let wrap = document.getElementById('periodCompare');
