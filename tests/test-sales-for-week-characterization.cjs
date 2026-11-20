@@ -14,7 +14,7 @@ const path = require('node:path');
     { id: 5, fecha: 'invalid' }
   ];
   const parseDeliveryDate = function(value) {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return null;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
     const date = new Date(value + 'T12:00:00');
     return Number.isNaN(date.getTime()) ? null : date;
   };
