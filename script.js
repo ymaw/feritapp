@@ -23,6 +23,7 @@ import { bindDashboardExpanders } from './js/ui/dashboard-expanders.js';
 import { isDeliveryItemVisible } from './js/features/deliveries/visibility.js';
 import { getRankedClients } from './js/features/dashboard/ranked-clients.js';
 import { salesForWeek as selectSalesForWeek } from './js/features/sales/sales-for-week.js';
+import { getStartOfWeek } from './js/utils/start-of-week.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1859,12 +1860,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- date / week helpers ---------------- */
   function startOfWeek(d){
-    let date = new Date(d);
-    let day = date.getDay(); // 0 sun .. 6 sat
-    let diff = (day - weekStartDay + 7) % 7; // días desde el inicio de semana elegido
-    date.setDate(date.getDate() - diff);
-    date.setHours(0,0,0,0);
-    return date;
+    return getStartOfWeek(d, weekStartDay);
   }
   function weekKey(d){
     let s = startOfWeek(d);
