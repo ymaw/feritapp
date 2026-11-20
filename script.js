@@ -2287,7 +2287,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
   async function shareCustomerRanking(){
-    const ranked = getRankedClients();
+    const ranked = getRankedClients(sales);
     if(!ranked.length){ showToast('Todavía no hay ventas para compartir el ranking.'); return; }
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     const palette = dark ? {
