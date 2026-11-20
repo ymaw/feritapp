@@ -10,6 +10,7 @@ import { parseDeliveryDate } from './js/utils/delivery-date.js';
 import { isValidEmail, isValidPassword } from './js/utils/validation.js';
 import { mapRowToSale } from './js/utils/sale-mapper.js';
 import { money } from './js/utils/money.js';
+import { escapeHtml } from './js/utils/html.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -3480,11 +3481,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }, 150);
   });
 
-  function escapeHtml(str){
-    let d = document.createElement('div');
-    d.textContent = str || '';
-    return d.innerHTML.replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
-  }
+  /* HTML escaping is provided by js/utils/html.js. */
 
   /* ---------------- sheet open/close ---------------- */
   function openSheet(){
