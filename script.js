@@ -19,6 +19,7 @@ import { deltaHtml } from './js/utils/period-delta.js';
 import { formatRange, formatRangeShort } from './js/utils/week-range.js';
 import { generateTypeLabelColor } from './js/utils/note-label-color.js';
 import { findNoteLabel } from './js/utils/note-labels.js';
+import { bindDashboardExpanders } from './js/ui/dashboard-expanders.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -2464,20 +2465,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  function bindDashboardExpanders(root){
-    root.querySelectorAll('[data-dashboard-expand]').forEach(function(trigger){
-      trigger.addEventListener('click', function(){
-        let type = trigger.getAttribute('data-dashboard-expand');
-        let card = root.querySelector('[data-dashboard-expand-card="' + type + '"]');
-        let details = root.querySelector('[data-dashboard-details="' + type + '"]');
-        if(!card || !details) return;
-        let expanded = card.getAttribute('aria-expanded') === 'true';
-        card.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        trigger.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        details.hidden = expanded;
-      });
-    });
-  }
+
 
   function bindDashboardTaskActions(root){
     root.querySelectorAll('[data-dashboard-action]').forEach(function(btn){
