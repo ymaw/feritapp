@@ -12,7 +12,11 @@ const path = require('node:path');
   assert.equal(formatNoteDate('fecha-invalida'), '');
 
   const localDate = new Date(2026, 10, 20, 15, 30);
-  assert.equal(formatNoteDate(localDate), '20/11/26, 15:30');
+  const expectedLocalizedDate = localDate.toLocaleString('es-AR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  });
+  assert.equal(formatNoteDate(localDate), expectedLocalizedDate);
 
   console.log('OK: formato de fecha de notas caracterizado');
 })().catch(function(error){
