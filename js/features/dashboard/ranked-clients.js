@@ -1,6 +1,6 @@
 export function getRankedClients(sales) {
   const byClient = {};
-  (sales || []).forEach(function(s) {
+  sales.forEach(function(s) {
     const name = s.cliente || 'Sin nombre';
     if (!byClient[name]) byClient[name] = { name: name, count: 0, total: 0 };
     byClient[name].count += 1;
