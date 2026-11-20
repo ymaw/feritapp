@@ -1907,6 +1907,11 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
   const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  function formatRange(weekStartKey){
+    let start = new Date(weekStartKey + "T00:00:00");
+    let end = new Date(start); end.setDate(end.getDate()+6);
+    return start.getDate() + " " + MESES[start.getMonth()] + " – " + end.getDate() + " " + MESES[end.getMonth()];
+  }
 
   /* ---------------- rendering ---------------- */
   function groupByWeek(useOperationalAssignment){
