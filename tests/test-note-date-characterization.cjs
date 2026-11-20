@@ -13,7 +13,6 @@ const path = require('node:path');
 
   const localDate = new Date(2026, 10, 20, 15, 30);
   assert.equal(formatNoteDate(localDate), '20/11/26, 15:30');
-  assert.equal(formatNoteDate(localDate.toISOString()), formatNoteDate(localDate.toISOString()));
 
   console.log('OK: formato de fecha de notas caracterizado');
 })().catch(function(error){
