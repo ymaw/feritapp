@@ -12,6 +12,7 @@ import { mapRowToSale } from './js/utils/sale-mapper.js';
 import { money } from './js/utils/money.js';
 import { escapeHtml } from './js/utils/html.js';
 import { wrapCanvasText, truncateCanvasText, drawDashedLine } from './js/utils/canvas.js';
+import { formatNoteDate } from './js/utils/note-date.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1119,13 +1120,6 @@ document.addEventListener('DOMContentLoaded', function(){
       console.error('No se pudo crear la etiqueta:',error);
       showToast('No se pudo crear la etiqueta. Revisá tu conexión e intentá nuevamente.');
     }finally{button.disabled = false;}
-  }
-
-  function formatNoteDate(value){
-    if(!value) return '';
-    const date = new Date(value);
-    if(Number.isNaN(date.getTime())) return '';
-    return date.toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
   }
 
   function closeNoteEditor(){
