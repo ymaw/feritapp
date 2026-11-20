@@ -20,6 +20,7 @@ import { formatRange, formatRangeShort } from './js/utils/week-range.js';
 import { generateTypeLabelColor } from './js/utils/note-label-color.js';
 import { findNoteLabel } from './js/utils/note-labels.js';
 import { bindDashboardExpanders } from './js/ui/dashboard-expanders.js';
+import { isDeliveryItemVisible } from './js/features/deliveries/visibility.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -2825,19 +2826,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   // Entregadas: solo siguen visibles durante la semana en que se registró
   // entregado_en. Pendientes: permanecen visibles dentro de la ventana móvil de 3 semanas.
-  function isDeliveryItemVisible(item, visibleKeys, currentKey){
-    if(!item || !item.fecha) return false;
-    const itemWeekKey=operationalWeekKey(item);
-    if(!itemWeekKey || !visibleKeys.has(itemWeekKey)) return false;
-    if(!item.entregado) return true;
-    // Una venta entregada solo permanece visible si pertenece operativamente
-    // a la semana actual Y fue marcada como entregada durante esa misma semana.
-    // Evita que ventas de semanas anteriores reaparezcan si entregado_en se
-    // actualizó accidentalmente al cambiar el estado de todo el cliente.
-    if(itemWeekKey!==currentKey) return false;
-    const deliveredAt=parseDeliveryDate(item.entregado_en);
-    return !!deliveredAt && weekKey(deliveredAt)===currentKey;
-  }
 
   function renderDeliveriesView(){
     const search = (document.getElementById('managementSearch')?.value || '').trim().toLowerCase();
@@ -2854,7 +2842,7 @@ document.addEventListener('DOMContentLoaded', function(){
       return 'Hace 2 semanas';
     };
     const items = sales.filter(function(item){
-      if(!isDeliveryItemVisible(item, visibleKeys, currentKey)) return false;
+      if(!isDeliveryItemVisible(item, visibleKeys, currentKey, { operationalWeekKey, parseDeliveryDate, weekKey })) return false;
       const hay = ((item.cliente||'')+' '+(item.articulo||'')+' '+(item.categoria||'')).toLowerCase();
       return hay.includes(search);
     });
