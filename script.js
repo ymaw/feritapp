@@ -15,6 +15,7 @@ import { wrapCanvasText, truncateCanvasText, drawDashedLine } from './js/utils/c
 import { formatNoteDate } from './js/utils/note-date.js';
 import { weekStats } from './js/utils/week-stats.js';
 import { monthKey, monthLabel } from './js/utils/month-period.js';
+import { deltaHtml } from './js/utils/period-delta.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1953,17 +1954,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   });
 
-  function deltaHtml(a, b){
-    if(!b){
-      if(!a) return '<span class="delta flat">—</span>';
-      return '<span class="delta up">▲ nuevo</span>';
-    }
-    let pct = Math.round(((a - b) / b) * 100);
-    if(pct === 0) return '<span class="delta flat">0%</span>';
-    let cls = pct > 0 ? 'up' : 'down';
-    let arrow = pct > 0 ? '▲' : '▼';
-    return '<span class="delta ' + cls + '">' + arrow + ' ' + Math.abs(pct) + '%</span>';
-  }
+
 
   // ---------------- gráficos (Chart.js) ----------------
   const chartInstances = {};
