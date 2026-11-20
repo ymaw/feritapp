@@ -10,7 +10,12 @@ const path = require('node:path');
   const dependencies = {
     operationalWeekKey(item) { return item.weekKey || null; },
     parseDeliveryDate(value) { return value ? new Date(value + 'T12:00:00') : null; },
-    weekKey(date) { return date.toISOString().slice(0, 10); }
+    weekKey(date) {
+      const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const day = start.getDay();
+      start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
+      return start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0');
+    }
   };
 
   assert.equal(isDeliveryItemVisible(null, visibleKeys, currentKey, dependencies), false);
