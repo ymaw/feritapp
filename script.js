@@ -18,6 +18,7 @@ import { monthKey, monthLabel } from './js/utils/month-period.js';
 import { deltaHtml } from './js/utils/period-delta.js';
 import { formatRange, formatRangeShort } from './js/utils/week-range.js';
 import { generateTypeLabelColor } from './js/utils/note-label-color.js';
+import { findNoteLabel } from './js/utils/note-labels.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1058,9 +1059,7 @@ document.addEventListener('DOMContentLoaded', function(){
     {name:'Urgente',color:'#DC2626'}
   ];
 
-  function findNoteLabel(id){
-    return notesLabels.find(function(label){return label.id === id;}) || null;
-  }
+
 
   function fillNoteLabelSelects(){
     const typeSelect = document.getElementById('noteType');
@@ -1160,8 +1159,8 @@ document.addEventListener('DOMContentLoaded', function(){
     const importanceFilter = document.getElementById('notesImportanceFilter').value;
     const filtered = notesCache.filter(function(note){
       const client = notesClients.find(function(c){return c.id === note.client_id;});
-      const typeLabel = findNoteLabel(note.type_label_id);
-      const importanceLabel = findNoteLabel(note.importance_label_id);
+      const typeLabel = findNoteLabel(notesLabels, note.type_label_id);
+      const importanceLabel = findNoteLabel(notesLabels, note.importance_label_id);
       const matchesText = !term || (note.content || '').toLocaleLowerCase('es').includes(term)
         || (client && client.name.toLocaleLowerCase('es').includes(term))
         || (typeLabel && typeLabel.name.toLocaleLowerCase('es').includes(term))
@@ -1175,8 +1174,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     root.innerHTML = filtered.map(function(note){
       const client = notesClients.find(function(c){return c.id === note.client_id;});
-      const typeLabel = findNoteLabel(note.type_label_id);
-      const importanceLabel = findNoteLabel(note.importance_label_id);
+      const typeLabel = findNoteLabel(notesLabels, note.type_label_id);
+      const importanceLabel = findNoteLabel(notesLabels, note.importance_label_id);
       const safeColor = typeLabel && /^#[0-9a-f]{6}$/i.test(typeLabel.color) ? typeLabel.color : 'var(--border)';
       const typeChip = typeLabel ? '<span class="note-type-chip">' + escapeHtml(typeLabel.name) + '</span>' : '';
       const importanceChip = importanceLabel ? '<span class="note-importance-chip" style="color:' + escapeHtml(importanceLabel.color) + ';border-color:' + escapeHtml(importanceLabel.color) + '">⚑ ' + escapeHtml(importanceLabel.name) + '</span>' : '';
