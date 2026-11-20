@@ -21,6 +21,7 @@ import { generateTypeLabelColor } from './js/utils/note-label-color.js';
 import { findNoteLabel } from './js/utils/note-labels.js';
 import { bindDashboardExpanders } from './js/ui/dashboard-expanders.js';
 import { isDeliveryItemVisible } from './js/features/deliveries/visibility.js';
+import { getRankedClients } from './js/features/dashboard/ranked-clients.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -2286,16 +2287,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  function getRankedClients(){
-    let byClient = {};
-    sales.forEach(function(s){
-      let name = s.cliente || 'Sin nombre';
-      if(!byClient[name]) byClient[name] = {name:name,count:0,total:0};
-      byClient[name].count += 1;
-      byClient[name].total += Number(s.precio) || 0;
-    });
-    return Object.keys(byClient).map(function(k){return byClient[k];}).sort(function(a,b){return b.count-a.count || b.total-a.total;});
-  }
+
 
   async function shareCustomerRanking(){
     const ranked = getRankedClients();
