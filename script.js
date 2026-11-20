@@ -11,6 +11,7 @@ import { isValidEmail, isValidPassword } from './js/utils/validation.js';
 import { mapRowToSale } from './js/utils/sale-mapper.js';
 import { money } from './js/utils/money.js';
 import { escapeHtml } from './js/utils/html.js';
+import { wrapCanvasText, truncateCanvasText, drawDashedLine } from './js/utils/canvas.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1372,44 +1373,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   // ---------------- comprobante compartible (imagen, sin links) ----------------
-  function wrapCanvasText(ctx, text, maxWidth){
-    let words = text.split(' ');
-    let lines = [];
-    let current = '';
-    words.forEach(function(w){
-      let test = current ? current + ' ' + w : w;
-      if(ctx.measureText(test).width > maxWidth && current){
-        lines.push(current);
-        current = w;
-      }else{
-        current = test;
-      }
-    });
-    if(current) lines.push(current);
-    return lines;
-  }
 
-  function truncateCanvasText(ctx, text, maxWidth){
-    if(ctx.measureText(text).width <= maxWidth) return text;
-    let truncated = text;
-    while(truncated.length > 1 && ctx.measureText(truncated + '…').width > maxWidth){
-      truncated = truncated.slice(0, -1);
-    }
-    return truncated + '…';
-  }
-
-  function drawDashedLine(ctx, x1, y, x2){
-    ctx.strokeStyle = '#dddddd';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    let x = x1;
-    while(x < x2){
-      ctx.moveTo(x, y);
-      ctx.lineTo(Math.min(x + 6, x2), y);
-      x += 12;
-    }
-    ctx.stroke();
-  }
 
   async function generateReceiptCanvas(compradorNombre, items, mensaje){
     // V12: el archivo compartido no expone nombres ni usuarios de las partes.
