@@ -13,6 +13,7 @@ import { money } from './js/utils/money.js';
 import { escapeHtml } from './js/utils/html.js';
 import { wrapCanvasText, truncateCanvasText, drawDashedLine } from './js/utils/canvas.js';
 import { formatNoteDate } from './js/utils/note-date.js';
+import { weekStats } from './js/utils/week-stats.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -2383,15 +2384,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const shareRankingBtn=document.getElementById('shareRankingBtn');
   if(shareRankingBtn) shareRankingBtn.addEventListener('click',shareCustomerRanking);
 
-  function weekStats(items){
-    let total=0, cobrado=0, pendiente=0;
-    items.forEach(function(i){
-      total += Number(i.precio)||0;
-      if(i.pagado) cobrado += Number(i.precio)||0;
-      else pendiente += Number(i.precio)||0;
-    });
-    return {total:total, cobrado:cobrado, pendiente:pendiente, count:items.length};
-  }
+
 
   async function moveWeeklySummaryClientToCurrentWeek(name){
     const clientName=(name || '').trim();
