@@ -25,7 +25,7 @@ process.env.TZ = 'America/Argentina/Buenos_Aires';
   assert.equal(sunday.getDate(), 22, 'no debe mutar la fecha de referencia');
 
   const monday = new Date(2026, 10, 23, 0, 0);
-  assert.equal(getPreviousWeekKey(monday, dependencies), '2026-11-09');
+  assert.equal(getPreviousWeekKey(monday, dependencies), '2026-11-16');
 
   const firstMondayOfYear = new Date(2027, 0, 4, 12, 0);
   assert.equal(getPreviousWeekKey(firstMondayOfYear, dependencies), '2026-12-28',
