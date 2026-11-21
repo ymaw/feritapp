@@ -26,6 +26,7 @@ import { salesForWeek as selectSalesForWeek } from './js/features/sales/sales-fo
 import { getStartOfWeek } from './js/utils/start-of-week.js';
 import { getWeekKey } from './js/utils/week-key.js';
 import { getPreviousWeekKey } from './js/utils/previous-week-key.js';
+import { getOperationalWeekKey } from './js/features/sales/operational-week-key.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1880,13 +1881,7 @@ document.addEventListener('DOMContentLoaded', function(){
   // La fecha real de la venta nunca se modifica al reasignarla operativamente.
   // La asignación solo cambia la semana en las vistas operativas (Resumen/Entregas).
   function operationalWeekKey(item){
-    if(!item) return null;
-    if(item.semana_asignada){
-      const assignedDate=parseDeliveryDate(item.semana_asignada);
-      if(assignedDate) return weekKey(assignedDate);
-    }
-    const saleDate=parseDeliveryDate(item.fecha);
-    return saleDate ? weekKey(saleDate) : null;
+    return getOperationalWeekKey(item, { parseDeliveryDate, weekKey });
   }
   function salesForOperationalWeek(items, key){
     return (items || []).filter(function(item){ return operationalWeekKey(item)===key; });
