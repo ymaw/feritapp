@@ -27,6 +27,7 @@ import { getStartOfWeek } from './js/utils/start-of-week.js';
 import { getWeekKey } from './js/utils/week-key.js';
 import { getPreviousWeekKey } from './js/utils/previous-week-key.js';
 import { getOperationalWeekKey } from './js/features/sales/operational-week-key.js';
+import { getSaleFormSummary } from './js/features/sales/sale-form-summary.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -3485,26 +3486,22 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function updateItemsTotal(){
-    let total = 0;
-    document.querySelectorAll('#itemRowsContainer .row-precio').forEach(function(inp){
-      let v = parseFloat(inp.value);
-      if(!isNaN(v)) total += v;
+    const rows = Array.from(document.querySelectorAll('#itemRowsContainer .item-row')).map(function(row){
+      return {
+        name: (row.querySelector('.row-articulo') || {}).value || '',
+        price: (row.querySelector('.row-precio') || {}).value
+      };
     });
-    let totalText = money(total);
+    const summary = getSaleFormSummary(rows);
+    const totalText = money(summary.total);
     let el = document.getElementById('itemsTotalValue');
     if(el) el.textContent = totalText;
     let footerEl = document.getElementById('sheetFooterTotal');
     if(footerEl) footerEl.textContent = totalText;
     const footerBar = document.querySelector('#sheet .sheet-save-bar');
     if(footerBar){
-      const hasCompleteItem = Array.from(document.querySelectorAll('#itemRowsContainer .item-row')).some(function(row){
-        const name = (row.querySelector('.row-articulo') || {}).value || '';
-        const rawPrice = (row.querySelector('.row-precio') || {}).value;
-        const price = parseFloat(rawPrice);
-        return name.trim().length > 0 && Number.isFinite(price) && price > 0;
-      });
-      footerBar.classList.toggle('is-empty', !hasCompleteItem);
-      footerBar.setAttribute('aria-hidden', hasCompleteItem ? 'false' : 'true');
+      footerBar.classList.toggle('is-empty', !summary.hasCompleteItem);
+      footerBar.setAttribute('aria-hidden', summary.hasCompleteItem ? 'false' : 'true');
     }
   }
 
