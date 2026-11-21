@@ -204,8 +204,8 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
     await page.keyboard.press('Tab');
   }
 
-  await expect(page.locator('#openNewCatBtn')).toBeFocused();
-  await page.keyboard.press('Tab');
+  // La creación de categorías está integrada en el buscador de cada artículo.
+  await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
 
   // Con un único artículo, el botón "Quitar" se oculta intencionalmente.
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();

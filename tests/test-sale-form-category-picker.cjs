@@ -6,6 +6,7 @@ const root = path.join(__dirname, '..');
 const script = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const categoryCss = fs.readFileSync(path.join(root, 'css', 'category-picker.css'), 'utf8');
+const accessibilitySpec = fs.readFileSync(path.join(root, 'tests', 'e2e', 'accessibility-views.spec.cjs'), 'utf8');
 
 assert.match(script, /const isNewSale = titleText === 'nueva venta';[\s\S]*?if\(isNewSale\) sheet\.scrollTop = 0;/,
   'Nueva venta debe volver al inicio del panel al abrirse');
@@ -21,5 +22,9 @@ assert.doesNotMatch(index, /openNewCatBtn|newCatRow|fNuevaCategoria|confirmNewCa
   'el formulario separado de nueva categoría debe estar eliminado');
 assert.match(categoryCss, /\.category-picker-create\s*\{/,
   'la acción de creación debe tener estilos propios coherentes con el selector');
+assert.doesNotMatch(accessibilitySpec, /locator\('#openNewCatBtn'\)/,
+  'la navegación por teclado no debe depender del botón de categoría eliminado');
+assert.match(accessibilitySpec, /itemRowsContainer \.row-articulo/,
+  'la navegación por teclado debe continuar desde el selector hacia el primer artículo');
 
 console.log('OK: formulario de venta reinicia el scroll y la categoría se crea desde la búsqueda');
