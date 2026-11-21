@@ -45,7 +45,7 @@
 <link href="css/navigation-personalization.css?v=1" rel="stylesheet"/>
 <link href="css/clients.css?v=12.126" rel="stylesheet"/>
 <link href="css/empty-states.css?v=12.126" rel="stylesheet"/>
-<link href="css/category-picker.css?v=12.126" rel="stylesheet"/>
+<link href="css/category-picker.css?v=12.127" rel="stylesheet"/>
 <link href="css/weekly-summary-menu.css?v=12.126" rel="stylesheet"/>
 <link href="css/toast-actions.css?v=12.126" rel="stylesheet"/>
 <link href="css/install-banner.css?v=12.126" rel="stylesheet"/>
@@ -583,16 +583,10 @@
 </div>
 <div class="field">
 <div class="field-row-head">
-<label class="sale-items-label" for="fNuevaCategoria">Artículos de esta venta</label>
-<button class="new-cat-link" id="openNewCatBtn" type="button">+ Nueva categoría</button>
+<label class="sale-items-label">Artículos de esta venta</label>
 </div>
 <div id="itemRowsContainer"></div>
 <button class="add-item-btn" id="addItemRowBtn" type="button">+ Agregar otro artículo</button>
-<div class="new-cat-row" id="newCatRow" style="display:none;">
-<input id="fNuevaCategoria" placeholder="Nombre de la categoría" type="text"/>
-<button aria-label="Dictar categoría" class="mic-btn" data-mode="text" data-target="fNuevaCategoria" type="button"><svg aria-hidden="true" class="mic-icon" focusable="false" viewbox="0 0 24 24"><rect height="11" rx="3" width="6" x="9" y="3.5"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"></path></svg></button>
-<button class="mini-btn" id="confirmNewCat" type="button">Crear</button>
-</div>
 <div class="items-total-row">
 <span>Total de esta venta</span>
 <span id="itemsTotalValue">$0</span>
@@ -650,6 +644,6 @@
 </div>
 <!-- /appRoot -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-<script type="module" src="script.js?v=12.135-font-scale-module"></script>
+<script type="module" src="script.js?v=12.136-inline-category-create"></script>
 </body>
 </html>

@@ -60,3 +60,33 @@
 .category-picker-option.is-selected::after { content: '✓'; margin-left: auto; padding-left: 10px; color: var(--primary); font-size: 14px; font-weight: 700; }
 .category-picker-empty { padding: 12px 8px; color: var(--muted); font-size: 13px; text-align: center; }
 [data-theme="dark"] .category-picker-menu { color-scheme: dark; }
+
+
+/* Crear una categoría nueva directamente desde la búsqueda sin resultados. */
+.category-picker-create {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  margin-top: 4px;
+  padding: 9px 10px;
+  border: 1px dashed color-mix(in srgb, var(--primary) 48%, var(--border));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface));
+  color: var(--primary);
+  font: 600 13px var(--body);
+  text-align: left;
+  cursor: pointer;
+}
+.category-picker-create:hover,
+.category-picker-create:focus-visible {
+  outline: none;
+  border-style: solid;
+  background: color-mix(in srgb, var(--primary) 13%, var(--surface));
+}
+.category-picker-create:disabled {
+  opacity: .6;
+  cursor: wait;
+}

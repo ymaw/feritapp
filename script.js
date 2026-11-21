@@ -1700,10 +1700,17 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   async function persistNewCategory(name){
+    if(!sb){
+      showToast('No se pudo guardar la categoría.');
+      return false;
+    }
     try{
-      await sb.from('categories').insert([{ name: name }]);
+      const result = await sb.from('categories').insert([{ name: name }]);
+      if(result && result.error) throw result.error;
+      return true;
     }catch(e){
       showToast('No se pudo guardar la categoría.');
+      return false;
     }
   }
 
@@ -3360,7 +3367,9 @@ document.addEventListener('DOMContentLoaded', function(){
   function openSheet(){
     const title = document.getElementById('sheetTitle');
     const titleText = title ? title.textContent.trim().toLowerCase() : '';
-    sheet.classList.toggle('new-sale-mode', titleText === 'nueva venta');
+    const isNewSale = titleText === 'nueva venta';
+    sheet.classList.toggle('new-sale-mode', isNewSale);
+    if(isNewSale) sheet.scrollTop = 0;
     // V12.61: reutiliza la presentación de formulario en la edición agrupada
     // de una venta del cliente, sin afectar la edición individual de artículos.
     sheet.classList.toggle('edit-sale-mode', titleText.indexOf('editar venta') === 0);
@@ -3554,7 +3563,41 @@ document.addEventListener('DOMContentLoaded', function(){
       const query=search.value.trim().toLocaleLowerCase('es');
       const matches=categories.filter(function(category){return category.toLocaleLowerCase('es').includes(query);});
       if(!matches.length){
-        const empty=document.createElement('div');empty.className='category-picker-empty';empty.textContent=categories.length?'No se encontraron categorías':'No hay categorías disponibles';list.appendChild(empty);
+        const empty=document.createElement('div');
+        empty.className='category-picker-empty';
+        empty.textContent=categories.length?'No se encontraron categorías':'No hay categorías disponibles';
+        list.appendChild(empty);
+
+        const newCategoryName = search.value.trim();
+        const alreadyExists = categories.some(function(category){
+          return category.toLocaleLowerCase('es') === newCategoryName.toLocaleLowerCase('es');
+        });
+        if(newCategoryName && !alreadyExists){
+          const createButton = document.createElement('button');
+          createButton.type = 'button';
+          createButton.className = 'category-picker-create';
+          createButton.textContent = '＋ Crear categoría "' + newCategoryName + '"';
+          createButton.setAttribute('aria-label', 'Crear categoría ' + newCategoryName);
+          createButton.addEventListener('click', async function(event){
+            event.preventDefault();
+            event.stopPropagation();
+            createButton.disabled = true;
+            const saved = await persistNewCategory(newCategoryName);
+            if(!saved){
+              createButton.disabled = false;
+              return;
+            }
+            categories.push(newCategoryName);
+            refreshAllRowCategorySelects();
+            select.value = newCategoryName;
+            select.dispatchEvent(new Event('change',{bubbles:true}));
+            valueLabel.textContent = newCategoryName;
+            showToast('Categoría creada');
+            close();
+            trigger.focus({preventScroll:true});
+          });
+          list.appendChild(createButton);
+        }
       }
       matches.forEach(function(category){
         const option=document.createElement('button');
@@ -3631,8 +3674,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.pago-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === '0'); });
     document.querySelectorAll('.retira-opt').forEach(function(b){ b.classList.toggle('active', b.dataset.val === 'cliente'); });
     document.getElementById('terceroField').style.display = 'none';
-    document.getElementById('newCatRow').style.display = 'none';
-    document.getElementById('fNuevaCategoria').value = '';
+    sheet.scrollTop = 0;
 
     document.getElementById('itemRowsContainer').innerHTML = '';
     itemRowCounter = 0;
@@ -3673,27 +3715,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
     openSheet();
   }
-
-  document.getElementById('openNewCatBtn').addEventListener('click', function(){
-    let row = document.getElementById('newCatRow');
-    row.style.display = (row.style.display === 'none') ? 'flex' : 'none';
-    if(row.style.display === 'flex'){ document.getElementById('fNuevaCategoria').focus(); }
-  });
-
-  document.getElementById('confirmNewCat').addEventListener('click', async function(){
-    let input = document.getElementById('fNuevaCategoria');
-    let name = input.value.trim();
-    if(!name){ showToast('Escribí un nombre para la categoría'); return; }
-    let exists = categories.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
-    if(!exists){
-      await persistNewCategory(name);
-      categories.push(name);
-    }
-    input.value = '';
-    document.getElementById('newCatRow').style.display = 'none';
-    refreshAllRowCategorySelects();
-    showToast('Categoría creada');
-  });
 
   document.querySelectorAll('.pago-opt').forEach(function(btn){
     btn.addEventListener('click', function(){
