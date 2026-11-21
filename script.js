@@ -25,6 +25,7 @@ import { getRankedClients } from './js/features/dashboard/ranked-clients.js';
 import { salesForWeek as selectSalesForWeek } from './js/features/sales/sales-for-week.js';
 import { getStartOfWeek } from './js/utils/start-of-week.js';
 import { getWeekKey } from './js/utils/week-key.js';
+import { getPreviousWeekKey } from './js/utils/previous-week-key.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1874,9 +1875,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return getWeekKey(d, { startOfWeek });
   }
   function previousWeekKey(referenceDate){
-    const previousStart = startOfWeek(referenceDate || new Date());
-    previousStart.setDate(previousStart.getDate() - 7);
-    return weekKey(previousStart);
+    return getPreviousWeekKey(referenceDate, { startOfWeek, weekKey });
   }
   // La fecha real de la venta nunca se modifica al reasignarla operativamente.
   // La asignación solo cambia la semana en las vistas operativas (Resumen/Entregas).
