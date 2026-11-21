@@ -24,6 +24,7 @@ import { isDeliveryItemVisible } from './js/features/deliveries/visibility.js';
 import { getRankedClients } from './js/features/dashboard/ranked-clients.js';
 import { salesForWeek as selectSalesForWeek } from './js/features/sales/sales-for-week.js';
 import { getStartOfWeek } from './js/utils/start-of-week.js';
+import { getWeekKey } from './js/utils/week-key.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1863,8 +1864,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return getStartOfWeek(d, weekStartDay);
   }
   function weekKey(d){
-    let s = startOfWeek(d);
-    return s.getFullYear() + "-" + String(s.getMonth()+1).padStart(2,'0') + "-" + String(s.getDate()).padStart(2,'0');
+    return getWeekKey(d, { startOfWeek });
   }
   function previousWeekKey(referenceDate){
     const previousStart = startOfWeek(referenceDate || new Date());
