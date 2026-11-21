@@ -22,7 +22,7 @@ assert.doesNotMatch(index, /openNewCatBtn|newCatRow|fNuevaCategoria|confirmNewCa
   'el formulario separado de nueva categoría debe estar eliminado');
 assert.match(categoryCss, /\.category-picker-create\s*\{/,
   'la acción de creación debe tener estilos propios coherentes con el selector');
-assert.doesNotMatch(accessibilitySpec, /locator\('#openNewCatBtn'\)/,
+assert.doesNotMatch(accessibilitySpec, /openNewCatBtn/,
   'la navegación por teclado no debe depender del botón de categoría eliminado');
 assert.match(accessibilitySpec, /itemRowsContainer \.row-articulo/,
   'la navegación por teclado debe continuar desde el selector hacia el primer artículo');

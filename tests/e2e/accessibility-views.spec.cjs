@@ -208,7 +208,6 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
 
   // Con un único artículo, el botón "Quitar" se oculta intencionalmente.
-  await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
 
   // El micrófono de artículo es un control intermedio cuando SpeechRecognition está disponible.
   const articleMic = page.locator('#itemRowsContainer .item-field-name .mic-btn');
@@ -239,7 +238,11 @@ test('new-sale form exposes labeled controls and supports keyboard traversal', a
   }
   await expect(page.locator('#itemRowsContainer .row-articulo')).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(page.locator('#openNewCatBtn')).toBeFocused();
+  if (await clientMic.isVisible()) {
+    await expect(clientMic).toBeFocused();
+  } else {
+    await expect(page.locator('#fCliente')).toBeFocused();
+  }
 });
 
 
