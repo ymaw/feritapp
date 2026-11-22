@@ -28,6 +28,7 @@ import { getWeekKey } from './js/utils/week-key.js';
 import { getPreviousWeekKey } from './js/utils/previous-week-key.js';
 import { getOperationalWeekKey } from './js/features/sales/operational-week-key.js';
 import { getSaleFormSummary } from './js/features/sales/sale-form-summary.js';
+import { groupSalesByWeek } from './js/features/sales/group-sales-by-week.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1896,14 +1897,11 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ---------------- rendering ---------------- */
   function groupByWeek(useOperationalAssignment){
-    let groups = {};
-    sales.forEach(function(s){
-      let k = useOperationalAssignment ? operationalWeekKey(s) : weekKey(parseDeliveryDate(s.fecha));
-      if(!k) return;
-      if(!groups[k]) groups[k] = [];
-      groups[k].push(s);
+    return groupSalesByWeek(sales, useOperationalAssignment, {
+      operationalWeekKey,
+      parseDeliveryDate,
+      weekKey
     });
-    return groups;
   }
 
   function groupByMonth(){
