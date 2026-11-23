@@ -40,6 +40,7 @@ const path = require('node:path');
   const result = getReceiptSelectionForClient(items, '  CLIENTE a ', now, dependencies);
   assert.deepEqual(result.items.map(item => item.id), [
     'previous-unpaid-later',
+    'previous-paid',
     'current-paid-earlier',
     'current-paid-later'
   ]);
