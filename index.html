@@ -42,6 +42,7 @@
 <link href="css/receipt.css?v=12.126" rel="stylesheet"/>
 <link href="css/style.css?v=12.164" rel="stylesheet"/>
 <link href="css/notes.css?v=9" rel="stylesheet"/>
+<link href="css/facebook-garment-publisher.css?v=1" rel="stylesheet"/>
 <link href="css/navigation-personalization.css?v=1" rel="stylesheet"/>
 <link href="css/clients.css?v=12.126" rel="stylesheet"/>
 <link href="css/empty-states.css?v=12.126" rel="stylesheet"/>
@@ -541,6 +542,56 @@
   </div>
 </div>
 </div>
+<div class="app-view" id="viewPublisher" style="display:none;">
+  <div class="view-hero publisher-hero sales-heading-card">
+    <span class="sales-heading-mark" aria-hidden="true">✦</span>
+    <div class="sales-heading-copy">
+      <div class="view-hero-kicker">PUBLICADOR</div>
+      <h2>Prepará tu publicación</h2>
+      <p>Armá el texto y reuní las fotos de tus prendas para compartirlas en Facebook.</p>
+    </div>
+  </div>
+  <div class="section-block publisher-layout">
+    <section class="publisher-card" aria-labelledby="publisherFormTitle">
+      <div class="publisher-card-heading">
+        <div><p class="section-title" id="publisherFormTitle">Datos de la prenda</p><p class="publisher-muted">Completá los datos y generá una plantilla lista para revisar.</p></div>
+      </div>
+      <div class="publisher-fields-grid">
+        <div class="field"><label for="publisherCategory">Categoría</label><select id="publisherCategory"><option value="Otros">Seleccioná una categoría</option><option>Pantalones</option><option>Capris</option><option>Polleras</option><option>Vestidos</option><option>Camisas</option><option>Remeras</option><option>Musculosas</option><option>Accesorios</option><option>Zapatillas</option><option>Otros</option></select></div>
+        <div class="field"><label for="publisherGarmentName">Prenda / artículo</label><input id="publisherGarmentName" maxlength="100" placeholder="Ej.: Capri de gabardina"/></div>
+        <div class="field"><label for="publisherBrand">Marca</label><input id="publisherBrand" maxlength="80" placeholder="Ej.: Ossira"/></div>
+        <div class="field"><label for="publisherSize">Talle</label><input id="publisherSize" maxlength="40" placeholder="Ej.: M, 40, único"/></div>
+        <div class="field"><label for="publisherPrice">Precio (ARS)</label><input id="publisherPrice" inputmode="numeric" maxlength="12" placeholder="Ej.: 7000"/></div>
+        <div class="field publisher-photo-field"><label for="publisherPhoto">Fotografía</label><input id="publisherPhoto" type="file" accept="image/jpeg,image/png,image/webp"/></div>
+      </div>
+      <div class="field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" maxlength="1200" rows="4" placeholder="Describí el estado, detalles, calce o cualquier dato importante…"></textarea></div>
+      <fieldset class="publisher-measurements" id="publisherMeasurements" hidden>
+        <legend>Medidas (cm)</legend>
+        <div class="publisher-fields-grid">
+          <div class="field"><label for="publisherWaist">Cintura</label><input id="publisherWaist" inputmode="decimal" placeholder="Ej.: 42"/></div>
+          <div class="field"><label for="publisherRise">Tiro delantero</label><input id="publisherRise" inputmode="decimal" placeholder="Ej.: 17"/></div>
+          <div class="field"><label for="publisherHip">Cadera</label><input id="publisherHip" inputmode="decimal" placeholder="Ej.: 49"/></div>
+          <div class="field"><label for="publisherLength">Largo</label><input id="publisherLength" inputmode="decimal" placeholder="Ej.: 60"/></div>
+        </div>
+      </fieldset>
+      <div class="publisher-actions">
+        <button class="secondary-btn" id="publisherGenerate" type="button">Generar plantilla</button>
+      </div>
+    </section>
+    <section class="publisher-card publisher-preview-card" aria-labelledby="publisherPreviewTitle">
+      <div class="publisher-card-heading"><div><p class="section-title" id="publisherPreviewTitle">Vista previa del post</p><p class="publisher-muted">Podés corregir el texto antes de compartirlo.</p></div></div>
+      <div class="publisher-photo-preview" id="publisherPhotoPreview"><span>La fotografía seleccionada aparecerá acá</span></div>
+      <label for="publisherPostText">Texto para Facebook</label>
+      <textarea id="publisherPostText" class="publisher-post-text" rows="12" placeholder="La plantilla generada aparecerá acá. También podés escribir o editar directamente." spellcheck="true"></textarea>
+      <div class="publisher-actions publisher-share-actions">
+        <button class="save-btn" id="publisherCopy" type="button">Copiar texto</button>
+        <button class="secondary-btn" id="publisherShare" type="button">Compartir publicación</button>
+      </div>
+      <p class="publisher-muted" id="publisherShareHelp">Si tu navegador permite compartir archivos, se enviarán el texto y la fotografía juntos. Si no, vas a poder copiar el texto y descargar la foto para adjuntarla en Facebook.</p>
+      <p class="publisher-feedback" id="publisherFeedback" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+</div>
 <nav aria-label="Navegación principal" class="bottom-nav" id="bottomNav">
 <button class="nav-item active" data-nav-slot="1" data-nav-key="dashboard" data-view="dashboard" type="button">
 <span class="nav-icon">⌂</span><span class="nav-label">Inicio</span>
@@ -565,6 +616,7 @@
 <button class="sidebar-item" data-view="notes" data-nav-key="notes" type="button">✎ Notas</button>
 <button class="sidebar-item" data-view="deliveries" data-nav-key="deliveries" type="button"><span aria-hidden="true" class="sidebar-delivery-icon"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg></span> Entregas</button>
 <button class="sidebar-item" data-view="ranking" data-nav-key="ranking" type="button">♕ Ranking</button>
+<button class="sidebar-item" data-view="publisher" data-nav-key="publisher" type="button">✦ Publicador</button>
 <button class="sidebar-item" data-view="settings" data-nav-key="settings" type="button">⚙ Configuración</button>
 </div>
 <button class="sidebar-item sidebar-logout" id="sidebarLogoutBtn" type="button">🚪 Cerrar sesión</button>

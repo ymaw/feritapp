@@ -32,9 +32,12 @@ import { groupSalesByWeek } from './js/features/sales/group-sales-by-week.js';
 import { salesForOperationalWeek as selectSalesForOperationalWeek } from './js/features/sales/sales-for-operational-week.js';
 import { groupSalesByMonth } from './js/features/sales/group-sales-by-month.js';
 import { getReceiptSelectionForClient as selectReceiptItemsForClient } from './js/features/receipts/receipt-selection.js';
+import { initGarmentPublisher } from './js/features/publisher/garment-publisher.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
+
+  initGarmentPublisher({ showToast });
 
   /* =========================================================
      ACCESO: correo + contraseña con Supabase Auth
@@ -473,9 +476,10 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewDeliveries').style.display = (view === 'deliveries') ? 'block' : 'none';
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
     document.getElementById('viewNotes').style.display = (view === 'notes') ? 'block' : 'none';
+    document.getElementById('viewPublisher').style.display = (view === 'publisher') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', publisher:'Publicador', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
@@ -597,7 +601,8 @@ document.addEventListener('DOMContentLoaded', function(){
     sales:{label:'Ventas',icon:'▤',view:'sales'},
     deliveries:{label:'Entregas',icon:'<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z"></path><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4"></path></svg>',view:'deliveries'},
     notes:{label:'Notas',icon:'✎',view:'notes'},
-    ranking:{label:'Ranking',icon:'♕',view:'ranking'}
+    ranking:{label:'Ranking',icon:'♕',view:'ranking'},
+    publisher:{label:'Publicador',icon:'✦',view:'publisher'}
   };
   const DEFAULT_NAVIGATION_SLOTS = ['dashboard','sales','deliveries','notes'];
   let navigationSlots = DEFAULT_NAVIGATION_SLOTS.slice();
