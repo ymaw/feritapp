@@ -29,6 +29,7 @@ import { getPreviousWeekKey } from './js/utils/previous-week-key.js';
 import { getOperationalWeekKey } from './js/features/sales/operational-week-key.js';
 import { getSaleFormSummary } from './js/features/sales/sale-form-summary.js';
 import { groupSalesByWeek } from './js/features/sales/group-sales-by-week.js';
+import { salesForOperationalWeek as selectSalesForOperationalWeek } from './js/features/sales/sales-for-operational-week.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1886,7 +1887,7 @@ document.addEventListener('DOMContentLoaded', function(){
     return getOperationalWeekKey(item, { parseDeliveryDate, weekKey });
   }
   function salesForOperationalWeek(items, key){
-    return (items || []).filter(function(item){ return operationalWeekKey(item)===key; });
+    return selectSalesForOperationalWeek(items, key, { operationalWeekKey });
   }
   // Selección por fecha real: se conserva para comprobantes e historial cronológico.
   function salesForWeek(items, key){
