@@ -31,6 +31,7 @@ import { getSaleFormSummary } from './js/features/sales/sale-form-summary.js';
 import { groupSalesByWeek } from './js/features/sales/group-sales-by-week.js';
 import { salesForOperationalWeek as selectSalesForOperationalWeek } from './js/features/sales/sales-for-operational-week.js';
 import { groupSalesByMonth } from './js/features/sales/group-sales-by-month.js';
+import { getReceiptSelectionForClient as selectReceiptItemsForClient } from './js/features/receipts/receipt-selection.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1482,29 +1483,12 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function getReceiptSelectionForClient(clientName){
-    // El comprobante usa la fecha real de venta. El estado de pago se evalúa
-    // por semana completa, igual que el indicador semanal de Ventas.
-    const normalizedClientName = String(clientName || '').trim().toLocaleLowerCase('es');
-    if(!normalizedClientName) return { items: [], isAbonado: false };
-
-    const clientItems = sales.filter(function(item){
-      return !!item && String(item.cliente || '').trim().toLocaleLowerCase('es') === normalizedClientName && !!parseDeliveryDate(item.fecha);
+    return selectReceiptItemsForClient(sales, clientName, new Date(), {
+      parseDeliveryDate,
+      weekKey,
+      previousWeekKey,
+      salesForWeek
     });
-    const currentKey = weekKey(new Date());
-    const previousKey = previousWeekKey(new Date());
-    const currentWeekItems = salesForWeek(clientItems, currentKey);
-    const previousWeekItems = salesForWeek(clientItems, previousKey);
-    const isPaid = function(item){ return !!item.pagado; };
-    const weekIsAbonado = function(items){ return items.length > 0 && items.every(isPaid); };
-
-    // Regla de negocio: si la semana anterior figura Abonado, se excluye
-    // completa. Si figura Pendiente de Pago, se incluye esa semana completa.
-    const previousWeekIsAbonado = weekIsAbonado(previousWeekItems);
-    const eligibleItems = currentWeekItems.concat(previousWeekItems.length && !previousWeekIsAbonado ? previousWeekItems : []).slice().sort(function(a,b){
-      return parseDeliveryDate(a.fecha) - parseDeliveryDate(b.fecha);
-    });
-    const isAbonado = weekIsAbonado(currentWeekItems);
-    return { items: eligibleItems, isAbonado: isAbonado };
   }
 
   function shareReceipt(compradorNombre, items){
