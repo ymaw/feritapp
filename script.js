@@ -30,6 +30,7 @@ import { getOperationalWeekKey } from './js/features/sales/operational-week-key.
 import { getSaleFormSummary } from './js/features/sales/sale-form-summary.js';
 import { groupSalesByWeek } from './js/features/sales/group-sales-by-week.js';
 import { salesForOperationalWeek as selectSalesForOperationalWeek } from './js/features/sales/sales-for-operational-week.js';
+import { groupSalesByMonth } from './js/features/sales/group-sales-by-month.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
@@ -1906,13 +1907,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function groupByMonth(){
-    let groups = {};
-    sales.forEach(function(s){
-      let k = monthKey(s.fecha);
-      if(!groups[k]) groups[k] = [];
-      groups[k].push(s);
-    });
-    return groups;
+    return groupSalesByMonth(sales, { monthKey });
   }
 
   let compareMonthA = null, compareMonthB = null;
