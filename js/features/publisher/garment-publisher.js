@@ -153,7 +153,15 @@ export function initGarmentPublisher({ showToast }) {
     queuedGarments.forEach(function(item, index) {
       const row = document.createElement('div');
       row.className = 'publisher-queued-item';
+      if (item.previewUrl) {
+        const thumbnail = document.createElement('img');
+        thumbnail.className = 'publisher-queued-photo';
+        thumbnail.src = item.previewUrl;
+        thumbnail.alt = 'Foto de ' + (item.data.garmentName || item.data.category || 'prenda');
+        row.appendChild(thumbnail);
+      }
       const description = document.createElement('span');
+      description.className = 'publisher-queued-description';
       description.textContent = (index + 1) + '. ' + (item.data.garmentName || item.data.category || 'Prenda') +
         (item.data.brand ? ' · ' + item.data.brand : '') + (item.photo ? ' · Foto adjunta' : ' · Sin foto');
       const remove = document.createElement('button');
@@ -162,7 +170,8 @@ export function initGarmentPublisher({ showToast }) {
       remove.textContent = 'Quitar';
       remove.setAttribute('aria-label', 'Quitar ' + (item.data.garmentName || 'prenda ' + (index + 1)));
       remove.addEventListener('click', function() {
-        queuedGarments.splice(index, 1);
+        const removed = queuedGarments.splice(index, 1)[0];
+        if (removed && removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
         renderQueuedGarments();
       });
       row.append(description, remove);
@@ -183,9 +192,7 @@ export function initGarmentPublisher({ showToast }) {
       const element = document.getElementById(id);
       if (element) element.value = id === 'publisherCategory' ? 'Otros' : '';
     });
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    previewUrl = null;
-    selectedPhoto = null;
+    clearCurrentPhotoPreview();
     photoInput.value = '';
     photoPreview.replaceChildren();
     const placeholder = document.createElement('span');
@@ -196,12 +203,18 @@ export function initGarmentPublisher({ showToast }) {
   }
 
   document.getElementById('publisherAddGarment').addEventListener('click', function() {
+    if (isDictating) {
+      if (recognition) recognition.stop();
+      feedback.textContent = 'El dictado se está deteniendo. Revisá la transcripción y volvé a agregar la prenda.';
+      return;
+    }
     const data = collectData();
     if (!hasCurrentGarment(data)) {
       feedback.textContent = 'Completá al menos un dato o seleccioná una fotografía antes de agregar la prenda.';
       return;
     }
-    queuedGarments.push({ data: data, photo: selectedPhoto });
+    queuedGarments.push({ data: data, photo: selectedPhoto, previewUrl: previewUrl });
+    previewUrl = null;
     renderQueuedGarments();
     resetCurrentGarment();
     feedback.textContent = 'Prenda agregada a la publicación. Podés cargar otra o generar el post con todas.';
@@ -248,18 +261,28 @@ export function initGarmentPublisher({ showToast }) {
       : 'Plantilla generada. Revisá el texto antes de compartir.';
   });
 
+  function clearCurrentPhotoPreview() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+    selectedPhoto = null;
+    photoPreview.replaceChildren();
+    const placeholder = document.createElement('span');
+    placeholder.textContent = 'La fotografía seleccionada aparecerá acá';
+    photoPreview.appendChild(placeholder);
+  }
+
   photoInput.addEventListener('change', function() {
     const file = photoInput.files && photoInput.files[0];
     if (!file) return;
     if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) {
       photoInput.value = '';
-      selectedPhoto = null;
+      clearCurrentPhotoPreview();
       feedback.textContent = 'Formato no compatible. Elegí una imagen JPG, PNG o WebP.';
       return;
     }
     if (file.size > 12 * 1024 * 1024) {
       photoInput.value = '';
-      selectedPhoto = null;
+      clearCurrentPhotoPreview();
       feedback.textContent = 'La imagen supera el límite de 12 MB.';
       return;
     }
@@ -343,5 +366,8 @@ export function initGarmentPublisher({ showToast }) {
 
   window.addEventListener('beforeunload', function() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
+    queuedGarments.forEach(function(item) {
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+    });
   });
 }
