@@ -2260,16 +2260,6 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  const toggleRankingMoneyBtn = document.getElementById('toggleRankingMoney');
-  if(toggleRankingMoneyBtn){
-    toggleRankingMoneyBtn.addEventListener('click', function(){
-      showRankingMoney = !showRankingMoney;
-      toggleRankingMoneyBtn.textContent = showRankingMoney ? '💰 Ocultar montos gastados' : '💰 Mostrar montos gastados';
-      renderTopClients();
-    });
-  }
-
-
 
   async function shareCustomerRanking(){
     const ranked = getRankedClients(sales, { sortBy: rankingSortBy, period: rankingPeriod });
