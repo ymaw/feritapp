@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const html = fs.readFileSync('index.html', 'utf8');
 const script = fs.readFileSync('script.js', 'utf8');
 const moduleSource = fs.readFileSync('js/features/publisher/garment-publisher.js', 'utf8');
+const parserSource = fs.readFileSync('js/features/publisher/dictation-parser.js', 'utf8');
 const audioModule = fs.readFileSync('js/features/publisher/audio-visualizer.js', 'utf8');
 const css = fs.readFileSync('css/facebook-garment-publisher.css', 'utf8');
 
