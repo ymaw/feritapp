@@ -59,6 +59,7 @@ export function initGarmentPublisher({ showToast }) {
   let finalTranscriptParts = [];
   let isDictating = false;
   let dictationErrorMessage = '';
+  let dictationRequestsMeasurements = false;
 
   function updateDictationControls() {
     dictationStart.disabled = !SpeechRecognition || isDictating;
@@ -170,6 +171,7 @@ export function initGarmentPublisher({ showToast }) {
     const transcript = transcriptField.value.trim();
     if (!transcript || isDictating) return false;
     const parsed = parseGarmentDictation(transcript);
+    dictationRequestsMeasurements = Boolean(parsed.useMeasurementTemplate);
     const fields = [
       ['category', 'publisherCategory'], ['garmentName', 'publisherGarmentName'],
       ['brand', 'publisherBrand'], ['size', 'publisherSize'], ['price', 'publisherPrice'],
@@ -179,9 +181,13 @@ export function initGarmentPublisher({ showToast }) {
     fields.forEach(function(pair) {
       const value = parsed[pair[0]];
       const element = document.getElementById(pair[1]);
-      const categoryIsUnselected = pair[0] === 'category' && element && element.selectedIndex === 0;
+      const isCategoryField = pair[0] === 'category';
+      const categoryOptionExists = isCategoryField && element && Array.from(element.options).some(function(option) {
+        return option.value === value || option.textContent.trim() === value;
+      });
       const fieldIsEmpty = element && !element.value.trim();
-      if (value && element && (categoryIsUnselected || fieldIsEmpty)) {
+      const canFillField = isCategoryField ? categoryOptionExists && fieldIsEmpty : fieldIsEmpty;
+      if (value && element && canFillField) {
         element.value = value;
         applied.push(pair[0]);
         element.dispatchEvent(new Event('input', { bubbles: true }));
@@ -249,11 +255,12 @@ export function initGarmentPublisher({ showToast }) {
   }
 
   function resetCurrentGarment() {
+    dictationRequestsMeasurements = false;
     ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice',
       'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength',
       'publisherTranscript'].forEach(function(id) {
       const element = document.getElementById(id);
-      if (element) element.value = id === 'publisherCategory' ? 'Otros' : '';
+      if (element) element.value = '';
     });
     clearCurrentPhotoPreview();
     photoInput.value = '';
@@ -282,14 +289,14 @@ export function initGarmentPublisher({ showToast }) {
   });
 
   function updateCategoryTemplate() {
-    const isMeasurement = MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
+    const isMeasurement = dictationRequestsMeasurements || MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
     document.getElementById('publisherMeasurements').hidden = !isMeasurement;
   }
 
   function collectData() {
     const isMeasurement = MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
     return {
-      category: category.value === 'Otros' ? '' : category.value,
+      category: category.value,
       garmentName: readValue('publisherGarmentName'),
       brand: readValue('publisherBrand'),
       size: readValue('publisherSize'),
