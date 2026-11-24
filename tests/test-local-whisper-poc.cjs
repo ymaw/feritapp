@@ -19,7 +19,7 @@ assert.doesNotMatch(html, /getUserMedia|MediaRecorder|indexedDB|localStorage|sen
 assert.match(readme, /no integra Whisper en FeritApp/i);
 assert.match(readme, /el audio no sale del equipo/i);
 assert.match(readme, /Blob temporal/i);
-assert.match(readme, /no lo escribe como archivo en el almacenamiento persistente/i);
+assert.match(readme, /ni lo escribe como archivo en el almacenamiento persistente/i);
 assert.match(readme, /buffers PCM solo pueden existir en RAM/i);
 assert.match(readme, /nunca se cacheará audio/i);
 assert.match(readme, /No promover este experimento a producción/i);
