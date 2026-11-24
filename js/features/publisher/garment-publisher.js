@@ -113,9 +113,16 @@ export function initGarmentPublisher({ showToast }) {
     recognition.onend = function() {
       isDictating = false;
       recognition = null;
-      dictationStatus.textContent = dictationErrorMessage || (transcriptField.value.trim()
-        ? 'Transcripción lista. Revisala y editá lo que necesites antes de incorporarla.'
-        : 'No se obtuvo una transcripción. Podés volver a intentarlo o escribir la descripción.');
+      updateDictationControls();
+      if (dictationErrorMessage) {
+        dictationStatus.textContent = dictationErrorMessage;
+        return;
+      }
+      if (transcriptField.value.trim()) {
+        interpretTranscript();
+      } else {
+        dictationStatus.textContent = 'No se obtuvo una transcripción. Si estás usando Firefox, probá Chrome o Edge para habilitar el reconocimiento de voz.';
+      }
       updateDictationControls();
     };
     try {
@@ -158,16 +165,17 @@ export function initGarmentPublisher({ showToast }) {
   transcriptField.addEventListener('input', updateDictationControls);
 
   useTranscript.textContent = 'Interpretar y completar campos';
-  useTranscript.addEventListener('click', function() {
+
+  function interpretTranscript() {
     const transcript = transcriptField.value.trim();
-    if (!transcript || isDictating) return;
+    if (!transcript || isDictating) return false;
     const parsed = parseGarmentDictation(transcript);
     const fields = [
       ['category', 'publisherCategory'], ['garmentName', 'publisherGarmentName'],
       ['brand', 'publisherBrand'], ['size', 'publisherSize'], ['price', 'publisherPrice'],
       ['waist', 'publisherWaist'], ['rise', 'publisherRise'], ['hip', 'publisherHip'], ['length', 'publisherLength']
     ];
-    let applied = [];
+    const applied = [];
     fields.forEach(function(pair) {
       const value = parsed[pair[0]];
       const element = document.getElementById(pair[1]);
@@ -183,18 +191,20 @@ export function initGarmentPublisher({ showToast }) {
     if (parsed.observations) {
       const observations = document.getElementById('publisherObservations');
       if (!observations.value.trim()) observations.value = parsed.observations.slice(0, 1200);
-      else observations.value = [observations.value.trim(), parsed.observations].join('\n').slice(0, 1200);
+      else observations.value = [observations.value.trim(), parsed.observations].join('\\n').slice(0, 1200);
       observations.dispatchEvent(new Event('input', { bubbles: true }));
     }
     updateCategoryTemplate();
     refreshLivePreview();
-    // Keep the reviewed source text available after parsing; only mapped fields are populated.
     transcriptField.value = transcript;
     updateDictationControls();
     dictationStatus.textContent = applied.length
-      ? 'Datos identificados y completados en campos vacíos. Revisalos antes de publicar; la transcripción original sigue disponible.'
-      : 'No se identificaron datos estructurados con suficiente certeza. Podés usar la transcripción como observaciones o completar los campos manualmente.';
-  });
+      ? 'Dictado interpretado: completamos los campos identificados. Revisá los datos y la transcripción antes de publicar.'
+      : 'No se identificaron datos estructurados con suficiente certeza. La transcripción sigue disponible para editarla o interpretarla nuevamente.';
+    return applied.length > 0;
+  }
+
+  useTranscript.addEventListener('click', interpretTranscript);
 
   updateDictationControls();
 
