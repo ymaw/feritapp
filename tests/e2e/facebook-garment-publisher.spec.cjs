@@ -1,7 +1,12 @@
 const { test, expect } = require('@playwright/test');
 
-async function openAuthenticatedApp(page) {
-  await page.addInitScript(() => {
+async function openAuthenticatedApp(page, { standalone = false } = {}) {
+  await page.addInitScript(({ standalone }) => {
+    Object.defineProperty(navigator, 'standalone', { configurable: true, value: standalone });
+    const originalMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = query => query === '(display-mode: standalone)'
+      ? { matches: standalone, media: query, onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent() { return false; } }
+      : originalMatchMedia(query);
     const rows = {
       sales: [],
       categories: [{ id: 'cat-1', name: 'Pantalones' }, { id: 'cat-2', name: 'Remeras' }],
@@ -39,7 +44,7 @@ async function openAuthenticatedApp(page) {
     window.__sharePayload = null;
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: data => Boolean(data.files?.length) });
     Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.__sharePayload = data; } });
-  });
+  }, { standalone });
   await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
@@ -161,4 +166,31 @@ test('publisher interprets explicit garment details from editable dictation', as
   await expect(page.locator('#publisherLength')).toHaveValue('60');
   await expect(page.locator('#publisherObservations')).toHaveValue(/Botón y cierre funcionando perfectamente/i);
   await expect(page.locator('#publisherTranscript')).toHaveValue(/Es un capri/i);
+});
+
+test('manual publisher works in installed PWA standalone mode without dictation', async ({ page }) => {
+  await openAuthenticatedApp(page, { standalone: true });
+  await expect.poll(() => page.evaluate(() => navigator.standalone && matchMedia('(display-mode: standalone)').matches)).toBe(true);
+
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  await expect(page.locator('#publisherMeasurements')).toBeVisible();
+  await page.locator('#publisherGarmentName').fill('Vestido largo');
+  await page.locator('#publisherBrand').fill('Ossira');
+  await page.locator('#publisherSize').fill('M');
+  await page.locator('#publisherWaist').fill('38');
+  await page.locator('#publisherRise').fill('24');
+  await page.locator('#publisherHip').fill('48');
+  await page.locator('#publisherLength').fill('110');
+  await page.locator('#publisherPrice').fill('35000');
+  await page.locator('#publisherObservations').fill('Tela liviana y excelente estado');
+  await page.locator('#publisherPhoto').setInputFiles({
+    name: 'vestido.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=', 'base64')
+  });
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Vestido largo[\\s\\S]*Marca: Ossira[\\s\\S]*Medidas:[\\s\\S]*Cintura: 38 cm[\\s\\S]*Precio: \\$35\.000/);
+  await page.locator('#publisherShare').click();
+  await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(1);
 });
