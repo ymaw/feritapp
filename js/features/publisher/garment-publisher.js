@@ -45,6 +45,102 @@ export function initGarmentPublisher({ showToast }) {
 
   let selectedPhoto = null;
   let previewUrl = null;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const dictationStart = document.getElementById('publisherDictationStart');
+  const dictationStop = document.getElementById('publisherDictationStop');
+  const transcriptField = document.getElementById('publisherTranscript');
+  const dictationStatus = document.getElementById('publisherDictationStatus');
+  const useTranscript = document.getElementById('publisherUseTranscript');
+  let recognition = null;
+  let finalTranscriptParts = [];
+  let isDictating = false;
+
+  function updateDictationControls() {
+    dictationStart.disabled = !SpeechRecognition || isDictating;
+    dictationStop.disabled = !isDictating;
+    useTranscript.disabled = !transcriptField.value.trim() || isDictating;
+    dictationStart.textContent = isDictating ? 'Escuchando…' : 'Comenzar a grabar';
+  }
+
+  if (!SpeechRecognition) {
+    dictationStart.disabled = true;
+    dictationStop.disabled = true;
+    dictationStatus.textContent = 'Este navegador no ofrece transcripción por voz. Podés escribir o pegar la descripción manualmente.';
+  }
+
+  dictationStart.addEventListener('click', function() {
+    if (!SpeechRecognition || isDictating) return;
+    finalTranscriptParts = [];
+    transcriptField.value = '';
+    recognition = new SpeechRecognition();
+    recognition.lang = 'es-AR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = function() {
+      isDictating = true;
+      dictationStatus.textContent = 'Escuchando. Hablá con naturalidad; podés detener cuando termines.';
+      updateDictationControls();
+    };
+    recognition.onresult = function(event) {
+      let interimTranscript = '';
+      for (let index = 0; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        const phrase = result[0] && result[0].transcript ? result[0].transcript.trim() : '';
+        if (result.isFinal && phrase) finalTranscriptParts[index] = phrase;
+        else if (phrase) interimTranscript += (interimTranscript ? ' ' : '') + phrase;
+      }
+      const finalText = finalTranscriptParts.filter(Boolean).join(' ').trim();
+      transcriptField.value = [finalText, interimTranscript].filter(Boolean).join(' ').slice(0, 1200);
+      updateDictationControls();
+    };
+    recognition.onerror = function(event) {
+      const messages = {
+        'not-allowed': 'No se concedió permiso para usar el micrófono.',
+        'service-not-allowed': 'El navegador o dispositivo bloqueó el reconocimiento de voz.',
+        'no-speech': 'No se detectó voz. Podés volver a intentarlo.',
+        'audio-capture': 'No se encontró un micrófono disponible.'
+      };
+      dictationStatus.textContent = messages[event.error] || 'Ocurrió un problema con el reconocimiento de voz. Revisá el texto y volvé a intentar si hace falta.';
+    };
+    recognition.onend = function() {
+      isDictating = false;
+      recognition = null;
+      dictationStatus.textContent = transcriptField.value.trim()
+        ? 'Transcripción lista. Revisala y editá lo que necesites antes de incorporarla.'
+        : 'No se obtuvo una transcripción. Podés volver a intentarlo o escribir la descripción.';
+      updateDictationControls();
+    };
+    try {
+      recognition.start();
+    } catch (error) {
+      recognition = null;
+      isDictating = false;
+      dictationStatus.textContent = 'No se pudo iniciar el micrófono. Verificá los permisos del navegador.';
+      updateDictationControls();
+    }
+  });
+
+  dictationStop.addEventListener('click', function() {
+    if (recognition && isDictating) recognition.stop();
+  });
+
+  transcriptField.addEventListener('input', updateDictationControls);
+
+  useTranscript.addEventListener('click', function() {
+    const transcript = transcriptField.value.trim();
+    if (!transcript || isDictating) return;
+    const observations = document.getElementById('publisherObservations');
+    const combined = [observations.value.trim(), transcript].filter(Boolean).join(observations.value.trim() ? '\\n' : '');
+    observations.value = combined.slice(0, 1200);
+    observations.dispatchEvent(new Event('input', { bubbles: true }));
+    observations.focus();
+    dictationStatus.textContent = combined.length > 1200
+      ? 'Se incorporó la transcripción hasta el límite de 1200 caracteres.'
+      : 'Transcripción incorporada a observaciones. Podés seguir editándola.';
+  });
+
+  updateDictationControls();
 
   function updateCategoryTemplate() {
     const isMeasurement = MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
