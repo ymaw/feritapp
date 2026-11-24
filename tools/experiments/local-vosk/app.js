@@ -122,28 +122,54 @@ async function startDictation() {
   updateControls();
 }
 
+function disconnectSafely(node) {
+  if (!node) return;
+  try {
+    node.disconnect();
+  } catch {
+    // Continue cleanup even if a Web Audio node is already disconnected.
+  }
+}
+
 function stopDictation() {
   isRecording = false;
-  if (processorNode) {
-    processorNode.onaudioprocess = null;
-    processorNode.disconnect();
-  }
-  if (sourceNode) sourceNode.disconnect();
-  if (silentGain) silentGain.disconnect();
+
+  if (processorNode) processorNode.onaudioprocess = null;
+  disconnectSafely(processorNode);
+  disconnectSafely(sourceNode);
+  disconnectSafely(silentGain);
   processorNode = null;
   sourceNode = null;
   silentGain = null;
 
-  if (recognizer) recognizer.remove();
+  const activeRecognizer = recognizer;
   recognizer = null;
-
-  if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
-  mediaStream = null;
-
-  if (audioContext && audioContext.state !== 'closed') {
-    audioContext.close().catch(() => {});
+  if (activeRecognizer) {
+    try {
+      activeRecognizer.remove();
+    } catch {
+      // Microphone and AudioContext cleanup must not depend on recognizer teardown.
+    }
   }
+
+  const activeStream = mediaStream;
+  mediaStream = null;
+  if (activeStream) {
+    activeStream.getTracks().forEach(track => {
+      try {
+        track.stop();
+      } catch {
+        // Continue stopping any remaining tracks.
+      }
+    });
+  }
+
+  const activeAudioContext = audioContext;
   audioContext = null;
+  if (activeAudioContext && activeAudioContext.state !== 'closed') {
+    activeAudioContext.close().catch(() => {});
+  }
+
   updateControls();
 }
 
