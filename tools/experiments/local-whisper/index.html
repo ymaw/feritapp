@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Evaluación aislada de Whisper WASM</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem; line-height: 1.55; }
+    main { border: 1px solid color-mix(in srgb, currentColor 20%, transparent); border-radius: 14px; padding: 1.25rem; }
+    a { overflow-wrap: anywhere; }
+    .notice { border-left: 4px solid #b7791f; padding: .75rem 1rem; background: color-mix(in srgb, #b7791f 10%, transparent); }
+    .primary { display: inline-block; padding: .8rem 1rem; border-radius: 9px; background: #2563eb; color: white; font-weight: 650; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Evaluación aislada de Whisper WASM</h1>
+    <p>Esta página no activa el micrófono ni carga motores. Abre la demo oficial de Whisper.cpp para comparar el reconocimiento en español argentino.</p>
+    <p><a class="primary" href="https://ggml.ai/whisper.cpp/" target="_blank" rel="noopener noreferrer">Abrir demo oficial de Whisper.cpp</a></p>
+    <h2>Configuración de la prueba</h2>
+    <ol>
+      <li>Seleccioná el modelo multilingüe <strong>tiny</strong> (no <strong>tiny.en</strong>).</li>
+      <li>Elegí entrada <strong>Microphone</strong>.</li>
+      <li>Seleccioná idioma <strong>Spanish</strong>.</li>
+      <li>Dictá las frases de <a href="./TEST-PLAN.md">TEST-PLAN.md</a> y compará el resultado sin corregirlo.</li>
+      <li>Repetí las mismas frases con Vosk para que la comparación sea justa.</li>
+    </ol>
+    <div class="notice">
+      <strong>Privacidad:</strong> el ejemplo upstream procesa el audio en el navegador. Su implementación de micrófono utiliza fragmentos y un Blob temporal en memoria; no debe descargarse ni exportarse audio. La integración de FeritApp deberá usar buffers transitorios en RAM, sin archivos, almacenamiento persistente, logs ni envíos de audio.
+    </div>
+    <h2>Alcance</h2>
+    <p>Este experimento está aislado. No modifica el publicador, no se integra con la aplicación y no realiza operaciones contra Supabase.</p>
+    <p><a href="./README.md">Leer documentación y criterios de aceptación</a></p>
+  </main>
+</body>
+</html>
