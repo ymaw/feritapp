@@ -49,6 +49,7 @@ assert.match(moduleSource, /navigator\.canShare\(\{ files: shareData\.files \}\)
 
 assert.match(html, /id="publisherAudioVisualizer"/);
 assert.match(moduleSource, /function renderPreviewPhotos\(\)/);
+assert.match(moduleSource, /remove\.addEventListener\('click',[\s\S]*?renderPreviewPhotos\(\);[\s\S]*?refreshLivePreview\(\);/);
 assert.match(moduleSource, /photos\.forEach/);
 assert.match(css, /publisher-photo-preview\.is-gallery/);
 assert.match(html, /id="publisherOpenPreview"/);
