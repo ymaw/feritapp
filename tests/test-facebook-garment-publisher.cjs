@@ -20,3 +20,15 @@ assert.match(moduleSource, /URL\.createObjectURL/);
 assert.match(css, /object-fit:contain/);
 assert.match(css, /@media\(max-width:900px\)/);
 console.log('Publicador: estructura, categorías, vista previa y rutas de compartir verificadas.');
+
+assert.match(html, /id="publisherDictationStart"/);
+assert.match(html, /id="publisherDictationStop"/);
+assert.match(html, /id="publisherTranscript"/);
+assert.match(html, /id="publisherUseTranscript"/);
+assert.match(moduleSource, /SpeechRecognition\.continuous = true/);
+assert.match(moduleSource, /SpeechRecognition\.interimResults = true/);
+assert.match(moduleSource, /recognition\.onresult/);
+assert.match(moduleSource, /recognition\.onend/);
+assert.match(moduleSource, /observations\.value\.trim\(\), transcript/);
+assert.match(moduleSource, /No se guarda un archivo de audio|no se guarda un archivo de audio/i);
+assert.match(css, /publisher-dictation/);
