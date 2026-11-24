@@ -11,7 +11,7 @@ assert.match(html, /id="viewPublisher"/);
 assert.match(html, /id="publisherPhoto"[^>]*accept="image\/jpeg,image\/png,image\/webp"/);
 assert.match(html, /id="publisherPostText"/);
 assert.match(script, /initGarmentPublisher/);
-assert.match(script, /import \\{ initAudioVisualizer \\} from '\.\/js\/features\/publisher\/audio-visualizer\.js'/);
+assert.ok(script.includes("import { initAudioVisualizer } from './js/features/publisher/audio-visualizer.js';"));
 assert.match(script, /initAudioVisualizer\(\)/);
 assert.match(audioModule, /getUserMedia/);
 assert.match(audioModule, /getByteTimeDomainData/);
