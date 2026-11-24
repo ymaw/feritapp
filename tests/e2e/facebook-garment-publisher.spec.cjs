@@ -78,7 +78,7 @@ test('publisher stages garments with separate photo previews, removes safely and
   await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(2);
 
   await page.locator('#publisherGenerate').click();
-  await expect(page.locator('#publisherPostText')).toHaveValue(/Capri negro[\\s\\S]*Remera modal/);
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Capri negro[\s\S]*Remera modal/);
   await page.locator('#publisherShare').click();
   await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(2);
   await expect(page.locator('#publisherFeedback')).toContainText('Se abrió el menú para compartir texto y fotografía');
