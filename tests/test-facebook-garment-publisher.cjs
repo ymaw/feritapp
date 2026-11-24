@@ -38,3 +38,9 @@ assert.match(html, /id="publisherQueuedGarments"/);
 assert.match(moduleSource, /queuedGarments\.push/);
 assert.match(moduleSource, /PRENDA/);
 assert.match(moduleSource, /navigator\.canShare\(\{ files: shareData\.files \}\)/);
+
+assert.match(html, /id="publisherAudioVisualizer"/);
+assert.match(html, /id="publisherOpenPreview"/);
+assert.match(css, /publisher-audio-visualizer/);
+assert.match(css, /color-scheme:dark/);
+assert.match(css, /publisher-preview-modal/);
