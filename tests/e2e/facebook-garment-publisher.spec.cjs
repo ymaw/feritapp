@@ -137,7 +137,7 @@ test('dictation fills the initial category placeholder but preserves a manually 
 
 test('dictation preserves an explicitly selected Otros category', async ({ page }) => {
   await openAuthenticatedApp(page);
-  await page.locator('#publisherCategory').selectOption({ index: 9 });
+  await page.locator('#publisherCategory').selectOption({ index: 10 });
   await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
   await page.locator('#publisherTranscript').fill('Es un capri de gabardina.');
   await page.locator('#publisherUseTranscript').click();
@@ -157,6 +157,6 @@ test('publisher interprets explicit garment details from editable dictation', as
   await expect(page.locator('#publisherRise')).toHaveValue('17');
   await expect(page.locator('#publisherHip')).toHaveValue('49');
   await expect(page.locator('#publisherLength')).toHaveValue('60');
-  await expect(page.locator('#publisherObservations')).toContainText('Botón y cierre funcionando perfectamente');
+  await expect(page.locator('#publisherObservations')).toHaveValue(/Botón y cierre funcionando perfectamente/i);
   await expect(page.locator('#publisherTranscript')).toContainText('Es un capri');
 });
