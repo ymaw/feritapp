@@ -68,7 +68,7 @@ test('publisher stages garments with separate photo previews, removes safely and
 
   await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(1);
   await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(1);
-  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(0);
+  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(1);
   await expect(page.locator('#publisherMeasurements')).toBeHidden();
 
   await page.locator('#publisherCategory').selectOption({ label: 'Remeras' });
@@ -77,6 +77,7 @@ test('publisher stages garments with separate photo previews, removes safely and
   await page.locator('#publisherAddGarment').click();
   await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(2);
   await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(2);
+  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(2);
 
   await page.locator('#publisherGenerate').click();
   await expect(page.locator('#publisherPostText')).toHaveValue(/Capri negro[\s\S]*Remera modal/);
@@ -87,6 +88,7 @@ test('publisher stages garments with separate photo previews, removes safely and
   await page.locator('#publisherQueuedGarments .publisher-queued-item').first().getByRole('button', { name: /Quitar Capri negro/ }).click();
   await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(1);
   await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(1);
+  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(1);
 
   await page.locator('#publisherGenerate').click();
   await expect(page.locator('#publisherPostText')).toHaveValue(/Remera modal/);
