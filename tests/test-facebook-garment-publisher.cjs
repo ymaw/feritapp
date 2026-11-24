@@ -30,5 +30,5 @@ assert.match(moduleSource, /SpeechRecognition\.interimResults = true/);
 assert.match(moduleSource, /recognition\.onresult/);
 assert.match(moduleSource, /recognition\.onend/);
 assert.match(moduleSource, /observations\.value\.trim\(\), transcript/);
-assert.match(moduleSource, /No se guarda un archivo de audio|no se guarda un archivo de audio/i);
+assert.match(html, /no se guarda un archivo de audio/i);
 assert.match(css, /publisher-dictation/);
