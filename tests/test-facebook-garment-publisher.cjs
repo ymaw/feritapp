@@ -56,3 +56,7 @@ assert.match(html, /id="publisherOpenPreview"/);
 assert.match(css, /publisher-audio-visualizer/);
 assert.match(css, /color-scheme:dark/);
 assert.match(css, /publisher-preview-modal/);
+assert.match(moduleSource, /function getPreviewFocusableElements\(\)/);
+assert.match(moduleSource, /event\.key !== 'Tab'/);
+assert.match(moduleSource, /event\.shiftKey/);
+assert.match(moduleSource, /previewReturnFocus/);
