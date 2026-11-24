@@ -132,6 +132,29 @@ export function initGarmentPublisher({ showToast }) {
     if (recognition && isDictating) recognition.stop();
   });
 
+  function abortDictationForLifecycle() {
+    if (!recognition || !isDictating) return;
+    const activeRecognition = recognition;
+    recognition = null;
+    isDictating = false;
+    try { activeRecognition.abort(); } catch (error) { /* El reconocimiento puede haberse detenido ya. */ }
+    updateDictationControls();
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') abortDictationForLifecycle();
+  });
+  window.addEventListener('pagehide', abortDictationForLifecycle, { once: true });
+
+  const publisherView = document.getElementById('viewPublisher');
+  if (publisherView && typeof MutationObserver !== 'undefined') {
+    const publisherViewObserver = new MutationObserver(function() {
+      if (publisherView.style.display === 'none') abortDictationForLifecycle();
+    });
+    publisherViewObserver.observe(publisherView, { attributes: true, attributeFilter: ['style'] });
+    window.addEventListener('pagehide', function() { publisherViewObserver.disconnect(); }, { once: true });
+  }
+
   transcriptField.addEventListener('input', updateDictationControls);
 
   useTranscript.textContent = 'Interpretar y completar campos';
