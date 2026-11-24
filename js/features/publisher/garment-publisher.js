@@ -241,6 +241,43 @@ export function initGarmentPublisher({ showToast }) {
 
   category.addEventListener('change', updateCategoryTemplate);
   updateCategoryTemplate();
+  const publisherLayout = document.querySelector('#viewPublisher .publisher-layout');
+  const previewCard = document.querySelector('#viewPublisher .publisher-preview-card');
+  const previewModal = document.getElementById('publisherPreviewModal');
+  const previewModalContent = document.getElementById('publisherPreviewModalContent');
+  const openPreview = document.getElementById('publisherOpenPreview');
+  const closePreview = document.getElementById('publisherClosePreview');
+  function refreshLivePreview() {
+    const items = queuedGarments.slice();
+    const current = collectData();
+    if (hasCurrentGarment(current)) items.push({ data: current, photo: selectedPhoto });
+    if (items.length && !postText.dataset.userEdited) {
+      postText.value = items.map(function(item,index) {
+        return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\\n' : '') + buildGarmentPost(item.data);
+      }).join(items.length > 1 ? '\\n\\n────────────\\n\\n' : '');
+    } else if (!items.length && !postText.dataset.userEdited) postText.value = '';
+  }
+  ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength'].forEach(function(id) {
+    const field = document.getElementById(id);
+    if (field) { field.addEventListener('input',refreshLivePreview); field.addEventListener('change',refreshLivePreview); }
+  });
+  postText.addEventListener('input',function(){postText.dataset.userEdited='true';});
+  function openMobilePreview() {
+    if (window.matchMedia('(min-width: 900px)').matches) return;
+    previewModal.hidden=false;
+    previewModalContent.appendChild(previewCard);
+    closePreview.focus();
+  }
+  function closeMobilePreview() {
+    previewModal.hidden=true;
+    publisherLayout.appendChild(previewCard);
+    openPreview.focus();
+  }
+  openPreview.addEventListener('click',openMobilePreview);
+  closePreview.addEventListener('click',closeMobilePreview);
+  previewModal.querySelector('[data-publisher-preview-close]').addEventListener('click',closeMobilePreview);
+  document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!previewModal.hidden)closeMobilePreview();});
+  refreshLivePreview();
 
   document.getElementById('publisherGenerate').addEventListener('click', function() {
     const currentData = collectData();
@@ -256,6 +293,7 @@ export function initGarmentPublisher({ showToast }) {
       const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '';
       return heading + buildGarmentPost(item.data);
     }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
+    delete postText.dataset.userEdited;
     feedback.textContent = items.length > 1
       ? 'Plantilla generada con ' + items.length + ' prendas. Revisá el texto y las fotografías antes de compartir.'
       : 'Plantilla generada. Revisá el texto antes de compartir.';
@@ -294,6 +332,7 @@ export function initGarmentPublisher({ showToast }) {
     image.src = previewUrl;
     image.alt = 'Vista previa de la fotografía de la prenda';
     photoPreview.appendChild(image);
+    refreshLivePreview();
     feedback.textContent = 'Fotografía lista para adjuntar.';
   });
 
