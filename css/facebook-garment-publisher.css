@@ -23,3 +23,8 @@
 .publisher-dictation-controls button:disabled,.publisher-dictation .publisher-actions button:disabled{opacity:.55;cursor:not-allowed;}
 .publisher-dictation-status{min-height:1.4em;margin:8px 0 12px;color:var(--muted);font-size:13px;line-height:1.5;}
 #publisherTranscript{display:block;width:100%;min-height:110px;resize:vertical;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font:inherit;line-height:1.5;}
+
+.publisher-queued-list{display:grid;gap:8px;margin-top:12px;}
+.publisher-queued-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font-size:13px;}
+.publisher-queued-item button{flex:0 0 auto;padding:7px 12px;}
+@media(max-width:520px){.publisher-queued-item{align-items:flex-start;}.publisher-queued-item button{width:auto;flex:0 0 auto;}}
