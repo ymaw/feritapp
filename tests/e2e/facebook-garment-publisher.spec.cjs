@@ -77,6 +77,12 @@ test('publisher stages garments with separate photo previews, removes safely and
   await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(2);
   await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(2);
 
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Capri negro[\\s\\S]*Remera modal/);
+  await page.locator('#publisherShare').click();
+  await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(2);
+  await expect(page.locator('#publisherFeedback')).toContainText('Se abrió el menú para compartir texto y fotografía');
+
   await page.locator('#publisherQueuedGarments .publisher-queued-item').first().getByRole('button', { name: /Quitar Capri negro/ }).click();
   await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(1);
   await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(1);
@@ -88,6 +94,13 @@ test('publisher stages garments with separate photo previews, removes safely and
   await page.locator('#publisherShare').click();
   await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(1);
   await expect(page.locator('#publisherFeedback')).toContainText('Se abrió el menú para compartir texto y fotografía');
+});
+
+test('publisher does not generate an empty post when no garment is entered', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherFeedback')).toContainText('Agregá al menos una prenda');
+  await expect(page.locator('#publisherPostText')).toHaveValue('');
 });
 
 test('invalid replacement photo clears the visible preview and selected attachment', async ({ page }) => {
