@@ -202,6 +202,7 @@ export function initGarmentPublisher({ showToast }) {
         if (removed && removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
         renderQueuedGarments();
         renderPreviewPhotos();
+        refreshLivePreview();
       });
       row.append(description, remove);
       queuedList.appendChild(row);
