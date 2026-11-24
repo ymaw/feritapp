@@ -23,7 +23,8 @@ const assert = require('node:assert/strict');
 
   const ambiguous = parseGarmentDictation('Capri, cintura 42 cm rígida debe ser 40.');
   assert.equal(ambiguous.waist, '42', 'must preserve the explicitly spoken measurement');
-  assert.doesNotMatch(ambiguous.observations, /debe ser 40/i, 'do not reinterpret ambiguous sizing as a field value');
+  assert.equal(ambiguous.size, '', 'do not infer a garment size from an ambiguous observation');
+  assert.match(ambiguous.observations, /debe ser 40/i, 'preserve the ambiguous phrase for manual review');
 
   const empty = parseGarmentDictation('');
   assert.equal(empty.category, '');
