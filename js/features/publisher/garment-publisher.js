@@ -294,7 +294,7 @@ export function initGarmentPublisher({ showToast }) {
   }
 
   function collectData() {
-    const isMeasurement = MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
+    const isMeasurement = dictationRequestsMeasurements || MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
     return {
       category: category.value,
       garmentName: readValue('publisherGarmentName'),
