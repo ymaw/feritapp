@@ -64,6 +64,11 @@ export function initAudioVisualizer() {
         return;
       }
       stream = nextStream;
+      stream.getTracks().forEach(track => {
+        track.addEventListener('ended', () => {
+          if (stream && stream.getTracks().every(item => item.readyState === 'ended')) stop();
+        }, { once: true });
+      });
       audioContext = new AudioContextClass();
       if (audioContext.state === 'suspended') await audioContext.resume();
       analyser = audioContext.createAnalyser();
@@ -81,6 +86,22 @@ export function initAudioVisualizer() {
 
   startButton.addEventListener('click', start);
   stopButton.addEventListener('click', stop);
+
+  if (typeof MutationObserver !== 'undefined') {
+    const publisherView = document.getElementById('viewPublisher');
+    if (publisherView) {
+      const viewObserver = new MutationObserver(() => {
+        if (publisherView.style.display === 'none') stop();
+      });
+      viewObserver.observe(publisherView, { attributes: true, attributeFilter: ['style'] });
+      window.addEventListener('pagehide', () => viewObserver.disconnect(), { once: true });
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') stop();
+  });
+
   if (status && typeof MutationObserver !== 'undefined') {
     const observer = new MutationObserver(() => {
       if (/transcripci[oó]n lista|no se obtuvo|no se concedi[oó]|bloque[oó]|no se encontr[oó]|problema con el reconocimiento|no se pudo iniciar/i.test(status.textContent)) stop();
