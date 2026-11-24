@@ -194,10 +194,6 @@ export function initGarmentPublisher({ showToast }) {
     });
     clearCurrentPhotoPreview();
     photoInput.value = '';
-    photoPreview.replaceChildren();
-    const placeholder = document.createElement('span');
-    placeholder.textContent = 'La fotografía seleccionada aparecerá acá';
-    photoPreview.appendChild(placeholder);
     updateCategoryTemplate();
     updateDictationControls();
   }
