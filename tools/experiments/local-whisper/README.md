@@ -8,7 +8,7 @@ Base: rama `feature/local-vosk-dictation-poc`, commit `aa5310a16a7ac0a724905451c
 
 ## Por qué evaluarlo
 
-Whisper.cpp ofrece una compilación WebAssembly que ejecuta el reconocimiento en el navegador. El proyecto upstream documenta que el audio no sale del equipo, que el modelo multilingüe `tiny` ocupa aproximadamente 74–75 MB y que el rendimiento puede ser exigente: en CPU/navegador modernos informa alrededor de 2–3 veces tiempo real para tiny/base. Requiere WebAssembly SIMD.
+Whisper.cpp ofrece una compilación WebAssembly que ejecuta el reconocimiento en el navegador. La evaluación inicial con `tiny` en el celular mostró errores críticos en categoría, marca, talle y precio, además de una demora excesiva para una frase corta. Por eso no se recomienda seguir ajustando Tiny: el siguiente candidato es `base` multilingüe, comparado directamente con Vosk small. Base es más grande y puede ser más lento; la prueba debe medirlo en el mismo dispositivo, no asumir que será mejor. Requiere WebAssembly SIMD.
 
 Fuentes upstream:
 - https://github.com/ggml-org/whisper.cpp/tree/master/examples/whisper.wasm
@@ -19,10 +19,10 @@ Fuentes upstream:
 
 1. Abrir `index.html` desde localhost o HTTPS.
 2. Abrir la demo oficial desde el enlace de la página.
-3. Elegir el modelo multilingüe `tiny` (no `tiny.en`, que es inglés).
+3. Elegir el modelo multilingüe `base` (no `base.en`, que es inglés). Si la demo no ofrece Base o falla al cargarlo, registrar el problema y no sustituirlo silenciosamente por Tiny.
 4. Elegir entrada **Microphone**, idioma **Spanish** y comenzar.
 5. Dictar las mismas frases definidas en `TEST-PLAN.md`.
-6. Detener y transcribir. Copiar únicamente el texto resultante al registro de evaluación; no descargar ni exportar audio.
+6. Detener y transcribir. Medir desde que se pulsa Detener hasta que aparece el texto final. Copiar únicamente el texto resultante y el tiempo al registro; no descargar ni exportar audio.
 7. Repetir en Chromium y Firefox desktop; luego en la PWA instalada y en un móvil real si el rendimiento de escritorio es aceptable.
 
 ## Auditoría de privacidad del ejemplo upstream
@@ -39,13 +39,13 @@ El demo upstream descarga el modelo y su código puede usar almacenamiento del n
 - El modelo `tiny` es multilingüe, pero no garantiza precisión específica de español rioplatense, marcas de indumentaria ni números/precios argentinos.
 - El ejemplo WASM requiere SIMD y advierte que el rendimiento es exigente. La documentación reporta 2–3x tiempo real para tiny/base en hardware moderno.
 - El ejemplo de micrófono crea un Blob temporal en RAM. No lo persiste como archivo, pero la integración definitiva deberá tener cleanup explícito y no reutilizar buffers.
-- No se midieron aún precisión, RAM, CPU, batería ni compatibilidad móvil/PWA en dispositivos reales.
+- No se midieron aún precisión, RAM, CPU, batería ni compatibilidad móvil/PWA en dispositivos reales. El ensayo de Tiny en un celular ya reportó lentitud y errores críticos; Base sigue sin probarse.
 
 ## Decisión de integración
 
 No integrar hasta cumplir todo lo siguiente:
 
-1. Comparación lado a lado con Vosk usando exactamente las mismas frases rioplatenses.
+1. Comparación lado a lado de Whisper Base y Vosk small usando exactamente las mismas frases rioplatenses y el mismo celular. Separar tiempo de descarga/carga del modelo y latencia de transcripción.
 2. Medir errores de categoría, marca, talle, medidas, números y precios; los valores numéricos incorrectos son bloqueantes.
 3. Medir latencia, RAM, CPU y batería en escritorio y celular de gama media.
 4. Probar Firefox, Chromium, WebKit y PWA instalada.
