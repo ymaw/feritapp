@@ -242,6 +242,8 @@ export function initGarmentPublisher({ showToast }) {
     previewUrl = null;
     renderQueuedGarments();
     resetCurrentGarment();
+    renderPreviewPhotos();
+    refreshLivePreview();
     feedback.textContent = 'Prenda agregada a la publicación. Podés cargar otra o generar el post con todas.';
   });
 
