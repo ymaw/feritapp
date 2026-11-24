@@ -63,11 +63,12 @@ export function parseGarmentDictation(transcript) {
   const text = String(transcript || '').replace(/\s+/g, ' ').trim();
   const result = {
     category: '', garmentName: '', brand: '', size: '', price: '',
-    waist: '', rise: '', hip: '', length: '', observations: ''
+    waist: '', rise: '', hip: '', length: '', observations: '', useMeasurementTemplate: false
   };
   if (!text) return result;
 
   const categoryRule = CATEGORY_RULES.find(([, expression]) => expression.test(text));
+  result.useMeasurementTemplate = /\\bmedidas?\\b/i.test(text) || Boolean(categoryRule && ['Capris', 'Pantalones', 'Polleras', 'Vestidos'].includes(categoryRule[0]));
   if (categoryRule) {
     result.category = categoryRule[0];
     const match = text.match(categoryRule[1]);
