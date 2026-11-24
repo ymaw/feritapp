@@ -571,6 +571,8 @@
           <button class="secondary-btn" id="publisherDictationStart" type="button">Comenzar a grabar</button>
           <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener</button>
         </div>
+        <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" aria-label="Nivel de audio del micrófono" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <p class="publisher-audio-level" id="publisherAudioLevel">El nivel de voz se mostrará mientras hablás.</p>
         <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">La transcripción se procesa en el navegador mientras hablás; no se guarda un archivo de audio.</p>
         <label for="publisherTranscript">Transcripción editable</label>
         <textarea id="publisherTranscript" maxlength="1200" rows="4" placeholder="Cuando termines de hablar, revisá y editá el texto acá…"></textarea>
@@ -590,6 +592,7 @@
         <button class="secondary-btn" id="publisherGenerate" type="button">Generar plantilla</button>
       </div>
       <div class="publisher-queued-list" id="publisherQueuedGarments" aria-live="polite" hidden></div>
+      <button class="save-btn publisher-mobile-preview-trigger" id="publisherOpenPreview" type="button">Ver vista previa</button>
     </section>
     <section class="publisher-card publisher-preview-card" aria-labelledby="publisherPreviewTitle">
       <div class="publisher-card-heading"><div><p class="section-title" id="publisherPreviewTitle">Vista previa del post</p><p class="publisher-muted">Podés corregir el texto antes de compartirlo.</p></div></div>
@@ -602,6 +605,13 @@
       </div>
       <p class="publisher-muted" id="publisherShareHelp">Si tu navegador permite compartir archivos, se enviarán el texto y la fotografía juntos. Si no, vas a poder copiar el texto y descargar la foto para adjuntarla en Facebook.</p>
       <p class="publisher-feedback" id="publisherFeedback" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <div class="publisher-preview-modal" id="publisherPreviewModal" hidden>
+    <div class="publisher-preview-modal-backdrop" data-publisher-preview-close></div>
+    <section class="publisher-preview-modal-panel" role="dialog" aria-modal="true" aria-labelledby="publisherPreviewModalTitle">
+      <div class="publisher-preview-modal-heading"><h2 id="publisherPreviewModalTitle">Vista previa de la publicación</h2><button class="secondary-btn" id="publisherClosePreview" type="button" aria-label="Cerrar vista previa">Cerrar</button></div>
+      <div id="publisherPreviewModalContent"></div>
     </section>
   </div>
 </div>
