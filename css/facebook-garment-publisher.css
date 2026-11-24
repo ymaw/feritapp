@@ -32,3 +32,12 @@
 .publisher-queued-item{justify-content:flex-start;}
 .publisher-queued-photo{display:block;flex:0 0 64px;width:64px;height:64px;object-fit:contain;border-radius:8px;background:var(--surface-2);}
 .publisher-queued-description{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}
+
+/* En escritorio, reservar el ancho de la navegación lateral persistente. */
+@media (min-width: 900px) {
+  #viewPublisher {
+    box-sizing: border-box;
+    width: calc(100% - 248px);
+    margin-left: 248px;
+  }
+}
