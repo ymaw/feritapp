@@ -557,14 +557,14 @@
         <div><p class="section-title" id="publisherFormTitle">Datos de la prenda</p><p class="publisher-muted">Completá los datos y generá una plantilla lista para revisar.</p></div>
       </div>
       <div class="publisher-fields-grid">
-        <div class="field"><label for="publisherCategory">Categoría</label><select id="publisherCategory"><option value="Otros">Seleccioná una categoría</option><option>Pantalones</option><option>Capris</option><option>Polleras</option><option>Vestidos</option><option>Camisas</option><option>Remeras</option><option>Musculosas</option><option>Accesorios</option><option>Zapatillas</option><option>Otros</option></select></div>
+        <div class="field"><label for="publisherCategory">Categoría</label><select id="publisherCategory" class="publisher-category-select"><option value="Otros">Seleccioná una categoría</option><option>Pantalones</option><option>Capris</option><option>Polleras</option><option>Vestidos</option><option>Camisas</option><option>Remeras</option><option>Musculosas</option><option>Accesorios</option><option>Zapatillas</option><option>Otros</option></select></div>
         <div class="field"><label for="publisherGarmentName">Prenda / artículo</label><input id="publisherGarmentName" maxlength="100" placeholder="Ej.: Capri de gabardina"/></div>
         <div class="field"><label for="publisherBrand">Marca</label><input id="publisherBrand" maxlength="80" placeholder="Ej.: Ossira"/></div>
         <div class="field"><label for="publisherSize">Talle</label><input id="publisherSize" maxlength="40" placeholder="Ej.: M, 40, único"/></div>
         <div class="field"><label for="publisherPrice">Precio (ARS)</label><input id="publisherPrice" inputmode="numeric" maxlength="12" placeholder="Ej.: 7000"/></div>
-        <div class="field publisher-photo-field"><label for="publisherPhoto">Fotografía</label><input id="publisherPhoto" type="file" accept="image/jpeg,image/png,image/webp"/></div>
+        <div class="field publisher-photo-field"><label for="publisherPhoto">Fotografía</label><input id="publisherPhoto" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp"/></div>
       </div>
-      <div class="field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" maxlength="1200" rows="4" placeholder="Describí el estado, detalles, calce o cualquier dato importante…"></textarea></div>
+      <div class="field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" class="publisher-fixed-textarea" maxlength="1200" rows="4" placeholder="Describí el estado, detalles, calce o cualquier dato importante…"></textarea></div>
       <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
         <div class="publisher-dictation-heading"><strong id="publisherDictationTitle">🎙️ Describí la prenda hablando</strong><span class="publisher-muted">Podés detenerte, corregir la transcripción y recién después incorporarla.</span></div>
         <div class="publisher-actions publisher-dictation-controls">
