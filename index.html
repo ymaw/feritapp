@@ -45,6 +45,7 @@
 <link href="css/facebook-garment-publisher.css?v=1" rel="stylesheet"/>
 <link href="css/navigation-personalization.css?v=1" rel="stylesheet"/>
 <link href="css/clients.css?v=12.126" rel="stylesheet"/>
+<link href="css/ranking-filters.css?v=1" rel="stylesheet"/>
 <link href="css/empty-states.css?v=12.126" rel="stylesheet"/>
 <link href="css/category-picker.css?v=12.127" rel="stylesheet"/>
 <link href="css/weekly-summary-menu.css?v=12.126" rel="stylesheet"/>
@@ -457,8 +458,26 @@
 <div class="view-hero ranking-hero sales-heading-card"><span aria-hidden="true" class="sales-heading-mark"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5v2a4 4 0 0 0 4 4M16 6h3v2a4 4 0 0 1-4 4M12 12v5M8 20h8M9 17h6"></path></svg></span><div class="sales-heading-copy"><div class="view-hero-kicker">RANKING</div><h2>Tus clientes destacados</h2><p>Conocé quiénes compran más y usá esta información para priorizar tus entregas y ventas.</p></div></div>
 <div class="section-block">
 <div class="ranking-actions"><p class="section-title">Clientes que más compraron</p><button class="ranking-share-btn" id="shareRankingBtn" type="button"><span aria-hidden="true">↗</span> Compartir ranking</button></div>
+<div class="ranking-filters" aria-label="Filtros del ranking">
+<label class="ranking-filter" for="rankingSortBy">Ordenar por
+<select id="rankingSortBy">
+<option value="articles">Artículos comprados</option>
+<option value="total">Total gastado</option>
+</select>
+</label>
+<label class="ranking-filter" for="rankingPeriod">Período calendario
+<select id="rankingPeriod">
+<option value="month">Este mes</option>
+<option value="quarter">Este cuatrimestre</option>
+<option value="semester">Este semestre</option>
+<option value="year">Este año</option>
+<option value="all">Todo el historial</option>
+</select>
+</label>
+</div>
+<p class="ranking-period-caption" id="rankingPeriodCaption">Período actual · actualizado con las ventas registradas</p>
 <button class="reset-link ranking-money-toggle" id="toggleRankingMoney" type="button">💰 Mostrar montos gastados</button>
-<div id="topClients"></div>
+<div id="topClients" aria-live="polite"></div>
 </div>
 </div>
 <div class="app-view" id="viewClients" style="display:none;">
