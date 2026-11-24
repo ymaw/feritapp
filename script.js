@@ -2186,60 +2186,62 @@ document.addEventListener('DOMContentLoaded', function(){
 
   let showRankingMoney = false;
   let rankingVisibleCount = 5;
+  let rankingSortBy = 'articles';
+  let rankingPeriod = 'month';
+
+  function rankingPeriodDescription(){
+    const now = new Date(), year = now.getFullYear(), month = now.getMonth();
+    const names = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    if(rankingPeriod === 'all') return 'Todo el historial';
+    if(rankingPeriod === 'month') return names[month].charAt(0).toUpperCase() + names[month].slice(1) + ' ' + year;
+    if(rankingPeriod === 'quarter'){ const first=Math.floor(month/4)*4; return names[first].charAt(0).toUpperCase()+names[first].slice(1)+'–'+names[first+3]+' '+year; }
+    if(rankingPeriod === 'semester'){ const first=Math.floor(month/6)*6; return names[first].charAt(0).toUpperCase()+names[first].slice(1)+'–'+names[first+5]+' '+year; }
+    return 'Año ' + year;
+  }
 
   function renderTopClients(){
     let wrap = document.getElementById('topClients');
     if(!wrap) return;
-
-    if(sales.length === 0){
-      wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas registradas.</div>';
-      return;
-    }
-
-    let byClient = {};
-    sales.forEach(function(s){
-      let name = s.cliente || 'Sin nombre';
-      if(!byClient[name]){ byClient[name] = { name: name, count: 0, total: 0 }; }
-      byClient[name].count += 1;
-      byClient[name].total += Number(s.precio) || 0;
-    });
-
-    // El ranking ordena por CANTIDAD de artículos comprados (no por monto).
-    let ranked = Object.keys(byClient).map(function(k){ return byClient[k]; });
-    ranked.sort(function(a, b){ return b.count - a.count || b.total - a.total; });
-
-    let visible = ranked.slice(0, rankingVisibleCount);
-
-    let medals = ['🥇','🥈','🥉'];
+    const ranked = getRankedClients(sales, { sortBy: rankingSortBy, period: rankingPeriod });
+    const caption = document.getElementById('rankingPeriodCaption');
+    if(caption) caption.textContent = rankingPeriodDescription() + ' · ' + (rankingSortBy === 'total' ? 'ordenado por total gastado' : 'ordenado por artículos comprados');
+    if(!ranked.length){ wrap.innerHTML = '<div class="empty-inline">No hay ventas registradas para este período.</div>'; return; }
+    const visible = ranked.slice(0, rankingVisibleCount), medals = ['🥇','🥈','🥉'];
     let html = '<div class="rank-list">';
     visible.forEach(function(c, idx){
-      let medal = medals[idx] || ('#' + (idx + 1));
+      const medal = medals[idx] || ('#' + (idx + 1));
       html += '<div class="rank-item' + (showRankingMoney ? ' has-money' : '') + '">' +
-        '<div class="rank-medal">' + medal + '</div>' +
-        '<div class="rank-info">' +
-          '<button type="button" class="rank-name client-name-link" data-client-link="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</button>' +
-          '<div class="rank-sub">Cliente destacado</div>' +
-        '</div>' +
+        '<div class="rank-medal">' + medal + '</div><div class="rank-info">' +
+        '<button type="button" class="rank-name client-name-link" data-client-link="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</button>' +
+        '<div class="rank-sub">' + c.count + (c.count === 1 ? ' artículo comprado' : ' artículos comprados') + '</div></div>' +
         '<div class="rank-count" aria-label="' + c.count + ' artículos">' + c.count + '</div>' +
-        (showRankingMoney ? '<div class="rank-total">' + money(c.total) + '</div>' : '') +
-      '</div>';
+        (showRankingMoney ? '<div class="rank-total">' + money(c.total) + '</div>' : '') + '</div>';
     });
     html += '</div>';
-
-    if(ranked.length > visible.length){
-      html += '<button type="button" class="reset-link" id="rankingShowMoreBtn" style="margin-top:12px;">Ver más (' + (ranked.length - visible.length) + ' restantes)</button>';
-    }
-
+    if(ranked.length > visible.length) html += '<button type="button" class="reset-link" id="rankingShowMoreBtn" style="margin-top:12px;">Ver más (' + (ranked.length-visible.length) + ' restantes)</button>';
     wrap.innerHTML = html;
-
-    const rankingMoreBtn = document.getElementById('rankingShowMoreBtn');
-    if(rankingMoreBtn){
-      rankingMoreBtn.addEventListener('click', function(){
-        rankingVisibleCount += 5;
-        renderTopClients();
-      });
-    }
+    const more = document.getElementById('rankingShowMoreBtn');
+    if(more) more.addEventListener('click', function(){ rankingVisibleCount += 5; renderTopClients(); });
   }
+
+  const rankingSortSelect = document.getElementById('rankingSortBy');
+  const rankingPeriodSelect = document.getElementById('rankingPeriod');
+  const toggleRankingMoneyBtn = document.getElementById('toggleRankingMoney');
+  if(rankingSortSelect) rankingSortSelect.addEventListener('change', function(){
+    rankingSortBy = rankingSortSelect.value === 'total' ? 'total' : 'articles';
+    if(rankingSortBy === 'total') showRankingMoney = true;
+    if(toggleRankingMoneyBtn) toggleRankingMoneyBtn.textContent = showRankingMoney ? '💰 Ocultar montos gastados' : '💰 Mostrar montos gastados';
+    rankingVisibleCount = 5; renderTopClients();
+  });
+  if(rankingPeriodSelect) rankingPeriodSelect.addEventListener('change', function(){
+    rankingPeriod = ['month','quarter','semester','year','all'].includes(rankingPeriodSelect.value) ? rankingPeriodSelect.value : 'month';
+    rankingVisibleCount = 5; renderTopClients();
+  });
+  if(toggleRankingMoneyBtn) toggleRankingMoneyBtn.addEventListener('click', function(){
+    showRankingMoney = !showRankingMoney;
+    toggleRankingMoneyBtn.textContent = showRankingMoney ? '💰 Ocultar montos gastados' : '💰 Mostrar montos gastados';
+    renderTopClients();
+  });
 
   // Secciones del dashboard: alternancia accesible con delegación para sobrevivir a los re-renderizados.
   const dashboardView = document.getElementById('viewDashboard');
@@ -2270,7 +2272,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
   async function shareCustomerRanking(){
-    const ranked = getRankedClients(sales);
+    const ranked = getRankedClients(sales, { sortBy: rankingSortBy, period: rankingPeriod });
     if(!ranked.length){ showToast('Todavía no hay ventas para compartir el ranking.'); return; }
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     const palette = dark ? {
