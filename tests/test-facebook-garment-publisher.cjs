@@ -70,7 +70,7 @@ assert.match(moduleSource, /event\.shiftKey/);
 assert.match(moduleSource, /previewReturnFocus/);
 
 assert.match(moduleSource, /function interpretTranscript\(\)/);
-assert.match(moduleSource, /recognition\.onend = function\(\)[\\s\\S]*?interpretTranscript\(\)/);
+assert.match(moduleSource, /recognition\.onend = function\(\)[\s\S]*?interpretTranscript\(\)/);
 assert.match(html, /id="publisherCategory" class="publisher-category-select"/);
 assert.match(html, /id="publisherPhoto" class="publisher-photo-input" type="file"/);
 assert.match(html, /id="publisherObservations" class="publisher-fixed-textarea"/);
