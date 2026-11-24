@@ -245,8 +245,12 @@ export function initGarmentPublisher({ showToast }) {
   document.getElementById('publisherGenerate').addEventListener('click', function() {
     const currentData = collectData();
     const items = queuedGarments.slice();
-    if (hasCurrentGarment(currentData) || items.length === 0) {
+    if (hasCurrentGarment(currentData)) {
       items.push({ data: currentData, photo: selectedPhoto });
+    }
+    if (items.length === 0) {
+      feedback.textContent = 'Agregá al menos una prenda antes de generar la publicación.';
+      return;
     }
     postText.value = items.map(function(item, index) {
       const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '';
