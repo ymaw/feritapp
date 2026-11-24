@@ -45,6 +45,8 @@ export function initGarmentPublisher({ showToast }) {
 
   let selectedPhoto = null;
   let previewUrl = null;
+  const queuedGarments = [];
+  const queuedList = document.getElementById('publisherQueuedGarments');
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const dictationStart = document.getElementById('publisherDictationStart');
   const dictationStop = document.getElementById('publisherDictationStop');
@@ -145,6 +147,66 @@ export function initGarmentPublisher({ showToast }) {
 
   updateDictationControls();
 
+  function renderQueuedGarments() {
+    if (!queuedList) return;
+    queuedList.replaceChildren();
+    queuedGarments.forEach(function(item, index) {
+      const row = document.createElement('div');
+      row.className = 'publisher-queued-item';
+      const description = document.createElement('span');
+      description.textContent = (index + 1) + '. ' + (item.data.garmentName || item.data.category || 'Prenda') +
+        (item.data.brand ? ' · ' + item.data.brand : '') + (item.photo ? ' · Foto adjunta' : ' · Sin foto');
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'secondary-btn';
+      remove.textContent = 'Quitar';
+      remove.setAttribute('aria-label', 'Quitar ' + (item.data.garmentName || 'prenda ' + (index + 1)));
+      remove.addEventListener('click', function() {
+        queuedGarments.splice(index, 1);
+        renderQueuedGarments();
+      });
+      row.append(description, remove);
+      queuedList.appendChild(row);
+    });
+    queuedList.hidden = queuedGarments.length === 0;
+  }
+
+  function hasCurrentGarment(data) {
+    return Boolean(data.garmentName || data.category || data.brand || data.size || data.observations ||
+      data.price || data.measurements.some(function(item) { return item.value; }) || selectedPhoto);
+  }
+
+  function resetCurrentGarment() {
+    ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice',
+      'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength',
+      'publisherTranscript'].forEach(function(id) {
+      const element = document.getElementById(id);
+      if (element) element.value = id === 'publisherCategory' ? 'Otros' : '';
+    });
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+    selectedPhoto = null;
+    photoInput.value = '';
+    photoPreview.replaceChildren();
+    const placeholder = document.createElement('span');
+    placeholder.textContent = 'La fotografía seleccionada aparecerá acá';
+    photoPreview.appendChild(placeholder);
+    updateCategoryTemplate();
+    updateDictationControls();
+  }
+
+  document.getElementById('publisherAddGarment').addEventListener('click', function() {
+    const data = collectData();
+    if (!hasCurrentGarment(data)) {
+      feedback.textContent = 'Completá al menos un dato o seleccioná una fotografía antes de agregar la prenda.';
+      return;
+    }
+    queuedGarments.push({ data: data, photo: selectedPhoto });
+    renderQueuedGarments();
+    resetCurrentGarment();
+    feedback.textContent = 'Prenda agregada a la publicación. Podés cargar otra o generar el post con todas.';
+  });
+
   function updateCategoryTemplate() {
     const isMeasurement = MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
     document.getElementById('publisherMeasurements').hidden = !isMeasurement;
@@ -172,8 +234,18 @@ export function initGarmentPublisher({ showToast }) {
   updateCategoryTemplate();
 
   document.getElementById('publisherGenerate').addEventListener('click', function() {
-    postText.value = buildGarmentPost(collectData());
-    feedback.textContent = 'Plantilla generada. Revisá el texto antes de compartir.';
+    const currentData = collectData();
+    const items = queuedGarments.slice();
+    if (hasCurrentGarment(currentData) || items.length === 0) {
+      items.push({ data: currentData, photo: selectedPhoto });
+    }
+    postText.value = items.map(function(item, index) {
+      const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '';
+      return heading + buildGarmentPost(item.data);
+    }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
+    feedback.textContent = items.length > 1
+      ? 'Plantilla generada con ' + items.length + ' prendas. Revisá el texto y las fotografías antes de compartir.'
+      : 'Plantilla generada. Revisá el texto antes de compartir.';
   });
 
   photoInput.addEventListener('change', function() {
@@ -225,15 +297,17 @@ export function initGarmentPublisher({ showToast }) {
       feedback.textContent = 'Primero generá o escribí el texto de la publicación.';
       return;
     }
-    const shareData = { title: 'Publicación de prenda', text: text };
-    if (selectedPhoto) shareData.files = [selectedPhoto];
+    const shareData = { title: 'Publicación de prendas', text: text };
+    const photos = queuedGarments.map(function(item) { return item.photo; }).filter(Boolean);
+    if (selectedPhoto) photos.push(selectedPhoto);
+    if (photos.length) shareData.files = photos;
     try {
-      if (selectedPhoto && navigator.canShare && navigator.canShare({ files: shareData.files })) {
+      if (photos.length && navigator.canShare && navigator.canShare({ files: shareData.files })) {
         await navigator.share(shareData);
         feedback.textContent = 'Se abrió el menú para compartir texto y fotografía.';
         return;
       }
-      if (!selectedPhoto && navigator.share) {
+      if (!photos.length && navigator.share) {
         await navigator.share(shareData);
         feedback.textContent = 'Se abrió el menú para compartir el texto.';
         return;
@@ -250,16 +324,18 @@ export function initGarmentPublisher({ showToast }) {
       postText.select();
       if (document.execCommand) document.execCommand('copy');
     }
-    if (selectedPhoto) {
-      const url = URL.createObjectURL(selectedPhoto);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = selectedPhoto.name || 'foto-prenda';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-      feedback.textContent = 'Texto copiado y fotografía descargada. Adjuntá la imagen en Facebook.';
+    if (photos.length) {
+      photos.forEach(function(photo, index) {
+        const url = URL.createObjectURL(photo);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = photo.name || ('foto-prenda-' + (index + 1));
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(function() { URL.revokeObjectURL(url); }, 1500 + index * 250);
+      });
+      feedback.textContent = 'Texto copiado y ' + photos.length + ' fotografía(s) descargada(s). Adjuntalas en Facebook.';
     } else {
       feedback.textContent = 'Texto copiado. Pegalo en Facebook.';
     }
