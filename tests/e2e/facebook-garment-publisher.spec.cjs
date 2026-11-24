@@ -190,7 +190,7 @@ test('manual publisher works in installed PWA standalone mode without dictation'
   });
 
   await page.locator('#publisherGenerate').click();
-  await expect(page.locator('#publisherPostText')).toHaveValue(/Vestido largo[\\s\\S]*Marca: Ossira[\\s\\S]*Medidas:[\\s\\S]*Cintura: 38 cm[\\s\\S]*Precio: \\$35\.000/);
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Vestido largo[\s\S]*Marca: Ossira[\s\S]*Medidas:[\s\S]*Cintura: 38 cm[\s\S]*Precio: \$35\.000/);
   await page.locator('#publisherShare').click();
   await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(1);
 });
