@@ -201,6 +201,7 @@ export function initGarmentPublisher({ showToast }) {
         const removed = queuedGarments.splice(index, 1)[0];
         if (removed && removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
         renderQueuedGarments();
+        renderPreviewPhotos();
       });
       row.append(description, remove);
       queuedList.appendChild(row);
@@ -275,14 +276,39 @@ export function initGarmentPublisher({ showToast }) {
   const previewModalContent = document.getElementById('publisherPreviewModalContent');
   const openPreview = document.getElementById('publisherOpenPreview');
   const closePreview = document.getElementById('publisherClosePreview');
+  function renderPreviewPhotos() {
+    const photos = queuedGarments
+      .filter(function(item) { return item.previewUrl; })
+      .map(function(item) {
+        return { url: item.previewUrl, alt: 'Fotografía de ' + (item.data.garmentName || item.data.category || 'prenda') };
+      });
+    if (selectedPhoto && previewUrl) {
+      photos.push({ url: previewUrl, alt: 'Vista previa de la fotografía de la prenda actual' });
+    }
+    photoPreview.replaceChildren();
+    photoPreview.classList.toggle('is-gallery', photos.length > 1);
+    if (!photos.length) {
+      const placeholder = document.createElement('span');
+      placeholder.textContent = 'La fotografía seleccionada aparecerá acá';
+      photoPreview.appendChild(placeholder);
+      return;
+    }
+    photos.forEach(function(item) {
+      const image = document.createElement('img');
+      image.src = item.url;
+      image.alt = item.alt;
+      photoPreview.appendChild(image);
+    });
+  }
+
   function refreshLivePreview() {
     const items = queuedGarments.slice();
     const current = collectData();
     if (hasCurrentGarment(current)) items.push({ data: current, photo: selectedPhoto });
     if (items.length && !postText.dataset.userEdited) {
       postText.value = items.map(function(item,index) {
-        return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\\n' : '') + buildGarmentPost(item.data);
-      }).join(items.length > 1 ? '\\n\\n────────────\\n\\n' : '');
+        return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '') + buildGarmentPost(item.data);
+      }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
     } else if (!items.length && !postText.dataset.userEdited) postText.value = '';
   }
   ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength'].forEach(function(id) {
@@ -305,6 +331,7 @@ export function initGarmentPublisher({ showToast }) {
   closePreview.addEventListener('click',closeMobilePreview);
   previewModal.querySelector('[data-publisher-preview-close]').addEventListener('click',closeMobilePreview);
   document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!previewModal.hidden)closeMobilePreview();});
+  renderPreviewPhotos();
   refreshLivePreview();
 
   document.getElementById('publisherGenerate').addEventListener('click', function() {
@@ -331,10 +358,7 @@ export function initGarmentPublisher({ showToast }) {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = null;
     selectedPhoto = null;
-    photoPreview.replaceChildren();
-    const placeholder = document.createElement('span');
-    placeholder.textContent = 'La fotografía seleccionada aparecerá acá';
-    photoPreview.appendChild(placeholder);
+    renderPreviewPhotos();
   }
 
   photoInput.addEventListener('change', function() {
@@ -355,11 +379,7 @@ export function initGarmentPublisher({ showToast }) {
     selectedPhoto = file;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = URL.createObjectURL(file);
-    photoPreview.innerHTML = '';
-    const image = document.createElement('img');
-    image.src = previewUrl;
-    image.alt = 'Vista previa de la fotografía de la prenda';
-    photoPreview.appendChild(image);
+    renderPreviewPhotos();
     refreshLivePreview();
     feedback.textContent = 'Fotografía lista para adjuntar.';
   });
