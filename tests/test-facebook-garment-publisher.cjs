@@ -29,7 +29,8 @@ assert.match(moduleSource, /recognition\.continuous = true/);
 assert.match(moduleSource, /recognition\.interimResults = true/);
 assert.match(moduleSource, /recognition\.onresult/);
 assert.match(moduleSource, /recognition\.onend/);
-assert.match(moduleSource, /observations\.value\.trim\(\), transcript/);
+assert.match(moduleSource, /parseGarmentDictation\(transcript\)/);
+assert.match(moduleSource, /Interpretar y completar campos/);
 assert.match(html, /no se guarda un archivo de audio/i);
 assert.match(css, /publisher-dictation/);
 

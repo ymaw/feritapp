@@ -40,6 +40,7 @@ async function openAuthenticatedApp(page) {
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: data => Boolean(data.files?.length) });
     Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.__sharePayload = data; } });
   });
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
