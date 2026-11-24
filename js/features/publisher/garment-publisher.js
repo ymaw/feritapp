@@ -1,3 +1,5 @@
+import { parseGarmentDictation } from './dictation-parser.js';
+
 const MEASUREMENT_CATEGORIES = new Set(['pantalones', 'capris', 'polleras', 'vestidos']);
 
 function normalizeCategory(value) {
@@ -132,20 +134,46 @@ export function initGarmentPublisher({ showToast }) {
 
   transcriptField.addEventListener('input', updateDictationControls);
 
+  useTranscript.textContent = 'Interpretar y completar campos';
   useTranscript.addEventListener('click', function() {
     const transcript = transcriptField.value.trim();
     if (!transcript || isDictating) return;
-    const observations = document.getElementById('publisherObservations');
-    const combined = [observations.value.trim(), transcript].filter(Boolean).join(observations.value.trim() ? '\n' : '');
-    observations.value = combined.slice(0, 1200);
-    observations.dispatchEvent(new Event('input', { bubbles: true }));
-    observations.focus();
-    dictationStatus.textContent = combined.length > 1200
-      ? 'Se incorporó la transcripción hasta el límite de 1200 caracteres.'
-      : 'Transcripción incorporada a observaciones. Podés seguir editándola.';
+    const parsed = parseGarmentDictation(transcript);
+    const fields = [
+      ['category', 'publisherCategory'], ['garmentName', 'publisherGarmentName'],
+      ['brand', 'publisherBrand'], ['size', 'publisherSize'], ['price', 'publisherPrice'],
+      ['waist', 'publisherWaist'], ['rise', 'publisherRise'], ['hip', 'publisherHip'], ['length', 'publisherLength']
+    ];
+    let applied = [];
+    fields.forEach(function(pair) {
+      const value = parsed[pair[0]];
+      const element = document.getElementById(pair[1]);
+      if (value && element && !element.value.trim()) {
+        element.value = value;
+        applied.push(pair[0]);
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    if (parsed.observations) {
+      const observations = document.getElementById('publisherObservations');
+      if (!observations.value.trim()) observations.value = parsed.observations.slice(0, 1200);
+      else observations.value = [observations.value.trim(), parsed.observations].join('\n').slice(0, 1200);
+      observations.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    updateCategoryTemplate();
+    refreshLivePreviewIfAvailable();
+    dictationStatus.textContent = applied.length
+      ? 'Datos identificados y completados en campos vacíos. Revisalos antes de publicar; la transcripción original sigue disponible.'
+      : 'No se identificaron datos estructurados con suficiente certeza. Podés usar la transcripción como observaciones o completar los campos manualmente.';
   });
 
   updateDictationControls();
+
+  function refreshLivePreviewIfAvailable() {
+    const event = new Event('publisher:dictation-applied');
+    document.dispatchEvent(event);
+  }
 
   function renderQueuedGarments() {
     if (!queuedList) return;

@@ -33,12 +33,10 @@ import { salesForOperationalWeek as selectSalesForOperationalWeek } from './js/f
 import { groupSalesByMonth } from './js/features/sales/group-sales-by-month.js';
 import { getReceiptSelectionForClient as selectReceiptItemsForClient } from './js/features/receipts/receipt-selection.js';
 import { initGarmentPublisher } from './js/features/publisher/garment-publisher.js';
-import { initPublisherAudioVisualizer } from './js/features/publisher/audio-visualizer.js';
 
 document.addEventListener('DOMContentLoaded', function(){
   "use strict";
 
-  initPublisherAudioVisualizer();
   initGarmentPublisher({ showToast });
 
   /* =========================================================
