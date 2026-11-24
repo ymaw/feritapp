@@ -121,3 +121,20 @@ test('invalid replacement photo clears the visible preview and selected attachme
   await page.locator('#publisherShare').click();
   await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(0);
 });
+
+test('publisher interprets explicit garment details from editable dictation', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina, marca Ossira, talle 40, cintura 42 cm, tiro delantero 17 cm, cadera 49 cm, largo 60 cm y precio siete mil pesos. Botón y cierre funcionando perfectamente.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Capris');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/capri de gabardina/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('Ossira');
+  await expect(page.locator('#publisherSize')).toHaveValue('40');
+  await expect(page.locator('#publisherPrice')).toHaveValue('7000');
+  await expect(page.locator('#publisherWaist')).toHaveValue('42');
+  await expect(page.locator('#publisherRise')).toHaveValue('17');
+  await expect(page.locator('#publisherHip')).toHaveValue('49');
+  await expect(page.locator('#publisherLength')).toHaveValue('60');
+  await expect(page.locator('#publisherObservations')).toContainText('Botón y cierre funcionando perfectamente');
+  await expect(page.locator('#publisherTranscript')).toContainText('Es un capri');
+});

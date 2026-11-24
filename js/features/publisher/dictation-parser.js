@@ -72,6 +72,8 @@ export function parseGarmentDictation(transcript) {
     /\\b(?:el\\s+)?largo\\s+(?:de\\s+)?\\d+(?:[,.]\\d+)?(?:\\s*cm)?/iu
   ];
   removals.forEach(regex => { remainder = remainder.replace(regex, ' '); });
+  if (result.brand) remainder = remainder.replace(new RegExp('\\\\bmarca\\\\s+' + result.brand.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\  removals.forEach(regex => { remainder = remainder.replace(regex, ' '); });'), 'i'), ' ');
+  if (result.category) remainder = remainder.replace(CATEGORY_RULES.find(item => item[0] === result.category)[1], ' ');
   result.observations = clean(remainder.replace(/\\s+/g, ' ').replace(/^[,.;\\s]+|[,.;\\s]+$/g, ''));
   return result;
 }
