@@ -319,21 +319,56 @@ export function initGarmentPublisher({ showToast }) {
     if (field) { field.addEventListener('input',refreshLivePreview); field.addEventListener('change',refreshLivePreview); }
   });
   postText.addEventListener('input',function(){postText.dataset.userEdited='true';});
+  let previewReturnFocus = null;
+  function getPreviewFocusableElements() {
+    return Array.from(previewModal.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function(element) {
+      return !element.hidden && element.getAttribute('aria-hidden') !== 'true' &&
+        element.getClientRects().length > 0;
+    });
+  }
   function openMobilePreview() {
     if (window.matchMedia('(min-width: 900px)').matches) return;
-    previewModal.hidden=false;
+    previewReturnFocus = document.activeElement;
+    previewModal.hidden = false;
     previewModalContent.appendChild(previewCard);
     closePreview.focus();
   }
   function closeMobilePreview() {
-    previewModal.hidden=true;
+    if (previewModal.hidden) return;
+    previewModal.hidden = true;
     publisherLayout.appendChild(previewCard);
-    openPreview.focus();
+    const target = previewReturnFocus && previewReturnFocus.isConnected ? previewReturnFocus : openPreview;
+    target.focus();
+    previewReturnFocus = null;
   }
-  openPreview.addEventListener('click',openMobilePreview);
-  closePreview.addEventListener('click',closeMobilePreview);
-  previewModal.querySelector('[data-publisher-preview-close]').addEventListener('click',closeMobilePreview);
-  document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!previewModal.hidden)closeMobilePreview();});
+  openPreview.addEventListener('click', openMobilePreview);
+  closePreview.addEventListener('click', closeMobilePreview);
+  previewModal.querySelector('[data-publisher-preview-close]').addEventListener('click', closeMobilePreview);
+  previewModal.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMobilePreview();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = getPreviewFocusableElements();
+    if (!focusable.length) {
+      event.preventDefault();
+      closePreview.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !previewModal.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !previewModal.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
   renderPreviewPhotos();
   refreshLivePreview();
 
