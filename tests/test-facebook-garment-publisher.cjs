@@ -32,3 +32,9 @@ assert.match(moduleSource, /recognition\.onend/);
 assert.match(moduleSource, /observations\.value\.trim\(\), transcript/);
 assert.match(html, /no se guarda un archivo de audio/i);
 assert.match(css, /publisher-dictation/);
+
+assert.match(html, /id="publisherAddGarment"/);
+assert.match(html, /id="publisherQueuedGarments"/);
+assert.match(moduleSource, /queuedGarments\.push/);
+assert.match(moduleSource, /PRENDA/);
+assert.match(moduleSource, /navigator\.canShare\(\{ files: shareData\.files \}\)/);
