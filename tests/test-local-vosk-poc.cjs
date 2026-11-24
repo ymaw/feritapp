@@ -21,7 +21,7 @@ assert.match(app, /recognizer\.remove\(\)/);
 assert.match(app, /model\.terminate\(\)/);
 assert.doesNotMatch(app, /SpeechRecognition|webkitSpeechRecognition/);
 assert.doesNotMatch(app, /XMLHttpRequest|sendBeacon/);
-assert.match(readme, /no modifica.*garment-publisher\.js/i);
+assert.match(readme, /No modifica.*garment-publisher\.js/i);
 assert.match(readme, /300 MB/i);
 assert.match(readme, /ScriptProcessorNode/);
 
