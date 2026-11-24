@@ -54,6 +54,7 @@ export function initGarmentPublisher({ showToast }) {
   let recognition = null;
   let finalTranscriptParts = [];
   let isDictating = false;
+  let dictationErrorMessage = '';
 
   function updateDictationControls() {
     dictationStart.disabled = !SpeechRecognition || isDictating;
@@ -71,6 +72,7 @@ export function initGarmentPublisher({ showToast }) {
   dictationStart.addEventListener('click', function() {
     if (!SpeechRecognition || isDictating) return;
     finalTranscriptParts = [];
+    dictationErrorMessage = '';
     transcriptField.value = '';
     recognition = new SpeechRecognition();
     recognition.lang = 'es-AR';
@@ -101,14 +103,15 @@ export function initGarmentPublisher({ showToast }) {
         'no-speech': 'No se detectó voz. Podés volver a intentarlo.',
         'audio-capture': 'No se encontró un micrófono disponible.'
       };
-      dictationStatus.textContent = messages[event.error] || 'Ocurrió un problema con el reconocimiento de voz. Revisá el texto y volvé a intentar si hace falta.';
+      dictationErrorMessage = messages[event.error] || 'Ocurrió un problema con el reconocimiento de voz. Revisá el texto y volvé a intentar si hace falta.';
+      dictationStatus.textContent = dictationErrorMessage;
     };
     recognition.onend = function() {
       isDictating = false;
       recognition = null;
-      dictationStatus.textContent = transcriptField.value.trim()
+      dictationStatus.textContent = dictationErrorMessage || (transcriptField.value.trim()
         ? 'Transcripción lista. Revisala y editá lo que necesites antes de incorporarla.'
-        : 'No se obtuvo una transcripción. Podés volver a intentarlo o escribir la descripción.';
+        : 'No se obtuvo una transcripción. Podés volver a intentarlo o escribir la descripción.');
       updateDictationControls();
     };
     try {
@@ -131,7 +134,7 @@ export function initGarmentPublisher({ showToast }) {
     const transcript = transcriptField.value.trim();
     if (!transcript || isDictating) return;
     const observations = document.getElementById('publisherObservations');
-    const combined = [observations.value.trim(), transcript].filter(Boolean).join(observations.value.trim() ? '\\n' : '');
+    const combined = [observations.value.trim(), transcript].filter(Boolean).join(observations.value.trim() ? '\n' : '');
     observations.value = combined.slice(0, 1200);
     observations.dispatchEvent(new Event('input', { bubbles: true }));
     observations.focus();
