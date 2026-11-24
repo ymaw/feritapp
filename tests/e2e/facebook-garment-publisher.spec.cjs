@@ -123,6 +123,27 @@ test('invalid replacement photo clears the visible preview and selected attachme
   await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(0);
 });
 
+test('dictation fills the initial category placeholder but preserves a manually selected category', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Capris');
+
+  await page.locator('#publisherCategory').selectOption({ label: 'Pantalones' });
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+});
+
+test('dictation preserves an explicitly selected Otros category', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherCategory').selectOption({ index: 9 });
+  await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
+});
+
 test('publisher interprets explicit garment details from editable dictation', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#publisherTranscript').fill('Es un capri de gabardina, marca Ossira, talle 40, cintura 42 cm, tiro delantero 17 cm, cadera 49 cm, largo 60 cm y precio siete mil pesos. Botón y cierre funcionando perfectamente.');

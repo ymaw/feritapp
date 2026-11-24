@@ -148,7 +148,9 @@ export function initGarmentPublisher({ showToast }) {
     fields.forEach(function(pair) {
       const value = parsed[pair[0]];
       const element = document.getElementById(pair[1]);
-      if (value && element && !element.value.trim()) {
+      const categoryIsUnselected = pair[0] === 'category' && element && element.selectedIndex === 0;
+      const fieldIsEmpty = element && !element.value.trim();
+      if (value && element && (categoryIsUnselected || fieldIsEmpty)) {
         element.value = value;
         applied.push(pair[0]);
         element.dispatchEvent(new Event('input', { bubbles: true }));
