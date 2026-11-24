@@ -165,6 +165,9 @@ export function initGarmentPublisher({ showToast }) {
     }
     updateCategoryTemplate();
     refreshLivePreview();
+    // Keep the reviewed source text available after parsing; only mapped fields are populated.
+    transcriptField.value = transcript;
+    updateDictationControls();
     dictationStatus.textContent = applied.length
       ? 'Datos identificados y completados en campos vacíos. Revisalos antes de publicar; la transcripción original sigue disponible.'
       : 'No se identificaron datos estructurados con suficiente certeza. Podés usar la transcripción como observaciones o completar los campos manualmente.';

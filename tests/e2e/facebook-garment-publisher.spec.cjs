@@ -158,5 +158,5 @@ test('publisher interprets explicit garment details from editable dictation', as
   await expect(page.locator('#publisherHip')).toHaveValue('49');
   await expect(page.locator('#publisherLength')).toHaveValue('60');
   await expect(page.locator('#publisherObservations')).toHaveValue(/Botón y cierre funcionando perfectamente/i);
-  await expect(page.locator('#publisherTranscript')).toContainText('Es un capri');
+  await expect(page.locator('#publisherTranscript')).toHaveValue(/Es un capri/i);
 });
