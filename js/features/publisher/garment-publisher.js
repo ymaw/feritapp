@@ -49,7 +49,7 @@ export function initGarmentPublisher({ showToast }) {
   let previewUrl = null;
   const queuedGarments = [];
   const queuedList = document.getElementById('publisherQueuedGarments');
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const SpeechRecognition = null; // No usar servicios de reconocimiento externos: pendiente motor local.
   const dictationStart = document.getElementById('publisherDictationStart');
   const dictationStop = document.getElementById('publisherDictationStop');
   const transcriptField = document.getElementById('publisherTranscript');
@@ -65,13 +65,13 @@ export function initGarmentPublisher({ showToast }) {
     dictationStart.disabled = !SpeechRecognition || isDictating;
     dictationStop.disabled = !isDictating;
     useTranscript.disabled = !transcriptField.value.trim() || isDictating;
-    dictationStart.textContent = isDictating ? 'Escuchando…' : 'Comenzar a grabar';
+    dictationStart.textContent = isDictating ? 'Escuchando…' : 'Motor local pendiente';
   }
 
   if (!SpeechRecognition) {
     dictationStart.disabled = true;
     dictationStop.disabled = true;
-    dictationStatus.textContent = 'Este navegador no ofrece transcripción por voz. Podés escribir o pegar la descripción manualmente.';
+    dictationStatus.textContent = 'El dictado por voz está pausado hasta integrar un motor local. No se enviará audio a servicios externos. Podés cargar los datos manualmente o pegar una transcripción.';
   }
 
   dictationStart.addEventListener('click', function() {
