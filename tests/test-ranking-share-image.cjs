@@ -17,7 +17,7 @@ assert.match(share,/assets\/images\/feritapp-icon\.png/);
 assert.match(share,/#7657ff/);
 assert.match(share,/#31b9e8/);
 assert.match(share,/ctx\.textAlign='center'/);
-assert.match(share,/ctx\.fillText\(String\(index\+1\),132,y\+44\)/);
+assert.match(share,/ctx\.fillText\(String\(index\+1\),132,y\+35\)/);
 assert.doesNotMatch(share,/padStart\(2,'0'\)/);
 assert.match(share,/const centerX=W\/2;ctx\.textAlign='center'/);
 assert.match(share,/Vendé\. Organizá\. Crecé\./);
