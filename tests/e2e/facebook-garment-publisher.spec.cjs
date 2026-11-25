@@ -70,6 +70,7 @@ async function openAuthenticatedApp(page, { standalone = false } = {}) {
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
   await page.goto('/');
+  await expect.poll(() => page.locator('html').getAttribute('data-publisher-init-state')).toBe('initialized');
   await expect(page.locator('#appRoot')).toBeVisible();
   await page.locator('#sidebar [data-view="publisher"]').click();
   await expect(page.locator('#viewPublisher')).toBeVisible();
