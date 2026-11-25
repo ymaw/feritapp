@@ -43,7 +43,7 @@ assert.match(css, /@media\(max-width:900px\)/);
 
 assert.match(moduleSource, /const SpeechRecognition = null/);
 assert.doesNotMatch(moduleSource, /window\.SpeechRecognition|window\.webkitSpeechRecognition/);
-assert.match(html, /El dictado por voz está pausado hasta integrar un motor local/);
+assert.match(html, /El dictado integrado está pausado mientras validamos un motor local/i);
 assert.match(html, /id="publisherDictationStart"[^>]*disabled/);
 assert.match(css, /publisher-preview-card\s*\{[^}]*position:\s*sticky/);
 
@@ -56,7 +56,7 @@ assert.match(html, /id="publisherUseTranscript"/);
 assert.match(moduleSource, /recognition\.continuous = true/);
 assert.match(moduleSource, /recognition\.interimResults = true/);
 assert.match(moduleSource, /recognition\.onresult/);
-assert.match(moduleSource, /recognition\.onend/);
+assert.match(moduleSource, /recognition\.onend = function\(\)[\s\S]*?Transcripción lista/);
 assert.match(moduleSource, /parseGarmentDictation\(transcript\)/);
 assert.match(moduleSource, /Interpretar y completar campos/);
 assert.match(html, /El dictado integrado está pausado mientras validamos un motor local/i);
