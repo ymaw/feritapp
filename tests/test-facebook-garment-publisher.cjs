@@ -1,0 +1,107 @@
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+
+const html = fs.readFileSync('index.html', 'utf8');
+const script = fs.readFileSync('script.js', 'utf8');
+const moduleSource = fs.readFileSync('js/features/publisher/garment-publisher.js', 'utf8');
+const parserSource = fs.readFileSync('js/features/publisher/dictation-parser.js', 'utf8');
+const audioModule = fs.readFileSync('js/features/publisher/audio-visualizer.js', 'utf8');
+const css = fs.readFileSync('css/facebook-garment-publisher.css', 'utf8');
+
+assert.match(html, /id="viewPublisher"/);
+assert.match(html, /id="publisherPhoto"[^>]*accept="image\/jpeg,image\/png,image\/webp"/);
+assert.match(html, /id="publisherPostText"/);
+assert.match(script, /initGarmentPublisher/);
+assert.ok(script.includes("import { initAudioVisualizer } from './js/features/publisher/audio-visualizer.js';"));
+assert.match(script, /initAudioVisualizer\(\)/);
+assert.match(audioModule, /getUserMedia/);
+assert.match(audioModule, /getByteTimeDomainData/);
+assert.match(audioModule, /cancelAnimationFrame/);
+assert.match(audioModule, /getTracks\(\)\.forEach/);
+assert.match(audioModule, /stopButton\.addEventListener\('click', stop\)/);
+assert.match(audioModule, /document\.visibilityState === 'hidden'/);
+assert.match(audioModule, /publisherView\.style\.display === 'none'/);
+assert.match(audioModule, /track\.addEventListener\('ended'/);
+assert.match(moduleSource, /function abortDictationForLifecycle\(\)/);
+assert.match(moduleSource, /activeRecognition\.abort\(\)/);
+assert.match(moduleSource, /publisherViewObserver\.observe/);
+assert.match(moduleSource, /window\.addEventListener\('pagehide', abortDictationForLifecycle/);
+assert.match(script, /publisher:\{label:'Publicador',icon:'✦',view:'publisher'\}/);
+assert.match(script, /viewPublisher/);
+assert.match(moduleSource, /MEASUREMENT_CATEGORIES = new Set\(\['pantalones', 'capris', 'polleras', 'vestidos'\]\)/);
+assert.match(moduleSource, /dictationRequestsMeasurements \|\| MEASUREMENT_CATEGORIES/);
+assert.match(moduleSource, /categoryOptionExists/);
+assert.match(moduleSource, /dictationRequestsMeasurements = false/);
+assert.match(html, /<option value="">Seleccioná una categoría<\/option>/);
+assert.match(parserSource, /useMeasurementTemplate/);
+assert.match(moduleSource, /navigator\.canShare/);
+assert.match(moduleSource, /navigator\.share/);
+assert.match(moduleSource, /navigator\.clipboard\.writeText/);
+assert.match(moduleSource, /URL\.createObjectURL/);
+assert.match(css, /object-fit:contain/);
+assert.match(css, /@media\(max-width:900px\)/);
+
+assert.match(moduleSource, /const SpeechRecognition = null/);
+assert.doesNotMatch(moduleSource, /window\.SpeechRecognition|window\.webkitSpeechRecognition/);
+assert.match(html, /El dictado integrado está pausado mientras validamos un motor local/i);
+assert.match(html, /id="publisherDictationStart"[^>]*disabled/);
+assert.match(css, /publisher-preview-card\s*\{[^}]*position:\s*sticky/);
+
+console.log('Publicador: estructura, categorías, vista previa, privacidad y rutas de compartir verificadas.');
+
+assert.match(html, /id="publisherDictationStart"/);
+assert.match(html, /id="publisherDictationStop"/);
+assert.match(html, /id="publisherTranscript"/);
+assert.match(html, /id="publisherUseTranscript"/);
+assert.match(moduleSource, /recognition\.continuous = true/);
+assert.match(moduleSource, /recognition\.interimResults = true/);
+assert.match(moduleSource, /recognition\.onresult/);
+assert.match(moduleSource, /recognition\.onend = function\(\)[\s\S]*?Transcripción lista/);
+assert.match(moduleSource, /parseGarmentDictation\(transcript\)/);
+assert.match(moduleSource, /Interpretar y completar campos/);
+assert.match(html, /El dictado integrado está pausado mientras validamos un motor local/i);
+assert.match(css, /publisher-dictation/);
+
+assert.match(html, /id="publisherAddGarment"/);
+assert.match(html, /id="publisherQueuedGarments"/);
+assert.match(moduleSource, /queuedGarments\.push/);
+assert.match(moduleSource, /PRENDA/);
+assert.match(moduleSource, /navigator\.canShare\(\{ files: shareData\.files \}\)/);
+
+assert.match(html, /id="publisherMicTestStart"/);
+assert.match(html, /id="publisherMicTestStop"/);
+assert.match(audioModule, /getElementById\('publisherMicTestStart'\)/);
+assert.match(audioModule, /sourceNode\.disconnect\(\)/);
+assert.match(audioModule, /track\.stop\(\)/);
+assert.match(html, /no graba ni guarda audio/i);
+assert.match(html, /id="publisherAudioVisualizer"/);
+assert.match(moduleSource, /function renderPreviewPhotos\(\)/);
+assert.match(moduleSource, /remove\.addEventListener\('click',[\s\S]*?renderPreviewPhotos\(\);[\s\S]*?refreshLivePreview\(\);/);
+assert.match(moduleSource, /photos\.forEach/);
+assert.match(css, /publisher-photo-preview\.is-gallery/);
+assert.match(html, /id="publisherOpenPreview"/);
+assert.match(css, /publisher-audio-visualizer/);
+assert.match(css, /color-scheme:dark/);
+assert.match(css, /publisher-preview-modal/);
+assert.match(moduleSource, /function getPreviewFocusableElements\(\)/);
+assert.match(moduleSource, /event\.key !== 'Tab'/);
+assert.match(moduleSource, /event\.shiftKey/);
+assert.match(moduleSource, /previewReturnFocus/);
+
+assert.match(moduleSource, /function interpretTranscript\(\)/);
+assert.match(moduleSource, /recognition\.onend = function\(\)[\s\S]*?Transcripción lista/);
+assert.match(html, /id="publisherCategory" class="publisher-category-select"/);
+assert.match(html, /id="publisherPhoto" class="publisher-photo-input" type="file"/);
+assert.match(html, /id="publisherObservations" class="publisher-fixed-textarea"/);
+assert.match(css, /publisher-category-select/);
+assert.match(css, /publisher-photo-input::file-selector-button/);
+assert.match(css, /publisher-fixed-textarea\{resize:none!important/);
+
+assert.match(moduleSource, /interpretedFieldValues = new Map/);
+assert.match(moduleSource, /isUnchangedInterpretation/);
+assert.match(moduleSource, /interpretedObservations/);
+assert.match(html, /publisher-transcript-panel/);
+assert.match(html, /Medidas de la prenda/);
+assert.ok(html.indexOf('id="publisherMeasurements"') < html.indexOf('class="publisher-dictation"'));
+assert.match(css, /publisher-transcript-footer/);
+assert.match(css, /publisher-dictation-tools/);
