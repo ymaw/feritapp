@@ -570,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const NAVIGATION_OPTIONS = {
     dashboard:{label:'Inicio',icon:'⌂',view:'dashboard'},
     sales:{label:'Ventas',icon:'▤',view:'sales'},
-    deliveries:{label:'Entregas',icon:'<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',view:'deliveries'},
+    deliveries:{label:'Entregas',icon:'<svg aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',view:'deliveries'},
     notes:{label:'Notas',icon:'✎',view:'notes'},
     publisher:{label:'Publicador',icon:'✦',view:'publisher'},
     ranking:{label:'Ranking',icon:'♕',view:'ranking'}
