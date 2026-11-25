@@ -28,7 +28,8 @@ assert.match(script, /publisher:\{label:'Publicador',icon:'✦',view:'publisher'
 assert.match(script, /viewPublisher/);
 assert.match(moduleSource, /MEASUREMENT_CATEGORIES = new Set\(\['pantalones', 'capris', 'polleras', 'vestidos'\]\)/);
 assert.match(moduleSource, /dictationRequestsMeasurements \|\| MEASUREMENT_CATEGORIES/);
-assert.match(moduleSource, /categoryOptionExists/);
+assert.match(moduleSource, /categoryCanBeReplaced/);
+assert.match(moduleSource, /updateCategoryTemplate\(\);[\s\S]*?const fields = \[/);
 assert.match(moduleSource, /dictationRequestsMeasurements = false/);
 assert.match(html, /<option value="">Seleccioná una categoría<\/option>/);
 assert.match(parserSource, /useMeasurementTemplate/);
