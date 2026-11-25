@@ -37,7 +37,16 @@ async function openAuthenticatedApp(page, { standalone = false } = {}) {
             maybeSingle: async () => ({ data: table === 'user_settings' ? rows[table] : null, error: null })
           }),
           upsert: async () => ({ data: [], error: null }),
-          insert: async () => ({ data: [], error: null })
+          insert: async () => ({ data: [], error: null }),
+          update: values => ({ eq: async (column, value) => {
+            if (table === 'categories') rows.categories = rows.categories.map(item => item[column] === value ? { ...item, ...values } : item);
+            if (table === 'sales') rows.sales = rows.sales.map(item => item[column] === value ? { ...item, ...values } : item);
+            return { data: [], error: null };
+          } }),
+          delete: () => ({ eq: async (column, value) => {
+            if (table === 'categories') rows.categories = rows.categories.filter(item => item[column] !== value);
+            return { data: [], error: null };
+          } })
         })
       })
     };
@@ -480,4 +489,42 @@ test('dictation separates garment names from positive descriptions, details and 
   await expect(garment).toHaveValue('Pollera azul');
   await expect(observations).toHaveValue('Presenta desgaste leve en la cintura y le faltan dos botones');
   await expect(observations).not.toContainText('pequeña mancha');
+});
+
+
+test('dictation chooses the first explicit garment category and recognizes measurements before their labels', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+
+  await transcript.fill('Pantalón capri negro, 80 centímetros de cadera y 100 centímetros de largo.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Pantalón capri negro');
+  await expect(page.locator('#publisherHip')).toHaveValue('80');
+  await expect(page.locator('#publisherLength')).toHaveValue('100');
+
+  await transcript.fill('Capri negro, 80 centímetros de cadera, 100 centímetros de largo.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Capris');
+  await expect(page.locator('#publisherHip')).toHaveValue('80');
+  await expect(page.locator('#publisherLength')).toHaveValue('100');
+});
+
+test('categories can be renamed and removed without deleting historical sales', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#openNewCatBtn').click();
+  await page.locator('#fNuevaCategoria').fill('Jeans');
+  await page.locator('#confirmNewCat').click();
+  await expect(page.locator('#categoryManager')).toContainText('Jeans');
+
+  page.once('dialog', dialog => dialog.accept('Denim'));
+  await page.getByRole('button', { name: 'Editar categoría Jeans' }).click();
+  await expect(page.locator('#categoryManager')).toContainText('Denim');
+  await expect(page.locator('#categoryManager')).not.toContainText('Jeans');
+
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Eliminar categoría Denim' }).click();
+  await expect(page.locator('#categoryManager')).not.toContainText('Denim');
+  await expect(page.locator('#categoryManager')).toContainText('Pantalones');
 });
