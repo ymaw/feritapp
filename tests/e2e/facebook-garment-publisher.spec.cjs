@@ -514,3 +514,28 @@ test('categories can be created, renamed and removed without deleting historical
   await expect(page.locator('#categoryManager')).toContainText('Pantalones');
   expect(await page.evaluate(() => window.__qaRows.sales.find(item => item.id === 'historic-jeans-sale')?.categoria)).toBe('Denim');
 });
+
+
+test('dictation fills numeric garment sizes, recognizes spoken prices ending in ASR variant presos and parses Bota', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Pantalón azul, talle 38, precio treinta mil presos, bota dieciocho centímetros.');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+  await expect(page.locator('#publisherSize')).toHaveValue('38');
+  await expect(page.locator('#publisherPrice')).toHaveValue('30000');
+  await expect(page.locator('#publisherBoot')).toHaveValue('18');
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Talle: 38[\\s\\S]*Bota: 18 cm[\\s\\S]*Precio: \\$30\\.000/);
+});
+
+test('Bota measurement is available for dresses, trousers and skirts', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  for (const category of ['Vestidos', 'Pantalones', 'Polleras']) {
+    await page.locator('#publisherCategory').selectOption({ label: category });
+    await expect(page.locator('#publisherMeasurements')).toBeVisible();
+    await expect(page.locator('#publisherBoot')).toBeVisible();
+    await expect(page.getByLabel('Bota')).toBeVisible();
+  }
+});
