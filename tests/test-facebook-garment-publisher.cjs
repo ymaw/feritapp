@@ -59,7 +59,7 @@ assert.match(moduleSource, /recognition\.onresult/);
 assert.match(moduleSource, /recognition\.onend/);
 assert.match(moduleSource, /parseGarmentDictation\(transcript\)/);
 assert.match(moduleSource, /Interpretar y completar campos/);
-assert.match(html, /no se guarda un archivo de audio/i);
+assert.match(html, /El dictado por voz está pausado hasta integrar un motor local/i);
 assert.match(css, /publisher-dictation/);
 
 assert.match(html, /id="publisherAddGarment"/);
