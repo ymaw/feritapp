@@ -1,12 +1,12 @@
 const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 
-async function openAuthenticatedApp(page, themeChoice = 'light') {
+async function openAuthenticatedApp(page, themeChoice = 'light', salesFixtures = null) {
   await page.addInitScript(choice => { localStorage.setItem('feritapp-theme', choice); }, themeChoice);
-  await page.addInitScript(() => {
+  await page.addInitScript(fixtures => {
     const today = new Date().toISOString();
     const dataByTable = {
-      sales: [{
+      sales: fixtures || [{
         id: 'qa-sale-0001', fecha: today, semana_asignada: null,
         cliente: 'Cliente QA', articulo: 'Artículo QA', precio: 1200,
         pagado: false, retira: 'cliente', tercero: '',
@@ -45,7 +45,7 @@ async function openAuthenticatedApp(page, themeChoice = 'light') {
         }
       })
     };
-  });
+  }, salesFixtures);
   await page.route('https://cdn.jsdelivr.net/**', route =>
     route.fulfill({ contentType: 'application/javascript', body: '' })
   );
