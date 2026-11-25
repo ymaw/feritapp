@@ -177,7 +177,8 @@ test('voice bars follow the dictation session and release the microphone when it
   await page.locator('#publisherDictationStart').click();
   const visualizer = page.locator('#publisherAudioVisualizer');
   await expect(visualizer).toHaveClass(/is-active/);
-  await expect(page.locator('#publisherAudioLevel')).toContainText('Detectando sonido');
+  await expect(page.locator('#publisherAudioLevel')).toContainText('Voz detectada');
+  await expect(visualizer).toHaveClass(/is-speaking/);
   await page.locator('#publisherDictationStop').click();
   await expect(visualizer).not.toHaveClass(/is-active/);
   expect(await page.evaluate(() => window.__voiceTrackStopped)).toBe(true);
@@ -262,6 +263,26 @@ test('dictation normalizes noisy size labels, numeric brand names and apocopated
   await expect(page.locator('#publisherBrand')).toHaveValue('47 street');
   await expect(page.locator('#publisherSize')).toHaveValue('21');
   await expect(page.locator('#publisherWaist')).toHaveValue('41');
+});
+
+test('spoken numeric sizes normalize one-ending and compound Spanish numbers', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+
+  await transcript.fill('Pantalón azul, talle treinta y un, cintura cuarenta y uno centímetros.');
+  await interpret.click();
+  await expect(page.locator('#publisherSize')).toHaveValue('31');
+  await expect(page.locator('#publisherWaist')).toHaveValue('41');
+
+  await transcript.fill('Pantalón negro, talle veintiún, cintura treinta y un centímetros.');
+  await interpret.click();
+  await expect(page.locator('#publisherSize')).toHaveValue('21');
+  await expect(page.locator('#publisherWaist')).toHaveValue('31');
+
+  await transcript.fill('Pantalón gris, talle cuarenta y uno.');
+  await interpret.click();
+  await expect(page.locator('#publisherSize')).toHaveValue('41');
 });
 
 test('publisher interprets category first, reveals the measurement template and then fills every measurement', async ({ page }) => {
