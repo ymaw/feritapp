@@ -294,7 +294,7 @@ test('reinterpreting edited transcript replaces generated values and observation
   await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
   await expect(page.locator('#publisherGarmentName')).toHaveValue('Vestido negro');
   await expect(page.locator('#publisherPrice')).toHaveValue('35000');
-  await expect(page.locator('#publisherObservations')).toHaveValue('Tiene botones completos y tela suave.');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Tiene botones completos y tela suave');
 
   await page.locator('#publisherTranscript').fill('Pantalón azul, marca Kosiuko, talle L, precio cuarenta y dos mil pesos, cintura 44 cm. Presenta una pequeña marca en el bolsillo.');
   await page.locator('#publisherUseTranscript').click();
@@ -306,6 +306,18 @@ test('reinterpreting edited transcript replaces generated values and observation
   await expect(page.locator('#publisherWaist')).toHaveValue('44');
   await expect(page.locator('#publisherObservations')).toHaveValue('Presenta una pequeña marca en el bolsillo.');
   await expect(page.locator('#publisherObservations')).not.toContainText('botones completos');
+
+  // Los cambios manuales posteriores tienen prioridad sobre una nueva interpretación.
+  await page.locator('#publisherPrice').fill('12345');
+  await page.locator('#publisherObservations').fill('Nota agregada manualmente');
+  await page.locator('#publisherTranscript').fill('Camisa blanca, marca Zara, talle S, precio dieciocho mil pesos. Detalle dictado nuevo.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Camisas');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Camisa blanca');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Zara');
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherPrice')).toHaveValue('12345');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Nota agregada manualmente');
 });
 
 test('measurements are placed with garment fields before the transcription panel', async ({ page }) => {
