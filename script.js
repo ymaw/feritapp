@@ -2448,7 +2448,7 @@ document.addEventListener('DOMContentLoaded', function(){
       ctx.textAlign='center';ctx.fillText('F',112,139);
     }
     ctx.textAlign='left';ctx.fillStyle=palette.text;ctx.font='800 38px Arial';ctx.fillText('FeritApp',178,120);
-    ctx.fillStyle=palette.muted;ctx.font='500 22px Arial';ctx.fillText('Tu negocio, más simple',180,154);
+    ctx.fillStyle=palette.muted;ctx.font='600 22px Arial';ctx.fillText('Vendé. Organizá. Crecé.',180,154);
     ctx.fillStyle=palette.accent;ctx.font='700 17px Arial';ctx.fillText('CLIENTES QUE HACEN CRECER TU NEGOCIO',82,232);
     ctx.fillStyle=palette.text;ctx.font='800 54px Arial';ctx.fillText('Ranking de clientes',82,300);
     ctx.fillStyle=palette.muted;ctx.font='500 25px Arial';ctx.fillText(rankingPeriodDescription(),84,348);
@@ -2460,15 +2460,25 @@ document.addEventListener('DOMContentLoaded', function(){
       ctx.fillStyle=topThree?palette.rowTop:palette.row;roundedRect(82,y,W-164,88,22);ctx.fill();
       ctx.strokeStyle=palette.border;ctx.lineWidth=1;roundedRect(82,y,W-164,88,22);ctx.stroke();
       const medalColor=topThree?['#f3c969','#c8d4e5','#d99a73'][index]:(dark?'#51466d':'#e9e4f6');
+      const medalTextColor=topThree?'#34264e':(dark?'#f7f4ff':'#51466d');
       ctx.save();
+      // Medalla de lectura inmediata: cinta, aro doble y número con contraste alto.
+      ctx.shadowColor=dark?'rgba(0,0,0,.38)':'rgba(39,28,70,.18)';
+      ctx.shadowBlur=9;ctx.shadowOffsetY=3;
       ctx.fillStyle=topThree?medalColor:(dark?'#625779':'#d9d2e8');
-      ctx.beginPath();ctx.moveTo(121,y+57);ctx.lineTo(132,y+72);ctx.lineTo(143,y+57);ctx.lineTo(139,y+45);ctx.lineTo(125,y+45);ctx.closePath();ctx.fill();
-      ctx.beginPath();ctx.arc(132,y+37,23,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle=topThree?'rgba(90,65,25,.22)':palette.border;ctx.lineWidth=2;ctx.stroke();
-      ctx.fillStyle=topThree?'#34264e':palette.text;ctx.font='800 21px Arial';ctx.textAlign='center';
-      ctx.fillText(String(index+1),132,y+44);
+      ctx.beginPath();
+      ctx.moveTo(111,y+47);ctx.lineTo(121,y+72);ctx.lineTo(132,y+63);
+      ctx.lineTo(143,y+72);ctx.lineTo(153,y+47);ctx.closePath();ctx.fill();
+      ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+      ctx.beginPath();ctx.arc(132,y+35,29,0,Math.PI*2);
+      ctx.fillStyle=topThree?medalColor:(dark?'#51466d':'#e9e4f6');ctx.fill();
+      ctx.lineWidth=4;ctx.strokeStyle=topThree?'#9b7130':(dark?'#8879a8':'#b9aecf');ctx.stroke();
+      ctx.beginPath();ctx.arc(132,y+35,22,0,Math.PI*2);
+      ctx.lineWidth=2;ctx.strokeStyle=topThree?'rgba(255,255,255,.72)':(dark?'#b8a9d6':'#ffffff');ctx.stroke();
+      ctx.fillStyle=medalTextColor;ctx.font='900 25px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(String(index+1),132,y+35);
       ctx.restore();
-      const centerX=W/2;ctx.textAlign='center';ctx.fillStyle=palette.text;ctx.font='700 27px Arial';
+      const centerX=W/2;ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillStyle=topThree?['#b8860b','#7d8798','#a85d32'][index]:palette.text;ctx.font='800 27px Arial';
       let name=String(client.name||'Sin nombre');
       while(ctx.measureText(name).width>620 && name.length>4) name=name.slice(0,-2)+'…';
       if(includeTotals||includeArticleCount){
