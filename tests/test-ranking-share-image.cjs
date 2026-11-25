@@ -18,4 +18,5 @@ assert.match(share,/#31b9e8/);
 assert.match(share,/ctx\.textAlign='center'/);
 assert.match(share,/Muchas gracias por la confianza!/);
 assert.match(share,/canvas\.toBlob\(resolve,'image\/png'\)/);
+assert.match(share,/H=Math\.max\(1050,420\+shareRows\.length\*102\+300\)/);
 console.log('OK: imagen compartida del ranking respeta privacidad, período y marca FeritApp');
