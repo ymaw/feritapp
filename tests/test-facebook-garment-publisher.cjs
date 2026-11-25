@@ -129,3 +129,14 @@ assert.match(css, /@media \(max-width: 899px\)[\s\S]*?grid-template-columns: min
 assert.match(css, /#viewPublisher \.publisher-layout[\s\S]*?box-sizing: border-box/);
 assert.match(script, /deliveries:\{label:'Entregas',icon:'<svg[\s\S]*?viewBox="0 0 24 24"/);
 assert.match(script, /stroke="currentColor" stroke-width="1\.8"/);
+
+assert.match(parserSource, /sort\(\(a, b\) => a\.index - b\.index\)/);
+assert.match(parserSource, /measurementNames\.flatMap/);
+assert.match(parserSource, /centimetros\?\\\\s\+\(\?:de/);
+assert.match(audioModule, /publisher:dictation-speaking/);
+assert.match(audioModule, /is-speaking/);
+assert.match(script, /function renderCategoryManager\(\)/);
+assert.match(script, /function persistNewCategory\(name\)/);
+assert.match(script, /categories\.filter\(function\(item\)\{return item!==name;\}\)/);
+assert.match(html, /id="categoryManager"/);
+assert.match(css, /category-manager-actions/);
