@@ -2192,7 +2192,7 @@ document.addEventListener('DOMContentLoaded', function(){
   function rankingPeriodDescription(){
     const now = new Date(), year = now.getFullYear(), month = now.getMonth();
     const names = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-    if(rankingPeriod === 'all') return 'Todo el historial';
+    if(rankingPeriod === 'all') return 'Todo el historial · hasta ' + year;
     if(rankingPeriod === 'month') return names[month].charAt(0).toUpperCase() + names[month].slice(1) + ' ' + year;
     if(rankingPeriod === 'quarter'){ const first=Math.floor(month/4)*4; return names[first].charAt(0).toUpperCase()+names[first].slice(1)+'–'+names[first+3]+' '+year; }
     if(rankingPeriod === 'semester'){ const first=Math.floor(month/6)*6; return names[first].charAt(0).toUpperCase()+names[first].slice(1)+'–'+names[first+5]+' '+year; }
@@ -2285,18 +2285,42 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillStyle='#ffffff'; ctx.font='800 54px Arial'; ctx.textAlign='left'; ctx.fillText('FeritApp',200,126);
     ctx.fillStyle=dark?'#d8ccff':'#e8e2ff'; ctx.font='500 25px Arial'; ctx.fillText('Tu negocio, más simple',202,168);
     ctx.fillStyle='#ffffff'; ctx.font='800 42px Arial'; ctx.fillText('Ranking de clientes',92,260);
-    ctx.fillStyle=dark?'#e3dcf5':'#e7e2ff'; ctx.font='24px Arial'; ctx.fillText((rankingSortBy === 'total' ? 'Mayor total gastado' : 'Más artículos comprados') + ' · ' + rankingPeriodDescription(),92,302);
+    ctx.fillStyle=dark?'#e3dcf5':'#e7e2ff'; ctx.font='24px Arial'; ctx.textAlign='center'; ctx.fillText(rankingPeriodDescription(),W/2,302);
     const medals=['🥇','🥈','🥉']; const rows=ranked.slice(0,8); let y=350;
     rows.forEach(function(c,i){
       ctx.fillStyle=palette.row; rr(82,y,W-164,94,22); ctx.fill();
       ctx.fillStyle=['#ffcf36','#c8d1e1','#e6a06a'][i] || palette.line; ctx.beginPath(); ctx.arc(132,y+47,29,0,Math.PI*2); ctx.fill();
       ctx.fillStyle=i<3?'#38235b':palette.accent; ctx.font='800 24px Arial'; ctx.textAlign='center'; ctx.fillText(medals[i] || String(i+1),132,y+56);
-      ctx.textAlign='left'; ctx.fillStyle=palette.text; ctx.font='700 29px Arial'; let name=c.name; while(ctx.measureText(name).width>500) name=name.slice(0,-2)+'…'; ctx.fillText(name,185,y+43);
-      ctx.fillStyle=palette.muted; ctx.font='20px Arial'; ctx.fillText(rankingSortBy === 'total' ? money(c.total) + ' gastados' : c.count + (c.count === 1 ? ' artículo' : ' artículos'),185,y+72);
-      // La imagen compartida muestra los puestos y nombres, sin cantidades de artículos.
+      // El puesto queda centrado en su medallón y el nombre en el área central de la tarjeta.
+      const nameCenterX=(185+(W-82))/2;
+      ctx.textAlign='center'; ctx.fillStyle=palette.text; ctx.font='700 29px Arial';
+      let name=c.name; while(ctx.measureText(name).width>700) name=name.slice(0,-2)+'…';
+      const showTotal=rankingSortBy === 'total' && showRankingMoney;
+      const showArticleCount=rankingSortBy === 'articles';
+      if(showTotal || showArticleCount){
+        ctx.fillText(name,nameCenterX,y+39);
+        ctx.fillStyle=palette.muted; ctx.font='20px Arial';
+        ctx.fillText(showTotal ? money(c.total) + ' gastados' : c.count + (c.count === 1 ? ' artículo' : ' artículos'),nameCenterX,y+70);
+      }else{
+        ctx.fillText(name,nameCenterX,y+56);
+      }
       y+=108;
     });
-    ctx.fillStyle=dark?'#d8ccff':'#e7e2ff'; ctx.font='22px Arial'; ctx.textAlign='center'; ctx.fillText('Gracias por ser parte de nuestra comunidad 💜',W/2,H-106); ctx.textAlign='left';
+    // Cierre de marca: texto centrado y corazón con degradado en los colores de FeritApp.
+    const footerText='Muchas gracias por la confianza!';
+    ctx.font='700 25px Arial';
+    const footerTextWidth=ctx.measureText(footerText).width;
+    const heartSize=34, footerGap=16;
+    const footerWidth=footerTextWidth+footerGap+heartSize;
+    const footerStart=(W-footerWidth)/2;
+    ctx.textAlign='left'; ctx.fillStyle=dark?'#e3dcf5':'#e7e2ff';
+    ctx.fillText(footerText,footerStart,H-104);
+    const heartX=footerStart+footerTextWidth+footerGap+heartSize/2, heartY=H-112;
+    const heartGradient=ctx.createLinearGradient(heartX-heartSize/2,heartY,heartX+heartSize/2,heartY);
+    heartGradient.addColorStop(0,'#7657ff'); heartGradient.addColorStop(1,'#31b9e8');
+    ctx.save(); ctx.translate(heartX,heartY); ctx.scale(heartSize/32,heartSize/32);
+    ctx.beginPath(); ctx.moveTo(0,11); ctx.bezierCurveTo(-25,-5,-13,-19,0,-8); ctx.bezierCurveTo(13,-19,25,-5,0,11);
+    ctx.closePath(); ctx.fillStyle=heartGradient; ctx.fill(); ctx.restore();
     const blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png');});
     if(!blob){showToast('No se pudo generar la imagen del ranking.');return;}
     const file=new File([blob],'ranking-feritapp.png',{type:'image/png'});
