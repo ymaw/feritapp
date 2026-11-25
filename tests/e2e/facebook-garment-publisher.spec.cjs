@@ -361,3 +361,51 @@ test('measurements are placed with garment fields before the transcription panel
   await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
   await expect(page.locator('#publisherMeasurements')).toBeVisible();
 });
+
+
+test('editing the transcript during continuous dictation preserves edits and appends the next spoken phrase', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherDictationStart').click();
+  const first = await page.evaluate(() => window.__speechRecognitionInstances[0]);
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 0, results: [{ 0: { transcript: 'Vestido negro' }, isFinal: true }] });
+  });
+  await expect(page.locator('#publisherTranscript')).toHaveValue('Vestido negro');
+  await page.locator('#publisherTranscript').fill('Vestido negro, tela de lino');
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 1, results: [
+      { 0: { transcript: 'Vestido negro' }, isFinal: true },
+      { 0: { transcript: 'marca Ossira' }, isFinal: true }
+    ] });
+  });
+  await expect(page.locator('#publisherTranscript')).toHaveValue('Vestido negro, tela de lino marca Ossira');
+  await expect(page.locator('#publisherDictationStop')).toBeEnabled();
+});
+
+test('voice visualizer switches red while listening and green while speech is detected', async ({ page }) => {
+  await page.addInitScript(() => {
+    const track = { readyState: 'live', addEventListener() {}, stop() { this.readyState = 'ended'; } };
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [track] }) } });
+    window.AudioContext = class {
+      constructor() { this.state = 'running'; }
+      createAnalyser() {
+        return { fftSize: 256, getByteTimeDomainData(samples) { samples.fill(window.__voiceLevel || 128); }, disconnect() {} };
+      }
+      createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
+      resume() { return Promise.resolve(); }
+      close() { this.state = 'closed'; return Promise.resolve(); }
+    };
+    window.__voiceLevel = 128;
+  });
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherDictationStart').click();
+  const visualizer = page.locator('#publisherAudioVisualizer');
+  await expect(visualizer).toHaveClass(/is-listening/);
+  await page.evaluate(() => { window.__voiceLevel = 170; });
+  await expect(visualizer).toHaveClass(/is-speaking/);
+  await page.evaluate(() => { window.__voiceLevel = 128; });
+  await expect(visualizer).toHaveClass(/is-listening/);
+  await page.locator('#publisherDictationStop').click();
+});
