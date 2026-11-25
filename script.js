@@ -2285,14 +2285,14 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillStyle='#ffffff'; ctx.font='800 54px Arial'; ctx.textAlign='left'; ctx.fillText('FeritApp',200,126);
     ctx.fillStyle=dark?'#d8ccff':'#e8e2ff'; ctx.font='500 25px Arial'; ctx.fillText('Tu negocio, más simple',202,168);
     ctx.fillStyle='#ffffff'; ctx.font='800 42px Arial'; ctx.fillText('Ranking de clientes',92,260);
-    ctx.fillStyle=dark?'#e3dcf5':'#e7e2ff'; ctx.font='24px Arial'; ctx.fillText('Los clientes que más artículos compraron',92,302);
+    ctx.fillStyle=dark?'#e3dcf5':'#e7e2ff'; ctx.font='24px Arial'; ctx.fillText((rankingSortBy === 'total' ? 'Mayor total gastado' : 'Más artículos comprados') + ' · ' + rankingPeriodDescription(),92,302);
     const medals=['🥇','🥈','🥉']; const rows=ranked.slice(0,8); let y=350;
     rows.forEach(function(c,i){
       ctx.fillStyle=palette.row; rr(82,y,W-164,94,22); ctx.fill();
       ctx.fillStyle=['#ffcf36','#c8d1e1','#e6a06a'][i] || palette.line; ctx.beginPath(); ctx.arc(132,y+47,29,0,Math.PI*2); ctx.fill();
       ctx.fillStyle=i<3?'#38235b':palette.accent; ctx.font='800 24px Arial'; ctx.textAlign='center'; ctx.fillText(medals[i] || String(i+1),132,y+56);
       ctx.textAlign='left'; ctx.fillStyle=palette.text; ctx.font='700 29px Arial'; let name=c.name; while(ctx.measureText(name).width>500) name=name.slice(0,-2)+'…'; ctx.fillText(name,185,y+43);
-      ctx.fillStyle=palette.muted; ctx.font='20px Arial'; ctx.fillText((i+1)+'° puesto',185,y+72);
+      ctx.fillStyle=palette.muted; ctx.font='20px Arial'; ctx.fillText(rankingSortBy === 'total' ? money(c.total) + ' gastados' : c.count + (c.count === 1 ? ' artículo' : ' artículos'),185,y+72);
       // La imagen compartida muestra los puestos y nombres, sin cantidades de artículos.
       y+=108;
     });
