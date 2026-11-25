@@ -2459,15 +2459,20 @@ document.addEventListener('DOMContentLoaded', function(){
       const y=420+index*102,topThree=index<3;
       ctx.fillStyle=topThree?palette.rowTop:palette.row;roundedRect(82,y,W-164,88,22);ctx.fill();
       ctx.strokeStyle=palette.border;ctx.lineWidth=1;roundedRect(82,y,W-164,88,22);ctx.stroke();
-      ctx.fillStyle=topThree?['#f3c969','#c8d4e5','#d99a73'][index]:(dark?'#51466d':'#e9e4f6');
-      ctx.beginPath();ctx.arc(132,y+44,25,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=topThree?'#34264e':palette.muted;ctx.font='800 21px Arial';ctx.textAlign='center';
-      ctx.fillText(String(index+1).padStart(2,'0'),132,y+51);
-      const centerX=W/2;ctx.fillStyle=palette.text;ctx.font='700 27px Arial';
+      const medalColor=topThree?['#f3c969','#c8d4e5','#d99a73'][index]:(dark?'#51466d':'#e9e4f6');
+      ctx.save();
+      ctx.fillStyle=topThree?medalColor:(dark?'#625779':'#d9d2e8');
+      ctx.beginPath();ctx.moveTo(121,y+57);ctx.lineTo(132,y+72);ctx.lineTo(143,y+57);ctx.lineTo(139,y+45);ctx.lineTo(125,y+45);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.arc(132,y+37,23,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=topThree?'rgba(90,65,25,.22)':palette.border;ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=topThree?'#34264e':palette.text;ctx.font='800 21px Arial';ctx.textAlign='center';
+      ctx.fillText(String(index+1),132,y+44);
+      ctx.restore();
+      const centerX=W/2;ctx.textAlign='center';ctx.fillStyle=palette.text;ctx.font='700 27px Arial';
       let name=String(client.name||'Sin nombre');
       while(ctx.measureText(name).width>620 && name.length>4) name=name.slice(0,-2)+'…';
       if(includeTotals||includeArticleCount){
-        ctx.fillText(name,centerX,y+34);ctx.fillStyle=palette.muted;ctx.font='500 18px Arial';
+        ctx.textAlign='center';ctx.fillText(name,centerX,y+34);ctx.fillStyle=palette.muted;ctx.font='500 18px Arial';
         const detail=[includeArticleCount?client.count+' '+(client.count===1?'artículo':'artículos'):'',includeTotals?money(client.total)+' gastados':''].filter(Boolean).join(' · ');
         ctx.fillText(detail,centerX,y+64);
       }else ctx.fillText(name,centerX,y+54);
