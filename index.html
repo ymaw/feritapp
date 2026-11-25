@@ -609,21 +609,14 @@
         </div>
         <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">El dictado usa el mismo reconocimiento por voz que Nueva venta (es-AR). El navegador o sistema podría procesar el audio externamente; FeritApp no guarda grabaciones. Revisá el texto antes de interpretarlo.</p>
         <div class="publisher-dictation-tools">
-          <div class="publisher-dictation-engine">
+          <div class="publisher-dictation-engine publisher-dictation-engine-main">
             <span class="publisher-tool-label">Micrófono</span>
             <div class="publisher-actions publisher-dictation-controls">
               <button class="secondary-btn" id="publisherDictationStart" type="button">Iniciar dictado</button>
               <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener dictado</button>
             </div>
-          </div>
-          <div class="publisher-dictation-engine publisher-mic-test-panel">
-            <span class="publisher-tool-label">Comprobación de dispositivo</span>
-            <div class="publisher-actions publisher-mic-test-controls">
-              <button class="secondary-btn" id="publisherMicTestStart" type="button">Probar micrófono</button>
-              <button class="secondary-btn" id="publisherMicTestStop" type="button" disabled>Detener prueba</button>
-            </div>
-            <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" aria-label="Nivel de audio del micrófono" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-            <p class="publisher-audio-level" id="publisherAudioLevel">La prueba mide el nivel del micrófono en tiempo real; no graba ni guarda audio.</p>
+            <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" role="img" aria-label="Barras que muestran el nivel de voz detectado por el micrófono"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <p class="publisher-audio-level" id="publisherAudioLevel" aria-live="polite">Las barras se activan al iniciar el dictado y reaccionan al sonido.</p>
           </div>
         </div>
         <div class="publisher-transcript-panel">
