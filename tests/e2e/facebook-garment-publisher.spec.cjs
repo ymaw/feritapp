@@ -139,6 +139,20 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
   await expect(trigger).toBeFocused();
 });
 
+
+test('external browser speech recognition stays disabled until a local engine is available', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await expect(page.locator('#publisherDictationStart')).toBeDisabled();
+  await expect(page.locator('#publisherDictationStatus')).toContainText('motor local');
+  await page.locator('#publisherTranscript').fill('Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/Vestido negro/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('Ossira');
+  await expect(page.locator('#publisherSize')).toHaveValue('M');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+});
+
 test('publisher does not generate an empty post when no garment is entered', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#publisherGenerate').click();
