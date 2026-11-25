@@ -133,8 +133,8 @@ export function parseGarmentDictation(transcript) {
     ['length', '(?:el\\s+)?largo']
   ];
   const measurementExpressions = measurementNames.flatMap(([key, label]) => [
-    [key, new RegExp('\\\\b' + label + '\\\\s+(?:de\\\\s+)?' + NUMBER_CAPTURE + '(?:\\\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
-    [key, new RegExp('\\\\b' + NUMBER_CAPTURE + '\\\\s*(?:cm|centimetros?)\\\\s+(?:de\\\\s+)?' + label + measurementBoundary, 'i')]
+    [key, new RegExp('\\b' + label + '\\s+(?:de\\\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
+    [key, new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\\\s+(?:de\\\\s+)?' + label + measurementBoundary, 'i')]
   ]);
   for (const [key, expression] of measurementExpressions) {
     const match = numericText.match(expression);
@@ -147,8 +147,8 @@ export function parseGarmentDictation(transcript) {
     sizeExpression,
     /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+pesos?)?(?=\s*(?:,|;|\.|$))/iu,
     ...measurementNames.flatMap(([key, label]) => [
-      new RegExp('\\\\b' + label + '\\\\s+(?:de\\\\s+)?' + NUMBER_CAPTURE + '(?:\\\\s*(?:cm|centimetros?))?', 'iu'),
-      new RegExp('\\\\b' + NUMBER_CAPTURE + '\\\\s*(?:cm|centimetros?)\\\\s+(?:de\\\\s+)?' + label, 'iu')
+      new RegExp('\\b' + label + '\\s+(?:de\\\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?', 'iu'),
+      new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\\\s+(?:de\\\\s+)?' + label, 'iu')
     ])
   ];
   for (const expression of removals) remainder = remainder.replace(expression, ' ');
