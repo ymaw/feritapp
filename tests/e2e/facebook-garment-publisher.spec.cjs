@@ -23,6 +23,7 @@ async function openAuthenticatedApp(page, { standalone = false } = {}) {
         navigation_slots: ['dashboard', 'sales', 'deliveries', 'notes']
       }
     };
+    window.__qaRows = rows;
     const auth = {
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
       getSession: async () => ({ data: { session: { user: { id: 'qa-user', email: 'qa@example.test' } } } }),
@@ -160,40 +161,23 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
 });
 
 
-test('voice bars follow the dictation session and release the microphone when it stops', async ({ page }) => {
-  await page.addInitScript(() => {
-    const track = {
-      readyState: 'live',
-      addEventListener() {},
-      stop() { this.readyState = 'ended'; window.__voiceTrackStopped = true; }
-    };
-    Object.defineProperty(navigator, 'mediaDevices', {
-      configurable: true,
-      value: { getUserMedia: async () => ({ getTracks: () => [track] }) }
-    });
-    window.AudioContext = class {
-      constructor() { this.state = 'running'; }
-      createAnalyser() {
-        return {
-          fftSize: 256,
-          getByteTimeDomainData(samples) { samples.fill(145); },
-          disconnect() {}
-        };
-      }
-      createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
-      resume() { return Promise.resolve(); }
-      close() { this.state = 'closed'; return Promise.resolve(); }
-    };
-  });
+test('voice bars follow speech-recognition events and stop with the dictation session', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#publisherDictationStart').click();
   const visualizer = page.locator('#publisherAudioVisualizer');
   await expect(visualizer).toHaveClass(/is-active/);
+  await expect(visualizer).toHaveClass(/is-listening/);
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 0, results: [
+      { 0: { transcript: 'Pantalón negro' }, isFinal: false }
+    ] });
+  });
   await expect(page.locator('#publisherAudioLevel')).toContainText('Voz detectada');
   await expect(visualizer).toHaveClass(/is-speaking/);
   await page.locator('#publisherDictationStop').click();
   await expect(visualizer).not.toHaveClass(/is-active/);
-  expect(await page.evaluate(() => window.__voiceTrackStopped)).toBe(true);
+  expect(await page.evaluate(() => window.__speechRecognitionInstances[0].stopped)).toBe(true);
   await expect(page.locator('#publisherDictationStart')).toBeEnabled();
 });
 
@@ -416,30 +400,22 @@ test('editing the transcript during continuous dictation preserves edits and app
   await expect(page.locator('#publisherDictationStop')).toBeEnabled();
 });
 
-test('voice visualizer switches red while listening and green while speech is detected', async ({ page }) => {
-  await page.addInitScript(() => {
-    const track = { readyState: 'live', addEventListener() {}, stop() { this.readyState = 'ended'; } };
-    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [track] }) } });
-    window.AudioContext = class {
-      constructor() { this.state = 'running'; }
-      createAnalyser() {
-        return { fftSize: 256, getByteTimeDomainData(samples) { samples.fill(window.__voiceLevel || 128); }, disconnect() {} };
-      }
-      createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
-      resume() { return Promise.resolve(); }
-      close() { this.state = 'closed'; return Promise.resolve(); }
-    };
-    window.__voiceLevel = 128;
-  });
+test('voice visualizer switches from listening to speech and back using recognition events', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#publisherDictationStart').click();
   const visualizer = page.locator('#publisherAudioVisualizer');
   await expect(visualizer).toHaveClass(/is-listening/);
-  await page.evaluate(() => { window.__voiceLevel = 170; });
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 0, results: [
+      { 0: { transcript: 'Estoy hablando' }, isFinal: false }
+    ] });
+  });
   await expect(visualizer).toHaveClass(/is-speaking/);
-  await page.evaluate(() => { window.__voiceLevel = 128; });
-  await expect(visualizer).toHaveClass(/is-listening/);
+  await expect(page.locator('#publisherAudioLevel')).toContainText('Voz detectada');
+  await expect(visualizer).toHaveClass(/is-listening/, { timeout: 2500 });
   await page.locator('#publisherDictationStop').click();
+  await expect(visualizer).not.toHaveClass(/is-active/);
 });
 
 
@@ -514,20 +490,27 @@ test('dictation chooses the first explicit garment category and recognizes measu
   await expect(page.locator('#publisherLength')).toHaveValue('100');
 });
 
-test('categories can be renamed and removed without deleting historical sales', async ({ page }) => {
+test('categories can be created, renamed and removed without deleting historical sales', async ({ page }) => {
   await openAuthenticatedApp(page);
+  await page.locator('#sidebarOpenSheet').click();
+  await expect(page.locator('#sheet')).toHaveClass(/open/);
   await page.locator('#openNewCatBtn').click();
   await page.locator('#fNuevaCategoria').fill('Jeans');
   await page.locator('#confirmNewCat').click();
   await expect(page.locator('#categoryManager')).toContainText('Jeans');
+  await page.evaluate(() => window.__qaRows.sales.push({
+    id: 'historic-jeans-sale', articulo: 'Jean clásico', categoria: 'Jeans', precio: 25000
+  }));
 
   page.once('dialog', dialog => dialog.accept('Denim'));
   await page.getByRole('button', { name: 'Editar categoría Jeans' }).click();
   await expect(page.locator('#categoryManager')).toContainText('Denim');
   await expect(page.locator('#categoryManager')).not.toContainText('Jeans');
+  expect(await page.evaluate(() => window.__qaRows.sales.find(item => item.id === 'historic-jeans-sale')?.categoria)).toBe('Denim');
 
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Eliminar categoría Denim' }).click();
   await expect(page.locator('#categoryManager')).not.toContainText('Denim');
   await expect(page.locator('#categoryManager')).toContainText('Pantalones');
+  expect(await page.evaluate(() => window.__qaRows.sales.find(item => item.id === 'historic-jeans-sale')?.categoria)).toBe('Denim');
 });
