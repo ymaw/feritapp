@@ -136,25 +136,6 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
   await page.keyboard.press('Escape');
   await expect(modal).toBeHidden();
   await expect(page.locator('#viewPublisher .publisher-preview-card')).toBeHidden();
-  console.log('publisher preview focus debug', await page.evaluate(() => {
-    const element = document.getElementById('publisherOpenPreview');
-    return {
-      activeElementId: document.activeElement && document.activeElement.id,
-      triggerConnected: Boolean(element && element.isConnected),
-      triggerDisabled: Boolean(element && element.disabled),
-      triggerRectCount: element ? element.getClientRects().length : 0,
-      triggerDisplay: element ? getComputedStyle(element).display : null,
-      triggerVisibility: element ? getComputedStyle(element).visibility : null,
-      ancestors: (() => {
-        const result = [];
-        for (let node = element; node; node = node.parentElement) {
-          const style = getComputedStyle(node);
-          result.push({ tag: node.tagName, id: node.id, className: node.className, hidden: node.hidden, display: style.display, visibility: style.visibility, rectCount: node.getClientRects().length });
-        }
-        return result;
-      })()
-    };
-  }));
   await expect(trigger).toBeFocused();
 });
 
