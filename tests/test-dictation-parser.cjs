@@ -21,6 +21,15 @@ const assert = require('node:assert/strict');
   assert.equal(parsed.length, '60');
   assert.match(parsed.observations, /Botón y cierre funcionando perfectamente/i);
 
+  const dress = parseGarmentDictation('Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos.');
+  assert.equal(dress.category, 'Vestidos');
+  assert.equal(dress.garmentName, 'Vestido negro');
+  assert.equal(dress.brand, 'Ossira');
+  assert.equal(dress.size, 'M');
+  assert.equal(dress.price, '35000');
+  assert.equal(dress.useMeasurementTemplate, true);
+  assert.equal(dress.observations, '');
+
   const ambiguous = parseGarmentDictation('Capri, cintura 42 cm rígida debe ser 40.');
   assert.equal(ambiguous.waist, '42', 'must preserve the explicitly spoken measurement');
   assert.equal(ambiguous.size, '', 'do not infer a garment size from an ambiguous observation');
