@@ -140,6 +140,47 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
 });
 
 
+test('microphone can be tested independently without recording or retaining audio', async ({ page }) => {
+  await page.addInitScript(() => {
+    const track = {
+      readyState: 'live',
+      addEventListener() {},
+      stop() { this.readyState = 'ended'; window.__micTrackStopped = true; }
+    };
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia: async () => ({ getTracks: () => [track] }) }
+    });
+    window.AudioContext = class {
+      constructor() { this.state = 'running'; }
+      createAnalyser() {
+        return {
+          fftSize: 256,
+          getByteTimeDomainData(samples) { samples.fill(128); },
+          disconnect() {}
+        };
+      }
+      createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
+      resume() { return Promise.resolve(); }
+      close() { this.state = 'closed'; return Promise.resolve(); }
+    };
+  });
+  await openAuthenticatedApp(page);
+  await page.locator('#sidebar [data-view="publisher"]').click();
+  await expect(page.locator('#viewPublisher')).toBeVisible();
+  await page.locator('#publisherMicTestStart').click();
+  await expect(page.locator('#publisherMicTestStart')).toBeDisabled();
+  await expect(page.locator('#publisherMicTestStop')).toBeEnabled();
+  await expect(page.locator('#publisherAudioLevel')).toContainText('Micrófono activo');
+  await page.locator('#publisherMicTestStop').click();
+  await expect(page.locator('#publisherMicTestStart')).toBeEnabled();
+  await expect(page.locator('#publisherMicTestStop')).toBeDisabled();
+  await expect(page.locator('#publisherAudioVisualizer')).not.toHaveClass(/is-active/);
+  expect(await page.evaluate(() => window.__micTrackStopped)).toBe(true);
+  await expect(page.locator('#publisherDictationStart')).toBeDisabled();
+});
+
+
 test('external browser speech recognition stays disabled until a local engine is available', async ({ page }) => {
   await openAuthenticatedApp(page);
   await expect(page.locator('#publisherDictationStart')).toBeDisabled();
