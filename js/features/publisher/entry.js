@@ -26,17 +26,17 @@ function hasPublisherDom() {
 function initializePublisher() {
   if (initialized || !hasPublisherDom()) return false;
 
-  // Marcar como inicializado solamente después de confirmar que el DOM
-  // completo del publicador está disponible. Si el módulo se evalúa antes
-  // de que termine de parsearse el HTML, DOMContentLoaded volverá a intentarlo.
   initAudioVisualizer();
   initGarmentPublisher({ showToast: function () {} });
   initialized = true;
   return true;
 }
 
-// Intento inmediato para documentos ya parseados y reintento al finalizar
-// el parseo para cubrir cargas de módulos que comiencen mientras readyState
-// todavía sea "loading". La protección evita una doble inicialización.
-document.addEventListener('DOMContentLoaded', initializePublisher, { once: true });
-initializePublisher();
+// El módulo se evalúa antes de DOMContentLoaded. La aplicación principal
+// registra primero su arranque en ese evento; inicializar el publicador
+// después evita competir con la preparación inicial de las vistas.
+if (document.readyState === 'complete') {
+  initializePublisher();
+} else {
+  document.addEventListener('DOMContentLoaded', initializePublisher, { once: true });
+}
