@@ -185,7 +185,7 @@ test('voice bars follow speech-recognition events and stop with the dictation se
 test('publisher reuses the New Sale speech recognition flow and keeps transcript editable before interpretation', async ({ page }) => {
   await openAuthenticatedApp(page);
   await expect(page.locator('#publisherDictationStart')).toBeEnabled();
-  await expect(page.locator('#publisherDictationStatus')).toContainText('podría procesar el audio externamente');
+  await expect(page.locator('#publisherDictationStatus')).toContainText('Dictá los datos de la prenda y completá sus campos automáticamente.');
   await page.locator('#publisherDictationStart').click();
   await expect(page.locator('#publisherDictationStop')).toBeEnabled();
   expect(await page.evaluate(() => {
