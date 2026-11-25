@@ -61,6 +61,7 @@ export function initGarmentPublisher({ showToast }) {
   let dictationRequested = false;
   let dictationErrorMessage = '';
   let restartTimer = null;
+  let audioMeterStarted = false;
   let dictationRequestsMeasurements = false;
   const interpretedFieldValues = new Map();
   let interpretedObservations = null;
@@ -110,7 +111,10 @@ export function initGarmentPublisher({ showToast }) {
       isDictating = true;
       dictationStatus.textContent = 'Escuchando. Podés hablar con naturalidad y hacer pausas; la sesión continuará hasta que pulses «Detener dictado».';
       updateDictationControls();
-      window.dispatchEvent(new Event('publisher:dictation-start'));
+      if (!audioMeterStarted) {
+        audioMeterStarted = true;
+        window.dispatchEvent(new Event('publisher:dictation-start'));
+      }
     };
     activeRecognition.onresult = updateTranscript;
     activeRecognition.onerror = function(event) {
@@ -123,6 +127,7 @@ export function initGarmentPublisher({ showToast }) {
       if (messages[event.error]) {
         dictationErrorMessage = messages[event.error];
         dictationRequested = false;
+        audioMeterStarted = false;
         window.dispatchEvent(new Event('publisher:dictation-stop'));
         dictationStatus.textContent = dictationErrorMessage;
       }
@@ -143,6 +148,7 @@ export function initGarmentPublisher({ showToast }) {
         return;
       }
       isDictating = false;
+      audioMeterStarted = false;
       window.dispatchEvent(new Event('publisher:dictation-stop'));
       updateDictationControls();
       if (dictationErrorMessage) {
@@ -174,7 +180,6 @@ export function initGarmentPublisher({ showToast }) {
     dictationRequested = true;
     isDictating = true;
     updateDictationControls();
-    window.dispatchEvent(new Event('publisher:dictation-start'));
     startRecognitionSession();
   });
 
@@ -185,6 +190,7 @@ export function initGarmentPublisher({ showToast }) {
     restartTimer = null;
     const activeRecognition = recognition;
     recognition = null;
+    audioMeterStarted = false;
     window.dispatchEvent(new Event('publisher:dictation-stop'));
     if (activeRecognition) {
       activeRecognition.onend = function() {
@@ -209,12 +215,14 @@ export function initGarmentPublisher({ showToast }) {
     if (restartTimer) window.clearTimeout(restartTimer);
     restartTimer = null;
     if (!recognition || !isDictating) {
+      audioMeterStarted = false;
       window.dispatchEvent(new Event('publisher:dictation-stop'));
       return;
     }
     const activeRecognition = recognition;
     recognition = null;
     isDictating = false;
+    audioMeterStarted = false;
     window.dispatchEvent(new Event('publisher:dictation-stop'));
     try { activeRecognition.abort(); } catch (error) { /* El reconocimiento puede haberse detenido ya. */ }
     updateDictationControls();
