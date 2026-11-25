@@ -28,6 +28,7 @@ function normalizeWords(value) {
 }
 
 const NUMBER_WORD_PATTERN = Object.keys(NUMBER_WORDS)
+  .concat('mil')
   .sort(function(a, b) { return b.length - a.length; })
   .join('|');
 const NUMBER_PHRASE_SOURCE = '(?:' + NUMBER_WORD_PATTERN + ')(?:\\s+(?:y\\s+)?(?:' + NUMBER_WORD_PATTERN + '))*(?:\\s+coma\\s+(?:' + NUMBER_WORD_PATTERN + '))?';
