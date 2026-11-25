@@ -381,8 +381,13 @@ export function initGarmentPublisher({ showToast }) {
     previewModal.hidden = true;
     publisherLayout.appendChild(previewCard);
     const target = previewReturnFocus && previewReturnFocus.isConnected ? previewReturnFocus : openPreview;
-    target.focus();
     previewReturnFocus = null;
+    // Diferir el foco hasta el siguiente frame evita que el cierre del modal lo devuelva al body.
+    window.requestAnimationFrame(function() {
+      if (target.isConnected && !target.disabled && target.getClientRects().length) {
+        target.focus({ preventScroll: true });
+      }
+    });
   }
   openPreview.addEventListener('click', openMobilePreview);
   closePreview.addEventListener('click', closeMobilePreview);
