@@ -257,12 +257,14 @@
 #viewPublisher .publisher-dictation-heading strong{display:block;color:var(--text);font-size:15px;}
 #viewPublisher .publisher-dictation-caption{max-width:190px;color:var(--muted);font-size:11px;line-height:1.4;text-align:right;}
 #viewPublisher .publisher-dictation-status{margin:0 0 13px;padding:10px 12px;border:1px solid var(--border);border-radius:11px;background:var(--surface);font-size:12px;line-height:1.5;}
-#viewPublisher .publisher-dictation-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:13px;}
+#viewPublisher .publisher-dictation-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-bottom:13px;}
 #viewPublisher .publisher-dictation-engine{min-width:0;padding:12px;border:1px solid var(--border);border-radius:13px;background:color-mix(in srgb,var(--surface-2) 75%,var(--surface));}
 #viewPublisher .publisher-tool-label{display:block;margin-bottom:7px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;}
-#viewPublisher .publisher-dictation-controls,#viewPublisher .publisher-mic-test-controls{display:flex;gap:7px;margin:0;}
-#viewPublisher .publisher-dictation-controls button,#viewPublisher .publisher-mic-test-controls button{flex:1 1 auto;min-width:0;padding:8px 9px;font-size:11px;}
-#viewPublisher .publisher-audio-visualizer{height:34px;margin:9px 0 3px;padding:5px 9px;}
+#viewPublisher .publisher-dictation-controls{display:flex;gap:7px;margin:0;}
+#viewPublisher .publisher-dictation-controls button{flex:1 1 auto;min-width:0;padding:8px 9px;font-size:11px;}
+#viewPublisher .publisher-audio-visualizer{height:48px;margin:11px 0 3px;padding:7px 10px;gap:3px;}
+#viewPublisher .publisher-audio-visualizer span{height:4px;max-width:7px;opacity:.38;background:var(--primary-soft);transition:height 55ms linear,opacity 120ms ease;}
+#viewPublisher .publisher-audio-visualizer.is-active span{opacity:1;}
 #viewPublisher .publisher-audio-level{margin:4px 0 0;font-size:10px;line-height:1.4;}
 #viewPublisher .publisher-transcript-panel{padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:0 4px 14px rgba(0,0,0,.025);}
 #viewPublisher .publisher-transcript-panel>label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;color:var(--text);font-size:13px;font-weight:750;}
