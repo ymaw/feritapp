@@ -453,3 +453,31 @@ test('dictation corrects phonetic ASR variants of the word talle before recogniz
   await interpret.click();
   await expect(size).toHaveValue('');
 });
+
+test('dictation separates garment names from positive descriptions, details and missing items', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+  const garment = page.locator('#publisherGarmentName');
+  const observations = page.locator('#publisherObservations');
+
+  await transcript.fill('Vestido negro es muy hermoso, tiene un detalle en el bolsillo izquierdo y le falta un botón.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(garment).toHaveValue('Vestido negro');
+  await expect(observations).toHaveValue('es muy hermoso, tiene un detalle en el bolsillo izquierdo y le falta un botón');
+
+  await transcript.fill('Camisa blanca tiene una pequeña mancha en el puño derecho.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Camisas');
+  await expect(garment).toHaveValue('Camisa blanca');
+  await expect(observations).toHaveValue('tiene una pequeña mancha en el puño derecho');
+  await expect(observations).not.toContainText('es muy hermoso');
+
+  await transcript.fill('Pollera azul. Presenta desgaste leve en la cintura y le faltan dos botones.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Polleras');
+  await expect(garment).toHaveValue('Pollera azul');
+  await expect(observations).toHaveValue('Presenta desgaste leve en la cintura y le faltan dos botones');
+  await expect(observations).not.toContainText('pequeña mancha');
+});
