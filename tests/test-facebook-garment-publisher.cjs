@@ -96,3 +96,12 @@ assert.match(html, /id="publisherObservations" class="publisher-fixed-textarea"/
 assert.match(css, /publisher-category-select/);
 assert.match(css, /publisher-photo-input::file-selector-button/);
 assert.match(css, /publisher-fixed-textarea\{resize:none!important/);
+
+assert.match(moduleSource, /interpretedFieldValues = new Map/);
+assert.match(moduleSource, /isUnchangedInterpretation/);
+assert.match(moduleSource, /interpretedObservations/);
+assert.match(html, /publisher-transcript-panel/);
+assert.match(html, /Medidas de la prenda/);
+assert.ok(html.indexOf('id="publisherMeasurements"') < html.indexOf('class="publisher-dictation"'));
+assert.match(css, /publisher-transcript-footer/);
+assert.match(css, /publisher-dictation-tools/);
