@@ -42,6 +42,13 @@ async function openAuthenticatedApp(page, { standalone = false } = {}) {
       })
     };
     window.__sharePayload = null;
+    window.__speechRecognitionInstances = [];
+    window.SpeechRecognition = class {
+      constructor() { this.handlers = {}; window.__speechRecognitionInstances.push(this); }
+      start() { this.started = true; queueMicrotask(() => this.onstart?.()); }
+      stop() { this.stopped = true; queueMicrotask(() => this.onresult?.({ results: [{ 0: { transcript: 'Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos.' }, isFinal: true }] })); queueMicrotask(() => this.onend?.()); }
+      abort() { this.aborted = true; queueMicrotask(() => this.onend?.()); }
+    };
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: data => Boolean(data.files?.length) });
     Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.__sharePayload = data; } });
   }, { standalone });
@@ -178,14 +185,18 @@ test('microphone can be tested independently without recording or retaining audi
   await expect(page.locator('#publisherMicTestStop')).toBeDisabled();
   await expect(page.locator('#publisherAudioVisualizer')).not.toHaveClass(/is-active/);
   expect(await page.evaluate(() => window.__micTrackStopped)).toBe(true);
-  await expect(page.locator('#publisherDictationStart')).toBeDisabled();
+  await expect(page.locator('#publisherDictationStart')).toBeEnabled();
 });
 
 
-test('external browser speech recognition stays disabled until a local engine is available', async ({ page }) => {
+test('publisher reuses the New Sale speech recognition flow and keeps transcript editable before interpretation', async ({ page }) => {
   await openAuthenticatedApp(page);
-  await expect(page.locator('#publisherDictationStart')).toBeDisabled();
-  await expect(page.locator('#publisherDictationStatus')).toContainText('motor local');
+  await expect(page.locator('#publisherDictationStart')).toBeEnabled();
+  await expect(page.locator('#publisherDictationStatus')).toContainText('podría procesar el audio externamente');
+  await page.locator('#publisherDictationStart').click();
+  await expect(page.locator('#publisherDictationStop')).toBeEnabled();
+  await page.locator('#publisherDictationStop').click();
+  await expect(page.locator('#publisherTranscript')).toHaveValue(/Vestido negro, marca Ossira/);
   await page.locator('#publisherTranscript').fill('Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos.');
   await page.locator('#publisherUseTranscript').click();
   await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
