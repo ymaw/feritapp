@@ -4,114 +4,70 @@ export function initAudioVisualizer() {
   if (!visualizer || !levelLabel) return;
 
   const bars = Array.from(visualizer.querySelectorAll('span'));
-  const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia
-    ? navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices)
-    : null;
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  let stream = null;
-  let audioContext = null;
-  let sourceNode = null;
-  let analyser = null;
   let animationFrame = 0;
-  let requestId = 0;
+  let speakingTimer = null;
+  let active = false;
   let speaking = false;
+  let phase = 0;
+
+  function render() {
+    if (!active) return;
+    phase += speaking ? 0.24 : 0.10;
+    bars.forEach((bar, index) => {
+      const wave = Math.abs(Math.sin(phase + index * 0.68));
+      const emphasis = speaking ? 1 : 0.32;
+      const height = 4 + wave * (speaking ? 34 : 8) * emphasis;
+      bar.style.height = Math.round(height) + 'px';
+      bar.style.opacity = speaking ? String(0.72 + wave * 0.28) : '0.55';
+    });
+    animationFrame = window.requestAnimationFrame(render);
+  }
+
+  function setSpeaking(value) {
+    if (!active) return;
+    speaking = Boolean(value);
+    visualizer.classList.toggle('is-speaking', speaking);
+    visualizer.classList.toggle('is-listening', !speaking);
+    levelLabel.textContent = speaking
+      ? 'Voz detectada · dictando'
+      : 'Micrófono activo · esperando que hables';
+  }
+
+  function start() {
+    stop();
+    active = true;
+    visualizer.classList.add('is-active', 'is-listening');
+    visualizer.classList.remove('is-speaking');
+    levelLabel.textContent = 'Micrófono activo · esperando que hables';
+    render();
+  }
 
   function stop() {
-    requestId += 1;
-    if (animationFrame) cancelAnimationFrame(animationFrame);
-    animationFrame = 0;
-    if (sourceNode) {
-      try { sourceNode.disconnect(); } catch (error) {}
-    }
-    sourceNode = null;
-    if (analyser) {
-      try { analyser.disconnect(); } catch (error) {}
-    }
-    analyser = null;
-    if (stream) stream.getTracks().forEach(track => track.stop());
-    stream = null;
-    if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
-    audioContext = null;
+    active = false;
     speaking = false;
+    if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    animationFrame = 0;
+    if (speakingTimer) window.clearTimeout(speakingTimer);
+    speakingTimer = null;
     visualizer.classList.remove('is-active', 'is-listening', 'is-speaking');
     visualizer.style.setProperty('--voice-level', '0');
-    bars.forEach(bar => { bar.style.height = '4px'; });
+    bars.forEach(bar => { bar.style.height = '4px'; bar.style.opacity = ''; });
     levelLabel.textContent = 'Micrófono inactivo.';
   }
 
-  function animate() {
-    if (!analyser) return;
-    const samples = new Uint8Array(analyser.fftSize);
-    analyser.getByteTimeDomainData(samples);
-    let sum = 0;
-    for (let index = 0; index < samples.length; index += 1) {
-      const amplitude = (samples[index] - 128) / 128;
-      sum += amplitude * amplitude;
-    }
-    const rms = Math.sqrt(sum / samples.length);
-    const level = Math.min(1, rms * 7);
-    const isSpeaking = rms > 0.035;
-    if (isSpeaking !== speaking) {
-      speaking = isSpeaking;
-      visualizer.classList.toggle('is-speaking', speaking);
-      visualizer.classList.toggle('is-listening', !speaking);
-    }
-    visualizer.style.setProperty('--voice-level', String(level));
-    bars.forEach((bar, index) => {
-      const wave = Math.abs(Math.sin(index * 0.72 + performance.now() / 115));
-      const height = 4 + level * (10 + wave * 27);
-      bar.style.height = Math.round(height) + 'px';
-    });
-    levelLabel.textContent = isSpeaking
-      ? 'Voz detectada · dictando'
-      : 'Micrófono activo · esperando que hables';
-    animationFrame = requestAnimationFrame(animate);
-  }
-
-  async function start() {
-    stop();
-    if (!getUserMedia || !AudioContextClass) {
-      levelLabel.textContent = 'No se puede mostrar el nivel de voz en este navegador; el dictado puede continuar si está disponible.';
-      return;
-    }
-    const currentRequest = ++requestId;
-    levelLabel.textContent = 'Activando indicador de voz…';
-    try {
-      const nextStream = await getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true },
-        video: false
-      });
-      if (currentRequest !== requestId) {
-        nextStream.getTracks().forEach(track => track.stop());
-        return;
-      }
-      stream = nextStream;
-      audioContext = new AudioContextClass();
-      if (audioContext.state === 'suspended') await audioContext.resume();
-      if (currentRequest !== requestId) {
-        stop();
-        return;
-      }
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      sourceNode = audioContext.createMediaStreamSource(stream);
-      sourceNode.connect(analyser);
-      visualizer.classList.add('is-active', 'is-listening');
-      visualizer.classList.remove('is-speaking');
-      visualizer.style.setProperty('--voice-level', '0');
-      levelLabel.textContent = 'Micrófono activo · esperando que hables';
-      animate();
-    } catch (error) {
-      stop();
-      visualizer.classList.remove('is-listening', 'is-speaking');
-      levelLabel.textContent = error && error.name === 'NotAllowedError'
-        ? 'No se concedió permiso para mostrar el nivel del micrófono; el dictado podría seguir disponible.'
-        : 'No se pudo activar el indicador de voz; podés continuar con el dictado.';
-    }
+  function onSpeechDetected() {
+    if (!active) return;
+    setSpeaking(true);
+    if (speakingTimer) window.clearTimeout(speakingTimer);
+    speakingTimer = window.setTimeout(() => {
+      speakingTimer = null;
+      setSpeaking(false);
+    }, 850);
   }
 
   window.addEventListener('publisher:dictation-start', start);
   window.addEventListener('publisher:dictation-stop', stop);
+  window.addEventListener('publisher:dictation-speaking', onSpeechDetected);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') stop();
   });
