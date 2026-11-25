@@ -34,7 +34,8 @@ function buildGarmentPost(data) {
     lines.push('');
     lines.push('💰 Precio: ' + data.price);
   }
-  return lines.join('\n');
+  return lines.join('
+');
 }
 
 export function initGarmentPublisher({ showToast }) {
@@ -437,7 +438,8 @@ export function initGarmentPublisher({ showToast }) {
         { label: 'Cintura', value: readValue('publisherWaist') },
         { label: 'Tiro delantero', value: readValue('publisherRise') },
         { label: 'Cadera', value: readValue('publisherHip') },
-        { label: 'Largo', value: readValue('publisherLength') },\n        { label: 'Bota', value: readValue('publisherBoot') }
+        { label: 'Largo', value: readValue('publisherLength') },
+        { label: 'Bota', value: readValue('publisherBoot') }
       ] : []
     };
   }
@@ -481,8 +483,13 @@ export function initGarmentPublisher({ showToast }) {
     if (hasCurrentGarment(current)) items.push({ data: current, photo: selectedPhoto });
     if (items.length && !postText.dataset.userEdited) {
       postText.value = items.map(function(item,index) {
-        return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '') + buildGarmentPost(item.data);
-      }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
+        return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '
+' : '') + buildGarmentPost(item.data);
+      }).join(items.length > 1 ? '
+
+────────────
+
+' : '');
     } else if (!items.length && !postText.dataset.userEdited) postText.value = '';
   }
   ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot'].forEach(function(id) {
@@ -556,9 +563,14 @@ export function initGarmentPublisher({ showToast }) {
       return;
     }
     postText.value = items.map(function(item, index) {
-      const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '';
+      const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '
+' : '';
       return heading + buildGarmentPost(item.data);
-    }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
+    }).join(items.length > 1 ? '
+
+────────────
+
+' : '');
     delete postText.dataset.userEdited;
     feedback.textContent = items.length > 1
       ? 'Plantilla generada con ' + items.length + ' prendas. Revisá el texto y las fotografías antes de compartir.'
