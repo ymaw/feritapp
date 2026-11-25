@@ -104,6 +104,41 @@ test('publisher stages garments with separate photo previews, removes safely and
   await expect(page.locator('#publisherFeedback')).toContainText('Se abrió el menú para compartir texto y fotografía');
 });
 
+
+test('mobile preview opens as an accessible modal and returns focus to the editor', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  await page.locator('#publisherGarmentName').fill('Vestido de prueba');
+  await page.locator('#publisherBrand').fill('Ossira');
+  await page.locator('#publisherWaist').fill('38');
+  await page.locator('#publisherLength').fill('105');
+  await page.locator('#publisherPhoto').setInputFiles({
+    name: 'vestido-preview.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=', 'base64')
+  });
+
+  const trigger = page.locator('#publisherOpenPreview');
+  await expect(trigger).toBeVisible();
+  await expect(page.locator('#viewPublisher .publisher-preview-card')).toBeHidden();
+  await trigger.click();
+
+  const modal = page.locator('#publisherPreviewModal');
+  await expect(modal).toBeVisible();
+  await expect(modal).toHaveAttribute('aria-modal', 'true');
+  await expect(modal.locator('#publisherPreviewTitle')).toBeVisible();
+  await expect(modal.locator('#publisherPostText')).toHaveValue(/Vestido de prueba[\\s\\S]*Marca: Ossira[\\s\\S]*Cintura: 38 cm[\\s\\S]*Largo: 105 cm/);
+  await expect(modal.locator('#publisherPhotoPreview img')).toBeVisible();
+  await expect(modal.locator('#publisherPhotoPreview img')).toHaveCSS('object-fit', 'contain');
+  await expect(page.locator('#publisherClosePreview')).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(modal).toBeHidden();
+  await expect(page.locator('#viewPublisher .publisher-preview-card')).toBeVisible();
+  await expect(trigger).toBeFocused();
+});
+
 test('publisher does not generate an empty post when no garment is entered', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#publisherGenerate').click();
