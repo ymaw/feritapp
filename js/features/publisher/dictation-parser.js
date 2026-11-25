@@ -109,7 +109,7 @@ export function parseGarmentDictation(transcript) {
     const match = text.match(categoryRule[1]);
     // Tomar la descripción inmediata completa hasta el primer dato estructurado.
     // Ej.: "Vestido negro, marca..." => "Vestido negro".
-    const garmentPhrase = text.slice(match.index).split(/[,;]|\b(?:marca|talle|precio|cintura|tiro|cadera|largo|medidas?)\b/i)[0];
+    const garmentPhrase = text.slice(match.index).split(/[,;.]|\b(?:es|son|tiene|tienen|le\s+falta|le\s+faltan|falta|faltan|presenta|presentan|se\s+encuentra|se\s+encuentran|est[aá]|se\s+observa|se\s+observan|cuenta\s+con|incluye|marca|talle|precio|cintura|tiro|cadera|largo|medidas?)\b/i)[0];
     result.garmentName = clean(garmentPhrase);
   }
 
