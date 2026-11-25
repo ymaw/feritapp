@@ -123,10 +123,10 @@ export function parseGarmentDictation(transcript) {
     /\bmarca\s+[\p{L}0-9][\p{L}0-9 .'-]{0,39}/iu,
     /\btalle\s+[\p{L}0-9-]{1,12}/iu,
     /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+pesos?)?(?=\s*(?:,|;|\.|$))/iu,
-    /\b(?:la\s+)?cintura\s+(?:de\s+)?\d+(?:[,.]\d+)?(?:\s*cm)?/iu,
-    /\btiro(?:\s+delantero)?\s+(?:de\s+)?\d+(?:[,.]\d+)?(?:\s*cm)?/iu,
-    /\b(?:la\s+)?cadera\s+(?:de\s+)?\d+(?:[,.]\d+)?(?:\s*cm)?/iu,
-    /\b(?:el\s+)?largo\s+(?:de\s+)?\d+(?:[,.]\d+)?(?:\s*cm)?/iu
+    new RegExp('\\b(?:la\\s+)?cintura\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
+    new RegExp('\\btiro(?:\\s+delantero)?\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
+    new RegExp('\\b(?:la\\s+)?cadera\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
+    new RegExp('\\b(?:el\\s+)?largo\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu')
   ];
   for (const expression of removals) remainder = remainder.replace(expression, ' ');
   if (categoryRule) remainder = remainder.replace(result.garmentName || categoryRule[1], ' ');
