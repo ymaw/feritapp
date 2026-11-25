@@ -72,8 +72,10 @@ export function parseGarmentDictation(transcript) {
   if (categoryRule) {
     result.category = categoryRule[0];
     const match = text.match(categoryRule[1]);
-    const suffix = text.slice(match.index + match[0].length).match(/^\s+de\s+[\p{L}]+/iu);
-    result.garmentName = clean(match[0] + (suffix ? suffix[0] : ''));
+    // Tomar la descripción inmediata completa hasta el primer dato estructurado.
+    // Ej.: "Vestido negro, marca..." => "Vestido negro".
+    const garmentPhrase = text.slice(match.index).split(/[,;]|\b(?:marca|talle|precio|cintura|tiro|cadera|largo|medidas?)\b/i)[0];
+    result.garmentName = clean(garmentPhrase);
   }
 
   result.brand = firstCapture(text, /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\btalle\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b)|$)/iu);
@@ -107,7 +109,7 @@ export function parseGarmentDictation(transcript) {
     /\b(?:el\s+)?largo\s+(?:de\s+)?\d+(?:[,.]\d+)?(?:\s*cm)?/iu
   ];
   for (const expression of removals) remainder = remainder.replace(expression, ' ');
-  if (categoryRule) remainder = remainder.replace(categoryRule[1], ' ');
+  if (categoryRule) remainder = remainder.replace(result.garmentName || categoryRule[1], ' ');
   remainder = remainder.replace(/^\s*(?:es\s+)?(?:un|una|el|la)\s+/i, ' ');
   remainder = remainder.replace(/\b(?:y|con)\s*(?=[,.;])/gi, ' ');
   result.observations = clean(remainder);
