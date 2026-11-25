@@ -122,7 +122,9 @@ export function initGarmentPublisher({ showToast }) {
       const messages = {
         'not-allowed': 'No se concedió permiso para usar el micrófono.',
         'service-not-allowed': 'El navegador o dispositivo bloqueó el reconocimiento de voz.',
-        'audio-capture': 'No se encontró un micrófono disponible.'
+        'audio-capture': 'No se encontró un micrófono disponible.',
+        'language-not-supported': 'El navegador no admite el idioma de reconocimiento configurado.',
+        'network': 'No se pudo conectar con el servicio de reconocimiento. Revisá tu conexión e intentá nuevamente.'
       };
       if (messages[event.error]) {
         dictationErrorMessage = messages[event.error];
