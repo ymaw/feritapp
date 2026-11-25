@@ -317,3 +317,25 @@
 #viewPublisher .publisher-audio-visualizer.is-active.is-listening span{
   background:#e05252;
 }
+
+
+/* Mobile: el formulario y la vista previa deben ocupar una sola columna real. */
+@media (max-width: 899px) {
+  #viewPublisher .publisher-layout {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  #viewPublisher .publisher-layout > * {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
