@@ -124,3 +124,8 @@ assert.match(audioModule, /is-speaking/);
 assert.match(audioModule, /rms > 0\.035/);
 assert.match(css, /publisher-audio-visualizer\.is-active\.is-listening/);
 assert.match(css, /publisher-audio-visualizer\.is-active\.is-speaking/);
+
+assert.match(css, /@media \(max-width: 899px\)[\s\S]*?grid-template-columns: minmax\(0, 1fr\)/);
+assert.match(css, /#viewPublisher \.publisher-layout[\s\S]*?box-sizing: border-box/);
+assert.match(script, /deliveries:\{label:'Entregas',icon:'<svg[\s\S]*?viewBox="0 0 24 24"/);
+assert.match(script, /stroke="currentColor" stroke-width="1\.8"/);
