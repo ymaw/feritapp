@@ -295,3 +295,25 @@
 #viewPublisher .publisher-photo-camera{border-color:color-mix(in srgb,var(--primary-soft) 55%,var(--border));background:color-mix(in srgb,var(--primary-soft) 12%,var(--surface));}
 #viewPublisher .publisher-photo-hint{flex:1 1 100%;color:var(--muted);font-size:10px;line-height:1.4;}
 @media(max-width:520px){#viewPublisher .publisher-photo-actions{gap:7px;}#viewPublisher .publisher-photo-action{flex:1 1 calc(50% - 7px);min-height:38px;}}
+
+
+/* Estado del micrófono: rojo mientras escucha en silencio y verde al detectar voz. */
+#viewPublisher .publisher-audio-visualizer{
+  border:1.5px solid var(--border);
+  transition:border-color 90ms ease,box-shadow 90ms ease;
+}
+#viewPublisher .publisher-audio-visualizer.is-active.is-listening{
+  border-color:#e05252;
+  box-shadow:0 0 0 2px rgba(224,82,82,.12),0 0 12px rgba(224,82,82,.12);
+}
+#viewPublisher .publisher-audio-visualizer.is-active.is-speaking{
+  border-color:#22a66a;
+  box-shadow:0 0 0 calc(2px + var(--voice-level,0)*2px) rgba(34,166,106,.18),
+    0 0 calc(10px + var(--voice-level,0)*12px) rgba(34,166,106,.25);
+}
+#viewPublisher .publisher-audio-visualizer.is-active.is-speaking span{
+  background:#22a66a;
+}
+#viewPublisher .publisher-audio-visualizer.is-active.is-listening span{
+  background:#e05252;
+}
