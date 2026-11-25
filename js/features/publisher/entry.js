@@ -32,11 +32,11 @@ function initializePublisher() {
   return true;
 }
 
-// El módulo se evalúa antes de DOMContentLoaded. La aplicación principal
-// registra primero su arranque en ese evento; inicializar el publicador
-// después evita competir con la preparación inicial de las vistas.
-if (document.readyState === 'complete') {
-  initializePublisher();
-} else {
+// DOMContentLoaded solo se espera mientras el documento sigue cargándose.
+// En estado "interactive" el evento ya pudo haberse disparado; registrarse
+// entonces dejaría al publicador sin inicializar hasta una navegación nueva.
+if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializePublisher, { once: true });
+} else {
+  initializePublisher();
 }
