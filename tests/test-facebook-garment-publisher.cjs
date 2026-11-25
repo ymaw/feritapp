@@ -108,3 +108,12 @@ assert.match(html, /Medidas de la prenda/);
 assert.ok(html.indexOf('id="publisherMeasurements"') < html.indexOf('class="publisher-dictation"'));
 assert.match(css, /publisher-transcript-footer/);
 assert.match(css, /publisher-dictation-tools/);
+
+assert.match(html, /id="publisherCamera"[^>]*capture="environment"/);
+assert.match(html, /id="publisherChoosePhoto"/);
+assert.match(html, /id="publisherTakePhoto"/);
+assert.match(moduleSource, /function handleSelectedPhoto\(file, sourceInput\)/);
+assert.match(moduleSource, /cameraInput\.click\(\)/);
+assert.match(moduleSource, /photoInput\.click\(\)/);
+assert.match(css, /publisher-photo-actions/);
+assert.match(css, /publisher-photo-action/);
