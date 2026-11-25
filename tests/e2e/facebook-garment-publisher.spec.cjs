@@ -255,11 +255,18 @@ test('dictation preserves an explicitly selected Otros category', async ({ page 
   await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
 });
 
-test('publisher interprets explicit garment details from editable dictation', async ({ page }) => {
+test('publisher interprets category first, reveals the measurement template and then fills every measurement', async ({ page }) => {
   await openAuthenticatedApp(page);
+  await page.evaluate(() => {
+    window.__measurementTemplateWasVisibleOnCategoryChange = false;
+    document.querySelector('#publisherCategory').addEventListener('change', () => {
+      window.__measurementTemplateWasVisibleOnCategoryChange = !document.querySelector('#publisherMeasurements').hidden;
+    });
+  });
   await page.locator('#publisherTranscript').fill('Es un capri de gabardina, marca Ossira, talle 40, cintura 42 cm, tiro delantero 17 cm, cadera 49 cm, largo 60 cm y precio siete mil pesos. Botón y cierre funcionando perfectamente.');
   await page.locator('#publisherUseTranscript').click();
   await expect(page.locator('#publisherCategory')).toHaveValue('Capris');
+  expect(await page.evaluate(() => window.__measurementTemplateWasVisibleOnCategoryChange)).toBe(true);
   await expect(page.locator('#publisherGarmentName')).toHaveValue(/capri de gabardina/i);
   await expect(page.locator('#publisherBrand')).toHaveValue('Ossira');
   await expect(page.locator('#publisherSize')).toHaveValue('40');
