@@ -255,6 +255,15 @@ test('dictation preserves an explicitly selected Otros category', async ({ page 
   await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
 });
 
+test('dictation normalizes noisy size labels, numeric brand names and apocopated twenty-one', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Pantalón negro, marca cuarenta y siete street, taye veintiún, cintura cuarenta y uno centímetros.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherBrand')).toHaveValue('47 street');
+  await expect(page.locator('#publisherSize')).toHaveValue('21');
+  await expect(page.locator('#publisherWaist')).toHaveValue('41');
+});
+
 test('publisher interprets category first, reveals the measurement template and then fills every measurement', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.evaluate(() => {
