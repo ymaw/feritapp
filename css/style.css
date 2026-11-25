@@ -4361,3 +4361,9 @@ textarea,
   #appRoot > header > #globalBackBtn { left: 16px !important; right: auto !important; }
   #appRoot > header > #headerMoreBtn { left: auto !important; right: 16px !important; }
 }
+
+
+/* Ranking en pantalla: nombres y artículos alineados a la izquierda; la imagen compartida se dibuja por separado. */
+#viewRanking .rank-info{align-items:flex-start!important;text-align:left!important;}
+#viewRanking .rank-name{justify-content:flex-start!important;text-align:left!important;}
+#viewRanking .rank-sub{text-align:left!important;}
