@@ -40,7 +40,7 @@ assert.match(css, /object-fit:contain/);
 assert.match(css, /@media\(max-width:900px\)/);
 
 assert.match(moduleSource, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
-assert.match(moduleSource, /recognition\.lang = 'es-AR'/);
+assert.match(moduleSource, /activeRecognition\.lang = 'es-AR'/);
 assert.match(moduleSource, /activeRecognition\.continuous = true/);
 assert.match(moduleSource, /activeRecognition\.interimResults = true/);
 assert.match(moduleSource, /El navegador o sistema podría procesar el audio externamente/);
