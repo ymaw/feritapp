@@ -66,7 +66,8 @@ function parseSpanishNumber(value) {
 }
 
 function normalizeSpokenNumbersInText(value) {
-  return String(value || '').replace(new RegExp('\\\\b' + NUMBER_PHRASE_SOURCE + '\\\\b', 'giu'), function(phrase) {
+  const numberPattern = new RegExp('\\b' + NUMBER_PHRASE_SOURCE + '\\b', 'giu');
+  return String(value || '').replace(numberPattern, function(phrase) {
     return parseSpanishNumber(phrase) || phrase;
   });
 }
