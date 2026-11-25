@@ -295,7 +295,7 @@ export function initGarmentPublisher({ showToast }) {
     const fields = [
       ['garmentName', 'publisherGarmentName'], ['brand', 'publisherBrand'],
       ['size', 'publisherSize'], ['price', 'publisherPrice'],
-      ['waist', 'publisherWaist'], ['rise', 'publisherRise'], ['hip', 'publisherHip'], ['length', 'publisherLength']
+      ['waist', 'publisherWaist'], ['rise', 'publisherRise'], ['hip', 'publisherHip'], ['length', 'publisherLength'], ['boot', 'publisherBoot']
     ];
     fields.forEach(function(pair) {
       const value = parsed[pair[0]];
@@ -387,7 +387,7 @@ export function initGarmentPublisher({ showToast }) {
     interpretedFieldValues.clear();
     interpretedObservations = null;
     ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice',
-      'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength',
+      'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot',
       'publisherTranscript'].forEach(function(id) {
       const element = document.getElementById(id);
       if (element) element.value = '';
@@ -437,7 +437,7 @@ export function initGarmentPublisher({ showToast }) {
         { label: 'Cintura', value: readValue('publisherWaist') },
         { label: 'Tiro delantero', value: readValue('publisherRise') },
         { label: 'Cadera', value: readValue('publisherHip') },
-        { label: 'Largo', value: readValue('publisherLength') }
+        { label: 'Largo', value: readValue('publisherLength') },\n        { label: 'Bota', value: readValue('publisherBoot') }
       ] : []
     };
   }
@@ -485,7 +485,7 @@ export function initGarmentPublisher({ showToast }) {
       }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
     } else if (!items.length && !postText.dataset.userEdited) postText.value = '';
   }
-  ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength'].forEach(function(id) {
+  ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot'].forEach(function(id) {
     const field = document.getElementById(id);
     if (field) { field.addEventListener('input',refreshLivePreview); field.addEventListener('change',refreshLivePreview); }
   });
