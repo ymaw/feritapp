@@ -135,7 +135,7 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
 
   await page.keyboard.press('Escape');
   await expect(modal).toBeHidden();
-  await expect(page.locator('#viewPublisher .publisher-preview-card')).toBeVisible();
+  await expect(page.locator('#viewPublisher .publisher-preview-card')).toBeHidden();
   await expect(trigger).toBeFocused();
 });
 
