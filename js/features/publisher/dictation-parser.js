@@ -27,22 +27,41 @@ function normalizeWords(value) {
   return String(value || '').toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+const NUMBER_WORD_PATTERN = Object.keys(NUMBER_WORDS)
+  .sort(function(a, b) { return b.length - a.length; })
+  .join('|');
+const NUMBER_PHRASE_SOURCE = '(?:' + NUMBER_WORD_PATTERN + ')(?:\\s+(?:y\\s+)?(?:' + NUMBER_WORD_PATTERN + '))*(?:\\s+coma\\s+(?:' + NUMBER_WORD_PATTERN + '))?';
+const NUMBER_CAPTURE = '(' + NUMBER_PHRASE_SOURCE + '|\\d+(?:[,.]\\d+)?)';
+
 function parseSpanishNumber(value) {
-  const words = normalizeWords(value).split(/\s+/).filter(Boolean);
-  let total = 0;
-  let current = 0;
-  let found = false;
-  for (const word of words) {
-    if (NUMBER_WORDS[word] !== undefined) {
-      current += NUMBER_WORDS[word];
-      found = true;
-    } else if (word === 'mil') {
-      total += (current || 1) * 1000;
-      current = 0;
-      found = true;
+  const normalized = normalizeWords(value).trim();
+  if (!normalized) return '';
+  if (/^\d+(?:[,.]\d+)?$/.test(normalized)) return normalized.replace(',', '.');
+  const parts = normalized.split(/\s+coma\s+/);
+  const parseInteger = function(phrase) {
+    const words = phrase.split(/\s+/).filter(function(word) { return word !== 'y'; });
+    let total = 0;
+    let current = 0;
+    let found = false;
+    for (const word of words) {
+      if (word === 'mil') {
+        total += (current || 1) * 1000;
+        current = 0;
+        found = true;
+      } else if (NUMBER_WORDS[word] !== undefined) {
+        current += NUMBER_WORDS[word];
+        found = true;
+      } else {
+        return null;
+      }
     }
-  }
-  return found ? String(total + current) : '';
+    return found ? total + current : null;
+  };
+  const integer = parseInteger(parts[0]);
+  if (integer === null) return '';
+  if (parts.length === 1) return String(integer);
+  const decimal = parseInteger(parts[1]);
+  return decimal === null ? String(integer) : String(Number(String(integer) + '.' + String(decimal)));
 }
 
 function clean(value) {
@@ -87,15 +106,16 @@ export function parseGarmentDictation(transcript) {
     result.price = digits ? digits[1].replace(/\.0+$/, '') : parseSpanishNumber(priceText);
   }
 
+  const measurementBoundary = '(?=\\s*(?:cm|cent[ií]metros?\\b|[,;.]|\\b(?:y\\s+)?(?:precio|cintura|tiro|cadera|largo|marca|talle)\\b|$))';
   const measurements = [
-    ['waist', /\b(?:la\s+)?cintura\s+(?:de\s+)?(\d+(?:[,.]\d+)?)(?:\s*cm)?/i],
-    ['rise', /\btiro(?:\s+delantero)?\s+(?:de\s+)?(\d+(?:[,.]\d+)?)(?:\s*cm)?/i],
-    ['hip', /\b(?:la\s+)?cadera\s+(?:de\s+)?(\d+(?:[,.]\d+)?)(?:\s*cm)?/i],
-    ['length', /\b(?:el\s+)?largo\s+(?:de\s+)?(\d+(?:[,.]\d+)?)(?:\s*cm)?/i]
+    ['waist', new RegExp('\\b(?:la\\s+)?cintura\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')],
+    ['rise', new RegExp('\\btiro(?:\\s+delantero)?\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')],
+    ['hip', new RegExp('\\b(?:la\\s+)?cadera\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')],
+    ['length', new RegExp('\\b(?:el\\s+)?largo\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')]
   ];
   for (const [key, expression] of measurements) {
     const match = text.match(expression);
-    if (match) result[key] = numericValue(match[1]);
+    if (match) result[key] = parseSpanishNumber(match[1]) || numericValue(match[1]);
   }
 
   let remainder = text;
