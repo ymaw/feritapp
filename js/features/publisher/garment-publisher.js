@@ -60,6 +60,8 @@ export function initGarmentPublisher({ showToast }) {
   let isDictating = false;
   let dictationErrorMessage = '';
   let dictationRequestsMeasurements = false;
+  const interpretedFieldValues = new Map();
+  let interpretedObservations = null;
 
   function updateDictationControls() {
     dictationStart.disabled = !SpeechRecognition || isDictating;
@@ -181,24 +183,37 @@ export function initGarmentPublisher({ showToast }) {
     fields.forEach(function(pair) {
       const value = parsed[pair[0]];
       const element = document.getElementById(pair[1]);
+      if (!element) return;
+      const previousValue = interpretedFieldValues.get(pair[1]);
+      const currentValue = element.value.trim();
+      const isUnchangedInterpretation = previousValue !== undefined && currentValue === previousValue;
+      const canReplace = !currentValue || isUnchangedInterpretation;
       const isCategoryField = pair[0] === 'category';
-      const categoryOptionExists = isCategoryField && element && Array.from(element.options).some(function(option) {
+      const categoryOptionExists = !isCategoryField || (value && Array.from(element.options).some(function(option) {
         return option.value === value || option.textContent.trim() === value;
-      });
-      const fieldIsEmpty = element && !element.value.trim();
-      const canFillField = isCategoryField ? categoryOptionExists && fieldIsEmpty : fieldIsEmpty;
-      if (value && element && canFillField) {
+      }));
+      if (!canReplace) return;
+      if (value && categoryOptionExists) {
         element.value = value;
+        interpretedFieldValues.set(pair[1], value);
         applied.push(pair[0]);
-        element.dispatchEvent(new Event('input', { bubbles: true }));
-        element.dispatchEvent(new Event('change', { bubbles: true }));
+      } else if (isUnchangedInterpretation) {
+        element.value = '';
+        interpretedFieldValues.delete(pair[1]);
       }
+      element.dispatchEvent(new Event('input', { bubbles: true }));
+      element.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    if (parsed.observations) {
-      const observations = document.getElementById('publisherObservations');
-      if (!observations.value.trim()) observations.value = parsed.observations.slice(0, 1200);
-      else observations.value = [observations.value.trim(), parsed.observations].join('\\n').slice(0, 1200);
-      observations.dispatchEvent(new Event('input', { bubbles: true }));
+    const observations = document.getElementById('publisherObservations');
+    if (observations) {
+      const currentObservations = observations.value.trim();
+      const previousGenerated = interpretedObservations;
+      const isPreviousInterpretation = previousGenerated !== null && currentObservations === previousGenerated;
+      if (!currentObservations || isPreviousInterpretation) {
+        observations.value = parsed.observations.slice(0, 1200);
+        interpretedObservations = parsed.observations ? observations.value : null;
+        observations.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     }
     updateCategoryTemplate();
     refreshLivePreview();
@@ -256,6 +271,8 @@ export function initGarmentPublisher({ showToast }) {
 
   function resetCurrentGarment() {
     dictationRequestsMeasurements = false;
+    interpretedFieldValues.clear();
+    interpretedObservations = null;
     ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice',
       'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength',
       'publisherTranscript'].forEach(function(id) {
