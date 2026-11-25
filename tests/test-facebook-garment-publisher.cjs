@@ -40,7 +40,14 @@ assert.match(moduleSource, /navigator\.clipboard\.writeText/);
 assert.match(moduleSource, /URL\.createObjectURL/);
 assert.match(css, /object-fit:contain/);
 assert.match(css, /@media\(max-width:900px\)/);
-console.log('Publicador: estructura, categorías, vista previa y rutas de compartir verificadas.');
+
+assert.match(moduleSource, /const SpeechRecognition = null/);
+assert.doesNotMatch(moduleSource, /window\.SpeechRecognition|window\.webkitSpeechRecognition/);
+assert.match(html, /El dictado por voz está pausado hasta integrar un motor local/);
+assert.match(html, /id="publisherDictationStart"[^>]*disabled/);
+assert.match(css, /publisher-preview-card\s*\{[^}]*position:\s*sticky/);
+
+console.log('Publicador: estructura, categorías, vista previa, privacidad y rutas de compartir verificadas.');
 
 assert.match(html, /id="publisherDictationStart"/);
 assert.match(html, /id="publisherDictationStop"/);
