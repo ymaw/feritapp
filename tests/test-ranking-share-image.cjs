@@ -7,7 +7,7 @@ const end=source.indexOf('  const shareRankingBtn=',start);
 assert.notEqual(start,-1,'ranking share renderer must exist');
 assert.notEqual(end,-1,'ranking share renderer must have a clear boundary');
 const share=source.slice(start,end);
-assert.match(share,/const includeTotals\\s*=\\s*showRankingMoney\\s*===\\s*true/);
+assert.match(share,/const includeTotals\s*=\s*showRankingMoney\s*===\s*true/);
 assert.match(share,/if\(includeTotals\|\|includeArticleCount\)/);
 assert.match(share,/includeTotals\?money\(client\.total\)/);
 assert.match(share,/rankingPeriodDescription\(\)/);
