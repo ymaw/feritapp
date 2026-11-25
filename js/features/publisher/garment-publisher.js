@@ -34,8 +34,7 @@ function buildGarmentPost(data) {
     lines.push('');
     lines.push('💰 Precio: ' + data.price);
   }
-  return lines.join('
-');
+  return lines.join('\n');
 }
 
 export function initGarmentPublisher({ showToast }) {
@@ -86,7 +85,7 @@ export function initGarmentPublisher({ showToast }) {
   } else {
     dictationStart.disabled = false;
     dictationStart.textContent = 'Iniciar dictado';
-    dictationStatus.textContent = 'El dictado usa el mismo reconocimiento por voz que Nueva venta (es-AR). El navegador o sistema podría procesar el audio externamente; FeritApp no guarda grabaciones. Podés hacer pausas breves: seguirá escuchando hasta que pulses «Detener dictado».';
+    dictationStatus.textContent = 'Dictá los datos de la prenda y completá sus campos automáticamente.';
   }
 
   function updateTranscript(event) {
@@ -483,8 +482,7 @@ export function initGarmentPublisher({ showToast }) {
     if (hasCurrentGarment(current)) items.push({ data: current, photo: selectedPhoto });
     if (items.length && !postText.dataset.userEdited) {
       postText.value = items.map(function(item,index) {
-        return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '
-' : '') + buildGarmentPost(item.data);
+        return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '') + buildGarmentPost(item.data);
       }).join(items.length > 1 ? '
 
 ────────────
@@ -563,8 +561,7 @@ export function initGarmentPublisher({ showToast }) {
       return;
     }
     postText.value = items.map(function(item, index) {
-      const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '
-' : '';
+      const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '';
       return heading + buildGarmentPost(item.data);
     }).join(items.length > 1 ? '
 
