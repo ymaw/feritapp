@@ -37,7 +37,10 @@ async function openAuthenticatedApp(page, { standalone = false } = {}) {
             maybeSingle: async () => ({ data: table === 'user_settings' ? rows[table] : null, error: null })
           }),
           upsert: async () => ({ data: [], error: null }),
-          insert: async () => ({ data: [], error: null }),
+          insert: async values => {
+            if (table === 'categories') (Array.isArray(values) ? values : [values]).forEach(item => rows.categories.push({ id: 'cat-' + (rows.categories.length + 1), ...item }));
+            return { data: [], error: null };
+          },
           update: values => ({ eq: async (column, value) => {
             if (table === 'categories') rows.categories = rows.categories.map(item => item[column] === value ? { ...item, ...values } : item);
             if (table === 'sales') rows.sales = rows.sales.map(item => item[column] === value ? { ...item, ...values } : item);
