@@ -122,9 +122,9 @@ export function initGarmentPublisher({ showToast }) {
         return;
       }
       if (transcriptField.value.trim()) {
-        interpretTranscript();
+        dictationStatus.textContent = 'Transcripción lista. Revisá y corregí el texto; después pulsá «Interpretar y completar campos» para aplicarlo.';
       } else {
-        dictationStatus.textContent = 'No se obtuvo una transcripción. Si estás usando Firefox, probá Chrome o Edge para habilitar el reconocimiento de voz.';
+        dictationStatus.textContent = 'No se obtuvo una transcripción. Podés volver a intentarlo o completar los datos manualmente.';
       }
       updateDictationControls();
     };
