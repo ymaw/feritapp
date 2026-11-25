@@ -339,3 +339,39 @@
     max-width: 100%;
   }
 }
+
+
+/* Alineación clara del encabezado de asistencia por voz en desktop y mobile. */
+#viewPublisher .publisher-dictation-heading{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  text-align:center;
+}
+#viewPublisher .publisher-dictation-title-group{
+  justify-content:center;
+  width:100%;
+  text-align:center;
+}
+#viewPublisher .publisher-dictation-title-group > div{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-width:0;
+}
+#viewPublisher .publisher-dictation-kicker,
+#viewPublisher .publisher-dictation-heading strong{
+  text-align:center;
+}
+#viewPublisher .publisher-dictation-caption{
+  max-width:none;
+  width:100%;
+  text-align:center;
+}
+@media(max-width:520px){
+  #viewPublisher .publisher-dictation-heading{align-items:center;}
+  #viewPublisher .publisher-dictation-title-group{align-items:center;}
+  #viewPublisher .publisher-dictation-caption{max-width:none;text-align:center;}
+}
