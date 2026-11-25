@@ -49,7 +49,7 @@ export function initGarmentPublisher({ showToast }) {
   let previewUrl = null;
   const queuedGarments = [];
   const queuedList = document.getElementById('publisherQueuedGarments');
-  const SpeechRecognition = null; // No usar servicios de reconocimiento externos: pendiente motor local.
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const dictationStart = document.getElementById('publisherDictationStart');
   const dictationStop = document.getElementById('publisherDictationStop');
   const transcriptField = document.getElementById('publisherTranscript');
@@ -67,13 +67,18 @@ export function initGarmentPublisher({ showToast }) {
     dictationStart.disabled = !SpeechRecognition || isDictating;
     dictationStop.disabled = !isDictating;
     useTranscript.disabled = !transcriptField.value.trim() || isDictating;
-    dictationStart.textContent = isDictating ? 'Escuchando…' : 'Motor local pendiente';
+    dictationStart.textContent = isDictating ? 'Escuchando…' : 'Iniciar dictado';
   }
 
   if (!SpeechRecognition) {
     dictationStart.disabled = true;
     dictationStop.disabled = true;
-    dictationStatus.textContent = 'El dictado por voz está pausado hasta integrar un motor local. No se enviará audio a servicios externos. Podés cargar los datos manualmente o pegar una transcripción.';
+    dictationStart.textContent = 'Dictado no disponible';
+    dictationStatus.textContent = 'Este navegador no ofrece dictado por voz compatible. Probá con un navegador compatible o escribí/pegá la transcripción. La disponibilidad depende del navegador y del dispositivo.';
+  } else {
+    dictationStart.disabled = false;
+    dictationStart.textContent = 'Iniciar dictado';
+    dictationStatus.textContent = 'El dictado usa el mismo reconocimiento por voz que Nueva venta (es-AR). El navegador o sistema podría procesar el audio externamente; FeritApp no guarda grabaciones. Revisá el texto antes de interpretarlo.';
   }
 
   dictationStart.addEventListener('click', function() {
@@ -83,8 +88,8 @@ export function initGarmentPublisher({ showToast }) {
     transcriptField.value = '';
     recognition = new SpeechRecognition();
     recognition.lang = 'es-AR';
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.onstart = function() {
       isDictating = true;
