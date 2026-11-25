@@ -285,3 +285,38 @@ test('manual publisher works in installed PWA standalone mode without dictation'
   await page.locator('#publisherShare').click();
   await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(1);
 });
+
+
+test('reinterpreting edited transcript replaces generated values and observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos, cintura 38 cm. Tiene botones completos y tela suave.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Vestido negro');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Tiene botones completos y tela suave.');
+
+  await page.locator('#publisherTranscript').fill('Pantalón azul, marca Kosiuko, talle L, precio cuarenta y dos mil pesos, cintura 44 cm. Presenta una pequeña marca en el bolsillo.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Pantalón azul');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Kosiuko');
+  await expect(page.locator('#publisherSize')).toHaveValue('L');
+  await expect(page.locator('#publisherPrice')).toHaveValue('42000');
+  await expect(page.locator('#publisherWaist')).toHaveValue('44');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Presenta una pequeña marca en el bolsillo.');
+  await expect(page.locator('#publisherObservations')).not.toContainText('botones completos');
+});
+
+test('measurements are placed with garment fields before the transcription panel', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const order = await page.evaluate(() => {
+    const measurements = document.querySelector('#publisherMeasurements');
+    const transcription = document.querySelector('.publisher-dictation');
+    return Boolean(measurements && transcription &&
+      (measurements.compareDocumentPosition(transcription) & Node.DOCUMENT_POSITION_FOLLOWING));
+  });
+  expect(order).toBe(true);
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  await expect(page.locator('#publisherMeasurements')).toBeVisible();
+});
