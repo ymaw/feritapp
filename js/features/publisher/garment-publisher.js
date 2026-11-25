@@ -58,7 +58,9 @@ export function initGarmentPublisher({ showToast }) {
   let recognition = null;
   let finalTranscriptParts = [];
   let isDictating = false;
+  let dictationRequested = false;
   let dictationErrorMessage = '';
+  let restartTimer = null;
   let dictationRequestsMeasurements = false;
   const interpretedFieldValues = new Map();
   let interpretedObservations = null;
@@ -78,80 +80,142 @@ export function initGarmentPublisher({ showToast }) {
   } else {
     dictationStart.disabled = false;
     dictationStart.textContent = 'Iniciar dictado';
-    dictationStatus.textContent = 'El dictado usa el mismo reconocimiento por voz que Nueva venta (es-AR). El navegador o sistema podría procesar el audio externamente; FeritApp no guarda grabaciones. Revisá el texto antes de interpretarlo.';
+    dictationStatus.textContent = 'El dictado usa el mismo reconocimiento por voz que Nueva venta (es-AR). El navegador o sistema podría procesar el audio externamente; FeritApp no guarda grabaciones. Podés hacer pausas breves: seguirá escuchando hasta que pulses «Detener dictado».';
   }
 
-  dictationStart.addEventListener('click', function() {
-    if (!SpeechRecognition || isDictating) return;
-    finalTranscriptParts = [];
-    dictationErrorMessage = '';
-    transcriptField.value = '';
-    recognition = new SpeechRecognition();
-    recognition.lang = 'es-AR';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.onstart = function() {
+  function updateTranscript(event) {
+    let interimTranscript = '';
+    const firstChanged = typeof event.resultIndex === 'number' ? event.resultIndex : 0;
+    for (let index = firstChanged; index < event.results.length; index += 1) {
+      const result = event.results[index];
+      const phrase = result[0] && result[0].transcript ? result[0].transcript.trim() : '';
+      if (result.isFinal && phrase) finalTranscriptParts.push(phrase);
+      else if (phrase) interimTranscript += (interimTranscript ? ' ' : '') + phrase;
+    }
+    const finalText = finalTranscriptParts.join(' ').trim();
+    transcriptField.value = [finalText, interimTranscript].filter(Boolean).join(' ').slice(0, 1200);
+    updateDictationControls();
+  }
+
+  function startRecognitionSession() {
+    if (!dictationRequested || !SpeechRecognition) return;
+    const activeRecognition = new SpeechRecognition();
+    recognition = activeRecognition;
+    activeRecognition.lang = 'es-AR';
+    activeRecognition.continuous = true;
+    activeRecognition.interimResults = true;
+    activeRecognition.maxAlternatives = 1;
+    activeRecognition.onstart = function() {
+      if (recognition !== activeRecognition) return;
       isDictating = true;
-      dictationStatus.textContent = 'Escuchando. Hablá con naturalidad; podés detener cuando termines.';
+      dictationStatus.textContent = 'Escuchando. Podés hablar con naturalidad y hacer pausas; la sesión continuará hasta que pulses «Detener dictado».';
       updateDictationControls();
+      window.dispatchEvent(new Event('publisher:dictation-start'));
     };
-    recognition.onresult = function(event) {
-      let interimTranscript = '';
-      for (let index = 0; index < event.results.length; index += 1) {
-        const result = event.results[index];
-        const phrase = result[0] && result[0].transcript ? result[0].transcript.trim() : '';
-        if (result.isFinal && phrase) finalTranscriptParts[index] = phrase;
-        else if (phrase) interimTranscript += (interimTranscript ? ' ' : '') + phrase;
-      }
-      const finalText = finalTranscriptParts.filter(Boolean).join(' ').trim();
-      transcriptField.value = [finalText, interimTranscript].filter(Boolean).join(' ').slice(0, 1200);
-      updateDictationControls();
-    };
-    recognition.onerror = function(event) {
+    activeRecognition.onresult = updateTranscript;
+    activeRecognition.onerror = function(event) {
+      if (recognition !== activeRecognition) return;
       const messages = {
         'not-allowed': 'No se concedió permiso para usar el micrófono.',
         'service-not-allowed': 'El navegador o dispositivo bloqueó el reconocimiento de voz.',
-        'no-speech': 'No se detectó voz. Podés volver a intentarlo.',
         'audio-capture': 'No se encontró un micrófono disponible.'
       };
-      dictationErrorMessage = messages[event.error] || 'Ocurrió un problema con el reconocimiento de voz. Revisá el texto y volvé a intentar si hace falta.';
-      dictationStatus.textContent = dictationErrorMessage;
+      if (messages[event.error]) {
+        dictationErrorMessage = messages[event.error];
+        dictationRequested = false;
+        window.dispatchEvent(new Event('publisher:dictation-stop'));
+        dictationStatus.textContent = dictationErrorMessage;
+      }
+      // "no-speech" y errores transitorios no cierran el flujo: onend reintentará
+      // mientras el usuario no haya pulsado Detener.
     };
-    recognition.onend = function() {
-      isDictating = false;
+    activeRecognition.onend = function() {
+      if (recognition !== activeRecognition) return;
       recognition = null;
+      if (dictationRequested && !dictationErrorMessage) {
+        dictationStatus.textContent = transcriptField.value.trim()
+          ? 'Pausa breve detectada. Retomando la escucha…'
+          : 'Esperando voz…';
+        restartTimer = window.setTimeout(function() {
+          restartTimer = null;
+          startRecognitionSession();
+        }, 250);
+        return;
+      }
+      isDictating = false;
+      window.dispatchEvent(new Event('publisher:dictation-stop'));
       updateDictationControls();
       if (dictationErrorMessage) {
         dictationStatus.textContent = dictationErrorMessage;
-        return;
-      }
-      if (transcriptField.value.trim()) {
+      } else if (transcriptField.value.trim()) {
         dictationStatus.textContent = 'Transcripción lista. Revisá y corregí el texto; después pulsá «Interpretar y completar campos» para aplicarlo.';
       } else {
         dictationStatus.textContent = 'No se obtuvo una transcripción. Podés volver a intentarlo o completar los datos manualmente.';
       }
-      updateDictationControls();
     };
     try {
-      recognition.start();
+      activeRecognition.start();
     } catch (error) {
       recognition = null;
+      if (dictationRequested) {
+        restartTimer = window.setTimeout(function() {
+          restartTimer = null;
+          startRecognitionSession();
+        }, 400);
+      }
+    }
+  }
+
+  dictationStart.addEventListener('click', function() {
+    if (!SpeechRecognition || dictationRequested || isDictating) return;
+    finalTranscriptParts = [];
+    dictationErrorMessage = '';
+    transcriptField.value = '';
+    dictationRequested = true;
+    isDictating = true;
+    updateDictationControls();
+    window.dispatchEvent(new Event('publisher:dictation-start'));
+    startRecognitionSession();
+  });
+
+  dictationStop.addEventListener('click', function() {
+    if (!dictationRequested && !isDictating) return;
+    dictationRequested = false;
+    if (restartTimer) window.clearTimeout(restartTimer);
+    restartTimer = null;
+    const activeRecognition = recognition;
+    recognition = null;
+    window.dispatchEvent(new Event('publisher:dictation-stop'));
+    if (activeRecognition) {
+      activeRecognition.onend = function() {
+        isDictating = false;
+        updateDictationControls();
+        dictationStatus.textContent = transcriptField.value.trim()
+          ? 'Transcripción lista. Revisá y corregí el texto; después pulsá «Interpretar y completar campos» para aplicarlo.'
+          : 'No se obtuvo una transcripción. Podés volver a intentarlo o completar los datos manualmente.';
+      };
+      try { activeRecognition.stop(); } catch (error) {
+        isDictating = false;
+        updateDictationControls();
+      }
+    } else {
       isDictating = false;
-      dictationStatus.textContent = 'No se pudo iniciar el micrófono. Verificá los permisos del navegador.';
       updateDictationControls();
     }
   });
 
-  dictationStop.addEventListener('click', function() {
-    if (recognition && isDictating) recognition.stop();
-  });
-
   function abortDictationForLifecycle() {
-    if (!recognition || !isDictating) return;
+    dictationRequested = false;
+    if (restartTimer) window.clearTimeout(restartTimer);
+    restartTimer = null;
+    if (!recognition || !isDictating) {
+      window.dispatchEvent(new Event('publisher:dictation-stop'));
+      return;
+    }
     const activeRecognition = recognition;
     recognition = null;
     isDictating = false;
+    window.dispatchEvent(new Event('publisher:dictation-stop'));
     try { activeRecognition.abort(); } catch (error) { /* El reconocimiento puede haberse detenido ya. */ }
     updateDictationControls();
   }
@@ -292,7 +356,7 @@ export function initGarmentPublisher({ showToast }) {
 
   document.getElementById('publisherAddGarment').addEventListener('click', function() {
     if (isDictating) {
-      if (recognition) recognition.stop();
+      dictationStop.click();
       feedback.textContent = 'El dictado se está deteniendo. Revisá la transcripción y volvé a agregar la prenda.';
       return;
     }
