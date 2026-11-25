@@ -4367,3 +4367,17 @@ textarea,
 #viewRanking .rank-info{align-items:flex-start!important;text-align:left!important;}
 #viewRanking .rank-name{justify-content:flex-start!important;text-align:left!important;}
 #viewRanking .rank-sub{text-align:left!important;}
+
+
+/* Gestión de categorías: edición y eliminación desde el mismo lugar de creación. */
+.category-manager{display:grid;gap:7px;margin:12px 0 4px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);}
+.category-manager-title{margin:0 0 2px;color:var(--text);font-size:12px;font-weight:750;}
+.category-manager-empty{margin:0;color:var(--muted);font-size:12px;}
+.category-manager-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:8px 0;border-bottom:1px solid var(--border);}
+.category-manager-row:last-child{border-bottom:0;}
+.category-manager-name{min-width:0;color:var(--text);font-size:13px;font-weight:600;overflow-wrap:anywhere;}
+.category-manager-actions{display:flex;flex:0 0 auto;gap:6px;}
+.category-manager-actions button{min-height:32px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:11px;font-weight:700;}
+.category-manager-actions .category-manager-delete{color:#d34d58;}
+.category-manager-actions button:disabled{opacity:.45;cursor:not-allowed;}
+@media(max-width:520px){.category-manager{padding:10px;}.category-manager-actions button{min-height:36px;padding:7px 9px;}}
