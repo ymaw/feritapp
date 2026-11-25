@@ -40,10 +40,14 @@ function buildGarmentPost(data) {
 export function initGarmentPublisher({ showToast }) {
   const category = document.getElementById('publisherCategory');
   const photoInput = document.getElementById('publisherPhoto');
+  const cameraInput = document.getElementById('publisherCamera');
   const photoPreview = document.getElementById('publisherPhotoPreview');
   const postText = document.getElementById('publisherPostText');
   const feedback = document.getElementById('publisherFeedback');
-  if (!category || !photoInput || !photoPreview || !postText) return;
+  if (!category || !photoInput || !cameraInput || !photoPreview || !postText) return;
+
+  document.getElementById('publisherChoosePhoto').addEventListener('click', function() { photoInput.click(); });
+  document.getElementById('publisherTakePhoto').addEventListener('click', function() { cameraInput.click(); });
 
   let selectedPhoto = null;
   let previewUrl = null;
@@ -382,6 +386,7 @@ export function initGarmentPublisher({ showToast }) {
     });
     clearCurrentPhotoPreview();
     photoInput.value = '';
+    cameraInput.value = '';
     updateCategoryTemplate();
     updateDictationControls();
   }
@@ -559,27 +564,35 @@ export function initGarmentPublisher({ showToast }) {
     renderPreviewPhotos();
   }
 
-  photoInput.addEventListener('change', function() {
-    const file = photoInput.files && photoInput.files[0];
+  function handleSelectedPhoto(file, sourceInput) {
     if (!file) return;
     if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) {
-      photoInput.value = '';
+      sourceInput.value = '';
       clearCurrentPhotoPreview();
       feedback.textContent = 'Formato no compatible. Elegí una imagen JPG, PNG o WebP.';
       return;
     }
     if (file.size > 12 * 1024 * 1024) {
-      photoInput.value = '';
+      sourceInput.value = '';
       clearCurrentPhotoPreview();
       feedback.textContent = 'La imagen supera el límite de 12 MB.';
       return;
     }
     selectedPhoto = file;
+    photoInput.value = '';
+    cameraInput.value = '';
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = URL.createObjectURL(file);
     renderPreviewPhotos();
     refreshLivePreview();
     feedback.textContent = 'Fotografía lista para adjuntar.';
+  }
+
+  photoInput.addEventListener('change', function() {
+    handleSelectedPhoto(photoInput.files && photoInput.files[0], photoInput);
+  });
+  cameraInput.addEventListener('change', function() {
+    handleSelectedPhoto(cameraInput.files && cameraInput.files[0], cameraInput);
   });
 
   document.getElementById('publisherCopy').addEventListener('click', async function() {
