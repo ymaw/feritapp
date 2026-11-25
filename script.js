@@ -2404,7 +2404,7 @@ document.addEventListener('DOMContentLoaded', function(){
   async function shareCustomerRanking(){
     const ranked=window.FeritRanking.getRankedClients(sales,{sortBy:rankingSortBy,period:rankingPeriod});
     if(!ranked.length){showToast('Todavía no hay ventas para compartir el ranking.');return;}
-    const includeTotals=rankingSortBy==='total' && showRankingMoney===true;
+    const includeTotals=showRankingMoney===true;
     const includeArticleCount=rankingSortBy==='articles';
     const dark=document.documentElement.getAttribute('data-theme')==='dark';
     const palette=dark?{
@@ -2465,8 +2465,9 @@ document.addEventListener('DOMContentLoaded', function(){
       let name=String(client.name||'Sin nombre');
       while(ctx.measureText(name).width>620 && name.length>4) name=name.slice(0,-2)+'…';
       if(includeTotals||includeArticleCount){
-        ctx.fillText(name,centerX,y+38);ctx.fillStyle=palette.muted;ctx.font='500 19px Arial';
-        ctx.fillText(includeTotals?money(client.total)+' gastados':client.count+' '+(client.count===1?'artículo':'artículos'),centerX,y+66);
+        ctx.fillText(name,centerX,y+34);ctx.fillStyle=palette.muted;ctx.font='500 18px Arial';
+        const detail=[includeArticleCount?client.count+' '+(client.count===1?'artículo':'artículos'):'',includeTotals?money(client.total)+' gastados':''].filter(Boolean).join(' · ');
+        ctx.fillText(detail,centerX,y+64);
       }else ctx.fillText(name,centerX,y+54);
     });
 
