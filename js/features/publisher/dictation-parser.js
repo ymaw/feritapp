@@ -130,7 +130,8 @@ export function parseGarmentDictation(transcript) {
     ['waist', '(?:la\\s+)?cintura'],
     ['rise', 'tiro(?:\\s+delantero)?'],
     ['hip', '(?:la\\s+)?cadera'],
-    ['length', '(?:el\\s+)?largo'],\n    ['boot', '(?:la\\s+)?bota']
+    ['length', '(?:el\\s+)?largo'],
+    ['boot', '(?:la\\s+)?bota']
   ];
   const measurementExpressions = measurementNames.flatMap(([key, label]) => [
     [key, new RegExp('\\b' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
