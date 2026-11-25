@@ -970,6 +970,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let exists = clients.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
     if(exists) return;
     clients.push(name);
+    renderCategoryManager();
     refreshClientsDatalist();
     try{
       await sb.from('clients').insert([{ name: name }]);
@@ -1782,10 +1783,91 @@ document.addEventListener('DOMContentLoaded', function(){
 
   async function persistNewCategory(name){
     try{
-      await sb.from('categories').insert([{ name: name }]);
+      const result = await sb.from('categories').insert([{ name: name }]);
+      if(result && result.error) throw result.error;
+      return true;
     }catch(e){
       showToast('No se pudo guardar la categoría.');
+      return false;
     }
+  }
+
+  function renderCategoryManager(){
+    const container=document.getElementById('categoryManager');
+    if(!container) return;
+    container.innerHTML='';
+    if(!categories.length){
+      const empty=document.createElement('p');
+      empty.className='category-manager-empty';
+      empty.textContent='No hay categorías disponibles.';
+      container.appendChild(empty);
+      return;
+    }
+    const heading=document.createElement('p');
+    heading.className='category-manager-title';
+    heading.textContent='Administrar categorías';
+    container.appendChild(heading);
+    categories.forEach(function(name){
+      const row=document.createElement('div');
+      row.className='category-manager-row';
+      const label=document.createElement('span');
+      label.className='category-manager-name';
+      label.textContent=name;
+      const actions=document.createElement('div');
+      actions.className='category-manager-actions';
+      const edit=document.createElement('button');
+      edit.type='button';edit.className='category-manager-edit';edit.textContent='Editar';
+      edit.setAttribute('aria-label','Editar categoría '+name);
+      edit.addEventListener('click',async function(){
+        const nextName=window.prompt('Nuevo nombre para la categoría:',name);
+        if(nextName===null) return;
+        const normalized=nextName.trim();
+        if(!normalized){showToast('El nombre no puede quedar vacío.');return;}
+        if(normalized.toLocaleLowerCase('es')!==name.toLocaleLowerCase('es') && categories.some(function(item){return item.toLocaleLowerCase('es')===normalized.toLocaleLowerCase('es');})){
+          showToast('Ya existe una categoría con ese nombre.');return;
+        }
+        if(normalized===name) return;
+        edit.disabled=true;
+        try{
+          const updated=await sb.from('categories').update({name:normalized}).eq('name',name);
+          if(updated && updated.error) throw updated.error;
+          const salesUpdate=await sb.from('sales').update({categoria:normalized}).eq('categoria',name);
+          if(salesUpdate && salesUpdate.error) throw salesUpdate.error;
+          categories=categories.map(function(item){return item===name?normalized:item;});
+          sales.forEach(function(item){if(item.categoria===name)item.categoria=normalized;});
+          refreshAllRowCategorySelects();
+          renderCategoryManager();
+          render();
+          showToast('Categoría actualizada.');
+        }catch(error){
+          showToast('No se pudo editar la categoría.');
+          edit.disabled=false;
+        }
+      });
+      const remove=document.createElement('button');
+      remove.type='button';remove.className='category-manager-delete';remove.textContent='Eliminar';
+      remove.setAttribute('aria-label','Eliminar categoría '+name);
+      remove.disabled=categories.length<=1;
+      remove.addEventListener('click',async function(){
+        if(categories.length<=1){showToast('Debe quedar al menos una categoría.');return;}
+        if(!window.confirm('¿Eliminar la categoría «'+name+'» de las opciones disponibles? Las ventas históricas conservarán su categoría.')) return;
+        remove.disabled=true;
+        try{
+          const deleted=await sb.from('categories').delete().eq('name',name);
+          if(deleted && deleted.error) throw deleted.error;
+          categories=categories.filter(function(item){return item!==name;});
+          refreshAllRowCategorySelects();
+          renderCategoryManager();
+          showToast('Categoría eliminada de las opciones. Las ventas anteriores se conservaron.');
+        }catch(error){
+          showToast('No se pudo eliminar la categoría.');
+          remove.disabled=false;
+        }
+      });
+      actions.appendChild(edit);actions.appendChild(remove);
+      row.appendChild(label);row.appendChild(actions);
+      container.appendChild(row);
+    });
   }
 
   async function toggleSalePago(id, currentPagado){
@@ -3937,13 +4019,15 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!name){ showToast('Escribí un nombre para la categoría'); return; }
     let exists = categories.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
     if(!exists){
-      await persistNewCategory(name);
+      const saved=await persistNewCategory(name);
+      if(!saved) return;
       categories.push(name);
     }
     input.value = '';
     document.getElementById('newCatRow').style.display = 'none';
     refreshAllRowCategorySelects();
-    showToast('Categoría creada');
+    renderCategoryManager();
+    showToast(exists?'La categoría ya estaba disponible.':'Categoría creada');
   });
 
   document.querySelectorAll('.pago-opt').forEach(function(btn){
