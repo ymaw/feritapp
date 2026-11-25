@@ -2414,7 +2414,8 @@ document.addEventListener('DOMContentLoaded', function(){
       backgroundA:'#f5f2ff',backgroundB:'#eaf7fc',panel:'#ffffff',row:'#faf9ff',rowTop:'#f1edff',
       text:'#211b3d',muted:'#716b88',accent:'#7657ff',accentBlue:'#31b9e8',border:'#e8e2f5'
     };
-    const W=1080,H=1350,canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+    const shareRows=ranked.slice(0,8);
+    const W=1080,H=Math.max(1050,420+shareRows.length*102+300),canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
     const ctx=canvas.getContext('2d');
     if(!ctx){showToast('No se pudo preparar la imagen del ranking.');return;}
     const roundedRect=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);};
@@ -2452,7 +2453,7 @@ document.addEventListener('DOMContentLoaded', function(){
     ctx.fillStyle=gradient(82,382,W-82,382,[[0,palette.accent],[1,palette.accentBlue]]);
     roundedRect(82,382,W-164,5,3);ctx.fill();
 
-    ranked.slice(0,8).forEach(function(client,index){
+    shareRows.forEach(function(client,index){
       const y=420+index*102,topThree=index<3;
       ctx.fillStyle=topThree?palette.rowTop:palette.row;roundedRect(82,y,W-164,88,22);ctx.fill();
       ctx.strokeStyle=palette.border;ctx.lineWidth=1;roundedRect(82,y,W-164,88,22);ctx.stroke();
