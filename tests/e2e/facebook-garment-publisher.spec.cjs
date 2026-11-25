@@ -69,8 +69,48 @@ async function openAuthenticatedApp(page, { standalone = false } = {}) {
   await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   await page.route('https://fonts.googleapis.com/**', route => route.abort());
   await page.route('https://fonts.gstatic.com/**', route => route.abort());
+  const publisherDiagnostics = { pageErrors: [], consoleErrors: [], failedRequests: [], moduleResponses: [] };
+  page.on('pageerror', error => publisherDiagnostics.pageErrors.push(error.stack || error.message));
+  page.on('console', message => {
+    if (message.type() === 'error') publisherDiagnostics.consoleErrors.push(message.text());
+  });
+  page.on('requestfailed', request => publisherDiagnostics.failedRequests.push({
+    url: request.url(),
+    error: request.failure()?.errorText || 'unknown'
+  }));
+  page.on('response', response => {
+    if (/\\/(?:entry|garment-publisher|audio-visualizer|dictation-parser)\\.js(?:\\?|$)/.test(response.url())) {
+      publisherDiagnostics.moduleResponses.push({
+        url: response.url(),
+        status: response.status(),
+        contentType: response.headers()['content-type'] || ''
+      });
+    }
+  });
+
   await page.goto('/');
-  await expect.poll(() => page.locator('html').getAttribute('data-publisher-init-state')).toBe('initialized');
+  try {
+    await expect.poll(() => page.locator('html').getAttribute('data-publisher-init-state'), {
+      message: 'Publisher module must initialize; inspect captured module-loading diagnostics'
+    }).toBe('initialized');
+  } catch (error) {
+    const runtime = await page.evaluate(() => ({
+      readyState: document.readyState,
+      scripts: Array.from(document.scripts).map(script => ({ src: script.src, type: script.type })),
+      publisherElements: ['viewPublisher', 'publisherCategory', 'publisherMeasurements'].map(id => ({
+        id, exists: Boolean(document.getElementById(id))
+      }))
+    })).catch(e => ({ evaluationError: e.message }));
+    throw new Error([
+      error.message,
+      'Publisher diagnostics: ' + JSON.stringify({
+        state: await page.locator('html').getAttribute('data-publisher-init-state'),
+        detail: await page.locator('html').getAttribute('data-publisher-init-detail'),
+        runtime,
+        ...publisherDiagnostics
+      })
+    ].join('\\n'));
+  }
   await expect(page.locator('#appRoot')).toBeVisible();
   await page.locator('#sidebar [data-view="publisher"]').click();
   await expect(page.locator('#viewPublisher')).toBeVisible();
