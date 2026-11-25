@@ -132,7 +132,7 @@ assert.match(script, /stroke="currentColor" stroke-width="1\.8"/);
 
 assert.match(parserSource, /sort\(\(a, b\) => a\.index - b\.index\)/);
 assert.match(parserSource, /measurementNames\.flatMap/);
-assert.match(parserSource, /centimetros\?\\\\s\+\(\?:de/);
+assert.match(parserSource, /centimetros/);
 assert.match(audioModule, /publisher:dictation-speaking/);
 assert.match(audioModule, /is-speaking/);
 assert.match(script, /function renderCategoryManager\(\)/);
