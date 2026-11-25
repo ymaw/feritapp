@@ -370,7 +370,8 @@ export function initGarmentPublisher({ showToast }) {
   }
   function openMobilePreview() {
     if (window.matchMedia('(min-width: 900px)').matches) return;
-    previewReturnFocus = document.activeElement;
+    // El disparador es el punto de retorno estable, incluso si el navegador no enfocó el botón al abrir.
+    previewReturnFocus = openPreview;
     previewModal.hidden = false;
     previewModalContent.appendChild(previewCard);
     closePreview.focus();
