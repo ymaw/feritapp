@@ -101,7 +101,8 @@ export function parseGarmentDictation(transcript) {
   result.brand = firstCapture(text, /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\btalle\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b)|$)/iu);
   result.size = firstCapture(text, /\btalle\s+([\p{L}0-9-]{1,12})/iu);
 
-  const priceText = firstCapture(text, /\bprecio\s+(?:de\s+)?([\p{L}0-9 .,$]+?)(?=\s*(?:pesos?\b|,|;|\.|$))/iu);
+  const numericText = normalizeWords(text);
+  const priceText = firstCapture(numericText, /\bprecio\s+(?:de\s+)?([\p{L}0-9 .,$]+?)(?=\s*(?:pesos?\b|,|;|\.|$))/iu);
   if (priceText) {
     const digits = priceText.replace(/\s/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.').match(/^\$?(\d+(?:\.\d+)?)$/);
     result.price = digits ? digits[1].replace(/\.0+$/, '') : parseSpanishNumber(priceText);
@@ -115,7 +116,7 @@ export function parseGarmentDictation(transcript) {
     ['length', new RegExp('\\b(?:el\\s+)?largo\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')]
   ];
   for (const [key, expression] of measurements) {
-    const match = text.match(expression);
+    const match = numericText.match(expression);
     if (match) result[key] = parseSpanishNumber(match[1]) || numericValue(match[1]);
   }
 
