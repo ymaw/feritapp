@@ -564,26 +564,8 @@
         <div class="field"><label for="publisherPrice">Precio (ARS)</label><input id="publisherPrice" inputmode="numeric" maxlength="12" placeholder="Ej.: 7000"/></div>
         <div class="field publisher-photo-field"><label for="publisherPhoto">Fotografía</label><input id="publisherPhoto" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp"/></div>
       </div>
-      <div class="field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" class="publisher-fixed-textarea" maxlength="1200" rows="4" placeholder="Describí el estado, detalles, calce o cualquier dato importante…"></textarea></div>
-      <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
-        <div class="publisher-dictation-heading"><strong id="publisherDictationTitle">🎙️ Describí la prenda hablando</strong><span class="publisher-muted">Podés detenerte, corregir la transcripción y recién después incorporarla.</span></div>
-        <div class="publisher-actions publisher-dictation-controls">
-          <button class="secondary-btn" id="publisherDictationStart" type="button" disabled>Reconocimiento local pendiente</button>
-          <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener dictado</button>
-        </div>
-        <div class="publisher-actions publisher-mic-test-controls">
-          <button class="secondary-btn" id="publisherMicTestStart" type="button">Probar micrófono</button>
-          <button class="secondary-btn" id="publisherMicTestStop" type="button" disabled>Detener prueba</button>
-        </div>
-        <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" aria-label="Nivel de audio del micrófono" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-        <p class="publisher-audio-level" id="publisherAudioLevel">La prueba analiza el nivel del micrófono en tiempo real; no graba ni guarda audio.</p>
-        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">El dictado por voz está pausado hasta integrar un motor local. FeritApp no enviará audio a servicios externos. Podés completar los campos manualmente o pegar una transcripción para interpretarla.</p>
-        <label for="publisherTranscript">Transcripción editable</label>
-        <textarea id="publisherTranscript" maxlength="1200" rows="4" placeholder="Cuando termines de hablar, revisá y editá el texto acá…"></textarea>
-        <div class="publisher-actions"><button class="secondary-btn" id="publisherUseTranscript" type="button" disabled>Interpretar y completar campos</button></div>
-      </section>
       <fieldset class="publisher-measurements" id="publisherMeasurements" hidden>
-        <legend>Medidas (cm)</legend>
+        <legend>Medidas de la prenda <span>EN CM</span></legend>
         <div class="publisher-fields-grid">
           <div class="field"><label for="publisherWaist">Cintura</label><input id="publisherWaist" inputmode="decimal" placeholder="Ej.: 42"/></div>
           <div class="field"><label for="publisherRise">Tiro delantero</label><input id="publisherRise" inputmode="decimal" placeholder="Ej.: 17"/></div>
@@ -591,6 +573,37 @@
           <div class="field"><label for="publisherLength">Largo</label><input id="publisherLength" inputmode="decimal" placeholder="Ej.: 60"/></div>
         </div>
       </fieldset>
+      <div class="field publisher-observations-field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" class="publisher-fixed-textarea" maxlength="1200" rows="4" placeholder="Describí el estado, detalles, calce o cualquier dato importante…"></textarea></div>
+      <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
+        <div class="publisher-dictation-heading">
+          <div class="publisher-dictation-title-group"><span class="publisher-step-mark" aria-hidden="true">✦</span><div><span class="publisher-dictation-kicker">ASISTENCIA POR VOZ</span><strong id="publisherDictationTitle">Transcripción e interpretación</strong></div></div>
+          <span class="publisher-dictation-caption">Primero revisá el texto; después completá los campos.</span>
+        </div>
+        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">El dictado integrado está pausado mientras validamos un motor local. El audio no se envía a servicios externos. Podés escribir o pegar una transcripción y luego interpretarla.</p>
+        <div class="publisher-dictation-tools">
+          <div class="publisher-dictation-engine">
+            <span class="publisher-tool-label">Micrófono</span>
+            <div class="publisher-actions publisher-dictation-controls">
+              <button class="secondary-btn" id="publisherDictationStart" type="button" disabled>Motor local pendiente</button>
+              <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener dictado</button>
+            </div>
+          </div>
+          <div class="publisher-dictation-engine publisher-mic-test-panel">
+            <span class="publisher-tool-label">Comprobación de dispositivo</span>
+            <div class="publisher-actions publisher-mic-test-controls">
+              <button class="secondary-btn" id="publisherMicTestStart" type="button">Probar micrófono</button>
+              <button class="secondary-btn" id="publisherMicTestStop" type="button" disabled>Detener prueba</button>
+            </div>
+            <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" aria-label="Nivel de audio del micrófono" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <p class="publisher-audio-level" id="publisherAudioLevel">La prueba mide el nivel del micrófono en tiempo real; no graba ni guarda audio.</p>
+          </div>
+        </div>
+        <div class="publisher-transcript-panel">
+          <label for="publisherTranscript"><span>Texto a interpretar</span><span class="publisher-transcript-hint">Podés corregirlo antes de aplicarlo</span></label>
+          <textarea id="publisherTranscript" maxlength="1200" rows="4" placeholder="Ej.: Vestido negro, marca Ossira, talle M, precio 35000…"></textarea>
+          <div class="publisher-transcript-footer"><span>La transcripción no modifica los campos hasta que lo confirmes.</span><button class="save-btn" id="publisherUseTranscript" type="button" disabled>Interpretar y completar campos</button></div>
+        </div>
+      </section>
       <div class="publisher-actions">
         <button class="secondary-btn" id="publisherAddGarment" type="button">+ Agregar prenda a la publicación</button>
         <button class="secondary-btn" id="publisherGenerate" type="button">Generar plantilla</button>
