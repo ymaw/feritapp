@@ -121,7 +121,7 @@ assert.match(css, /publisher-photo-action/);
 assert.match(moduleSource, /if \(dictationRequested\)[\s\S]*?finalTranscriptParts = transcriptField\.value\.trim\(\)/);
 assert.match(audioModule, /is-listening/);
 assert.match(audioModule, /is-speaking/);
-assert.match(audioModule, /rms > 0\.035/);
+assert.match(audioModule, /publisher:dictation-speaking/);
 assert.match(css, /publisher-audio-visualizer\.is-active\.is-listening/);
 assert.match(css, /publisher-audio-visualizer\.is-active\.is-speaking/);
 
