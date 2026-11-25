@@ -253,12 +253,38 @@ export function initGarmentPublisher({ showToast }) {
     if (!transcript || isDictating) return false;
     const parsed = parseGarmentDictation(transcript);
     dictationRequestsMeasurements = Boolean(parsed.useMeasurementTemplate);
+    const applied = [];
+
+    // Resolver primero la categoría y mostrar su plantilla antes de completar medidas.
+    // Así los campos ya están visibles cuando se aplican los valores dictados.
+    const categoryElement = document.getElementById('publisherCategory');
+    if (categoryElement) {
+      const previousCategory = interpretedFieldValues.get('publisherCategory');
+      const currentCategory = categoryElement.value.trim();
+      const categoryCanBeReplaced = !currentCategory || (previousCategory !== undefined && currentCategory === previousCategory);
+      const categoryExists = parsed.category && Array.from(categoryElement.options).some(function(option) {
+        return option.value === parsed.category || option.textContent.trim() === parsed.category;
+      });
+      if (categoryCanBeReplaced) {
+        if (categoryExists) {
+          categoryElement.value = parsed.category;
+          interpretedFieldValues.set('publisherCategory', parsed.category);
+          applied.push('category');
+        } else if (previousCategory !== undefined && currentCategory === previousCategory) {
+          categoryElement.value = '';
+          interpretedFieldValues.delete('publisherCategory');
+        }
+        categoryElement.dispatchEvent(new Event('input', { bubbles: true }));
+        categoryElement.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+    updateCategoryTemplate();
+
     const fields = [
-      ['category', 'publisherCategory'], ['garmentName', 'publisherGarmentName'],
-      ['brand', 'publisherBrand'], ['size', 'publisherSize'], ['price', 'publisherPrice'],
+      ['garmentName', 'publisherGarmentName'], ['brand', 'publisherBrand'],
+      ['size', 'publisherSize'], ['price', 'publisherPrice'],
       ['waist', 'publisherWaist'], ['rise', 'publisherRise'], ['hip', 'publisherHip'], ['length', 'publisherLength']
     ];
-    const applied = [];
     fields.forEach(function(pair) {
       const value = parsed[pair[0]];
       const element = document.getElementById(pair[1]);
@@ -267,12 +293,8 @@ export function initGarmentPublisher({ showToast }) {
       const currentValue = element.value.trim();
       const isUnchangedInterpretation = previousValue !== undefined && currentValue === previousValue;
       const canReplace = !currentValue || isUnchangedInterpretation;
-      const isCategoryField = pair[0] === 'category';
-      const categoryOptionExists = !isCategoryField || (value && Array.from(element.options).some(function(option) {
-        return option.value === value || option.textContent.trim() === value;
-      }));
       if (!canReplace) return;
-      if (value && categoryOptionExists) {
+      if (value) {
         element.value = value;
         interpretedFieldValues.set(pair[1], value);
         applied.push(pair[0]);
