@@ -527,7 +527,7 @@ test('dictation fills numeric garment sizes, recognizes spoken prices ending in 
   await expect(page.locator('#publisherBoot')).toHaveValue('18');
 
   await page.locator('#publisherGenerate').click();
-  await expect(page.locator('#publisherPostText')).toHaveValue(/Talle: 38[\\s\\S]*Bota: 18 cm[\\s\\S]*Precio: \\$30\\.000/);
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Talle: 38[\s\\S]*Bota: 18 cm[\s\\S]*Precio: \$30\.000/);
 });
 
 test('Bota measurement is available for dresses, trousers and skirts', async ({ page }) => {
