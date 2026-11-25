@@ -94,6 +94,7 @@ export function initGarmentPublisher({ showToast }) {
     for (let index = firstChanged; index < event.results.length; index += 1) {
       const result = event.results[index];
       const phrase = result[0] && result[0].transcript ? result[0].transcript.trim() : '';
+      if (phrase) window.dispatchEvent(new Event('publisher:dictation-speaking'));
       if (result.isFinal && phrase) finalTranscriptParts.push(phrase);
       else if (phrase) interimTranscript += (interimTranscript ? ' ' : '') + phrase;
     }
