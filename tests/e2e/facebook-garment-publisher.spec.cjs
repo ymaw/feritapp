@@ -304,7 +304,7 @@ test('reinterpreting edited transcript replaces generated values and observation
   await expect(page.locator('#publisherSize')).toHaveValue('L');
   await expect(page.locator('#publisherPrice')).toHaveValue('42000');
   await expect(page.locator('#publisherWaist')).toHaveValue('44');
-  await expect(page.locator('#publisherObservations')).toHaveValue('Presenta una pequeña marca en el bolsillo.');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Presenta una pequeña marca en el bolsillo');
   await expect(page.locator('#publisherObservations')).not.toContainText('botones completos');
 
   // Los cambios manuales posteriores tienen prioridad sobre una nueva interpretación.
