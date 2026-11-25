@@ -72,6 +72,14 @@ function normalizeSpokenNumbersInText(value) {
   });
 }
 
+function normalizeNoisyTalle(value) {
+  // El ASR es-AR suele separar o deformar "talle". Corregir solo
+  // cuando la expresión está seguida de un talle reconocible.
+  const sizeToken = '(?:xxxs|xxs|xs|s|m|l|xl|xxl|xxxl|\\d+|' + NUMBER_PHRASE_SOURCE + ')';
+  const noisyLabel = new RegExp('\\b(?:ta\\s+sh(?:e)?l{1,2}e|ta\\s+che|tache|la\\s+sh(?:e)?l{1,2}e)(?=\\s+' + sizeToken + '\\b)', 'giu');
+  return String(value || '').replace(noisyLabel, 'talle');
+}
+
 function clean(value) {
   return String(value || '').replace(/^[\s,.;:¡!¿?y]+|[\s,.;:¡!¿?]+$/gi, '').replace(/\s+/g, ' ').trim();
 }
@@ -87,7 +95,7 @@ function numericValue(value) {
 }
 
 export function parseGarmentDictation(transcript) {
-  const text = String(transcript || '').replace(/\s+/g, ' ').trim();
+  const text = normalizeNoisyTalle(String(transcript || '')).replace(/\s+/g, ' ').trim();
   const result = {
     category: '', garmentName: '', brand: '', size: '', price: '',
     waist: '', rise: '', hip: '', length: '', observations: '', useMeasurementTemplate: false
