@@ -1829,10 +1829,23 @@ document.addEventListener('DOMContentLoaded', function(){
         if(normalized===name) return;
         edit.disabled=true;
         try{
-          const updated=await sb.from('categories').update({name:normalized}).eq('name',name);
-          if(updated && updated.error) throw updated.error;
+          // Actualizar primero las referencias históricas; si falla el catálogo,
+          // compensar el cambio para no dejar categorías y ventas desincronizadas.
           const salesUpdate=await sb.from('sales').update({categoria:normalized}).eq('categoria',name);
           if(salesUpdate && salesUpdate.error) throw salesUpdate.error;
+          const updated=await sb.from('categories').update({name:normalized}).eq('name',name);
+          if(updated && updated.error){
+            try{
+              const rollback=await sb.from('sales').update({categoria:name}).eq('categoria',normalized);
+              if(rollback && rollback.error) throw rollback.error;
+            }catch(rollbackError){
+              console.error('No se pudieron revertir las categorías de ventas:',rollbackError);
+              showToast('No se pudo actualizar el catálogo y hubo un problema al revertir las ventas. Revisá las categorías antes de continuar.');
+              edit.disabled=false;
+              return;
+            }
+            throw updated.error;
+          }
           categories=categories.map(function(item){return item===name?normalized:item;});
           sales.forEach(function(item){if(item.categoria===name)item.categoria=normalized;});
           refreshAllRowCategorySelects();
