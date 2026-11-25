@@ -1,6 +1,6 @@
 # POC: dictado local con Vosk
 
-Este experimento está aislado y no forma parte del publicador ni de la aplicación en producción. Sirve para comprobar compatibilidad real de Vosk WebAssembly en Firefox, Chromium y WebKit antes de decidir una integración.
+Este experimento sigue aislado y no forma parte del publicador ni de la aplicación de producción. Permite evaluar reconocimiento local en Firefox, Chromium y WebKit antes de decidir una integración.
 
 ## Ejecución
 
@@ -8,37 +8,48 @@ Servir el repositorio desde localhost o HTTPS (el micrófono requiere un context
 
 `/tools/experiments/local-vosk/index.html`
 
-1. Pulsar **Descargar motor local**. Esta acción carga Vosk WebAssembly y descarga el modelo español pequeño (aprox. 39,7 MB).
+1. Pulsar **Descargar motor local**. La aplicación descarga Vosk y el modelo español pequeño (39,7 MB), verifica su tamaño y SHA-256 y lo carga bajo demanda.
 2. Pulsar **Iniciar dictado** y conceder permiso al micrófono.
 3. Dictar una descripción y pulsar **Detener**.
-4. Revisar el texto reconocido. El experimento no publica, no guarda y no envía la transcripción.
+4. Revisar y corregir el texto reconocido. El experimento no publica ni guarda la transcripción.
+5. Pulsar **Liberar memoria** al terminar.
 
 ## Privacidad y red
 
-- El audio del micrófono se procesa en el dispositivo y se entrega al worker WebAssembly de Vosk.
-- Las únicas descargas previstas son la biblioteca Vosk desde jsDelivr y el modelo desde Hugging Face.
-- No hay llamadas a APIs de transcripción, ni subida de audio.
-- El POC no guarda audio ni transcripciones en almacenamiento persistente.
+- El audio se captura y procesa en el dispositivo: MediaStream → AudioWorklet → Vosk Web Worker.
+- El audio se divide en bloques transitorios en memoria; no se crea un archivo ni se usa MediaRecorder.
+- No se envía audio ni transcripción a APIs externas.
+- No se guarda audio o transcripción en localStorage, IndexedDB, Cache API, Supabase ni archivos.
+- Las únicas descargas previstas son la biblioteca Vosk fijada a versión 0.0.8 desde jsDelivr y el modelo desde un commit inmutable de Hugging Face.
+- Antes de cargar el modelo se verifica el tamaño esperado (39.748.934 bytes) y SHA-256.
 
 ## Tamaño y memoria
 
-El archivo comprimido del modelo ronda 39,7 MB. La documentación de Vosk indica que los modelos pequeños pueden requerir alrededor de 300 MB de memoria durante la ejecución. Por eso el motor se carga solo al solicitarlo y existe una acción explícita para liberarlo.
+El modelo comprimido ronda 39,7 MB. Vosk indica que los modelos pequeños pueden requerir alrededor de 300 MB de memoria durante la ejecución. El modelo no se incluye en el bundle de FeritApp: se descarga solo cuando el usuario lo solicita, permanece en memoria mientras está cargado y se libera con **Liberar memoria**.
 
-## Limitaciones deliberadas
+## Canalización de audio
 
-- No modifica `garment-publisher.js`, el parser actual, el visualizador ni el service worker.
-- Usa `ScriptProcessorNode` porque es la interfaz de audio documentada por `vosk-browser`; está obsoleta y debe reemplazarse por una canalización AudioWorklet/worker antes de producción.
-- La biblioteca `vosk-browser` expone reconocimiento parcial/final en Web Workers, pero esta prueba no garantiza todavía rendimiento adecuado en móviles.
-- El modelo es español general; no hay resultados publicados específicos de español rioplatense, marcas de indumentaria ni precios argentinos.
-- La descarga se realiza bajo demanda; este POC todavía no implementa persistencia offline del modelo ni verificación SHA-256 automática.
+- Usa AudioWorklet, no ScriptProcessorNode.
+- El Worklet agrupa PCM en bloques de 4096 muestras y los transfiere al hilo principal.
+- El hilo principal remuestrea a 16 kHz, crea AudioBuffers transitorios y los entrega al worker de Vosk.
+- Al detener o salir: se cierra el puerto, se desconectan nodos, se detienen pistas, se elimina el recognizer y se cierra AudioContext.
+- Si AudioWorklet no está disponible, el dictado no inicia: no hay fallback obsoleto.
+
+## Limitaciones
+
+- El modelo es español general, no especializado en español rioplatense, nombres de marcas, talles ni precios argentinos.
+- La precisión real debe probarse con frases de indumentaria y acentos locales; el parser y los campos deben permitir revisar y corregir el texto antes de incorporarlo.
+- El uso de memoria y CPU puede ser elevado en móviles de gama baja. La integración debe ser opt-in y mantener siempre la carga manual disponible.
+- Este POC no prueba todavía micrófonos físicos en iOS/iPadOS ni instalación PWA.
 
 ## Criterios para aceptar la integración
 
-1. Funciona en Firefox, Chromium y WebKit en escritorio y móvil/PWA.
-2. No transmite audio ni texto fuera del dispositivo.
-3. La transcripción en español argentino identifica correctamente marcas, talles, medidas y precios de un conjunto de frases de prueba.
+1. Funciona en Firefox, Chromium y WebKit de escritorio y móvil/PWA.
+2. No transmite audio ni transcripción fuera del dispositivo.
+3. Reconoce razonablemente un conjunto de frases en español argentino con marcas, talles, medidas y precios.
 4. La memoria y el uso de CPU son aceptables en móviles de gama media.
-5. Se libera el micrófono, AudioContext, recognizer y worker al finalizar.
-6. El publicador manual continúa funcionando aunque el motor no esté disponible.
+5. Libera el micrófono, AudioContext, recognizer y worker al finalizar.
+6. El publicador manual funciona aunque el motor no esté disponible.
+7. El usuario puede corregir la transcripción antes de completar campos.
 
-No promover este POC a producción sin resolver las limitaciones anteriores.
+No promover este POC a producción sin resolver y validar las limitaciones anteriores.
