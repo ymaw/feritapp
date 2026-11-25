@@ -248,7 +248,14 @@ export function initGarmentPublisher({ showToast }) {
     window.addEventListener('pagehide', function() { publisherViewObserver.disconnect(); }, { once: true });
   }
 
-  transcriptField.addEventListener('input', updateDictationControls);
+  transcriptField.addEventListener('input', function() {
+    // Si el usuario corrige el texto durante la escucha, ese contenido pasa a ser
+    // la nueva base. Los próximos resultados se anexan sin restaurar el texto previo.
+    if (dictationRequested) {
+      finalTranscriptParts = transcriptField.value.trim() ? [transcriptField.value.trim()] : [];
+    }
+    updateDictationControls();
+  });
 
   useTranscript.textContent = 'Interpretar y completar campos';
 
