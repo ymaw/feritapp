@@ -33,11 +33,10 @@ export function initAudioVisualizer() {
     if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
     audioContext = null;
     speaking = false;
-    visualizer.classList.remove('is-active', 'is-speaking');
-    visualizer.classList.add('is-listening');
+    visualizer.classList.remove('is-active', 'is-listening', 'is-speaking');
     visualizer.style.setProperty('--voice-level', '0');
     bars.forEach(bar => { bar.style.height = '4px'; });
-    levelLabel.textContent = 'Micrófono activo · esperando que hables.';
+    levelLabel.textContent = 'Micrófono inactivo.';
   }
 
   function animate() {
