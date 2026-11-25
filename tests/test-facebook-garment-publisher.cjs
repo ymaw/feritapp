@@ -44,10 +44,12 @@ assert.match(moduleSource, /URL\.createObjectURL/);
 assert.match(css, /object-fit:contain/);
 assert.match(css, /@media\(max-width:900px\)/);
 
-assert.match(moduleSource, /const SpeechRecognition = null/);
-assert.doesNotMatch(moduleSource, /window\.SpeechRecognition|window\.webkitSpeechRecognition/);
-assert.match(html, /El dictado integrado está pausado mientras validamos un motor local/i);
-assert.match(html, /id="publisherDictationStart"[^>]*disabled/);
+assert.match(moduleSource, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
+assert.match(moduleSource, /recognition\.lang = 'es-AR'/);
+assert.match(moduleSource, /recognition\.continuous = false/);
+assert.match(moduleSource, /recognition\.interimResults = false/);
+assert.match(moduleSource, /El navegador o sistema podría procesar el audio externamente/);
+assert.match(html, /id="publisherDictationStart"[^>]*>Iniciar dictado/);
 assert.match(css, /publisher-preview-card\s*\{[^}]*position:\s*sticky/);
 
 console.log('Publicador: estructura, categorías, vista previa, privacidad y rutas de compartir verificadas.');
@@ -56,13 +58,13 @@ assert.match(html, /id="publisherDictationStart"/);
 assert.match(html, /id="publisherDictationStop"/);
 assert.match(html, /id="publisherTranscript"/);
 assert.match(html, /id="publisherUseTranscript"/);
-assert.match(moduleSource, /recognition\.continuous = true/);
-assert.match(moduleSource, /recognition\.interimResults = true/);
+assert.match(moduleSource, /recognition\.continuous = false/);
+assert.match(moduleSource, /recognition\.interimResults = false/);
 assert.match(moduleSource, /recognition\.onresult/);
 assert.match(moduleSource, /recognition\.onend = function\(\)[\s\S]*?Transcripción lista/);
 assert.match(moduleSource, /parseGarmentDictation\(transcript\)/);
 assert.match(moduleSource, /Interpretar y completar campos/);
-assert.match(html, /El dictado integrado está pausado mientras validamos un motor local/i);
+assert.match(html, /El dictado usa el mismo reconocimiento por voz que Nueva venta/i);
 assert.match(css, /publisher-dictation/);
 
 assert.match(html, /id="publisherAddGarment"/);
