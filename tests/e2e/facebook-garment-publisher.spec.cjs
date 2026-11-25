@@ -126,7 +126,7 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
 
   const modal = page.locator('#publisherPreviewModal');
   await expect(modal).toBeVisible();
-  await expect(modal).toHaveAttribute('aria-modal', 'true');
+  await expect(modal.locator('.publisher-preview-modal-panel')).toHaveAttribute('aria-modal', 'true');
   await expect(modal.locator('#publisherPreviewTitle')).toBeVisible();
   await expect(modal.locator('#publisherPostText')).toHaveValue(/Vestido de prueba[\\s\\S]*Marca: Ossira[\\s\\S]*Cintura: 38 cm[\\s\\S]*Largo: 105 cm/);
   await expect(modal.locator('#publisherPhotoPreview img')).toBeVisible();
