@@ -119,7 +119,7 @@ export function parseGarmentDictation(transcript) {
   result.size = parseSpanishNumber(rawSize) || rawSize;
 
   const numericText = normalizeWords(text);
-  const priceText = firstCapture(numericText, /\bprecio\s+(?:de\s+)?([\p{L}0-9 .,$]+?)(?=\s*(?:pesos?\b|,|;|\.|$))/iu);
+  const priceText = firstCapture(numericText, /\bprecio\s+(?:de\s+)?([\p{L}0-9 .,$]+?)(?=\s*(?:pesos?\b|presos?\b|,|;|\.|$))/iu);
   if (priceText) {
     const digits = priceText.replace(/\s/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.').match(/^\$?(\d+(?:\.\d+)?)$/);
     result.price = digits ? digits[1].replace(/\.0+$/, '') : parseSpanishNumber(priceText);
@@ -130,7 +130,7 @@ export function parseGarmentDictation(transcript) {
     ['waist', '(?:la\\s+)?cintura'],
     ['rise', 'tiro(?:\\s+delantero)?'],
     ['hip', '(?:la\\s+)?cadera'],
-    ['length', '(?:el\\s+)?largo']
+    ['length', '(?:el\\s+)?largo'],\n    ['boot', '(?:la\\s+)?bota']
   ];
   const measurementExpressions = measurementNames.flatMap(([key, label]) => [
     [key, new RegExp('\\b' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
@@ -145,7 +145,7 @@ export function parseGarmentDictation(transcript) {
   const removals = [
     /\bmarca\s+[\p{L}0-9][\p{L}0-9 .'-]{0,39}/iu,
     sizeExpression,
-    /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+pesos?)?(?=\s*(?:,|;|\.|$))/iu,
+    /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+(?:pesos?|presos?))?(?=\s*(?:,|;|\.|$))/iu,
     ...measurementNames.flatMap(([key, label]) => [
       new RegExp('\\b' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?', 'iu'),
       new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\s+(?:de\\s+)?' + label, 'iu')
