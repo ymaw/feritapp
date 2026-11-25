@@ -148,12 +148,12 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
 });
 
 
-test('microphone can be tested independently without recording or retaining audio', async ({ page }) => {
+test('voice bars follow the dictation session and release the microphone when it stops', async ({ page }) => {
   await page.addInitScript(() => {
     const track = {
       readyState: 'live',
       addEventListener() {},
-      stop() { this.readyState = 'ended'; window.__micTrackStopped = true; }
+      stop() { this.readyState = 'ended'; window.__voiceTrackStopped = true; }
     };
     Object.defineProperty(navigator, 'mediaDevices', {
       configurable: true,
@@ -164,7 +164,7 @@ test('microphone can be tested independently without recording or retaining audi
       createAnalyser() {
         return {
           fftSize: 256,
-          getByteTimeDomainData(samples) { samples.fill(128); },
+          getByteTimeDomainData(samples) { samples.fill(145); },
           disconnect() {}
         };
       }
@@ -174,17 +174,13 @@ test('microphone can be tested independently without recording or retaining audi
     };
   });
   await openAuthenticatedApp(page);
-  await page.locator('#sidebar [data-view="publisher"]').click();
-  await expect(page.locator('#viewPublisher')).toBeVisible();
-  await page.locator('#publisherMicTestStart').click();
-  await expect(page.locator('#publisherMicTestStart')).toBeDisabled();
-  await expect(page.locator('#publisherMicTestStop')).toBeEnabled();
-  await expect(page.locator('#publisherAudioLevel')).toContainText('Micrófono activo');
-  await page.locator('#publisherMicTestStop').click();
-  await expect(page.locator('#publisherMicTestStart')).toBeEnabled();
-  await expect(page.locator('#publisherMicTestStop')).toBeDisabled();
-  await expect(page.locator('#publisherAudioVisualizer')).not.toHaveClass(/is-active/);
-  expect(await page.evaluate(() => window.__micTrackStopped)).toBe(true);
+  await page.locator('#publisherDictationStart').click();
+  const visualizer = page.locator('#publisherAudioVisualizer');
+  await expect(visualizer).toHaveClass(/is-active/);
+  await expect(page.locator('#publisherAudioLevel')).toContainText('Detectando sonido');
+  await page.locator('#publisherDictationStop').click();
+  await expect(visualizer).not.toHaveClass(/is-active/);
+  expect(await page.evaluate(() => window.__voiceTrackStopped)).toBe(true);
   await expect(page.locator('#publisherDictationStart')).toBeEnabled();
 });
 
@@ -195,6 +191,12 @@ test('publisher reuses the New Sale speech recognition flow and keeps transcript
   await expect(page.locator('#publisherDictationStatus')).toContainText('podría procesar el audio externamente');
   await page.locator('#publisherDictationStart').click();
   await expect(page.locator('#publisherDictationStop')).toBeEnabled();
+  expect(await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    return recognition.continuous === true && recognition.interimResults === true;
+  })).toBe(true);
+  await page.evaluate(() => window.__speechRecognitionInstances[0].onend());
+  await expect.poll(() => page.evaluate(() => window.__speechRecognitionInstances.length)).toBe(2);
   await page.locator('#publisherDictationStop').click();
   await expect(page.locator('#publisherTranscript')).toHaveValue(/Vestido negro, marca Ossira/);
   await page.locator('#publisherTranscript').fill('Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos.');
