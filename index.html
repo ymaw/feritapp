@@ -590,7 +590,7 @@
         <div class="field"><label for="publisherBrand">Marca</label><input id="publisherBrand" maxlength="80" placeholder="Ej.: Ossira"/></div>
         <div class="field"><label for="publisherSize">Talle</label><input id="publisherSize" maxlength="40" placeholder="Ej.: M, 40, único"/></div>
         <div class="field"><label for="publisherPrice">Precio (ARS)</label><input id="publisherPrice" inputmode="numeric" maxlength="12" placeholder="Ej.: 7000"/></div>
-        <div class="field publisher-photo-field"><label for="publisherPhoto">Fotografía</label><input id="publisherPhoto" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp"/></div>
+        <div class="field publisher-photo-field"><label>Fotografía</label><div class="publisher-photo-actions"><input id="publisherPhoto" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp"/><input id="publisherCamera" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden/><button id="publisherChoosePhoto" class="publisher-photo-action" type="button">Elegir foto</button><button id="publisherTakePhoto" class="publisher-photo-action publisher-photo-camera" type="button">Tomar foto</button><span class="publisher-photo-hint">JPG, PNG o WebP · hasta 12 MB</span></div></div>
       </div>
       <fieldset class="publisher-measurements" id="publisherMeasurements" hidden>
         <legend>Medidas de la prenda <span>EN CM</span></legend>
