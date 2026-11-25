@@ -14,6 +14,7 @@ export function initAudioVisualizer() {
   let analyser = null;
   let animationFrame = 0;
   let requestId = 0;
+  let speaking = false;
 
   function stop() {
     requestId += 1;
@@ -31,9 +32,12 @@ export function initAudioVisualizer() {
     stream = null;
     if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
     audioContext = null;
-    visualizer.classList.remove('is-active');
+    speaking = false;
+    visualizer.classList.remove('is-active', 'is-speaking');
+    visualizer.classList.add('is-listening');
+    visualizer.style.setProperty('--voice-level', '0');
     bars.forEach(bar => { bar.style.height = '4px'; });
-    levelLabel.textContent = 'Las barras se activan al iniciar el dictado y reaccionan al sonido.';
+    levelLabel.textContent = 'Micrófono activo · esperando que hables.';
   }
 
   function animate() {
@@ -47,13 +51,20 @@ export function initAudioVisualizer() {
     }
     const rms = Math.sqrt(sum / samples.length);
     const level = Math.min(1, rms * 7);
+    const isSpeaking = rms > 0.035;
+    if (isSpeaking !== speaking) {
+      speaking = isSpeaking;
+      visualizer.classList.toggle('is-speaking', speaking);
+      visualizer.classList.toggle('is-listening', !speaking);
+    }
+    visualizer.style.setProperty('--voice-level', String(level));
     bars.forEach((bar, index) => {
       const wave = Math.abs(Math.sin(index * 0.72 + performance.now() / 115));
       const height = 4 + level * (10 + wave * 27);
       bar.style.height = Math.round(height) + 'px';
     });
-    levelLabel.textContent = level > 0.045
-      ? 'Detectando sonido · hablá con naturalidad'
+    levelLabel.textContent = isSpeaking
+      ? 'Voz detectada · dictando'
       : 'Micrófono activo · esperando que hables';
     animationFrame = requestAnimationFrame(animate);
   }
@@ -86,11 +97,14 @@ export function initAudioVisualizer() {
       analyser.fftSize = 256;
       sourceNode = audioContext.createMediaStreamSource(stream);
       sourceNode.connect(analyser);
-      visualizer.classList.add('is-active');
+      visualizer.classList.add('is-active', 'is-listening');
+      visualizer.classList.remove('is-speaking');
+      visualizer.style.setProperty('--voice-level', '0');
       levelLabel.textContent = 'Micrófono activo · esperando que hables';
       animate();
     } catch (error) {
       stop();
+      visualizer.classList.remove('is-listening', 'is-speaking');
       levelLabel.textContent = error && error.name === 'NotAllowedError'
         ? 'No se concedió permiso para mostrar el nivel del micrófono; el dictado podría seguir disponible.'
         : 'No se pudo activar el indicador de voz; podés continuar con el dictado.';
