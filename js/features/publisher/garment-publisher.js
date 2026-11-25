@@ -382,12 +382,10 @@ export function initGarmentPublisher({ showToast }) {
     publisherLayout.appendChild(previewCard);
     const target = previewReturnFocus && previewReturnFocus.isConnected ? previewReturnFocus : openPreview;
     previewReturnFocus = null;
-    // Diferir el foco hasta el siguiente frame evita que el cierre del modal lo devuelva al body.
-    window.requestAnimationFrame(function() {
-      if (target.isConnected && !target.disabled && target.getClientRects().length) {
-        target.focus({ preventScroll: true });
-      }
-    });
+    // Diferir el foco hasta después del evento Escape evita que el navegador lo devuelva al body.
+    window.setTimeout(function() {
+      if (target.isConnected && !target.disabled) target.focus();
+    }, 0);
   }
   openPreview.addEventListener('click', openMobilePreview);
   closePreview.addEventListener('click', closeMobilePreview);
