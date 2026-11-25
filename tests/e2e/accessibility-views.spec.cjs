@@ -1,12 +1,12 @@
 const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 
-async function openAuthenticatedApp(page, themeChoice = 'light') {
+async function openAuthenticatedApp(page, themeChoice = 'light', salesFixtures = null) {
   await page.addInitScript(choice => { localStorage.setItem('feritapp-theme', choice); }, themeChoice);
-  await page.addInitScript(() => {
+  await page.addInitScript(fixtures => {
     const today = new Date().toISOString();
     const dataByTable = {
-      sales: [{
+      sales: fixtures || [{
         id: 'qa-sale-0001', fecha: today, semana_asignada: null,
         cliente: 'Cliente QA', articulo: 'Artículo QA', precio: 1200,
         pagado: false, retira: 'cliente', tercero: '',
@@ -45,7 +45,7 @@ async function openAuthenticatedApp(page, themeChoice = 'light') {
         }
       })
     };
-  });
+  }, salesFixtures);
   await page.route('https://cdn.jsdelivr.net/**', route =>
     route.fulfill({ contentType: 'application/javascript', body: '' })
   );
@@ -59,6 +59,45 @@ async function openAuthenticatedApp(page, themeChoice = 'light') {
   await expect(page.locator('#appRoot')).toBeVisible();
   await expect(page.locator('#viewDashboard')).toBeVisible();
 }
+
+
+test('client ranking supports metric sorting, calendar filters and explicit amount visibility', async ({ page }) => {
+  const localDate = offsetMonths => {
+    const date = new Date();
+    date.setDate(15);
+    date.setMonth(date.getMonth() + offsetMonths);
+    return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+  };
+  const fixtures = [
+    { id: 'qa-ana-1', fecha: localDate(0), cliente: 'Ana', articulo: 'Prenda A', precio: 100 },
+    { id: 'qa-ana-2', fecha: localDate(0), cliente: 'Ana', articulo: 'Prenda B', precio: 200 },
+    { id: 'qa-beto-1', fecha: localDate(0), cliente: 'Beto', articulo: 'Prenda C', precio: 500 },
+    { id: 'qa-carla-1', fecha: localDate(-1), cliente: 'Carla', articulo: 'Prenda D', precio: 1000 }
+  ].map(sale => ({
+    semana_asignada: null, pagado: false, retira: 'cliente', tercero: '',
+    categoria: 'Indumentaria', entregado: false, entregado_en: null, ...sale
+  }));
+
+  await openAuthenticatedApp(page, 'light', fixtures);
+  await page.locator('#sidebar [data-view="ranking"]').click();
+  await expect(page.locator('#viewRanking')).toBeVisible();
+  await expect(page.locator('#topClients .rank-name')).toHaveText(['Ana', 'Beto']);
+  await expect(page.locator('#rankingPeriodCaption')).toContainText(String(new Date().getFullYear()));
+
+  await page.locator('#rankingSortBy').selectOption('total');
+  await expect(page.locator('#topClients .rank-name')).toHaveText(['Beto', 'Ana']);
+  await expect(page.locator('#topClients .rank-total')).toHaveCount(0);
+
+  await page.locator('#toggleRankingMoney').click();
+  await expect(page.locator('#topClients .rank-total')).toHaveCount(2);
+  await page.locator('#toggleRankingMoney').click();
+  await expect(page.locator('#topClients .rank-total')).toHaveCount(0);
+
+  await page.locator('#rankingPeriod').selectOption('year');
+  await expect(page.locator('#topClients .rank-name')).toHaveText(['Carla', 'Beto', 'Ana']);
+  await page.locator('#rankingSortBy').selectOption('articles');
+  await expect(page.locator('#topClients .rank-name')).toHaveText(['Ana', 'Carla', 'Beto']);
+});
 
 
 async function navigateToView(page, view, width) {

@@ -2318,59 +2318,53 @@ document.addEventListener('DOMContentLoaded', function(){
 
   let showRankingMoney = false;
   let rankingVisibleCount = 5;
+  let rankingSortBy = 'articles';
+  let rankingPeriod = 'month';
+
+  function rankingPeriodDescription(){
+    const now=new Date(),year=now.getFullYear(),month=now.getMonth();
+    const names=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    if(rankingPeriod==='all') return 'Todo el historial · hasta '+year;
+    if(rankingPeriod==='month') return names[month].charAt(0).toUpperCase()+names[month].slice(1)+' '+year;
+    if(rankingPeriod==='quarter'){
+      const first=Math.floor(month/4)*4;
+      return names[first].charAt(0).toUpperCase()+names[first].slice(1)+'–'+names[first+3]+' '+year;
+    }
+    if(rankingPeriod==='semester'){
+      const first=Math.floor(month/6)*6;
+      return names[first].charAt(0).toUpperCase()+names[first].slice(1)+'–'+names[first+5]+' '+year;
+    }
+    return 'Año '+year;
+  }
 
   function renderTopClients(){
-    let wrap = document.getElementById('topClients');
+    const wrap=document.getElementById('topClients');
     if(!wrap) return;
-
-    if(sales.length === 0){
-      wrap.innerHTML = '<div class="empty-inline">Todavía no hay ventas registradas.</div>';
+    const ranked=window.FeritRanking.getRankedClients(sales,{sortBy:rankingSortBy,period:rankingPeriod});
+    const caption=document.getElementById('rankingPeriodCaption');
+    if(caption) caption.textContent=rankingPeriodDescription();
+    if(!ranked.length){
+      wrap.innerHTML='<div class="empty-inline">No hay ventas registradas para este período.</div>';
       return;
     }
-
-    let byClient = {};
-    sales.forEach(function(s){
-      let name = s.cliente || 'Sin nombre';
-      if(!byClient[name]){ byClient[name] = { name: name, count: 0, total: 0 }; }
-      byClient[name].count += 1;
-      byClient[name].total += Number(s.precio) || 0;
+    const visible=ranked.slice(0,rankingVisibleCount),medals=['🥇','🥈','🥉'];
+    let html='<div class="rank-list">';
+    visible.forEach(function(client,index){
+      const medal=medals[index] || ('#'+(index+1));
+      html+='<div class="rank-item'+(showRankingMoney?' has-money':'')+'">'+
+        '<div class="rank-medal">'+medal+'</div><div class="rank-info">'+
+        '<button type="button" class="rank-name client-name-link" data-client-link="'+escapeHtml(client.name)+'">'+escapeHtml(client.name)+'</button>'+
+        '<div class="rank-sub">'+client.count+(client.count===1?' artículo comprado':' artículos comprados')+'</div></div>'+
+        '<div class="rank-count" aria-label="'+client.count+' artículos">'+client.count+'</div>'+
+        (showRankingMoney?'<div class="rank-total">'+money(client.total)+'</div>':'')+'</div>';
     });
-
-    // El ranking ordena por CANTIDAD de artículos comprados (no por monto).
-    let ranked = Object.keys(byClient).map(function(k){ return byClient[k]; });
-    ranked.sort(function(a, b){ return b.count - a.count || b.total - a.total; });
-
-    let visible = ranked.slice(0, rankingVisibleCount);
-
-    let medals = ['🥇','🥈','🥉'];
-    let html = '<div class="rank-list">';
-    visible.forEach(function(c, idx){
-      let medal = medals[idx] || ('#' + (idx + 1));
-      html += '<div class="rank-item' + (showRankingMoney ? ' has-money' : '') + '">' +
-        '<div class="rank-medal">' + medal + '</div>' +
-        '<div class="rank-info">' +
-          '<button type="button" class="rank-name client-name-link" data-client-link="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</button>' +
-          '<div class="rank-sub">Cliente destacado</div>' +
-        '</div>' +
-        '<div class="rank-count" aria-label="' + c.count + ' artículos">' + c.count + '</div>' +
-        (showRankingMoney ? '<div class="rank-total">' + money(c.total) + '</div>' : '') +
-      '</div>';
-    });
-    html += '</div>';
-
-    if(ranked.length > visible.length){
-      html += '<button type="button" class="reset-link" id="rankingShowMoreBtn" style="margin-top:12px;">Ver más (' + (ranked.length - visible.length) + ' restantes)</button>';
+    html+='</div>';
+    if(ranked.length>visible.length){
+      html+='<button type="button" class="reset-link" id="rankingShowMoreBtn" style="margin-top:12px;">Ver más ('+(ranked.length-visible.length)+' restantes)</button>';
     }
-
-    wrap.innerHTML = html;
-
-    const rankingMoreBtn = document.getElementById('rankingShowMoreBtn');
-    if(rankingMoreBtn){
-      rankingMoreBtn.addEventListener('click', function(){
-        rankingVisibleCount += 5;
-        renderTopClients();
-      });
-    }
+    wrap.innerHTML=html;
+    const more=document.getElementById('rankingShowMoreBtn');
+    if(more) more.addEventListener('click',function(){rankingVisibleCount+=5;renderTopClients();});
   }
 
   // Secciones del dashboard: alternancia accesible con delegación para sobrevivir a los re-renderizados.
@@ -2398,63 +2392,111 @@ document.addEventListener('DOMContentLoaded', function(){
       renderTopClients();
     });
   }
-
-  function getRankedClients(){
-    let byClient = {};
-    sales.forEach(function(s){
-      let name = s.cliente || 'Sin nombre';
-      if(!byClient[name]) byClient[name] = {name:name,count:0,total:0};
-      byClient[name].count += 1;
-      byClient[name].total += Number(s.precio) || 0;
-    });
-    return Object.keys(byClient).map(function(k){return byClient[k];}).sort(function(a,b){return b.count-a.count || b.total-a.total;});
-  }
+  const rankingSortControl=document.getElementById('rankingSortBy');
+  const rankingPeriodControl=document.getElementById('rankingPeriod');
+  if(rankingSortControl) rankingSortControl.addEventListener('change',function(){
+    rankingSortBy=rankingSortControl.value;rankingVisibleCount=5;renderTopClients();
+  });
+  if(rankingPeriodControl) rankingPeriodControl.addEventListener('change',function(){
+    rankingPeriod=rankingPeriodControl.value;rankingVisibleCount=5;renderTopClients();
+  });
 
   async function shareCustomerRanking(){
-    const ranked = getRankedClients();
-    if(!ranked.length){ showToast('Todavía no hay ventas para compartir el ranking.'); return; }
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const palette = dark ? {
-      pageA:'#14101f',pageB:'#262238',cardA:'#30264a',cardB:'#1e1b2e',
-      row:'#29243b',text:'#f1f0fe',muted:'#b8b0d1',accent:'#b49aff',pill:'#393052',pillText:'#d8ccff',line:'#463b63'
-    } : {
-      pageA:'#f7f4ff',pageB:'#e9f7ff',cardA:'#3216d9',cardB:'#7657ff',
-      row:'#ffffff',text:'#211b56',muted:'#706b9a',accent:'#4d35df',pill:'#f0edff',pillText:'#4d35df',line:'#e3ddfb'
+    const ranked=window.FeritRanking.getRankedClients(sales,{sortBy:rankingSortBy,period:rankingPeriod});
+    if(!ranked.length){showToast('Todavía no hay ventas para compartir el ranking.');return;}
+    const includeTotals=showRankingMoney===true;
+    const includeArticleCount=rankingSortBy==='articles';
+    const dark=document.documentElement.getAttribute('data-theme')==='dark';
+    const palette=dark?{
+      backgroundA:'#171326',backgroundB:'#211b35',panel:'#29223f',row:'#342c4b',rowTop:'#40345e',
+      text:'#f7f4ff',muted:'#c0b7d9',accent:'#b49aff',accentBlue:'#62c9e8',border:'#4a3e67'
+    }:{
+      backgroundA:'#f5f2ff',backgroundB:'#eaf7fc',panel:'#ffffff',row:'#faf9ff',rowTop:'#f1edff',
+      text:'#211b3d',muted:'#716b88',accent:'#7657ff',accentBlue:'#31b9e8',border:'#e8e2f5'
     };
-    const W=1080, H=1350, canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+    const shareRows=ranked.slice(0,8);
+    const W=1080,H=Math.max(1050,420+shareRows.length*102+300),canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
     const ctx=canvas.getContext('2d');
-    const rr=function(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);};
-    const bg=ctx.createLinearGradient(0,0,W,H); bg.addColorStop(0,palette.pageA); bg.addColorStop(1,palette.pageB); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-    const cardGrad=ctx.createLinearGradient(50,40,W-50,H-40); cardGrad.addColorStop(0,palette.cardA); cardGrad.addColorStop(1,palette.cardB);
-    ctx.fillStyle=cardGrad; rr(48,48,W-96,H-96,44); ctx.fill();
-    ctx.fillStyle=dark?'rgba(180,154,255,.09)':'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.arc(970,100,210,0,Math.PI*2); ctx.fill();
-    // El logo se dibuja junto al nombre para que la imagen compartida tenga la marca completa.
-    const logo = await new Promise(function(resolve){const img=new Image();img.onload=function(){resolve(img);};img.onerror=function(){resolve(null);};img.src='assets/images/feritapp-icon.png';});
-    if(logo){ctx.save();ctx.beginPath();ctx.arc(132,125,48,0,Math.PI*2);ctx.clip();ctx.drawImage(logo,84,77,96,96);ctx.restore();}
-    ctx.fillStyle='#ffffff'; ctx.font='800 54px Arial'; ctx.textAlign='left'; ctx.fillText('FeritApp',200,126);
-    ctx.fillStyle=dark?'#d8ccff':'#e8e2ff'; ctx.font='500 25px Arial'; ctx.fillText('Tu negocio, más simple',202,168);
-    ctx.fillStyle='#ffffff'; ctx.font='800 42px Arial'; ctx.fillText('Ranking de clientes',92,260);
-    ctx.fillStyle=dark?'#e3dcf5':'#e7e2ff'; ctx.font='24px Arial'; ctx.fillText('Los clientes que más artículos compraron',92,302);
-    const medals=['🥇','🥈','🥉']; const rows=ranked.slice(0,8); let y=350;
-    rows.forEach(function(c,i){
-      ctx.fillStyle=palette.row; rr(82,y,W-164,94,22); ctx.fill();
-      ctx.fillStyle=['#ffcf36','#c8d1e1','#e6a06a'][i] || palette.line; ctx.beginPath(); ctx.arc(132,y+47,29,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle=i<3?'#38235b':palette.accent; ctx.font='800 24px Arial'; ctx.textAlign='center'; ctx.fillText(medals[i] || String(i+1),132,y+56);
-      ctx.textAlign='left'; ctx.fillStyle=palette.text; ctx.font='700 29px Arial'; let name=c.name; while(ctx.measureText(name).width>500) name=name.slice(0,-2)+'…'; ctx.fillText(name,185,y+43);
-      ctx.fillStyle=palette.muted; ctx.font='20px Arial'; ctx.fillText((i+1)+'° puesto',185,y+72);
-      // La imagen compartida muestra los puestos y nombres, sin cantidades de artículos.
-      y+=108;
+    if(!ctx){showToast('No se pudo preparar la imagen del ranking.');return;}
+    const roundedRect=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);};
+    const gradient=(x1,y1,x2,y2,stops)=>{
+      const value=ctx.createLinearGradient(x1,y1,x2,y2);
+      stops.forEach(([position,color])=>value.addColorStop(position,color));
+      return value;
+    };
+    ctx.fillStyle=gradient(0,0,W,H,[[0,palette.backgroundA],[1,palette.backgroundB]]);
+    ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.globalAlpha=dark?.22:.48;ctx.fillStyle=palette.accent;
+    ctx.beginPath();ctx.arc(1010,80,230,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=dark?.12:.32;ctx.fillStyle=palette.accentBlue;
+    ctx.beginPath();ctx.arc(40,1270,250,0,Math.PI*2);ctx.fill();ctx.restore();
+    ctx.save();ctx.shadowColor=dark?'rgba(0,0,0,.24)':'rgba(55,37,112,.10)';
+    ctx.shadowBlur=42;ctx.shadowOffsetY=16;ctx.fillStyle=palette.panel;
+    roundedRect(42,42,W-84,H-84,42);ctx.fill();ctx.restore();
+    ctx.strokeStyle=palette.border;ctx.lineWidth=2;roundedRect(42,42,W-84,H-84,42);ctx.stroke();
+
+    const logo=await new Promise(resolve=>{
+      const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);
+      img.src='assets/images/feritapp-icon.png';
     });
-    ctx.fillStyle=dark?'#d8ccff':'#e7e2ff'; ctx.font='22px Arial'; ctx.textAlign='center'; ctx.fillText('Gracias por ser parte de nuestra comunidad 💜',W/2,H-106); ctx.textAlign='left';
-    const blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png');});
+    if(logo){ctx.save();ctx.beginPath();ctx.arc(112,124,42,0,Math.PI*2);ctx.clip();ctx.drawImage(logo,70,82,84,84);ctx.restore();}
+    else{
+      ctx.fillStyle=gradient(70,82,154,166,[[0,palette.accent],[1,palette.accentBlue]]);
+      roundedRect(70,82,84,84,26);ctx.fill();ctx.fillStyle='#fff';ctx.font='800 34px Arial';
+      ctx.textAlign='center';ctx.fillText('F',112,139);
+    }
+    ctx.textAlign='left';ctx.fillStyle=palette.text;ctx.font='800 38px Arial';ctx.fillText('FeritApp',178,120);
+    ctx.fillStyle=palette.muted;ctx.font='500 22px Arial';ctx.fillText('Tu negocio, más simple',180,154);
+    ctx.fillStyle=palette.accent;ctx.font='700 17px Arial';ctx.fillText('CLIENTES QUE HACEN CRECER TU NEGOCIO',82,232);
+    ctx.fillStyle=palette.text;ctx.font='800 54px Arial';ctx.fillText('Ranking de clientes',82,300);
+    ctx.fillStyle=palette.muted;ctx.font='500 25px Arial';ctx.fillText(rankingPeriodDescription(),84,348);
+    ctx.fillStyle=gradient(82,382,W-82,382,[[0,palette.accent],[1,palette.accentBlue]]);
+    roundedRect(82,382,W-164,5,3);ctx.fill();
+
+    shareRows.forEach(function(client,index){
+      const y=420+index*102,topThree=index<3;
+      ctx.fillStyle=topThree?palette.rowTop:palette.row;roundedRect(82,y,W-164,88,22);ctx.fill();
+      ctx.strokeStyle=palette.border;ctx.lineWidth=1;roundedRect(82,y,W-164,88,22);ctx.stroke();
+      ctx.fillStyle=topThree?['#f3c969','#c8d4e5','#d99a73'][index]:(dark?'#51466d':'#e9e4f6');
+      ctx.beginPath();ctx.arc(132,y+44,25,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=topThree?'#34264e':palette.muted;ctx.font='800 21px Arial';ctx.textAlign='center';
+      ctx.fillText(String(index+1).padStart(2,'0'),132,y+51);
+      const centerX=W/2;ctx.fillStyle=palette.text;ctx.font='700 27px Arial';
+      let name=String(client.name||'Sin nombre');
+      while(ctx.measureText(name).width>620 && name.length>4) name=name.slice(0,-2)+'…';
+      if(includeTotals||includeArticleCount){
+        ctx.fillText(name,centerX,y+34);ctx.fillStyle=palette.muted;ctx.font='500 18px Arial';
+        const detail=[includeArticleCount?client.count+' '+(client.count===1?'artículo':'artículos'):'',includeTotals?money(client.total)+' gastados':''].filter(Boolean).join(' · ');
+        ctx.fillText(detail,centerX,y+64);
+      }else ctx.fillText(name,centerX,y+54);
+    });
+
+    const footerText='Muchas gracias por la confianza!';
+    const footerY=H-126;ctx.fillStyle=palette.muted;ctx.font='600 24px Arial';
+    const textWidth=ctx.measureText(footerText).width,heartWidth=34,gap=13;
+    const left=(W-textWidth-heartWidth-gap)/2;
+    ctx.textAlign='left';ctx.fillText(footerText,left,footerY);
+    const heartX=left+textWidth+gap+heartWidth/2,heartY=footerY-8;
+    const heartGradient=gradient(heartX-18,heartY,heartX+18,heartY,[[0,'#7657ff'],[1,'#31b9e8']]);
+    ctx.save();ctx.translate(heartX,heartY);ctx.scale(1.08,1.08);ctx.beginPath();ctx.moveTo(0,12);
+    ctx.bezierCurveTo(-27,-5,-14,-22,0,-9);ctx.bezierCurveTo(14,-22,27,-5,0,12);
+    ctx.closePath();ctx.fillStyle=heartGradient;ctx.fill();ctx.restore();
+
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
     if(!blob){showToast('No se pudo generar la imagen del ranking.');return;}
     const file=new File([blob],'ranking-feritapp.png',{type:'image/png'});
     const textMsg='🏆 Ranking de clientes de mi tienda en FeritApp';
-    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
-      try{await navigator.share({files:[file],text:textMsg});return;}catch(e){if(e && e.name==='AbortError')return;}
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+      try{await navigator.share({files:[file],text:textMsg});return;}
+      catch(error){if(error&&error.name==='AbortError')return;}
     }
-    if(navigator.share){try{await navigator.share({title:'Ranking de clientes',text:textMsg});}catch(e){if(e && e.name==='AbortError')return;}}
-    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},1000);
+    if(navigator.share){
+      try{await navigator.share({title:'Ranking de clientes',text:textMsg});}
+      catch(error){if(error&&error.name==='AbortError')return;}
+    }
+    const url=URL.createObjectURL(blob),anchor=document.createElement('a');
+    anchor.href=url;anchor.download=file.name;document.body.appendChild(anchor);anchor.click();anchor.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
     showToast('Ranking descargado como imagen para compartir en tus redes.');
   }
   const shareRankingBtn=document.getElementById('shareRankingBtn');
