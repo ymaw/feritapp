@@ -44,7 +44,7 @@ assert.match(moduleSource, /window\.SpeechRecognition \|\| window\.webkitSpeechR
 assert.match(moduleSource, /activeRecognition\.lang = 'es-AR'/);
 assert.match(moduleSource, /activeRecognition\.continuous = true/);
 assert.match(moduleSource, /activeRecognition\.interimResults = true/);
-assert.match(moduleSource, /El navegador o sistema podría procesar el audio externamente/);
+assert.match(moduleSource, /Dictá los datos de la prenda y completá sus campos automáticamente/);
 assert.match(html, /id="publisherDictationStart"[^>]*>Iniciar dictado/);
 assert.match(css, /publisher-preview-card\s*\{[^}]*position:\s*sticky/);
 
@@ -60,7 +60,7 @@ assert.match(moduleSource, /activeRecognition\.onresult = updateTranscript/);
 assert.match(moduleSource, /activeRecognition\.onend = function\(\)[\s\S]*?Transcripción lista/);
 assert.match(moduleSource, /parseGarmentDictation\(transcript\)/);
 assert.match(moduleSource, /Interpretar y completar campos/);
-assert.match(html, /El dictado usa el mismo reconocimiento por voz que Nueva venta/i);
+assert.match(html, /Dictá los datos de la prenda y completá sus campos automáticamente/i);
 assert.match(css, /publisher-dictation/);
 
 assert.match(html, /id="publisherAddGarment"/);
