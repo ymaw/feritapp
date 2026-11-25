@@ -284,3 +284,14 @@
   #viewPublisher .publisher-transcript-footer>span{max-width:none;}
   #viewPublisher .publisher-transcript-footer button{width:100%;}
 }
+
+
+/* Captura y selección de fotos: controles compactos, sin el input nativo sobredimensionado. */
+#viewPublisher .publisher-photo-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;}
+#viewPublisher .publisher-photo-actions input[type="file"]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+#viewPublisher .publisher-photo-action{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:8px 13px;border:1px solid var(--border);border-radius:10px;background:var(--surface-3);color:var(--text);font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background-color .18s ease,border-color .18s ease,transform .18s ease;}
+#viewPublisher .publisher-photo-action:hover{border-color:var(--primary-soft);background:var(--surface-2);}
+#viewPublisher .publisher-photo-action:active{transform:translateY(1px);}
+#viewPublisher .publisher-photo-camera{border-color:color-mix(in srgb,var(--primary-soft) 55%,var(--border));background:color-mix(in srgb,var(--primary-soft) 12%,var(--surface));}
+#viewPublisher .publisher-photo-hint{flex:1 1 100%;color:var(--muted);font-size:10px;line-height:1.4;}
+@media(max-width:520px){#viewPublisher .publisher-photo-actions{gap:7px;}#viewPublisher .publisher-photo-action{flex:1 1 calc(50% - 7px);min-height:38px;}}
