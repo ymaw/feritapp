@@ -568,15 +568,15 @@
       <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
         <div class="publisher-dictation-heading"><strong id="publisherDictationTitle">🎙️ Describí la prenda hablando</strong><span class="publisher-muted">Podés detenerte, corregir la transcripción y recién después incorporarla.</span></div>
         <div class="publisher-actions publisher-dictation-controls">
-          <button class="secondary-btn" id="publisherDictationStart" type="button">Comenzar a grabar</button>
+          <button class="secondary-btn" id="publisherDictationStart" type="button" disabled>Motor local pendiente</button>
           <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener</button>
         </div>
         <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" aria-label="Nivel de audio del micrófono" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
         <p class="publisher-audio-level" id="publisherAudioLevel">El nivel de voz se mostrará mientras hablás.</p>
-        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">La transcripción se procesa en el navegador mientras hablás; no se guarda un archivo de audio.</p>
+        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">El dictado por voz está pausado hasta integrar un motor local. FeritApp no enviará audio a servicios externos. Podés completar los campos manualmente o pegar una transcripción para interpretarla.</p>
         <label for="publisherTranscript">Transcripción editable</label>
         <textarea id="publisherTranscript" maxlength="1200" rows="4" placeholder="Cuando termines de hablar, revisá y editá el texto acá…"></textarea>
-        <div class="publisher-actions"><button class="secondary-btn" id="publisherUseTranscript" type="button" disabled>Usar en observaciones</button></div>
+        <div class="publisher-actions"><button class="secondary-btn" id="publisherUseTranscript" type="button" disabled>Interpretar y completar campos</button></div>
       </section>
       <fieldset class="publisher-measurements" id="publisherMeasurements" hidden>
         <legend>Medidas (cm)</legend>
