@@ -446,9 +446,10 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewDeliveries').style.display = (view === 'deliveries') ? 'block' : 'none';
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
     document.getElementById('viewNotes').style.display = (view === 'notes') ? 'block' : 'none';
+    document.getElementById('viewPublisher').style.display = (view === 'publisher') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', publisher:'Publicador', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
@@ -571,6 +572,7 @@ document.addEventListener('DOMContentLoaded', function(){
     sales:{label:'Ventas',icon:'▤',view:'sales'},
     deliveries:{label:'Entregas',icon:'▧',view:'deliveries'},
     notes:{label:'Notas',icon:'✎',view:'notes'},
+    publisher:{label:'Publicador',icon:'✦',view:'publisher'},
     ranking:{label:'Ranking',icon:'♕',view:'ranking'}
   };
   const DEFAULT_NAVIGATION_SLOTS = ['dashboard','sales','deliveries','notes'];
