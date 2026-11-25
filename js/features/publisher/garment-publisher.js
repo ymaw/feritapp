@@ -396,6 +396,7 @@ export function initGarmentPublisher({ showToast }) {
   previewModal.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
       event.preventDefault();
+      event.stopPropagation();
       closeMobilePreview();
       return;
     }
