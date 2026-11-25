@@ -102,7 +102,7 @@ export function parseGarmentDictation(transcript) {
   };
   if (!text) return result;
 
-  const categoryRule = CATEGORY_RULES.find(([, expression]) => expression.test(text));
+  const categoryRule = CATEGORY_RULES.map((rule) => ({ rule, index: text.search(rule[1]) })).filter((match) => match.index >= 0).sort((a, b) => a.index - b.index)[0]?.rule || null;
   result.useMeasurementTemplate = /\bmedidas?\b/i.test(text) || Boolean(categoryRule && ['Capris', 'Pantalones', 'Polleras', 'Vestidos'].includes(categoryRule[0]));
   if (categoryRule) {
     result.category = categoryRule[0];
@@ -125,14 +125,18 @@ export function parseGarmentDictation(transcript) {
     result.price = digits ? digits[1].replace(/\.0+$/, '') : parseSpanishNumber(priceText);
   }
 
-  const measurementBoundary = '(?=\\s*(?:cm|cent[ií]metros?\\b|[,;.]|\\b(?:y\\s+)?(?:precio|cintura|tiro|cadera|largo|marca|talle)\\b|$))';
-  const measurements = [
-    ['waist', new RegExp('\\b(?:la\\s+)?cintura\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')],
-    ['rise', new RegExp('\\btiro(?:\\s+delantero)?\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')],
-    ['hip', new RegExp('\\b(?:la\\s+)?cadera\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')],
-    ['length', new RegExp('\\b(?:el\\s+)?largo\\s+(?:de\\s+)?' + NUMBER_CAPTURE + measurementBoundary, 'i')]
+  const measurementBoundary = '(?=\\s*(?:cm|centimetros?\\b|[,;.]|\\b(?:y\\s+)?(?:precio|cintura|tiro|cadera|largo|marca|talle)\\b|$))';
+  const measurementNames = [
+    ['waist', '(?:la\\s+)?cintura'],
+    ['rise', 'tiro(?:\\s+delantero)?'],
+    ['hip', '(?:la\\s+)?cadera'],
+    ['length', '(?:el\\s+)?largo']
   ];
-  for (const [key, expression] of measurements) {
+  const measurementExpressions = measurementNames.flatMap(([key, label]) => [
+    [key, new RegExp('\\\\b' + label + '\\\\s+(?:de\\\\s+)?' + NUMBER_CAPTURE + '(?:\\\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
+    [key, new RegExp('\\\\b' + NUMBER_CAPTURE + '\\\\s*(?:cm|centimetros?)\\\\s+(?:de\\\\s+)?' + label + measurementBoundary, 'i')]
+  ]);
+  for (const [key, expression] of measurementExpressions) {
     const match = numericText.match(expression);
     if (match) result[key] = parseSpanishNumber(match[1]) || numericValue(match[1]);
   }
@@ -142,10 +146,10 @@ export function parseGarmentDictation(transcript) {
     /\bmarca\s+[\p{L}0-9][\p{L}0-9 .'-]{0,39}/iu,
     sizeExpression,
     /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+pesos?)?(?=\s*(?:,|;|\.|$))/iu,
-    new RegExp('\\b(?:la\\s+)?cintura\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
-    new RegExp('\\btiro(?:\\s+delantero)?\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
-    new RegExp('\\b(?:la\\s+)?cadera\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
-    new RegExp('\\b(?:el\\s+)?largo\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu')
+    ...measurementNames.flatMap(([key, label]) => [
+      new RegExp('\\\\b' + label + '\\\\s+(?:de\\\\s+)?' + NUMBER_CAPTURE + '(?:\\\\s*(?:cm|centimetros?))?', 'iu'),
+      new RegExp('\\\\b' + NUMBER_CAPTURE + '\\\\s*(?:cm|centimetros?)\\\\s+(?:de\\\\s+)?' + label, 'iu')
+    ])
   ];
   for (const expression of removals) remainder = remainder.replace(expression, ' ');
   if (categoryRule) remainder = remainder.replace(result.garmentName || categoryRule[1], ' ');
