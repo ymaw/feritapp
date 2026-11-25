@@ -568,11 +568,15 @@
       <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
         <div class="publisher-dictation-heading"><strong id="publisherDictationTitle">🎙️ Describí la prenda hablando</strong><span class="publisher-muted">Podés detenerte, corregir la transcripción y recién después incorporarla.</span></div>
         <div class="publisher-actions publisher-dictation-controls">
-          <button class="secondary-btn" id="publisherDictationStart" type="button" disabled>Motor local pendiente</button>
-          <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener</button>
+          <button class="secondary-btn" id="publisherDictationStart" type="button" disabled>Reconocimiento local pendiente</button>
+          <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener dictado</button>
+        </div>
+        <div class="publisher-actions publisher-mic-test-controls">
+          <button class="secondary-btn" id="publisherMicTestStart" type="button">Probar micrófono</button>
+          <button class="secondary-btn" id="publisherMicTestStop" type="button" disabled>Detener prueba</button>
         </div>
         <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" aria-label="Nivel de audio del micrófono" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-        <p class="publisher-audio-level" id="publisherAudioLevel">El nivel de voz se mostrará mientras hablás.</p>
+        <p class="publisher-audio-level" id="publisherAudioLevel">La prueba analiza el nivel del micrófono en tiempo real; no graba ni guarda audio.</p>
         <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">El dictado por voz está pausado hasta integrar un motor local. FeritApp no enviará audio a servicios externos. Podés completar los campos manualmente o pegar una transcripción para interpretarla.</p>
         <label for="publisherTranscript">Transcripción editable</label>
         <textarea id="publisherTranscript" maxlength="1200" rows="4" placeholder="Cuando termines de hablar, revisá y editá el texto acá…"></textarea>
