@@ -65,6 +65,12 @@ function parseSpanishNumber(value) {
   return decimal === null ? String(integer) : String(Number(String(integer) + '.' + String(decimal)));
 }
 
+function normalizeSpokenNumbersInText(value) {
+  return String(value || '').replace(new RegExp('\\\\b' + NUMBER_PHRASE_SOURCE + '\\\\b', 'giu'), function(phrase) {
+    return parseSpanishNumber(phrase) || phrase;
+  });
+}
+
 function clean(value) {
   return String(value || '').replace(/^[\s,.;:¡!¿?y]+|[\s,.;:¡!¿?]+$/gi, '').replace(/\s+/g, ' ').trim();
 }
