@@ -106,7 +106,9 @@ export function parseGarmentDictation(transcript) {
   }
 
   result.brand = normalizeSpokenNumbersInText(firstCapture(text, /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\b(?:talle|taye|tali|tale)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b)|$)/iu));
-  result.size = firstCapture(text, /\b(?:talle|taye|tali|tale)\s+([\p{L}0-9-]{1,12})/iu);
+  const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|marca)\\b|$))', 'iu');
+  const rawSize = firstCapture(text, sizeExpression);
+  result.size = parseSpanishNumber(rawSize) || rawSize;
 
   const numericText = normalizeWords(text);
   const priceText = firstCapture(numericText, /\bprecio\s+(?:de\s+)?([\p{L}0-9 .,$]+?)(?=\s*(?:pesos?\b|,|;|\.|$))/iu);
@@ -130,7 +132,7 @@ export function parseGarmentDictation(transcript) {
   let remainder = text;
   const removals = [
     /\bmarca\s+[\p{L}0-9][\p{L}0-9 .'-]{0,39}/iu,
-    /\b(?:talle|taye|tali|tale)\s+[\p{L}0-9-]{1,12}/iu,
+    sizeExpression,
     /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+pesos?)?(?=\s*(?:,|;|\.|$))/iu,
     new RegExp('\\b(?:la\\s+)?cintura\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
     new RegExp('\\btiro(?:\\s+delantero)?\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
