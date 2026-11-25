@@ -483,11 +483,7 @@ export function initGarmentPublisher({ showToast }) {
     if (items.length && !postText.dataset.userEdited) {
       postText.value = items.map(function(item,index) {
         return (items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '') + buildGarmentPost(item.data);
-      }).join(items.length > 1 ? '
-
-────────────
-
-' : '');
+      }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
     } else if (!items.length && !postText.dataset.userEdited) postText.value = '';
   }
   ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot'].forEach(function(id) {
