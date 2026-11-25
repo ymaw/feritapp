@@ -384,8 +384,11 @@ export function initGarmentPublisher({ showToast }) {
     previewReturnFocus = null;
     // Diferir el foco hasta después del evento Escape evita que el navegador lo devuelva al body.
     window.setTimeout(function() {
-      if (target.isConnected && !target.disabled) target.focus();
-    }, 0);
+      if (target.isConnected && !target.disabled) {
+        target.focus();
+        if (document.activeElement !== target) target.focus();
+      }
+    }, 50);
   }
   openPreview.addEventListener('click', openMobilePreview);
   closePreview.addEventListener('click', closeMobilePreview);
