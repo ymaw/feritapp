@@ -429,3 +429,27 @@ test('voice visualizer switches red while listening and green while speech is de
   await expect(visualizer).toHaveClass(/is-listening/);
   await page.locator('#publisherDictationStop').click();
 });
+
+
+test('dictation corrects phonetic ASR variants of the word talle before recognized sizes', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+  const size = page.locator('#publisherSize');
+
+  for (const [label, expected] of [
+    ['ta shelle L', 'L'],
+    ['tache M', 'M'],
+    ['la shelle XL', 'XL'],
+    ['ta shele cuarenta y dos', '42']
+  ]) {
+    await transcript.fill('Pantalón negro, ' + label + ', cintura 42 cm.');
+    await interpret.click();
+    await expect(size).toHaveValue(expected);
+  }
+
+  // No corregir la misma secuencia si no está introduciendo un talle.
+  await transcript.fill('Pantalón negro, la shelle está gastada.');
+  await interpret.click();
+  await expect(size).toHaveValue('42');
+});
