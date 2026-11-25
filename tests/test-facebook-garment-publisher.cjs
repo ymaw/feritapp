@@ -68,6 +68,12 @@ assert.match(moduleSource, /queuedGarments\.push/);
 assert.match(moduleSource, /PRENDA/);
 assert.match(moduleSource, /navigator\.canShare\(\{ files: shareData\.files \}\)/);
 
+assert.match(html, /id="publisherMicTestStart"/);
+assert.match(html, /id="publisherMicTestStop"/);
+assert.match(audioModule, /getElementById\('publisherMicTestStart'\)/);
+assert.match(audioModule, /sourceNode\.disconnect\(\)/);
+assert.match(audioModule, /track\.stop\(\)/);
+assert.match(html, /no graba ni guarda audio/i);
 assert.match(html, /id="publisherAudioVisualizer"/);
 assert.match(moduleSource, /function renderPreviewPhotos\(\)/);
 assert.match(moduleSource, /remove\.addEventListener\('click',[\s\S]*?renderPreviewPhotos\(\);[\s\S]*?refreshLivePreview\(\);/);
