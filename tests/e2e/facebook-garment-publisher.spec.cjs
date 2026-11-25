@@ -366,7 +366,6 @@ test('measurements are placed with garment fields before the transcription panel
 test('editing the transcript during continuous dictation preserves edits and appends the next spoken phrase', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#publisherDictationStart').click();
-  const first = await page.evaluate(() => window.__speechRecognitionInstances[0]);
   await page.evaluate(() => {
     const recognition = window.__speechRecognitionInstances[0];
     recognition.onresult({ resultIndex: 0, results: [{ 0: { transcript: 'Vestido negro' }, isFinal: true }] });
