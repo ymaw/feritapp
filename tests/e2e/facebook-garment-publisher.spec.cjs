@@ -451,5 +451,5 @@ test('dictation corrects phonetic ASR variants of the word talle before recogniz
   // No corregir la misma secuencia si no está introduciendo un talle.
   await transcript.fill('Pantalón negro, la shelle está gastada.');
   await interpret.click();
-  await expect(size).toHaveValue('42');
+  await expect(size).toHaveValue('');
 });
