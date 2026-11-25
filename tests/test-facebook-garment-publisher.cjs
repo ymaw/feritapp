@@ -8,6 +8,7 @@ const moduleSource = fs.readFileSync('js/features/publisher/garment-publisher.js
 const parserSource = fs.readFileSync('js/features/publisher/dictation-parser.js', 'utf8');
 const audioModule = fs.readFileSync('js/features/publisher/audio-visualizer.js', 'utf8');
 const css = fs.readFileSync('css/facebook-garment-publisher.css', 'utf8');
+const baseCss = fs.readFileSync('css/style.css', 'utf8');
 
 assert.match(html, /id="viewPublisher"/);
 assert.match(html, /id="publisherPhoto"[^>]*accept="image\/jpeg,image\/png,image\/webp"/);
@@ -136,4 +137,4 @@ assert.match(script, /function renderCategoryManager\(\)/);
 assert.match(script, /function persistNewCategory\(name\)/);
 assert.match(script, /categories\.filter\(function\(item\)\{return item!==name;\}\)/);
 assert.match(html, /id="categoryManager"/);
-assert.match(css, /category-manager-actions/);
+assert.match(baseCss, /category-manager-actions/);
