@@ -14,7 +14,7 @@ const NUMBER_WORDS = {
   cero: 0, un: 1, uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5,
   seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11, doce: 12,
   trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17,
-  dieciocho: 18, diecinueve: 19, veinte: 20, veintiuno: 21, veintidos: 22,
+  dieciocho: 18, diecinueve: 19, veinte: 20, veintiuno: 21, veintiun: 21, veintiuna: 21, veintidos: 22,
   veintitres: 23, veinticuatro: 24, veinticinco: 25, veintiseis: 26,
   veintisiete: 27, veintiocho: 28, veintinueve: 29, treinta: 30,
   cuarenta: 40, cincuenta: 50, sesenta: 60, setenta: 70, ochenta: 80,
@@ -104,8 +104,8 @@ export function parseGarmentDictation(transcript) {
     result.garmentName = clean(garmentPhrase);
   }
 
-  result.brand = firstCapture(text, /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\btalle\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b)|$)/iu);
-  result.size = firstCapture(text, /\btalle\s+([\p{L}0-9-]{1,12})/iu);
+  result.brand = normalizeSpokenNumbersInText(firstCapture(text, /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\b(?:talle|taye|tali|tale)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b)|$)/iu));
+  result.size = firstCapture(text, /\b(?:talle|taye|tali|tale)\s+([\p{L}0-9-]{1,12})/iu);
 
   const numericText = normalizeWords(text);
   const priceText = firstCapture(numericText, /\bprecio\s+(?:de\s+)?([\p{L}0-9 .,$]+?)(?=\s*(?:pesos?\b|,|;|\.|$))/iu);
@@ -129,7 +129,7 @@ export function parseGarmentDictation(transcript) {
   let remainder = text;
   const removals = [
     /\bmarca\s+[\p{L}0-9][\p{L}0-9 .'-]{0,39}/iu,
-    /\btalle\s+[\p{L}0-9-]{1,12}/iu,
+    /\b(?:talle|taye|tali|tale)\s+[\p{L}0-9-]{1,12}/iu,
     /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+pesos?)?(?=\s*(?:,|;|\.|$))/iu,
     new RegExp('\\b(?:la\\s+)?cintura\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
     new RegExp('\\btiro(?:\\s+delantero)?\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|cent[ií]metros?))?', 'iu'),
