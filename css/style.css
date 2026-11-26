@@ -4381,3 +4381,14 @@ textarea,
 .category-manager-actions .category-manager-delete{color:#d34d58;}
 .category-manager-actions button:disabled{opacity:.45;cursor:not-allowed;}
 @media(max-width:520px){.category-manager{padding:10px;}.category-manager-actions button{min-height:36px;padding:7px 9px;}}
+
+/* Evitar el flash de la navegación desktop antes de autenticar.
+   #sidebar es hermana de #appRoot y las reglas de breakpoint usan !important,
+   por eso el estado de autenticación debe prevalecer explícitamente. */
+@media (min-width: 900px) {
+  body.auth-locked > nav#sidebar.sidebar {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
