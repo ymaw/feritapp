@@ -281,10 +281,12 @@ export function initGarmentPublisher({ showToast }) {
         if (categoryExists) {
           categoryElement.value = parsed.category;
           interpretedFieldValues.set('publisherCategory', parsed.category);
+          categoryElement.classList.add('is-interpreted');
           applied.push('category');
         } else if (previousCategory !== undefined && currentCategory === previousCategory) {
           categoryElement.value = '';
           interpretedFieldValues.delete('publisherCategory');
+          categoryElement.classList.remove('is-interpreted');
         }
         categoryElement.dispatchEvent(new Event('input', { bubbles: true }));
         categoryElement.dispatchEvent(new Event('change', { bubbles: true }));
@@ -309,10 +311,12 @@ export function initGarmentPublisher({ showToast }) {
       if (value) {
         element.value = value;
         interpretedFieldValues.set(pair[1], value);
+        element.classList.add('is-interpreted');
         applied.push(pair[0]);
       } else if (isUnchangedInterpretation) {
         element.value = '';
         interpretedFieldValues.delete(pair[1]);
+        element.classList.remove('is-interpreted');
       }
       element.dispatchEvent(new Event('input', { bubbles: true }));
       element.dispatchEvent(new Event('change', { bubbles: true }));
@@ -325,6 +329,7 @@ export function initGarmentPublisher({ showToast }) {
       if (!currentObservations || isPreviousInterpretation) {
         observations.value = parsed.observations.slice(0, 1200);
         interpretedObservations = parsed.observations ? observations.value : null;
+        observations.classList.toggle('is-interpreted', Boolean(parsed.observations));
         observations.dispatchEvent(new Event('input', { bubbles: true }));
       }
     }
@@ -390,7 +395,10 @@ export function initGarmentPublisher({ showToast }) {
       'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot','publisherSisa',
       'publisherTranscript'].forEach(function(id) {
       const element = document.getElementById(id);
-      if (element) element.value = '';
+      if (element) {
+        element.value = '';
+        element.classList.remove('is-interpreted');
+      }
     });
     clearCurrentPhotoPreview();
     photoInput.value = '';
