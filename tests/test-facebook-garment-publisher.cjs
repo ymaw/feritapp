@@ -140,7 +140,9 @@ assert.match(html, /id="categoryManager"/);
 assert.match(baseCss, /category-manager-actions/);
 
 assert.match(html, /id="publisherBoot"/);
+assert.match(html, /id="publisherSisa"/);
 assert.match(moduleSource, /\['boot', 'publisherBoot'\]/);
+assert.match(moduleSource, /\['sisa', 'publisherSisa'\]/);
 assert.match(moduleSource, /label: 'Bota'/);
 assert.match(parserSource, /presos\?/);
 assert.match(parserSource, /\['boot', '\(\?:la\\\\s\+\)\?bota'\]/);
