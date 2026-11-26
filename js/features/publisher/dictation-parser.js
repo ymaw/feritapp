@@ -33,6 +33,8 @@ const NUMBER_WORD_PATTERN = Object.keys(NUMBER_WORDS)
   .join('|');
 const NUMBER_PHRASE_SOURCE = '(?:' + NUMBER_WORD_PATTERN + ')(?:\\s+(?:y\\s+)?(?:' + NUMBER_WORD_PATTERN + '))*(?:\\s+coma\\s+(?:' + NUMBER_WORD_PATTERN + '))?';
 const NUMBER_CAPTURE = '(' + NUMBER_PHRASE_SOURCE + '|\\d+(?:[,.]\\d+)?)';
+const PRICE_VALUE_SOURCE = '(?:\\$?\\s*\\d{1,3}(?:[.,]\\d{3})+|\\$?\\s*\\d+|' + NUMBER_PHRASE_SOURCE + ')';
+const PRICE_EXPRESSION = new RegExp('\\\\bprecio\\\\s+(?:de\\\\s+)?(' + PRICE_VALUE_SOURCE + ')(?:\\\\s*(?:pesos?|presos?))?(?=\\\\s*(?:[,;.]|$))', 'iu');
 
 function parseSpanishNumber(value) {
   const normalized = normalizeWords(value).trim();
@@ -109,29 +111,30 @@ export function parseGarmentDictation(transcript) {
     const match = text.match(categoryRule[1]);
     // Tomar la descripción inmediata completa hasta el primer dato estructurado.
     // Ej.: "Vestido negro, marca..." => "Vestido negro".
-    const garmentPhrase = text.slice(match.index).split(/[,;.]|\b(?:es|son|tiene|tienen|le\s+falta|le\s+faltan|falta|faltan|presenta|presentan|se\s+encuentra|se\s+encuentran|est[aá]|se\s+observa|se\s+observan|cuenta\s+con|incluye|marca|talle|precio|cintura|tiro|cadera|largo|medidas?)\b/i)[0];
+    const garmentPhrase = text.slice(match.index).split(/[,;.]|\b(?:es|son|tiene|tienen|le\s+falta|le\s+faltan|falta|faltan|presenta|presentan|se\s+encuentra|se\s+encuentran|est[aá]|se\s+observa|se\s+observan|cuenta\s+con|incluye|marca|talle|precio|cintura|tiro|cadera|sisa|medidas?)\b/i)[0];
     result.garmentName = clean(garmentPhrase);
   }
 
-  result.brand = normalizeSpokenNumbersInText(firstCapture(text, /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\b(?:talle|taye|tali|tale)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b)|$)/iu));
-  const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|marca)\\b|$))', 'iu');
+  result.brand = normalizeSpokenNumbersInText(firstCapture(text, /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\b(?:talle|taye|tali|tale)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b|\bsisa\b)|$)/iu));
+  const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|sisa|marca)\\b|$))', 'iu');
   const rawSize = firstCapture(text, sizeExpression);
   result.size = parseSpanishNumber(rawSize) || rawSize;
 
   const numericText = normalizeWords(text);
-  const priceText = firstCapture(numericText, /\bprecio\s+(?:de\s+)?([\p{L}0-9 .,$]+?)(?=\s*(?:pesos?\b|presos?\b|,|;|\.|$))/iu);
+  const priceText = firstCapture(numericText, PRICE_EXPRESSION);
   if (priceText) {
-    const digits = priceText.replace(/\s/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.').match(/^\$?(\d+(?:\.\d+)?)$/);
+    const digits = priceText.replace(/[$\s]/g, '').replace(/[.,](?=\d{3}\b)/g, '').match(/^\$?(\d+(?:\.\d+)?)$/);
     result.price = digits ? digits[1].replace(/\.0+$/, '') : parseSpanishNumber(priceText);
   }
 
-  const measurementBoundary = '(?=\\s*(?:cm|centimetros?\\b|[,;.]|\\by\\b|$))';
+  const measurementBoundary = '(?=\\s*(?:cm|centimetros?\\b|[,;.]|\\by\\b|\\b(?:sisa|cintura|tiro|cadera|largo|bota|precio)\\b|$))';
   const measurementNames = [
     ['waist', '(?:la\\s+)?cintura'],
     ['rise', 'tiro(?:\\s+delantero)?'],
     ['hip', '(?:la\\s+)?cadera'],
     ['length', '(?:el\\s+)?largo'],
-    ['boot', '(?:la\\s+)?bota']
+    ['boot', '(?:la\\s+)?bota'],
+    ['sisa', '(?:la\\s+)?sisa']
   ];
   const measurementExpressions = measurementNames.flatMap(([key, label]) => [
     [key, new RegExp('\\b' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
@@ -146,7 +149,7 @@ export function parseGarmentDictation(transcript) {
   const removals = [
     /\bmarca\s+[\p{L}0-9][\p{L}0-9 .'-]{0,39}/iu,
     sizeExpression,
-    /\bprecio\s+(?:de\s+)?[\p{L}0-9 .,$]+?(?:\s+(?:pesos?|presos?))?(?=\s*(?:,|;|\.|$))/iu,
+    PRICE_EXPRESSION,
     ...measurementNames.flatMap(([key, label]) => [
       new RegExp('\\b' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?', 'iu'),
       new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\s+(?:de\\s+)?' + label, 'iu')
