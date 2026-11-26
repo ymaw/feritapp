@@ -352,6 +352,14 @@ test('global signOut response errors are handled without reloading the active se
   expect(calls[0].options).toEqual({ scope: 'global' });
 });
 
+test('desktop sidebar stays hidden while the authentication gate is active', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openUnauthenticatedApp(page);
+  const sidebar = page.locator('body > nav#sidebar');
+  await expect(sidebar).toBeHidden();
+  await expect.poll(() => sidebar.evaluate(el => getComputedStyle(el).display)).toBe('none');
+});
+
 test('an unauthenticated visitor cannot access the application shell', async ({ page }) => {
   await openUnauthenticatedApp(page);
 
