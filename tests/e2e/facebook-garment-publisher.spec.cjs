@@ -366,6 +366,23 @@ test('dictation maps dress measurements including sisa and keeps grouped ARS pri
   await expect(page.locator('#publisherPostText')).not.toContainText('38 ,000');
 });
 
+test('dictation keeps grouped currency price intact before following observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido negro marca cociuco sisa 35 cm largo 102 cm y cadera 45 precio $50,000 es muy hermoso y tiene un pequeño detalle en la espalda que dejó detallado en foto talle 2');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/vestido negro/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('cociuco');
+  await expect(page.locator('#publisherSize')).toHaveValue('2');
+  await expect(page.locator('#publisherSisa')).toHaveValue('35');
+  await expect(page.locator('#publisherLength')).toHaveValue('102');
+  await expect(page.locator('#publisherHip')).toHaveValue('45');
+  await expect(page.locator('#publisherPrice')).toHaveValue('50000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('es muy hermoso y tiene un pequeño detalle en la espalda que dejó detallado en foto');
+  await expect(page.locator('#publisherObservations')).not.toContainText('000');
+});
+
 test('manual publisher works in installed PWA standalone mode without dictation', async ({ page }) => {
   await openAuthenticatedApp(page, { standalone: true });
   await expect.poll(() => page.evaluate(() => navigator.standalone && matchMedia('(display-mode: standalone)').matches)).toBe(true);
