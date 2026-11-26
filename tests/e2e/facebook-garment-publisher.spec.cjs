@@ -346,6 +346,26 @@ test('publisher interprets category first, reveals the measurement template and 
   await expect(page.locator('#publisherTranscript')).toHaveValue(/Es un capri/i);
 });
 
+test('dictation maps dress measurements including sisa and keeps grouped ARS prices intact', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido negro marca osira talle 2 largo 37 sisa 25 y cintura 38 precio 35,000');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/vestido negro/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('osira');
+  await expect(page.locator('#publisherSize')).toHaveValue('2');
+  await expect(page.locator('#publisherLength')).toHaveValue('37');
+  await expect(page.locator('#publisherSisa')).toHaveValue('25');
+  await expect(page.locator('#publisherWaist')).toHaveValue('38');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('');
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Largo: 37 cm[\s\S]*Sisa: 25 cm[\s\S]*Cintura: 38 cm[\s\S]*Precio: \$35\.000/);
+  await expect(page.locator('#publisherPostText')).not.toContainText('38 ,000');
+});
+
 test('manual publisher works in installed PWA standalone mode without dictation', async ({ page }) => {
   await openAuthenticatedApp(page, { standalone: true });
   await expect.poll(() => page.evaluate(() => navigator.standalone && matchMedia('(display-mode: standalone)').matches)).toBe(true);
