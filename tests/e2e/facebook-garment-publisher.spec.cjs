@@ -652,3 +652,54 @@ test('dictation captures hip before a descriptive sentence and highlights every 
   }
   await expect(page.locator('#publisherWaist')).not.toHaveClass(/is-interpreted/);
 });
+
+test('dictation uses field labels as boundaries without relying on punctuation or a fixed field order', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+
+  const cases = [
+    {
+      text: 'Vestido negro marca Tusi medidas cintura 38 largo 105 sisa 25 precio 35000 talle 2',
+      category: 'Vestidos',
+      brand: 'Tusi',
+      size: '2',
+      waist: '38',
+      length: '105',
+      sisa: '25',
+      price: '35000'
+    },
+    {
+      text: 'Pollera azul talle M marca Rapsodia largo 70 cintura 36 precio treinta y cinco mil pesos',
+      category: 'Polleras',
+      brand: 'Rapsodia',
+      size: 'M',
+      waist: '36',
+      length: '70',
+      price: '35000'
+    },
+    {
+      text: 'Vestido azul marca Ossira talle 2 cadera 42 largo 100 precio $50.000',
+      category: 'Vestidos',
+      brand: 'Ossira',
+      size: '2',
+      hip: '42',
+      length: '100',
+      price: '50000'
+    }
+  ];
+
+  for (const item of cases) {
+    await transcript.fill(item.text);
+    await interpret.click();
+
+    await expect(page.locator('#publisherCategory')).toHaveValue(item.category);
+    await expect(page.locator('#publisherBrand')).toHaveValue(item.brand);
+    await expect(page.locator('#publisherSize')).toHaveValue(item.size);
+    if (item.waist) await expect(page.locator('#publisherWaist')).toHaveValue(item.waist);
+    if (item.hip) await expect(page.locator('#publisherHip')).toHaveValue(item.hip);
+    if (item.length) await expect(page.locator('#publisherLength')).toHaveValue(item.length);
+    if (item.sisa) await expect(page.locator('#publisherSisa')).toHaveValue(item.sisa);
+    await expect(page.locator('#publisherPrice')).toHaveValue(item.price);
+  }
+});
