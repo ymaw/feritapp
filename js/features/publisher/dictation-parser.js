@@ -115,7 +115,7 @@ export function parseGarmentDictation(transcript) {
     result.garmentName = clean(garmentPhrase);
   }
 
-  const brandExpression = /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:,|;|\.|\b(?:talle|taye|tali|tale)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b|\bsisa\b)|$)/iu;
+  const brandExpression = /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:[,;.:]|\b(?:talle|taye|tali|tale|medida|medidas)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b|\bsisa\b)|$)/iu;
   result.brand = normalizeSpokenNumbersInText(firstCapture(text, brandExpression));
   const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|sisa|marca)\\b|$))', 'iu');
   const rawSize = firstCapture(text, sizeExpression);
