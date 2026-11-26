@@ -293,6 +293,17 @@ test('dictation preserves an explicitly selected Otros category', async ({ page 
   await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
 });
 
+test('dictation stops brand extraction before the measurement section', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Vestido negro, marca Tusi medidas: cintura 38 cm, largo 105 cm.');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherBrand')).toHaveValue('Tusi');
+  await expect(page.locator('#publisherWaist')).toHaveValue('38');
+  await expect(page.locator('#publisherLength')).toHaveValue('105');
+  await expect(page.locator('#publisherBrand')).not.toHaveValue(/medidas/i);
+});
+
 test('dictation normalizes noisy size labels, numeric brand names and apocopated twenty-one', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.locator('#publisherTranscript').fill('Pantalón negro, marca cuarenta y siete street, taye veintiún, cintura cuarenta y uno centímetros.');
