@@ -559,11 +559,7 @@ export function initGarmentPublisher({ showToast }) {
     postText.value = items.map(function(item, index) {
       const heading = items.length > 1 ? '🛍️ PRENDA ' + (index + 1) + '\n' : '';
       return heading + buildGarmentPost(item.data);
-    }).join(items.length > 1 ? '
-
-────────────
-
-' : '');
+    }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
     delete postText.dataset.userEdited;
     feedback.textContent = items.length > 1
       ? 'Plantilla generada con ' + items.length + ' prendas. Revisá el texto y las fotografías antes de compartir.'
