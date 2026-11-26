@@ -34,7 +34,7 @@ const NUMBER_WORD_PATTERN = Object.keys(NUMBER_WORDS)
 const NUMBER_PHRASE_SOURCE = '(?:' + NUMBER_WORD_PATTERN + ')(?:\\s+(?:y\\s+)?(?:' + NUMBER_WORD_PATTERN + '))*(?:\\s+coma\\s+(?:' + NUMBER_WORD_PATTERN + '))?';
 const NUMBER_CAPTURE = '(' + NUMBER_PHRASE_SOURCE + '|\\d+(?:[,.]\\d+)?)';
 const PRICE_VALUE_SOURCE = '(?:\\$?\\s*\\d{1,3}(?:[.,]\\d{3})+|\\$?\\s*\\d+|' + NUMBER_PHRASE_SOURCE + ')';
-const PRICE_EXPRESSION = new RegExp('\\\\bprecio\\\\s+(?:de\\\\s+)?(' + PRICE_VALUE_SOURCE + ')(?:\\\\s*(?:pesos?|presos?))?(?=\\\\s*(?:[,;.]|$))', 'iu');
+const PRICE_EXPRESSION = new RegExp('\\bprecio\\s+(?:de\\s+)?(' + PRICE_VALUE_SOURCE + ')(?:\\s*(?:pesos?|presos?))?(?=\\s*(?:[,;.]|$))', 'iu');
 
 function parseSpanishNumber(value) {
   const normalized = normalizeWords(value).trim();
