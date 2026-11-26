@@ -626,6 +626,7 @@ test('dictation captures hip before a descriptive sentence and highlights every 
 
   await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
   await expect(page.locator('#publisherBrand')).toHaveValue('47 Street');
+  await expect(page.locator('#publisherSize')).toHaveValue('21');
   await expect(page.locator('#publisherLength')).toHaveValue('104');
   await expect(page.locator('#publisherSisa')).toHaveValue('37');
   await expect(page.locator('#publisherHip')).toHaveValue('42');
