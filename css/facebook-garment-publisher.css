@@ -375,3 +375,15 @@
   #viewPublisher .publisher-dictation-title-group{align-items:center;}
   #viewPublisher .publisher-dictation-caption{max-width:none;text-align:center;}
 }
+
+
+/* Señal visual de los campos completados por la interpretación de voz. */
+#viewPublisher .is-interpreted {
+  border-color: var(--primary-soft) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-soft) 24%, transparent);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+#viewPublisher .is-interpreted:focus {
+  border-color: var(--primary-soft) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-soft) 30%, transparent);
+}
