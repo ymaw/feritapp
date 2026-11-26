@@ -362,7 +362,7 @@ test('dictation maps dress measurements including sisa and keeps grouped ARS pri
   await expect(page.locator('#publisherObservations')).toHaveValue('');
 
   await page.locator('#publisherGenerate').click();
-  await expect(page.locator('#publisherPostText')).toHaveValue(/Largo: 37 cm[\s\S]*Sisa: 25 cm[\s\S]*Cintura: 38 cm[\s\S]*Precio: \$35\.000/);
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Cintura: 38 cm[\s\S]*Largo: 37 cm[\s\S]*Sisa: 25 cm[\s\S]*Precio: \$35\.000/);
   await expect(page.locator('#publisherPostText')).not.toContainText('38 ,000');
 });
 
