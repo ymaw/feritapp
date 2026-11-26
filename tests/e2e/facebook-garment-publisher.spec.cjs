@@ -617,3 +617,26 @@ test('Bota measurement is available for dresses, trousers and skirts', async ({ 
     await expect(page.getByLabel('Bota')).toBeVisible();
   }
 });
+
+
+test('dictation captures hip before a descriptive sentence and highlights every populated field', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido color negro marca 47 Street largo 104 sisa 37 y cadera 42 no cuenta con detalles es muy lindo precio 35,000 talle talle 21');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherBrand')).toHaveValue('47 Street');
+  await expect(page.locator('#publisherLength')).toHaveValue('104');
+  await expect(page.locator('#publisherSisa')).toHaveValue('37');
+  await expect(page.locator('#publisherHip')).toHaveValue('42');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue(/no cuenta con detalles es muy lindo/i);
+
+  for (const selector of [
+    '#publisherCategory', '#publisherBrand', '#publisherLength',
+    '#publisherSisa', '#publisherHip', '#publisherPrice', '#publisherObservations'
+  ]) {
+    await expect(page.locator(selector)).toHaveClass(/is-interpreted/);
+  }
+  await expect(page.locator('#publisherWaist')).not.toHaveClass(/is-interpreted/);
+});
