@@ -128,7 +128,7 @@ export function parseGarmentDictation(transcript) {
     result.price = digits ? digits[1].replace(/\.0+$/, '') : parseSpanishNumber(priceText);
   }
 
-  const measurementBoundary = '(?=\\s*(?:cm|centimetros?\\b|[,;.]|\\by\\b|\\b(?:sisa|cintura|tiro|cadera|largo|bota|precio)\\b|$|[\\p{L}]))';
+  const measurementBoundary = '(?=\\s*(?:cm|centimetros?\\b|[,;.]|\\by\\b|\\b(?:sisa|cintura|tiro|cadera|largo|bota|precio)\\b|$|[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]))';
   const measurementNames = [
     ['waist', '(?:la\\s+)?cintura'],
     ['rise', 'tiro(?:\\s+delantero)?'],
