@@ -79,7 +79,7 @@ async function openAuthenticatedApp(page, { standalone = false } = {}) {
     error: request.failure()?.errorText || 'unknown'
   }));
   page.on('response', response => {
-    if (/\\/(?:entry|garment-publisher|audio-visualizer|dictation-parser)\\.js(?:\\?|$)/.test(response.url())) {
+    if (/\/(?:entry|garment-publisher|audio-visualizer|dictation-parser)\.js(?:\?|$)/.test(response.url())) {
       publisherDiagnostics.moduleResponses.push({
         url: response.url(),
         status: response.status(),
