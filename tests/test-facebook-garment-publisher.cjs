@@ -60,7 +60,7 @@ assert.match(moduleSource, /activeRecognition\.onresult = updateTranscript/);
 assert.match(moduleSource, /activeRecognition\.onend = function\(\)[\s\S]*?Transcripción lista/);
 assert.match(moduleSource, /parseGarmentDictation\(transcript\)/);
 assert.match(moduleSource, /Interpretar y completar campos/);
-assert.match(html, /Dictá los datos de la prenda y completá sus campos automáticamente/i);
+assert.match(html, /Dictá la prenda y revisá los datos sugeridos/i);
 assert.match(css, /publisher-dictation/);
 
 assert.match(html, /id="publisherAddGarment"/);
