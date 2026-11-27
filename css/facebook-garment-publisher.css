@@ -1,5 +1,5 @@
 /* Publicador de prendas: mantiene tokens y componentes visuales de FeritApp. */
-.publisher-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;}
+.publisher-layout{display:flex;flex-direction:column;gap:18px;align-items:stretch;}
 .publisher-card{min-width:0;padding:20px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2);box-shadow:0 8px 24px rgba(0,0,0,.035);}
 .publisher-card-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;}
 .publisher-muted{margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.5;}
@@ -13,7 +13,7 @@
 .publisher-share-actions>*{flex:1 1 140px;}
 .publisher-feedback{min-height:1.4em;margin:10px 0 0;color:var(--primary-soft);font-size:13px;}
 .publisher-photo-field input{max-width:100%;}
-@media(max-width:900px){.publisher-layout{grid-template-columns:minmax(0,1fr);}}
+
 @media(max-width:520px){.publisher-card{padding:15px;border-radius:15px;}.publisher-fields-grid{grid-template-columns:minmax(0,1fr);}.publisher-actions>*{flex:1 1 100%;}}
 
 .publisher-dictation{margin:14px 0 18px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface);}
@@ -62,7 +62,7 @@
 .publisher-preview-modal-panel{position:relative;z-index:1;width:min(720px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2);box-shadow:0 20px 60px rgba(0,0,0,.4);}
 .publisher-preview-modal-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
 .publisher-preview-modal-heading h2{margin:0;font-size:18px;color:var(--text);}
-@media(max-width:899px){.publisher-mobile-preview-trigger{display:block;}#viewPublisher .publisher-preview-card{display:none;}.publisher-preview-modal .publisher-preview-card{display:block!important;padding:0;border:0;box-shadow:none;}.publisher-preview-modal .publisher-post-text{min-height:220px;}}
+@media(max-width:899px){.publisher-mobile-preview-trigger{display:none!important;}#viewPublisher .publisher-preview-card{display:block!important;}.publisher-preview-modal .publisher-preview-card{display:block!important;padding:0;border:0;box-shadow:none;}.publisher-preview-modal .publisher-post-text{min-height:220px;}}
 
 .publisher-photo-preview.is-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;align-items:center;justify-items:center;}
 .publisher-photo-preview.is-gallery img{width:100%;max-width:100%;max-height:190px;object-fit:contain;}
@@ -319,7 +319,7 @@
 }
 
 
-/* Mobile: el formulario y la vista previa deben ocupar una sola columna real. */
+/* Desktop y mobile conservan el mismo flujo: intérprete, formulario y vista previa. */
 @media (max-width: 899px) {
   #viewPublisher .publisher-layout {
     box-sizing: border-box;
@@ -411,3 +411,11 @@
   outline-offset:1px;
   box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-soft) 27%,transparent)!important;
 }
+
+
+/* Orden vertical único en todos los tamaños: intérprete → formulario → vista previa. */
+#viewPublisher .publisher-layout{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:18px;}
+#viewPublisher .publisher-layout > .publisher-dictation,
+#viewPublisher .publisher-layout > .publisher-card{width:100%;min-width:0;max-width:100%;box-sizing:border-box;}
+#viewPublisher .publisher-preview-card{position:static!important;display:block!important;}
+#viewPublisher .publisher-mobile-preview-trigger{display:none!important;}
