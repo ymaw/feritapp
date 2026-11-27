@@ -387,3 +387,27 @@
   border-color: var(--primary-soft) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-soft) 30%, transparent);
 }
+
+
+/* Medidas compactas en dos columnas y señal persistente de campos con datos interpretados. */
+#viewPublisher .publisher-measurements .publisher-fields-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;
+}
+#viewPublisher .publisher-measurements .field{min-width:0;margin:0 0 8px;}
+#viewPublisher .publisher-measurements .field label{margin-bottom:4px;font-size:11px;}
+#viewPublisher .publisher-measurements input{min-height:36px!important;padding:6px 9px!important;}
+#viewPublisher input.is-interpreted,
+#viewPublisher select.is-interpreted,
+#viewPublisher textarea.is-interpreted{
+  border:1.5px solid var(--primary-soft)!important;
+  outline:1px solid color-mix(in srgb,var(--primary-soft) 35%,transparent);
+  outline-offset:1px;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--primary-soft) 22%,transparent)!important;
+}
+#viewPublisher input.is-interpreted:focus,
+#viewPublisher select.is-interpreted:focus,
+#viewPublisher textarea.is-interpreted:focus{
+  outline:2px solid color-mix(in srgb,var(--primary-soft) 48%,transparent);
+  outline-offset:1px;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-soft) 27%,transparent)!important;
+}
