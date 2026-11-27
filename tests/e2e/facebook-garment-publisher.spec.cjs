@@ -716,8 +716,8 @@ test('dictation recognizes single-letter size before measurements and extracts A
   await expect(page.locator('#publisherRise')).toHaveValue('38');
   await expect(page.locator('#publisherHeight')).toHaveValue('45');
   await expect(page.locator('#publisherPrice')).toHaveValue('35000');
-  await expect(page.locator('#publisherObservations')).toHaveValue(/hermoso vestido para una salida casual/i);
-  await expect(page.locator('#publisherObservations')).not.toContainText(/talle|medidas|cadera|tiro|alto|35|38|45/);
+  await expect(page.locator('#publisherObservations')).toHaveValue('hermoso vestido para una salida casual');
+  await expect(page.locator('#publisherObservations')).not.toHaveValue(/talle|medidas|cadera|tiro|alto|35|38|45/i);
 
   await page.locator('#publisherTranscript').fill('Vestido azul talle M hombros 39 cm alto 90 cm');
   await page.locator('#publisherUseTranscript').click();
