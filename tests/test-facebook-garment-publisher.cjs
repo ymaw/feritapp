@@ -38,7 +38,7 @@ assert.match(moduleSource, /navigator\.share/);
 assert.match(moduleSource, /navigator\.clipboard\.writeText/);
 assert.match(moduleSource, /URL\.createObjectURL/);
 assert.match(css, /object-fit:contain/);
-assert.match(css, /@media\(max-width:900px\)/);
+assert.match(css, /@media\\(max-width:899px\\)/);
 
 assert.match(moduleSource, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
 assert.match(moduleSource, /activeRecognition\.lang = 'es-AR'/);
@@ -103,7 +103,7 @@ assert.match(moduleSource, /isUnchangedInterpretation/);
 assert.match(moduleSource, /interpretedObservations/);
 assert.match(html, /publisher-transcript-panel/);
 assert.match(html, /Medidas de la prenda/);
-assert.ok(html.indexOf('id="publisherMeasurements"') < html.indexOf('class="publisher-dictation"'));
+assert.ok(html.indexOf('class="publisher-dictation"') < html.indexOf('id="publisherMeasurements"'));
 assert.match(css, /publisher-transcript-footer/);
 assert.match(css, /publisher-dictation-tools/);
 
