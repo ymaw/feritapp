@@ -507,3 +507,22 @@
 @media(prefers-reduced-motion:reduce){
   #viewPublisher .publisher-dashboard-summary .dashboard-toggle-chevron{transition:none;}
 }
+
+
+/* Encabezados plegables del Publicador: mismo patrón compacto de Resumen Semanal. */
+#viewPublisher .publisher-card{padding:0;}
+#viewPublisher .publisher-collapsible>summary.publisher-card-heading{
+  margin:0;
+  padding:16px 18px;
+  border:0;
+  border-bottom:0;
+  background:transparent;
+  align-items:center;
+}
+#viewPublisher .publisher-collapsible>summary.publisher-card-heading .dashboard-toggle-main{min-width:0;align-items:center;}
+#viewPublisher .publisher-collapsible>summary.publisher-card-heading .dashboard-toggle-copy{min-width:0;}
+#viewPublisher .publisher-collapsible>summary.publisher-card-heading .section-title{margin:0;}
+#viewPublisher .publisher-collapsible>summary.publisher-card-heading .publisher-muted{margin:5px 0 0;}
+#viewPublisher .publisher-collapsible-content{padding:0 18px 18px;}
+#viewPublisher .publisher-collapsible>summary .weekly-summary-chevron{display:inline-flex;flex:0 0 28px;width:28px;height:28px;align-items:center;justify-content:center;border-radius:50%;background:var(--surface-2,rgba(127,127,127,.10));transition:transform .18s ease;}
+#viewPublisher .publisher-collapsible[open]>summary .weekly-summary-chevron{transform:rotate(180deg);}
