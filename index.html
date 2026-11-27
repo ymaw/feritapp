@@ -582,10 +582,10 @@
   <div class="section-block publisher-layout">
       <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
         <div class="publisher-dictation-heading">
-          <div class="publisher-dictation-title-group"><span class="publisher-step-mark" aria-hidden="true">✦</span><div><span class="publisher-dictation-kicker">ASISTENCIA POR VOZ</span><strong id="publisherDictationTitle">Transcripción e interpretación</strong></div></div>
-          <span class="publisher-dictation-caption">Primero revisá el texto; después completá los campos.</span>
+          <div class="publisher-dictation-title-group"><span class="publisher-step-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg></span><div><span class="publisher-dictation-kicker">ASISTENCIA POR VOZ</span><strong id="publisherDictationTitle">Transcripción e interpretación</strong></div></div>
+          <span class="publisher-dictation-caption">Revisá el texto y aplicá los datos detectados.</span>
         </div>
-        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">Dictá los datos de la prenda y completá sus campos automáticamente.</p>
+        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">Dictá la prenda y revisá los datos sugeridos.</p>
         <div class="publisher-dictation-tools">
           <div class="publisher-dictation-engine publisher-dictation-engine-main">
             <span class="publisher-tool-label">Micrófono</span>
@@ -604,19 +604,20 @@
         </div>
       </section>
     <section class="publisher-card" aria-labelledby="publisherFormTitle">
-      <div class="publisher-card-heading">
-        <div><p class="section-title" id="publisherFormTitle">Datos de la prenda</p><p class="publisher-muted">Completá los datos y generá una plantilla lista para revisar.</p></div>
-      </div>
+      <details class="publisher-collapsible" open>
+        <summary class="publisher-card-heading"><div><p class="section-title" id="publisherFormTitle">Datos de la prenda</p><p class="publisher-muted">Datos generales, medidas y fotografía.</p></div><span class="publisher-collapse-indicator" aria-hidden="true"></span></summary>
+        <div class="publisher-collapsible-content">
       <div class="publisher-fields-grid">
         <div class="field"><label for="publisherCategory">Categoría</label><select id="publisherCategory" class="publisher-category-select"><option value="">Seleccioná una categoría</option><option>Pantalones</option><option>Capris</option><option>Polleras</option><option>Vestidos</option><option>Camisas</option><option>Remeras</option><option>Musculosas</option><option>Accesorios</option><option>Zapatillas</option><option>Otros</option></select></div>
         <div class="field"><label for="publisherGarmentName">Prenda / artículo</label><input id="publisherGarmentName" maxlength="100" placeholder="Ej.: Capri de gabardina"/></div>
         <div class="field"><label for="publisherBrand">Marca</label><input id="publisherBrand" maxlength="80" placeholder="Ej.: Ossira"/></div>
         <div class="field"><label for="publisherSize">Talle</label><input id="publisherSize" maxlength="40" placeholder="Ej.: M, 40, único"/></div>
         <div class="field"><label for="publisherPrice">Precio (ARS)</label><input id="publisherPrice" inputmode="numeric" maxlength="12" placeholder="Ej.: 7000"/></div>
-        <div class="field publisher-photo-field"><label>Fotografía</label><div class="publisher-photo-actions"><input id="publisherPhoto" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp"/><input id="publisherCamera" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden/><button id="publisherChoosePhoto" class="publisher-photo-action" type="button">Elegir foto</button><button id="publisherTakePhoto" class="publisher-photo-action publisher-photo-camera" type="button">Tomar foto</button><span class="publisher-photo-hint">JPG, PNG o WebP · hasta 12 MB</span></div></div>
+        <!-- Fotografía trasladada debajo de observaciones. -->
       </div>
-      <fieldset class="publisher-measurements" id="publisherMeasurements" hidden>
-        <legend>Medidas de la prenda <span>EN CM</span></legend>
+      <details class="publisher-measurements-disclosure" id="publisherMeasurementsDisclosure" hidden>
+        <summary>Medidas de la prenda <span>EN CM</span><span class="publisher-collapse-indicator" aria-hidden="true"></span></summary>
+      <fieldset class="publisher-measurements" id="publisherMeasurements">
         <div class="publisher-fields-grid">
           <div class="field"><label for="publisherWaist">Cintura</label><input id="publisherWaist" inputmode="decimal" placeholder="Ej.: 42"/></div>
           <div class="field"><label for="publisherRise">Tiro delantero</label><input id="publisherRise" inputmode="decimal" placeholder="Ej.: 17"/></div>
@@ -628,7 +629,9 @@
           <div class="field"><label for="publisherShoulders">Hombros</label><input id="publisherShoulders" inputmode="decimal" placeholder="Ej.: 38"/></div>
         </div>
       </fieldset>
-      <div class="field publisher-observations-field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" class="publisher-fixed-textarea" maxlength="1200" rows="4" placeholder="Describí el estado, detalles, calce o cualquier dato importante…"></textarea></div>
+      </details>
+      <div class="field publisher-observations-field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" class="publisher-fixed-textarea" maxlength="1200" rows="2" placeholder="Describí el estado, detalles o calce…"></textarea></div>
+      <div class="field publisher-photo-field"><label>Fotografía de la prenda</label><div class="publisher-photo-upload"><div class="publisher-photo-upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg></div><div class="publisher-photo-actions"><input id="publisherPhoto" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp"/><input id="publisherCamera" class="publisher-photo-input" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden/><button id="publisherChoosePhoto" class="publisher-photo-action" type="button">Elegir foto</button><button id="publisherTakePhoto" class="publisher-photo-action publisher-photo-camera" type="button">Tomar foto</button><span class="publisher-photo-hint">Agregá una imagen para acompañar la publicación · JPG, PNG o WebP · hasta 12 MB</span></div></div></div>
 
       <div class="publisher-actions">
         <button class="secondary-btn" id="publisherAddGarment" type="button">+ Agregar prenda a la publicación</button>
@@ -636,9 +639,13 @@
       </div>
       <div class="publisher-queued-list" id="publisherQueuedGarments" aria-live="polite" hidden></div>
       <button class="save-btn publisher-mobile-preview-trigger" id="publisherOpenPreview" type="button">Ver vista previa</button>
+        </div>
+      </details>
     </section>
     <section class="publisher-card publisher-preview-card" aria-labelledby="publisherPreviewTitle">
-      <div class="publisher-card-heading"><div><p class="section-title" id="publisherPreviewTitle">Vista previa del post</p><p class="publisher-muted">Podés corregir el texto antes de compartirlo.</p></div></div>
+      <details class="publisher-collapsible" open>
+      <summary class="publisher-card-heading"><div><p class="section-title" id="publisherPreviewTitle">Vista Previa</p><p class="publisher-muted">Revisá la imagen y el texto antes de compartir.</p></div><span class="publisher-collapse-indicator" aria-hidden="true"></span></summary>
+      <div class="publisher-collapsible-content">
       <div class="publisher-photo-preview" id="publisherPhotoPreview"><span>La fotografía seleccionada aparecerá acá</span></div>
       <label for="publisherPostText">Texto para Facebook</label>
       <textarea id="publisherPostText" class="publisher-post-text" rows="12" placeholder="La plantilla generada aparecerá acá. También podés escribir o editar directamente." spellcheck="true"></textarea>
@@ -648,6 +655,8 @@
       </div>
       <p class="publisher-muted" id="publisherShareHelp">Si tu navegador permite compartir archivos, se enviarán el texto y la fotografía juntos. Si no, vas a poder copiar el texto y descargar la foto para adjuntarla en Facebook.</p>
       <p class="publisher-feedback" id="publisherFeedback" role="status" aria-live="polite"></p>
+      </div>
+      </details>
     </section>
   </div>
   <div class="publisher-preview-modal" id="publisherPreviewModal" hidden>
