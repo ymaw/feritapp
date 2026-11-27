@@ -119,7 +119,8 @@ export function parseGarmentDictation(transcript) {
   result.brand = normalizeSpokenNumbersInText(firstCapture(text, brandExpression));
   const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale|taile)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|sisa|hombros?|alto|altura|bota|medidas?|marca)\\b|$))', 'iu');
   const rawSize = firstCapture(text, sizeExpression);
-  result.size = parseSpanishNumber(rawSize) || (rawSize.length === 1 && /[\\p{L}]/u.test(rawSize) ? rawSize.toLocaleUpperCase('es') : rawSize);
+  const parsedSize = parseSpanishNumber(rawSize);
+  result.size = parsedSize || (rawSize.length === 1 && /\\p{L}/u.test(rawSize) ? rawSize.toLocaleUpperCase('es') : rawSize);
 
   const numericText = normalizeWords(text);
   const priceText = firstCapture(numericText, PRICE_EXPRESSION);
