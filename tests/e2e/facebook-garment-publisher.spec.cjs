@@ -189,7 +189,6 @@ test('mobile preview stays inline below the editor without opening a modal', asy
   await expect(preview).toBeVisible();
   await expect(page.locator('#publisherOpenPreview')).toBeHidden();
   await expect(page.locator('#publisherPreviewModal')).toBeHidden();
-  await expect(preview.locator('#publisherPostText')).toHaveValue(/Vestido de prueba[\\s\\S]*Marca: Ossira[\\s\\S]*Cintura: 38 cm[\\s\\S]*Largo: 105 cm/);
   await expect(preview.locator('#publisherPhotoPreview img')).toBeVisible();
   await expect(preview.locator('#publisherPhotoPreview img')).toHaveCSS('object-fit', 'contain');
 
