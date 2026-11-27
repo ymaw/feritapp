@@ -86,6 +86,10 @@ function clean(value) {
   return String(value || '').replace(/^[\s,.;:¡!¿?y]+|[\s,.;:¡!¿?]+$/gi, '').replace(/\s+/g, ' ').trim();
 }
 
+function capitalizeFirstWord(value) {
+  return String(value || '').replace(/\p{L}+/u, function(word) { return word.charAt(0).toLocaleUpperCase('es') + word.slice(1); });
+}
+
 function firstCapture(text, expression) {
   const match = text.match(expression);
   return match ? clean(match[1]) : '';
@@ -112,11 +116,11 @@ export function parseGarmentDictation(transcript) {
     // Tomar la descripción inmediata completa hasta el primer dato estructurado.
     // Ej.: "Vestido negro, marca..." => "Vestido negro".
     const garmentPhrase = text.slice(match.index).split(/[,;.]|\b(?:es|son|tiene|tienen|le\s+falta|le\s+faltan|falta|faltan|presenta|presentan|se\s+encuentra|se\s+encuentran|est[aá]|se\s+observa|se\s+observan|cuenta\s+con|incluye|marca|talle|precio|cintura|tiro|cadera|sisa|medidas?)\b/i)[0];
-    result.garmentName = clean(garmentPhrase);
+    result.garmentName = capitalizeFirstWord(clean(garmentPhrase));
   }
 
   const brandExpression = /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:[,;.:]|\b(?:talle|taye|tali|tale|medida|medidas)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b|\bsisa\b)|$)/iu;
-  result.brand = normalizeSpokenNumbersInText(firstCapture(text, brandExpression));
+  result.brand = capitalizeFirstWord(normalizeSpokenNumbersInText(firstCapture(text, brandExpression)));
   const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale|taile)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|sisa|hombros?|alto|altura|bota|medidas?|marca)\\b|$))', 'iu');
   const rawSize = firstCapture(text, sizeExpression);
   const parsedSize = parseSpanishNumber(rawSize);
@@ -142,7 +146,8 @@ export function parseGarmentDictation(transcript) {
   ];
   const measurementExpressions = measurementNames.flatMap(([key, label]) => [
     [key, new RegExp('\\b(?:de\\s+)?' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
-    [key, new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\s+(?:de\\s+)?' + label + measurementBoundary, 'i')]
+    [key, new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\s+(?:de\\s+)?' + label + measurementBoundary, 'i')],
+    [key, new RegExp('\\b' + NUMBER_CAPTURE + '\\s+(?:de\\s+)?' + label + measurementBoundary, 'i')]
   ]);
   for (const [key, expression] of measurementExpressions) {
     const match = numericText.match(expression);
@@ -173,6 +178,6 @@ export function parseGarmentDictation(transcript) {
   remainder = remainder.replace(/\s+\b(?:de|del|y|con)\b\s*$/i, ' ');
   remainder = remainder.replace(/^\s*(?:es\s+)?(?:un|una|el|la)\s+/i, ' ');
   remainder = remainder.replace(/\b(?:y|con)\s*(?=[,.;])/gi, ' ');
-  result.observations = clean(remainder);
+  result.observations = capitalizeFirstWord(clean(remainder));
   return result;
 }
