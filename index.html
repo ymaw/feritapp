@@ -580,6 +580,29 @@
     </div>
   </div>
   <div class="section-block publisher-layout">
+      <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
+        <div class="publisher-dictation-heading">
+          <div class="publisher-dictation-title-group"><span class="publisher-step-mark" aria-hidden="true">✦</span><div><span class="publisher-dictation-kicker">ASISTENCIA POR VOZ</span><strong id="publisherDictationTitle">Transcripción e interpretación</strong></div></div>
+          <span class="publisher-dictation-caption">Primero revisá el texto; después completá los campos.</span>
+        </div>
+        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">Dictá los datos de la prenda y completá sus campos automáticamente.</p>
+        <div class="publisher-dictation-tools">
+          <div class="publisher-dictation-engine publisher-dictation-engine-main">
+            <span class="publisher-tool-label">Micrófono</span>
+            <div class="publisher-actions publisher-dictation-controls">
+              <button class="secondary-btn" id="publisherDictationStart" type="button">Iniciar dictado</button>
+              <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener dictado</button>
+            </div>
+            <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" role="img" aria-label="Barras que muestran el nivel de voz detectado por el micrófono"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <p class="publisher-audio-level" id="publisherAudioLevel" aria-live="polite">Las barras se activan al iniciar el dictado y reaccionan al sonido.</p>
+          </div>
+        </div>
+        <div class="publisher-transcript-panel">
+          <label for="publisherTranscript"><span>Texto a interpretar</span><span class="publisher-transcript-hint">Podés corregirlo antes de aplicarlo</span></label>
+          <textarea id="publisherTranscript" maxlength="1200" rows="4" placeholder="Ej.: Vestido negro, marca Ossira, talle M, precio 35000…"></textarea>
+          <div class="publisher-transcript-footer"><span>La transcripción no modifica los campos hasta que lo confirmes.</span><button class="save-btn" id="publisherUseTranscript" type="button" disabled>Interpretar y completar campos</button></div>
+        </div>
+      </section>
     <section class="publisher-card" aria-labelledby="publisherFormTitle">
       <div class="publisher-card-heading">
         <div><p class="section-title" id="publisherFormTitle">Datos de la prenda</p><p class="publisher-muted">Completá los datos y generá una plantilla lista para revisar.</p></div>
@@ -606,29 +629,7 @@
         </div>
       </fieldset>
       <div class="field publisher-observations-field"><label for="publisherObservations">Observaciones / descripción</label><textarea id="publisherObservations" class="publisher-fixed-textarea" maxlength="1200" rows="4" placeholder="Describí el estado, detalles, calce o cualquier dato importante…"></textarea></div>
-      <section class="publisher-dictation" aria-labelledby="publisherDictationTitle">
-        <div class="publisher-dictation-heading">
-          <div class="publisher-dictation-title-group"><span class="publisher-step-mark" aria-hidden="true">✦</span><div><span class="publisher-dictation-kicker">ASISTENCIA POR VOZ</span><strong id="publisherDictationTitle">Transcripción e interpretación</strong></div></div>
-          <span class="publisher-dictation-caption">Primero revisá el texto; después completá los campos.</span>
-        </div>
-        <p class="publisher-dictation-status" id="publisherDictationStatus" role="status" aria-live="polite">Dictá los datos de la prenda y completá sus campos automáticamente.</p>
-        <div class="publisher-dictation-tools">
-          <div class="publisher-dictation-engine publisher-dictation-engine-main">
-            <span class="publisher-tool-label">Micrófono</span>
-            <div class="publisher-actions publisher-dictation-controls">
-              <button class="secondary-btn" id="publisherDictationStart" type="button">Iniciar dictado</button>
-              <button class="secondary-btn" id="publisherDictationStop" type="button" disabled>Detener dictado</button>
-            </div>
-            <div class="publisher-audio-visualizer" id="publisherAudioVisualizer" role="img" aria-label="Barras que muestran el nivel de voz detectado por el micrófono"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-            <p class="publisher-audio-level" id="publisherAudioLevel" aria-live="polite">Las barras se activan al iniciar el dictado y reaccionan al sonido.</p>
-          </div>
-        </div>
-        <div class="publisher-transcript-panel">
-          <label for="publisherTranscript"><span>Texto a interpretar</span><span class="publisher-transcript-hint">Podés corregirlo antes de aplicarlo</span></label>
-          <textarea id="publisherTranscript" maxlength="1200" rows="4" placeholder="Ej.: Vestido negro, marca Ossira, talle M, precio 35000…"></textarea>
-          <div class="publisher-transcript-footer"><span>La transcripción no modifica los campos hasta que lo confirmes.</span><button class="save-btn" id="publisherUseTranscript" type="button" disabled>Interpretar y completar campos</button></div>
-        </div>
-      </section>
+
       <div class="publisher-actions">
         <button class="secondary-btn" id="publisherAddGarment" type="button">+ Agregar prenda a la publicación</button>
         <button class="secondary-btn" id="publisherGenerate" type="button">Generar plantilla</button>
