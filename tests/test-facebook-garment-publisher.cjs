@@ -146,3 +146,10 @@ assert.match(moduleSource, /\['sisa', 'publisherSisa'\]/);
 assert.match(moduleSource, /label: 'Bota'/);
 assert.match(parserSource, /presos\?/);
 assert.match(parserSource, /\['boot', '\(\?:la\\\\s\+\)\?bota'\]/);
+
+assert.match(html, /id="publisherHeight"/);
+assert.match(html, /id="publisherShoulders"/);
+assert.match(moduleSource, /\['height', 'publisherHeight'\]/);
+assert.match(moduleSource, /\['shoulders', 'publisherShoulders'\]/);
+assert.match(css, /publisher-measurements \.publisher-fields-grid[\s\S]*?repeat\(2,minmax\(0,1fr\)\)/);
+assert.match(parserSource, /medidas\?/);
