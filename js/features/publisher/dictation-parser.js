@@ -159,7 +159,13 @@ export function parseGarmentDictation(transcript) {
     ])
   ];
   for (const expression of removals) remainder = remainder.replace(expression, ' ');
-  if (categoryRule) remainder = remainder.replace(result.garmentName || categoryRule[1], ' ');
+  if (categoryRule) {
+    const garmentPrefix = result.garmentName || categoryRule[1];
+    const normalizedRemainder = remainder.trimStart();
+    if (normalizedRemainder.toLocaleLowerCase('es').startsWith(garmentPrefix.toLocaleLowerCase('es'))) {
+      remainder = normalizedRemainder.slice(garmentPrefix.length);
+    }
+  }
   remainder = remainder.replace(/\bmedidas?\b/giu, ' ');
   remainder = remainder.replace(/\bde(?:\s+de)+\b/giu, 'de');
   remainder = remainder.replace(/^\s*(?:de|del|y|con)\b\s*/i, ' ');
