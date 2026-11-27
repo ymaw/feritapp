@@ -1,0 +1,779 @@
+const { test, expect } = require('@playwright/test');
+
+async function openAuthenticatedApp(page, { standalone = false } = {}) {
+  await page.addInitScript(({ standalone }) => {
+    Object.defineProperty(navigator, 'standalone', { configurable: true, value: standalone });
+    const originalMatchMedia = window.matchMedia.bind(window);
+    window.matchMedia = query => query === '(display-mode: standalone)'
+      ? { matches: standalone, media: query, onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent() { return false; } }
+      : originalMatchMedia(query);
+    const rows = {
+      sales: [],
+      categories: [{ id: 'cat-1', name: 'Pantalones' }, { id: 'cat-2', name: 'Remeras' }],
+      clients: [],
+      notes: [],
+      note_labels: [],
+      user_settings: {
+        week_start_day: 1,
+        notify_enabled: false,
+        notify_days_overdue: 4,
+        receipt_message: 'Gracias',
+        store_name: 'Tienda QA',
+        avatar_url: '',
+        navigation_slots: ['dashboard', 'sales', 'deliveries', 'notes']
+      }
+    };
+    window.__qaRows = rows;
+    const auth = {
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+      getSession: async () => ({ data: { session: { user: { id: 'qa-user', email: 'qa@example.test' } } } }),
+      signOut: async () => ({ error: null })
+    };
+    window.supabase = {
+      createClient: () => ({
+        auth,
+        from: table => ({
+          select: () => ({
+            order: async () => ({ data: Array.isArray(rows[table]) ? rows[table] : [], error: null }),
+            maybeSingle: async () => ({ data: table === 'user_settings' ? rows[table] : null, error: null })
+          }),
+          upsert: async () => ({ data: [], error: null }),
+          insert: async values => {
+            if (table === 'categories') (Array.isArray(values) ? values : [values]).forEach(item => rows.categories.push({ id: 'cat-' + (rows.categories.length + 1), ...item }));
+            return { data: [], error: null };
+          },
+          update: values => ({ eq: async (column, value) => {
+            if (table === 'categories') rows.categories = rows.categories.map(item => item[column] === value ? { ...item, ...values } : item);
+            if (table === 'sales') rows.sales = rows.sales.map(item => item[column] === value ? { ...item, ...values } : item);
+            return { data: [], error: null };
+          } }),
+          delete: () => ({ eq: async (column, value) => {
+            if (table === 'categories') rows.categories = rows.categories.filter(item => item[column] !== value);
+            return { data: [], error: null };
+          } })
+        })
+      })
+    };
+    window.__sharePayload = null;
+    window.__speechRecognitionInstances = [];
+    window.SpeechRecognition = class {
+      constructor() { this.handlers = {}; window.__speechRecognitionInstances.push(this); }
+      start() { this.started = true; queueMicrotask(() => this.onstart?.()); }
+      stop() { this.stopped = true; queueMicrotask(() => this.onresult?.({ results: [{ 0: { transcript: 'Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos.' }, isFinal: true }] })); queueMicrotask(() => this.onend?.()); }
+      abort() { this.aborted = true; queueMicrotask(() => this.onend?.()); }
+    };
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: data => Boolean(data.files?.length) });
+    Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.__sharePayload = data; } });
+  }, { standalone });
+  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/dist/umd/supabase.js', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
+  await page.route('https://cdn.jsdelivr.net/**', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
+  await page.route('https://fonts.googleapis.com/**', route => route.abort());
+  await page.route('https://fonts.gstatic.com/**', route => route.abort());
+  const publisherDiagnostics = { pageErrors: [], consoleErrors: [], failedRequests: [], moduleResponses: [] };
+  page.on('pageerror', error => publisherDiagnostics.pageErrors.push(error.stack || error.message));
+  page.on('console', message => {
+    if (message.type() === 'error') publisherDiagnostics.consoleErrors.push(message.text());
+  });
+  page.on('requestfailed', request => publisherDiagnostics.failedRequests.push({
+    url: request.url(),
+    error: request.failure()?.errorText || 'unknown'
+  }));
+  page.on('response', response => {
+    if (/\/(?:entry|garment-publisher|audio-visualizer|dictation-parser)\.js(?:\?|$)/.test(response.url())) {
+      publisherDiagnostics.moduleResponses.push({
+        url: response.url(),
+        status: response.status(),
+        contentType: response.headers()['content-type'] || ''
+      });
+    }
+  });
+
+  await page.goto('/');
+  try {
+    await expect.poll(() => page.locator('html').getAttribute('data-publisher-init-state'), {
+      message: 'Publisher module must initialize; inspect captured module-loading diagnostics'
+    }).toBe('initialized');
+  } catch (error) {
+    const runtime = await page.evaluate(() => ({
+      readyState: document.readyState,
+      scripts: Array.from(document.scripts).map(script => ({ src: script.src, type: script.type })),
+      publisherElements: ['viewPublisher', 'publisherCategory', 'publisherMeasurements'].map(id => ({
+        id, exists: Boolean(document.getElementById(id))
+      }))
+    })).catch(e => ({ evaluationError: e.message }));
+    throw new Error([
+      error.message,
+      'Publisher diagnostics: ' + JSON.stringify({
+        state: await page.locator('html').getAttribute('data-publisher-init-state'),
+        detail: await page.locator('html').getAttribute('data-publisher-init-detail'),
+        runtime,
+        ...publisherDiagnostics
+      })
+    ].join('\\n'));
+  }
+  await expect(page.locator('#appRoot')).toBeVisible();
+  await page.locator('#sidebar [data-view="publisher"]').click();
+  await expect(page.locator('#viewPublisher')).toBeVisible();
+}
+
+test('publisher stages garments with separate photo previews, removes safely and shares all files', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const image = {
+    name: 'capri.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=', 'base64')
+  };
+
+  await page.locator('#publisherCategory').selectOption({ label: 'Pantalones' });
+  await page.locator('#publisherGarmentName').fill('Capri negro');
+  await page.locator('#publisherBrand').fill('Ossira');
+  await page.locator('#publisherWaist').fill('42');
+  await page.locator('#publisherPhoto').setInputFiles(image);
+  await expect(page.locator('#publisherPhotoPreview img')).toBeVisible();
+  await page.locator('#publisherAddGarment').click();
+
+  await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(1);
+  await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(1);
+  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(1);
+  await expect(page.locator('#publisherMeasurements')).toBeHidden();
+
+  await page.locator('#publisherCategory').selectOption({ label: 'Remeras' });
+  await page.locator('#publisherGarmentName').fill('Remera modal');
+  await page.locator('#publisherPhoto').setInputFiles({ ...image, name: 'remera.png' });
+  await page.locator('#publisherAddGarment').click();
+  await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(2);
+  await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(2);
+  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(2);
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Capri negro[\s\S]*Remera modal/);
+  await page.locator('#publisherShare').click();
+  await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(2);
+  await expect(page.locator('#publisherFeedback')).toContainText('Se abrió el menú para compartir texto y fotografía');
+
+  await page.locator('#publisherQueuedGarments .publisher-queued-item').first().getByRole('button', { name: /Quitar Capri negro/ }).click();
+  await expect(page.locator('#publisherQueuedGarments .publisher-queued-item')).toHaveCount(1);
+  await expect(page.locator('#publisherQueuedGarments img')).toHaveCount(1);
+  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(1);
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Remera modal/);
+  await expect(page.locator('#publisherPostText')).not.toHaveValue(/Capri negro/);
+
+  await page.locator('#publisherShare').click();
+  await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(1);
+  await expect(page.locator('#publisherFeedback')).toContainText('Se abrió el menú para compartir texto y fotografía');
+});
+
+
+test('mobile preview stays inline below the editor without opening a modal', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  await page.locator('#publisherGarmentName').fill('Vestido de prueba');
+  await page.locator('#publisherBrand').fill('Ossira');
+  await page.locator('#publisherWaist').fill('38');
+  await page.locator('#publisherLength').fill('105');
+  await page.locator('#publisherPhoto').setInputFiles({
+    name: 'vestido-preview.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=', 'base64')
+  });
+
+  const layout = page.locator('#viewPublisher .publisher-layout');
+  const dictation = page.locator('#viewPublisher .publisher-dictation');
+  const editor = page.locator('#viewPublisher .publisher-card').filter({ has: page.locator('#publisherCategory') });
+  const preview = page.locator('#viewPublisher .publisher-preview-card');
+  await expect(dictation).toBeVisible();
+  await expect(editor).toBeVisible();
+  await expect(preview).toBeVisible();
+  await expect(page.locator('#publisherOpenPreview')).toBeHidden();
+  await expect(page.locator('#publisherPreviewModal')).toBeHidden();
+  await expect(preview.locator('#publisherPhotoPreview img')).toBeVisible();
+  await expect(preview.locator('#publisherPhotoPreview img')).toHaveCSS('object-fit', 'contain');
+
+  const order = await layout.evaluate(element => {
+    const children = Array.from(element.children);
+    return {
+      dictation: children.indexOf(element.querySelector('.publisher-dictation')),
+      editor: children.findIndex(child => child.classList.contains('publisher-card') && child.querySelector('#publisherCategory')),
+      preview: children.indexOf(element.querySelector('.publisher-preview-card'))
+    };
+  });
+  expect(order.dictation).toBeGreaterThanOrEqual(0);
+  expect(order.editor).toBeGreaterThan(order.dictation);
+  expect(order.preview).toBeGreaterThan(order.editor);
+});
+
+test('voice bars follow speech-recognition events and stop with the dictation session', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherDictationStart').click();
+  const visualizer = page.locator('#publisherAudioVisualizer');
+  await expect(visualizer).toHaveClass(/is-active/);
+  await expect(visualizer).toHaveClass(/is-listening/);
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 0, results: [
+      { 0: { transcript: 'Pantalón negro' }, isFinal: false }
+    ] });
+  });
+  await expect(page.locator('#publisherAudioLevel')).toContainText('Voz detectada');
+  await expect(visualizer).toHaveClass(/is-speaking/);
+  await page.locator('#publisherDictationStop').click();
+  await expect(visualizer).not.toHaveClass(/is-active/);
+  expect(await page.evaluate(() => window.__speechRecognitionInstances[0].stopped)).toBe(true);
+  await expect(page.locator('#publisherDictationStart')).toBeEnabled();
+});
+
+
+test('publisher reuses the New Sale speech recognition flow and keeps transcript editable before interpretation', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await expect(page.locator('#publisherDictationStart')).toBeEnabled();
+  await expect(page.locator('#publisherDictationStatus')).toContainText('Dictá los datos de la prenda y completá sus campos automáticamente.');
+  await page.locator('#publisherDictationStart').click();
+  await expect(page.locator('#publisherDictationStop')).toBeEnabled();
+  expect(await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    return recognition.continuous === true && recognition.interimResults === true;
+  })).toBe(true);
+  await page.evaluate(() => window.__speechRecognitionInstances[0].onend());
+  await expect.poll(() => page.evaluate(() => window.__speechRecognitionInstances.length)).toBe(2);
+  await page.locator('#publisherDictationStop').click();
+  await expect(page.locator('#publisherTranscript')).toHaveValue(/Vestido negro, marca Ossira/);
+  await page.locator('#publisherTranscript').fill('Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/Vestido negro/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('Ossira');
+  await expect(page.locator('#publisherSize')).toHaveValue('M');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+});
+
+test('publisher does not generate an empty post when no garment is entered', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherFeedback')).toContainText('Agregá al menos una prenda');
+  await expect(page.locator('#publisherPostText')).toHaveValue('');
+});
+
+test('invalid replacement photo clears the visible preview and selected attachment', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const validImage = {
+    name: 'valid.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=', 'base64')
+  };
+  await page.locator('#publisherPhoto').setInputFiles(validImage);
+  await expect(page.locator('#publisherPhotoPreview img')).toBeVisible();
+  await page.locator('#publisherPhoto').setInputFiles({ name: 'invalid.gif', mimeType: 'image/gif', buffer: Buffer.from('GIF89a') });
+  await expect(page.locator('#publisherPhotoPreview img')).toHaveCount(0);
+  await expect(page.locator('#publisherPhotoPreview')).toContainText('La fotografía seleccionada aparecerá acá');
+  await expect(page.locator('#publisherFeedback')).toContainText('Formato no compatible');
+  await page.locator('#publisherGarmentName').fill('Prenda sin foto');
+  await page.locator('#publisherGenerate').click();
+  await page.locator('#publisherShare').click();
+  await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(0);
+});
+
+test('dictation fills the initial category placeholder but preserves a manually selected category', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Capris');
+
+  await page.locator('#publisherCategory').selectOption({ label: 'Pantalones' });
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+});
+
+test('dictation preserves an explicitly selected Otros category', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherCategory').selectOption({ index: 10 });
+  await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Otros');
+});
+
+test('dictation stops brand extraction before the measurement section', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Vestido negro, marca Tusi medidas: cintura 38 cm, largo 105 cm.');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherBrand')).toHaveValue('Tusi');
+  await expect(page.locator('#publisherWaist')).toHaveValue('38');
+  await expect(page.locator('#publisherLength')).toHaveValue('105');
+  await expect(page.locator('#publisherBrand')).not.toHaveValue(/medidas/i);
+});
+
+test('dictation normalizes noisy size labels, numeric brand names and apocopated twenty-one', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Pantalón negro, marca cuarenta y siete street, taye veintiún, cintura cuarenta y uno centímetros.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherBrand')).toHaveValue('47 street');
+  await expect(page.locator('#publisherSize')).toHaveValue('21');
+  await expect(page.locator('#publisherWaist')).toHaveValue('41');
+});
+
+test('spoken numeric sizes normalize one-ending and compound Spanish numbers', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+
+  await transcript.fill('Pantalón azul, talle treinta y un, cintura cuarenta y uno centímetros.');
+  await interpret.click();
+  await expect(page.locator('#publisherSize')).toHaveValue('31');
+  await expect(page.locator('#publisherWaist')).toHaveValue('41');
+
+  await transcript.fill('Pantalón negro, talle veintiún, cintura treinta y un centímetros.');
+  await interpret.click();
+  await expect(page.locator('#publisherSize')).toHaveValue('21');
+  await expect(page.locator('#publisherWaist')).toHaveValue('31');
+
+  await transcript.fill('Pantalón gris, talle cuarenta y uno.');
+  await interpret.click();
+  await expect(page.locator('#publisherSize')).toHaveValue('41');
+});
+
+test('publisher interprets category first, reveals the measurement template and then fills every measurement', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.evaluate(() => {
+    window.__measurementTemplateWasVisibleOnCategoryChange = false;
+    document.querySelector('#publisherCategory').addEventListener('change', () => {
+      window.__measurementTemplateWasVisibleOnCategoryChange = !document.querySelector('#publisherMeasurements').hidden;
+    });
+  });
+  await page.locator('#publisherTranscript').fill('Es un capri de gabardina, marca Ossira, talle 40, cintura 42 cm, tiro delantero 17 cm, cadera 49 cm, largo 60 cm y precio siete mil pesos. Botón y cierre funcionando perfectamente.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Capris');
+  expect(await page.evaluate(() => window.__measurementTemplateWasVisibleOnCategoryChange)).toBe(true);
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/capri de gabardina/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('Ossira');
+  await expect(page.locator('#publisherSize')).toHaveValue('40');
+  await expect(page.locator('#publisherPrice')).toHaveValue('7000');
+  await expect(page.locator('#publisherWaist')).toHaveValue('42');
+  await expect(page.locator('#publisherRise')).toHaveValue('17');
+  await expect(page.locator('#publisherHip')).toHaveValue('49');
+  await expect(page.locator('#publisherLength')).toHaveValue('60');
+  await expect(page.locator('#publisherObservations')).toHaveValue(/Botón y cierre funcionando perfectamente/i);
+  await expect(page.locator('#publisherTranscript')).toHaveValue(/Es un capri/i);
+});
+
+test('dictation maps dress measurements including sisa and keeps grouped ARS prices intact', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido negro marca osira talle 2 largo 37 sisa 25 y cintura 38 precio 35,000');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/vestido negro/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('osira');
+  await expect(page.locator('#publisherSize')).toHaveValue('2');
+  await expect(page.locator('#publisherLength')).toHaveValue('37');
+  await expect(page.locator('#publisherSisa')).toHaveValue('25');
+  await expect(page.locator('#publisherWaist')).toHaveValue('38');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('');
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Cintura: 38 cm[\s\S]*Largo: 37 cm[\s\S]*Sisa: 25 cm[\s\S]*Precio: \$35\.000/);
+  await expect(page.locator('#publisherPostText')).not.toContainText('38 ,000');
+});
+
+test('dictation keeps grouped currency price intact before following observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido negro marca cociuco sisa 35 cm largo 102 cm y cadera 45 precio $50,000 es muy hermoso y tiene un pequeño detalle en la espalda que dejó detallado en foto talle 2');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue(/vestido negro/i);
+  await expect(page.locator('#publisherBrand')).toHaveValue('cociuco');
+  await expect(page.locator('#publisherSize')).toHaveValue('2');
+  await expect(page.locator('#publisherSisa')).toHaveValue('35');
+  await expect(page.locator('#publisherLength')).toHaveValue('102');
+  await expect(page.locator('#publisherHip')).toHaveValue('45');
+  await expect(page.locator('#publisherPrice')).toHaveValue('50000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('es muy hermoso y tiene un pequeño detalle en la espalda que dejó detallado en foto');
+  await expect(page.locator('#publisherObservations')).not.toContainText('000');
+});
+
+test('manual publisher works in installed PWA standalone mode without dictation', async ({ page }) => {
+  await openAuthenticatedApp(page, { standalone: true });
+  await expect.poll(() => page.evaluate(() => navigator.standalone && matchMedia('(display-mode: standalone)').matches)).toBe(true);
+
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  await expect(page.locator('#publisherMeasurements')).toBeVisible();
+  await page.locator('#publisherGarmentName').fill('Vestido largo');
+  await page.locator('#publisherBrand').fill('Ossira');
+  await page.locator('#publisherSize').fill('M');
+  await page.locator('#publisherWaist').fill('38');
+  await page.locator('#publisherRise').fill('24');
+  await page.locator('#publisherHip').fill('48');
+  await page.locator('#publisherLength').fill('110');
+  await page.locator('#publisherPrice').fill('35000');
+  await page.locator('#publisherObservations').fill('Tela liviana y excelente estado');
+  await page.locator('#publisherPhoto').setInputFiles({
+    name: 'vestido.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=', 'base64')
+  });
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Vestido largo[\s\S]*Marca: Ossira[\s\S]*Medidas:[\s\S]*Cintura: 38 cm[\s\S]*Precio: \$35\.000/);
+  await page.locator('#publisherShare').click();
+  await expect.poll(() => page.evaluate(() => window.__sharePayload?.files?.length || 0)).toBe(1);
+});
+
+
+test('reinterpreting edited transcript replaces generated values and observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Vestido negro, marca Ossira, talle M, precio treinta y cinco mil pesos, cintura 38 cm. Tiene botones completos y tela suave.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Vestido negro');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Tiene botones completos y tela suave');
+
+  await page.locator('#publisherTranscript').fill('Pantalón azul, marca Kosiuko, talle L, precio cuarenta y dos mil pesos, cintura 44 cm. Presenta una pequeña marca en el bolsillo.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Pantalón azul');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Kosiuko');
+  await expect(page.locator('#publisherSize')).toHaveValue('L');
+  await expect(page.locator('#publisherPrice')).toHaveValue('42000');
+  await expect(page.locator('#publisherWaist')).toHaveValue('44');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Presenta una pequeña marca en el bolsillo');
+  await expect(page.locator('#publisherObservations')).not.toContainText('botones completos');
+
+  // Los cambios manuales posteriores tienen prioridad sobre una nueva interpretación.
+  await page.locator('#publisherPrice').fill('12345');
+  await page.locator('#publisherObservations').fill('Nota agregada manualmente');
+  await page.locator('#publisherTranscript').fill('Camisa blanca, marca Zara, talle S, precio dieciocho mil pesos. Detalle dictado nuevo.');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Camisas');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Camisa blanca');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Zara');
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherPrice')).toHaveValue('12345');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Nota agregada manualmente');
+});
+
+test('transcription panel precedes garment fields and measurements in the agreed layout', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const order = await page.evaluate(() => {
+    const layout = document.querySelector('#viewPublisher .publisher-layout');
+    const transcription = layout?.querySelector('.publisher-dictation');
+    const editor = Array.from(layout?.children || []).find(element => element.classList.contains('publisher-card') && element.querySelector('#publisherCategory'));
+    const preview = layout?.querySelector('.publisher-preview-card');
+    return Boolean(layout && transcription && editor && preview &&
+      (transcription.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+      (editor.compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING));
+  });
+  expect(order).toBe(true);
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  await expect(page.locator('#publisherMeasurements')).toBeVisible();
+});
+
+
+test('editing the transcript during continuous dictation preserves edits and appends the next spoken phrase', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherDictationStart').click();
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 0, results: [{ 0: { transcript: 'Vestido negro' }, isFinal: true }] });
+  });
+  await expect(page.locator('#publisherTranscript')).toHaveValue('Vestido negro');
+  await page.locator('#publisherTranscript').fill('Vestido negro, tela de lino');
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 1, results: [
+      { 0: { transcript: 'Vestido negro' }, isFinal: true },
+      { 0: { transcript: 'marca Ossira' }, isFinal: true }
+    ] });
+  });
+  await expect(page.locator('#publisherTranscript')).toHaveValue('Vestido negro, tela de lino marca Ossira');
+  await expect(page.locator('#publisherDictationStop')).toBeEnabled();
+});
+
+test('voice visualizer switches from listening to speech and back using recognition events', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherDictationStart').click();
+  const visualizer = page.locator('#publisherAudioVisualizer');
+  await expect(visualizer).toHaveClass(/is-listening/);
+  await page.evaluate(() => {
+    const recognition = window.__speechRecognitionInstances[0];
+    recognition.onresult({ resultIndex: 0, results: [
+      { 0: { transcript: 'Estoy hablando' }, isFinal: false }
+    ] });
+  });
+  await expect(visualizer).toHaveClass(/is-speaking/);
+  await expect(page.locator('#publisherAudioLevel')).toContainText('Voz detectada');
+  await expect(visualizer).toHaveClass(/is-listening/, { timeout: 2500 });
+  await page.locator('#publisherDictationStop').click();
+  await expect(visualizer).not.toHaveClass(/is-active/);
+});
+
+
+test('dictation corrects phonetic ASR variants of the word talle before recognized sizes', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+  const size = page.locator('#publisherSize');
+
+  for (const [label, expected] of [
+    ['ta shelle L', 'L'],
+    ['tache M', 'M'],
+    ['la shelle XL', 'XL'],
+    ['ta shele cuarenta y dos', '42']
+  ]) {
+    await transcript.fill('Pantalón negro, ' + label + ', cintura 42 cm.');
+    await interpret.click();
+    await expect(size).toHaveValue(expected);
+  }
+
+  // No corregir la misma secuencia si no está introduciendo un talle.
+  await transcript.fill('Pantalón negro, la shelle está gastada.');
+  await interpret.click();
+  await expect(size).toHaveValue('');
+});
+
+test('dictation separates garment names from positive descriptions, details and missing items', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+  const garment = page.locator('#publisherGarmentName');
+  const observations = page.locator('#publisherObservations');
+
+  await transcript.fill('Vestido negro es muy hermoso, tiene un detalle en el bolsillo izquierdo y le falta un botón.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(garment).toHaveValue('Vestido negro');
+  await expect(observations).toHaveValue('es muy hermoso, tiene un detalle en el bolsillo izquierdo y le falta un botón');
+
+  await transcript.fill('Camisa blanca tiene una pequeña mancha en el puño derecho.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Camisas');
+  await expect(garment).toHaveValue('Camisa blanca');
+  await expect(observations).toHaveValue('tiene una pequeña mancha en el puño derecho');
+  await expect(observations).not.toContainText('es muy hermoso');
+
+  await transcript.fill('Pollera azul. Presenta desgaste leve en la cintura y le faltan dos botones.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Polleras');
+  await expect(garment).toHaveValue('Pollera azul');
+  await expect(observations).toHaveValue('Presenta desgaste leve en la cintura y le faltan dos botones');
+  await expect(observations).not.toContainText('pequeña mancha');
+});
+
+
+test('dictation chooses the first explicit garment category and recognizes measurements before their labels', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+
+  await transcript.fill('Pantalón capri negro, 80 centímetros de cadera y 100 centímetros de largo.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Pantalón capri negro');
+  await expect(page.locator('#publisherHip')).toHaveValue('80');
+  await expect(page.locator('#publisherLength')).toHaveValue('100');
+
+  await transcript.fill('Capri negro, 80 centímetros de cadera, 100 centímetros de largo.');
+  await interpret.click();
+  await expect(page.locator('#publisherCategory')).toHaveValue('Capris');
+  await expect(page.locator('#publisherHip')).toHaveValue('80');
+  await expect(page.locator('#publisherLength')).toHaveValue('100');
+});
+
+test('categories can be created, renamed and removed without deleting historical sales', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#sidebarOpenSheet').click();
+  await expect(page.locator('#sheet')).toHaveClass(/open/);
+  await page.locator('#openNewCatBtn').click();
+  await page.locator('#fNuevaCategoria').fill('Jeans');
+  await page.locator('#confirmNewCat').click();
+  await expect(page.locator('#categoryManager')).toContainText('Jeans');
+  await page.evaluate(() => window.__qaRows.sales.push({
+    id: 'historic-jeans-sale', articulo: 'Jean clásico', categoria: 'Jeans', precio: 25000
+  }));
+
+  page.once('dialog', dialog => dialog.accept('Denim'));
+  await page.getByRole('button', { name: 'Editar categoría Jeans' }).click();
+  await expect(page.locator('#categoryManager')).toContainText('Denim');
+  await expect(page.locator('#categoryManager')).not.toContainText('Jeans');
+  expect(await page.evaluate(() => window.__qaRows.sales.find(item => item.id === 'historic-jeans-sale')?.categoria)).toBe('Denim');
+
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Eliminar categoría Denim' }).click();
+  await expect(page.locator('#categoryManager')).not.toContainText('Denim');
+  await expect(page.locator('#categoryManager')).toContainText('Pantalones');
+  expect(await page.evaluate(() => window.__qaRows.sales.find(item => item.id === 'historic-jeans-sale')?.categoria)).toBe('Denim');
+});
+
+
+test('dictation fills numeric garment sizes, recognizes spoken prices ending in ASR variant presos and parses Bota', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('Pantalón azul, talle 38, precio treinta mil presos, bota dieciocho centímetros.');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Pantalones');
+  await expect(page.locator('#publisherSize')).toHaveValue('38');
+  await expect(page.locator('#publisherPrice')).toHaveValue('30000');
+  await expect(page.locator('#publisherBoot')).toHaveValue('18');
+
+  await page.locator('#publisherGenerate').click();
+  await expect(page.locator('#publisherPostText')).toHaveValue(/Talle: 38[\s\S]*Bota: 18 cm[\s\S]*Precio: \$30\.000/);
+});
+
+test('Bota measurement is available for dresses, trousers and skirts', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  for (const category of ['Vestidos', 'Pantalones', 'Polleras']) {
+    await page.locator('#publisherCategory').selectOption({ label: category });
+    await expect(page.locator('#publisherMeasurements')).toBeVisible();
+    await expect(page.locator('#publisherBoot')).toBeVisible();
+    await expect(page.getByLabel('Bota')).toBeVisible();
+  }
+});
+
+
+test('dictation captures hip before a descriptive sentence and highlights every populated field', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido color negro marca 47 Street largo 104 sisa 37 y cadera 42 no cuenta con detalles es muy lindo precio 35,000 talle talle 21');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherCategory')).toHaveValue('Vestidos');
+  await expect(page.locator('#publisherBrand')).toHaveValue('47 Street');
+  await expect(page.locator('#publisherSize')).toHaveValue('21');
+  await expect(page.locator('#publisherLength')).toHaveValue('104');
+  await expect(page.locator('#publisherSisa')).toHaveValue('37');
+  await expect(page.locator('#publisherHip')).toHaveValue('42');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue(/no cuenta con detalles es muy lindo/i);
+
+  for (const selector of [
+    '#publisherCategory', '#publisherBrand', '#publisherLength',
+    '#publisherSisa', '#publisherHip', '#publisherPrice', '#publisherObservations'
+  ]) {
+    await expect(page.locator(selector)).toHaveClass(/is-interpreted/);
+  }
+  await expect(page.locator('#publisherWaist')).not.toHaveClass(/is-interpreted/);
+});
+
+test('dictation uses field labels as boundaries without relying on punctuation or a fixed field order', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const transcript = page.locator('#publisherTranscript');
+  const interpret = page.locator('#publisherUseTranscript');
+
+  const cases = [
+    {
+      text: 'Vestido negro marca Tusi medidas cintura 38 largo 105 sisa 25 precio 35000 talle 2',
+      category: 'Vestidos',
+      brand: 'Tusi',
+      size: '2',
+      waist: '38',
+      length: '105',
+      sisa: '25',
+      price: '35000'
+    },
+    {
+      text: 'Pollera azul talle M marca Rapsodia largo 70 cintura 36 precio treinta y cinco mil pesos',
+      category: 'Polleras',
+      brand: 'Rapsodia',
+      size: 'M',
+      waist: '36',
+      length: '70',
+      price: '35000'
+    },
+    {
+      text: 'Vestido azul marca Ossira talle 2 cadera 42 largo 100 precio $50.000',
+      category: 'Vestidos',
+      brand: 'Ossira',
+      size: '2',
+      hip: '42',
+      length: '100',
+      price: '50000'
+    }
+  ];
+
+  for (const item of cases) {
+    await transcript.fill(item.text);
+    await interpret.click();
+
+    await expect(page.locator('#publisherCategory')).toHaveValue(item.category);
+    await expect(page.locator('#publisherBrand')).toHaveValue(item.brand);
+    await expect(page.locator('#publisherSize')).toHaveValue(item.size);
+    if (item.waist) await expect(page.locator('#publisherWaist')).toHaveValue(item.waist);
+    if (item.hip) await expect(page.locator('#publisherHip')).toHaveValue(item.hip);
+    if (item.length) await expect(page.locator('#publisherLength')).toHaveValue(item.length);
+    if (item.sisa) await expect(page.locator('#publisherSisa')).toHaveValue(item.sisa);
+    await expect(page.locator('#publisherPrice')).toHaveValue(item.price);
+  }
+});
+
+
+test('dictation recognizes single-letter size before measurements and extracts Alto and Hombros without polluting observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido marca tuchi s talle s medidas 35 cm de cadera de tiro 38 cm de alto 45 cm precio 35,000 hermoso vestido para una salida casual');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherBrand')).toHaveValue(/tuchi/i);
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherHip')).toHaveValue('35');
+  await expect(page.locator('#publisherRise')).toHaveValue('38');
+  await expect(page.locator('#publisherHeight')).toHaveValue('45');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('hermoso vestido para una salida casual');
+  await expect(page.locator('#publisherObservations')).not.toHaveValue(/talle|medidas|cadera|tiro|alto|35|38|45/i);
+
+  await page.locator('#publisherTranscript').fill('Vestido azul talle M hombros 39 cm alto 90 cm');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherSize')).toHaveValue('M');
+  await expect(page.locator('#publisherShoulders')).toHaveValue('39');
+  await expect(page.locator('#publisherHeight')).toHaveValue('90');
+});
+
+
+test('dictation assigns adjacent measurements independently and normalizes capitalization', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido Violeta marca tuchi talle s medida 35 cm de cadera 38 de tiro alto 45 cm precio $40,000 un hermoso vestido para salida');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Vestido Violeta');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Tuchi');
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherHip')).toHaveValue('35');
+  await expect(page.locator('#publisherRise')).toHaveValue('38');
+  await expect(page.locator('#publisherHeight')).toHaveValue('45');
+  await expect(page.locator('#publisherPrice')).toHaveValue('40000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Hermoso vestido para salida');
+});
+
+test('dictation recovers talle when speech recognition transcribes calle before a known size', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido marca tuchi calle s');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Tuchi');
+});
+
+test('publisher sections and measurement group collapse and expand; photo follows observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const formDetails = page.locator('#viewPublisher .publisher-card').filter({ has: page.locator('#publisherCategory') }).locator('details.publisher-collapsible');
+  await formDetails.locator('summary').click();
+  await expect(formDetails.locator('.publisher-collapsible-content')).toBeHidden();
+  await formDetails.locator('summary').click();
+  await expect(formDetails.locator('.publisher-collapsible-content')).toBeVisible();
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  const measurements = page.locator('#publisherMeasurementsDisclosure');
+  await expect(measurements).toBeVisible();
+  await measurements.locator('summary').click();
+  await expect(page.locator('#publisherMeasurements')).toBeHidden();
+  await measurements.locator('summary').click();
+  await expect(page.locator('#publisherMeasurements')).toBeVisible();
+  const positions = await page.evaluate(() => ['publisherObservations','publisherPhoto'].map(id => Array.from(document.querySelectorAll('#viewPublisher input,#viewPublisher textarea')).findIndex(el => el.id === id)));
+  expect(positions[1]).toBeGreaterThan(positions[0]);
+  const preview = page.locator('#viewPublisher .publisher-preview-card details.publisher-collapsible');
+  await preview.locator('summary').click();
+  await expect(preview.locator('.publisher-collapsible-content')).toBeHidden();
+  await preview.locator('summary').click();
+  await expect(preview.locator('.publisher-collapsible-content')).toBeVisible();
+});

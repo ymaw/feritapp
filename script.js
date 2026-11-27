@@ -446,9 +446,10 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('viewDeliveries').style.display = (view === 'deliveries') ? 'block' : 'none';
     document.getElementById('viewRanking').style.display = (view === 'ranking') ? 'block' : 'none';
     document.getElementById('viewNotes').style.display = (view === 'notes') ? 'block' : 'none';
+    document.getElementById('viewPublisher').style.display = (view === 'publisher') ? 'block' : 'none';
     document.getElementById('viewSettings').style.display = (view === 'settings') ? 'block' : 'none';
 
-    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', settings:'Configuración' };
+    let titles = { dashboard:'Inicio', sales:'Ventas', clients:'Ventas', deliveries:'Entregas', ranking:'Ranking de clientes', notes:'Mis notas', publisher:'Publicador', settings:'Configuración' };
     document.getElementById('viewHeading').textContent = titles[view] || 'Dashboard';
 
     document.querySelectorAll('.nav-item[data-view], .sidebar-item[data-view]').forEach(function(btn){
@@ -569,8 +570,9 @@ document.addEventListener('DOMContentLoaded', function(){
   const NAVIGATION_OPTIONS = {
     dashboard:{label:'Inicio',icon:'⌂',view:'dashboard'},
     sales:{label:'Ventas',icon:'▤',view:'sales'},
-    deliveries:{label:'Entregas',icon:'▧',view:'deliveries'},
+    deliveries:{label:'Entregas',icon:'<svg aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m3.5 7 8.5-4 8.5 4v10L12 21l-8.5-4V7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="m3.8 7.2 8.2 4 8.2-4M12 11.2V21M8 5l8.5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',view:'deliveries'},
     notes:{label:'Notas',icon:'✎',view:'notes'},
+    publisher:{label:'Publicador',icon:'✦',view:'publisher'},
     ranking:{label:'Ranking',icon:'♕',view:'ranking'}
   };
   const DEFAULT_NAVIGATION_SLOTS = ['dashboard','sales','deliveries','notes'];
@@ -968,6 +970,7 @@ document.addEventListener('DOMContentLoaded', function(){
     let exists = clients.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
     if(exists) return;
     clients.push(name);
+    renderCategoryManager();
     refreshClientsDatalist();
     try{
       await sb.from('clients').insert([{ name: name }]);
@@ -1780,10 +1783,104 @@ document.addEventListener('DOMContentLoaded', function(){
 
   async function persistNewCategory(name){
     try{
-      await sb.from('categories').insert([{ name: name }]);
+      const result = await sb.from('categories').insert([{ name: name }]);
+      if(result && result.error) throw result.error;
+      return true;
     }catch(e){
       showToast('No se pudo guardar la categoría.');
+      return false;
     }
+  }
+
+  function renderCategoryManager(){
+    const container=document.getElementById('categoryManager');
+    if(!container) return;
+    container.innerHTML='';
+    if(!categories.length){
+      const empty=document.createElement('p');
+      empty.className='category-manager-empty';
+      empty.textContent='No hay categorías disponibles.';
+      container.appendChild(empty);
+      return;
+    }
+    const heading=document.createElement('p');
+    heading.className='category-manager-title';
+    heading.textContent='Administrar categorías';
+    container.appendChild(heading);
+    categories.forEach(function(name){
+      const row=document.createElement('div');
+      row.className='category-manager-row';
+      const label=document.createElement('span');
+      label.className='category-manager-name';
+      label.textContent=name;
+      const actions=document.createElement('div');
+      actions.className='category-manager-actions';
+      const edit=document.createElement('button');
+      edit.type='button';edit.className='category-manager-edit';edit.textContent='Editar';
+      edit.setAttribute('aria-label','Editar categoría '+name);
+      edit.addEventListener('click',async function(){
+        const nextName=window.prompt('Nuevo nombre para la categoría:',name);
+        if(nextName===null) return;
+        const normalized=nextName.trim();
+        if(!normalized){showToast('El nombre no puede quedar vacío.');return;}
+        if(normalized.toLocaleLowerCase('es')!==name.toLocaleLowerCase('es') && categories.some(function(item){return item.toLocaleLowerCase('es')===normalized.toLocaleLowerCase('es');})){
+          showToast('Ya existe una categoría con ese nombre.');return;
+        }
+        if(normalized===name) return;
+        edit.disabled=true;
+        try{
+          // Actualizar primero las referencias históricas; si falla el catálogo,
+          // compensar el cambio para no dejar categorías y ventas desincronizadas.
+          const salesUpdate=await sb.from('sales').update({categoria:normalized}).eq('categoria',name);
+          if(salesUpdate && salesUpdate.error) throw salesUpdate.error;
+          const updated=await sb.from('categories').update({name:normalized}).eq('name',name);
+          if(updated && updated.error){
+            try{
+              const rollback=await sb.from('sales').update({categoria:name}).eq('categoria',normalized);
+              if(rollback && rollback.error) throw rollback.error;
+            }catch(rollbackError){
+              console.error('No se pudieron revertir las categorías de ventas:',rollbackError);
+              showToast('No se pudo actualizar el catálogo y hubo un problema al revertir las ventas. Revisá las categorías antes de continuar.');
+              edit.disabled=false;
+              return;
+            }
+            throw updated.error;
+          }
+          categories=categories.map(function(item){return item===name?normalized:item;});
+          sales.forEach(function(item){if(item.categoria===name)item.categoria=normalized;});
+          refreshAllRowCategorySelects();
+          renderCategoryManager();
+          render();
+          showToast('Categoría actualizada.');
+        }catch(error){
+          showToast('No se pudo editar la categoría.');
+          edit.disabled=false;
+        }
+      });
+      const remove=document.createElement('button');
+      remove.type='button';remove.className='category-manager-delete';remove.textContent='Eliminar';
+      remove.setAttribute('aria-label','Eliminar categoría '+name);
+      remove.disabled=categories.length<=1;
+      remove.addEventListener('click',async function(){
+        if(categories.length<=1){showToast('Debe quedar al menos una categoría.');return;}
+        if(!window.confirm('¿Eliminar la categoría «'+name+'» de las opciones disponibles? Las ventas históricas conservarán su categoría.')) return;
+        remove.disabled=true;
+        try{
+          const deleted=await sb.from('categories').delete().eq('name',name);
+          if(deleted && deleted.error) throw deleted.error;
+          categories=categories.filter(function(item){return item!==name;});
+          refreshAllRowCategorySelects();
+          renderCategoryManager();
+          showToast('Categoría eliminada de las opciones. Las ventas anteriores se conservaron.');
+        }catch(error){
+          showToast('No se pudo eliminar la categoría.');
+          remove.disabled=false;
+        }
+      });
+      actions.appendChild(edit);actions.appendChild(remove);
+      row.appendChild(label);row.appendChild(actions);
+      container.appendChild(row);
+    });
   }
 
   async function toggleSalePago(id, currentPagado){
@@ -2446,7 +2543,7 @@ document.addEventListener('DOMContentLoaded', function(){
       ctx.textAlign='center';ctx.fillText('F',112,139);
     }
     ctx.textAlign='left';ctx.fillStyle=palette.text;ctx.font='800 38px Arial';ctx.fillText('FeritApp',178,120);
-    ctx.fillStyle=palette.muted;ctx.font='500 22px Arial';ctx.fillText('Tu negocio, más simple',180,154);
+    ctx.fillStyle=palette.muted;ctx.font='600 22px Arial';ctx.fillText('Vendé. Organizá. Crecé.',180,154);
     ctx.fillStyle=palette.accent;ctx.font='700 17px Arial';ctx.fillText('CLIENTES QUE HACEN CRECER TU NEGOCIO',82,232);
     ctx.fillStyle=palette.text;ctx.font='800 54px Arial';ctx.fillText('Ranking de clientes',82,300);
     ctx.fillStyle=palette.muted;ctx.font='500 25px Arial';ctx.fillText(rankingPeriodDescription(),84,348);
@@ -2457,15 +2554,30 @@ document.addEventListener('DOMContentLoaded', function(){
       const y=420+index*102,topThree=index<3;
       ctx.fillStyle=topThree?palette.rowTop:palette.row;roundedRect(82,y,W-164,88,22);ctx.fill();
       ctx.strokeStyle=palette.border;ctx.lineWidth=1;roundedRect(82,y,W-164,88,22);ctx.stroke();
-      ctx.fillStyle=topThree?['#f3c969','#c8d4e5','#d99a73'][index]:(dark?'#51466d':'#e9e4f6');
-      ctx.beginPath();ctx.arc(132,y+44,25,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=topThree?'#34264e':palette.muted;ctx.font='800 21px Arial';ctx.textAlign='center';
-      ctx.fillText(String(index+1).padStart(2,'0'),132,y+51);
-      const centerX=W/2;ctx.fillStyle=palette.text;ctx.font='700 27px Arial';
+      const medalColor=topThree?['#f3c969','#c8d4e5','#d99a73'][index]:(dark?'#51466d':'#e9e4f6');
+      const medalTextColor=topThree?'#34264e':(dark?'#f7f4ff':'#51466d');
+      ctx.save();
+      // Medalla de lectura inmediata: cinta, aro doble y número con contraste alto.
+      ctx.shadowColor=dark?'rgba(0,0,0,.38)':'rgba(39,28,70,.18)';
+      ctx.shadowBlur=9;ctx.shadowOffsetY=3;
+      ctx.fillStyle=topThree?medalColor:(dark?'#625779':'#d9d2e8');
+      ctx.beginPath();
+      ctx.moveTo(111,y+47);ctx.lineTo(121,y+72);ctx.lineTo(132,y+63);
+      ctx.lineTo(143,y+72);ctx.lineTo(153,y+47);ctx.closePath();ctx.fill();
+      ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+      ctx.beginPath();ctx.arc(132,y+35,29,0,Math.PI*2);
+      ctx.fillStyle=topThree?medalColor:(dark?'#51466d':'#e9e4f6');ctx.fill();
+      ctx.lineWidth=4;ctx.strokeStyle=topThree?'#9b7130':(dark?'#8879a8':'#b9aecf');ctx.stroke();
+      ctx.beginPath();ctx.arc(132,y+35,22,0,Math.PI*2);
+      ctx.lineWidth=2;ctx.strokeStyle=topThree?'rgba(255,255,255,.72)':(dark?'#b8a9d6':'#ffffff');ctx.stroke();
+      ctx.fillStyle=medalTextColor;ctx.font='900 25px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(String(index+1),132,y+35);
+      ctx.restore();
+      const centerX=W/2;ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillStyle=topThree?['#b8860b','#7d8798','#a85d32'][index]:palette.text;ctx.font='800 27px Arial';
       let name=String(client.name||'Sin nombre');
       while(ctx.measureText(name).width>620 && name.length>4) name=name.slice(0,-2)+'…';
       if(includeTotals||includeArticleCount){
-        ctx.fillText(name,centerX,y+34);ctx.fillStyle=palette.muted;ctx.font='500 18px Arial';
+        ctx.textAlign='center';ctx.fillText(name,centerX,y+34);ctx.fillStyle=palette.muted;ctx.font='500 18px Arial';
         const detail=[includeArticleCount?client.count+' '+(client.count===1?'artículo':'artículos'):'',includeTotals?money(client.total)+' gastados':''].filter(Boolean).join(' · ');
         ctx.fillText(detail,centerX,y+64);
       }else ctx.fillText(name,centerX,y+54);
@@ -3920,13 +4032,15 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!name){ showToast('Escribí un nombre para la categoría'); return; }
     let exists = categories.some(function(c){ return c.toLowerCase() === name.toLowerCase(); });
     if(!exists){
-      await persistNewCategory(name);
+      const saved=await persistNewCategory(name);
+      if(!saved) return;
       categories.push(name);
     }
     input.value = '';
     document.getElementById('newCatRow').style.display = 'none';
     refreshAllRowCategorySelects();
-    showToast('Categoría creada');
+    renderCategoryManager();
+    showToast(exists?'La categoría ya estaba disponible.':'Categoría creada');
   });
 
   document.querySelectorAll('.pago-opt').forEach(function(btn){
