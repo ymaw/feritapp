@@ -338,7 +338,7 @@ export function initGarmentPublisher({ showToast }) {
     transcriptField.value = transcript;
     updateDictationControls();
     dictationStatus.textContent = applied.length
-      ? 'Dictado interpretado: completamos los campos identificados. Revisá los datos y la transcripción antes de publicar.'
+      ? 'Dictado interpretado: revisá los campos completados.'
       : 'No se identificaron datos estructurados con suficiente certeza. La transcripción sigue disponible para editarla o interpretarla nuevamente.';
     return applied.length > 0;
   }
@@ -429,7 +429,13 @@ export function initGarmentPublisher({ showToast }) {
 
   function updateCategoryTemplate() {
     const isMeasurement = dictationRequestsMeasurements || MEASUREMENT_CATEGORIES.has(normalizeCategory(category.value));
-    document.getElementById('publisherMeasurements').hidden = !isMeasurement;
+    const disclosure = document.getElementById('publisherMeasurementsDisclosure');
+    const wasHidden = disclosure ? disclosure.hidden : false;
+    if (disclosure) {
+      disclosure.hidden = !isMeasurement;
+      if (isMeasurement && wasHidden) disclosure.open = true;
+    }
+    document.getElementById('publisherMeasurements').hidden = false;
   }
 
   function collectData() {
@@ -456,6 +462,17 @@ export function initGarmentPublisher({ showToast }) {
 
   category.addEventListener('change', updateCategoryTemplate);
   updateCategoryTemplate();
+
+  const observationsField = document.getElementById('publisherObservations');
+  function resizeObservationsField() {
+    if (!observationsField) return;
+    observationsField.style.height = 'auto';
+    observationsField.style.height = Math.min(observationsField.scrollHeight, 220) + 'px';
+  }
+  if (observationsField) {
+    observationsField.addEventListener('input', resizeObservationsField);
+    resizeObservationsField();
+  }
   const publisherLayout = document.querySelector('#viewPublisher .publisher-layout');
   const previewCard = document.querySelector('#viewPublisher .publisher-preview-card');
   const previewModal = document.getElementById('publisherPreviewModal');
