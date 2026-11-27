@@ -85,7 +85,7 @@ export function initGarmentPublisher({ showToast }) {
   } else {
     dictationStart.disabled = false;
     dictationStart.textContent = 'Iniciar dictado';
-    dictationStatus.textContent = 'Dictá los datos de la prenda y completá sus campos automáticamente.';
+    dictationStatus.textContent = 'Dictá la prenda y revisá los datos sugeridos.';
   }
 
   function updateTranscript(event) {
