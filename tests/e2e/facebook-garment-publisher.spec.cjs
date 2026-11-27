@@ -747,6 +747,14 @@ test('dictation assigns adjacent measurements independently and normalizes capit
   await expect(page.locator('#publisherObservations')).toHaveValue('Hermoso vestido para salida');
 });
 
+test('dictation recovers talle when speech recognition transcribes calle before a known size', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido marca tuchi calle s');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Tuchi');
+});
+
 test('publisher sections and measurement group collapse and expand; photo follows observations', async ({ page }) => {
   await openAuthenticatedApp(page);
   const formDetails = page.locator('#viewPublisher .publisher-card').filter({ has: page.locator('#publisherCategory') }).locator('details.publisher-collapsible');
