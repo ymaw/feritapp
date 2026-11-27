@@ -419,3 +419,30 @@
 #viewPublisher .publisher-layout > .publisher-card{width:100%;min-width:0;max-width:100%;box-sizing:border-box;}
 #viewPublisher .publisher-preview-card{position:static!important;display:block!important;}
 #viewPublisher .publisher-mobile-preview-trigger{display:none!important;}
+
+
+/* Secciones plegables, captura compacta y señalización de campos interpretados. */
+#viewPublisher .publisher-collapsible{width:100%;min-width:0;}
+#viewPublisher .publisher-collapsible>summary,#viewPublisher .publisher-measurements-disclosure>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;}
+#viewPublisher .publisher-collapsible>summary::-webkit-details-marker,#viewPublisher .publisher-measurements-disclosure>summary::-webkit-details-marker{display:none;}
+#viewPublisher .publisher-collapsible>summary .section-title,#viewPublisher .publisher-collapsible>summary .publisher-muted{text-align:left;}
+#viewPublisher .publisher-collapse-indicator{flex:0 0 10px;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-2px);transition:transform .18s ease;}
+#viewPublisher details[open]>summary .publisher-collapse-indicator{transform:rotate(225deg) translate(-2px,-2px);}
+#viewPublisher .publisher-collapsible-content{padding-top:14px;}
+#viewPublisher .publisher-measurements-disclosure{margin:4px 0 14px;border:1px solid color-mix(in srgb,var(--primary-soft) 42%,var(--border));border-radius:14px;background:color-mix(in srgb,var(--primary-soft) 5%,var(--surface));}
+#viewPublisher .publisher-measurements-disclosure>summary{padding:12px 14px;color:var(--text);font-size:13px;font-weight:750;}
+#viewPublisher .publisher-measurements-disclosure>summary span:first-child{margin-left:auto;color:var(--muted);font-size:10px;letter-spacing:.1em;}
+#viewPublisher .publisher-measurements-disclosure .publisher-measurements{margin:0;padding:4px 14px 10px;border:0;background:transparent;}
+#viewPublisher .publisher-dictation-heading{align-items:flex-start;justify-content:flex-start;text-align:left;}
+#viewPublisher .publisher-dictation-title-group{justify-content:flex-start;width:auto;text-align:left;}
+#viewPublisher .publisher-dictation-title-group>div{align-items:flex-start;text-align:left;}
+#viewPublisher .publisher-dictation-kicker,#viewPublisher .publisher-dictation-heading strong{text-align:left;}
+#viewPublisher .publisher-dictation-caption{width:auto;max-width:none;text-align:left;margin-left:49px;}
+#viewPublisher .publisher-step-mark{flex:0 0 38px;}
+#viewPublisher .publisher-photo-upload{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1.5px dashed color-mix(in srgb,var(--primary-soft) 65%,var(--border));border-radius:14px;background:color-mix(in srgb,var(--primary-soft) 6%,var(--surface));}
+#viewPublisher .publisher-photo-upload-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:11px;background:color-mix(in srgb,var(--primary-soft) 16%,var(--surface));color:var(--primary-soft);}
+#viewPublisher .publisher-photo-upload .publisher-photo-actions{flex:1 1 auto;}
+#viewPublisher .publisher-photo-upload .publisher-photo-hint{font-size:11px;line-height:1.45;}
+#viewPublisher .publisher-fixed-textarea{box-sizing:border-box;min-height:56px!important;height:56px;max-height:220px;overflow-y:hidden;resize:none!important;line-height:1.5;}
+#viewPublisher input.is-interpreted,#viewPublisher select.is-interpreted,#viewPublisher textarea.is-interpreted{border:1.5px solid #278c72!important;background:color-mix(in srgb,#278c72 9%,var(--surface))!important;outline:1px solid color-mix(in srgb,#278c72 35%,transparent);outline-offset:1px;box-shadow:0 0 0 2px color-mix(in srgb,#278c72 20%,transparent)!important;}
+@media(max-width:520px){#viewPublisher .publisher-dictation-heading{align-items:flex-start;text-align:left;}#viewPublisher .publisher-dictation-caption{margin-left:49px;text-align:left;}#viewPublisher .publisher-photo-upload{padding:11px;gap:9px;}#viewPublisher .publisher-photo-upload-icon{flex-basis:34px;width:34px;height:34px;}}
