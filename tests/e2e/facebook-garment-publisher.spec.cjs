@@ -703,3 +703,25 @@ test('dictation uses field labels as boundaries without relying on punctuation o
     await expect(page.locator('#publisherPrice')).toHaveValue(item.price);
   }
 });
+
+
+test('dictation recognizes single-letter size before measurements and extracts Alto and Hombros without polluting observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido marca tuchi s talle s medidas 35 cm de cadera de tiro 38 cm de alto 45 cm precio 35,000 hermoso vestido para una salida casual');
+  await page.locator('#publisherUseTranscript').click();
+
+  await expect(page.locator('#publisherBrand')).toHaveValue(/tuchi/i);
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherHip')).toHaveValue('35');
+  await expect(page.locator('#publisherRise')).toHaveValue('38');
+  await expect(page.locator('#publisherHeight')).toHaveValue('45');
+  await expect(page.locator('#publisherPrice')).toHaveValue('35000');
+  await expect(page.locator('#publisherObservations')).toHaveValue(/hermoso vestido para una salida casual/i);
+  await expect(page.locator('#publisherObservations')).not.toContainText(/talle|medidas|cadera|tiro|alto|35|38|45/);
+
+  await page.locator('#publisherTranscript').fill('Vestido azul talle M hombros 39 cm alto 90 cm');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherSize')).toHaveValue('M');
+  await expect(page.locator('#publisherShoulders')).toHaveValue('39');
+  await expect(page.locator('#publisherHeight')).toHaveValue('90');
+});
