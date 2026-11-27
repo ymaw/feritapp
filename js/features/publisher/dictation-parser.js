@@ -154,12 +154,16 @@ export function parseGarmentDictation(transcript) {
     sizeExpression,
     PRICE_EXPRESSION,
     ...measurementNames.flatMap(([key, label]) => [
-      new RegExp('\\b' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?', 'iu'),
+      new RegExp('\\b(?:de\\s+)?' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?', 'iu'),
       new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\s+(?:de\\s+)?' + label, 'iu')
     ])
   ];
   for (const expression of removals) remainder = remainder.replace(expression, ' ');
   if (categoryRule) remainder = remainder.replace(result.garmentName || categoryRule[1], ' ');
+  remainder = remainder.replace(/\bmedidas?\b/giu, ' ');
+  remainder = remainder.replace(/\bde(?:\s+de)+\b/giu, 'de');
+  remainder = remainder.replace(/^\s*(?:de|del|y|con)\b\s*/i, ' ');
+  remainder = remainder.replace(/\s+\b(?:de|del|y|con)\b\s*$/i, ' ');
   remainder = remainder.replace(/^\s*(?:es\s+)?(?:un|una|el|la)\s+/i, ' ');
   remainder = remainder.replace(/\b(?:y|con)\s*(?=[,.;])/gi, ' ');
   result.observations = clean(remainder);
