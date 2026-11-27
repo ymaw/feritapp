@@ -162,3 +162,5 @@ assert.ok(html.indexOf('id="publisherObservations"') < html.indexOf('id="publish
 assert.match(css, /publisher-photo-upload/);
 assert.match(css, /#278c72/);
 assert.match(moduleSource, /resizeObservationsField/);
+
+assert.match(parserSource, /tale\|calle/);
