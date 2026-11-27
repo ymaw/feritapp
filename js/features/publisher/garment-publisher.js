@@ -297,7 +297,7 @@ export function initGarmentPublisher({ showToast }) {
     const fields = [
       ['garmentName', 'publisherGarmentName'], ['brand', 'publisherBrand'],
       ['size', 'publisherSize'], ['price', 'publisherPrice'],
-      ['waist', 'publisherWaist'], ['rise', 'publisherRise'], ['hip', 'publisherHip'], ['length', 'publisherLength'], ['boot', 'publisherBoot'], ['sisa', 'publisherSisa']
+      ['waist', 'publisherWaist'], ['rise', 'publisherRise'], ['hip', 'publisherHip'], ['length', 'publisherLength'], ['boot', 'publisherBoot'], ['sisa', 'publisherSisa'], ['height', 'publisherHeight'], ['shoulders', 'publisherShoulders']
     ];
     fields.forEach(function(pair) {
       const value = parsed[pair[0]];
@@ -392,7 +392,7 @@ export function initGarmentPublisher({ showToast }) {
     interpretedFieldValues.clear();
     interpretedObservations = null;
     ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice',
-      'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot','publisherSisa',
+      'publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot','publisherSisa','publisherHeight','publisherShoulders',
       'publisherTranscript'].forEach(function(id) {
       const element = document.getElementById(id);
       if (element) {
@@ -447,7 +447,9 @@ export function initGarmentPublisher({ showToast }) {
         { label: 'Cadera', value: readValue('publisherHip') },
         { label: 'Largo', value: readValue('publisherLength') },
         { label: 'Bota', value: readValue('publisherBoot') },
-        { label: 'Sisa', value: readValue('publisherSisa') }
+        { label: 'Sisa', value: readValue('publisherSisa') },
+        { label: 'Alto', value: readValue('publisherHeight') },
+        { label: 'Hombros', value: readValue('publisherShoulders') }
       ] : []
     };
   }
@@ -495,7 +497,7 @@ export function initGarmentPublisher({ showToast }) {
       }).join(items.length > 1 ? '\n\n────────────\n\n' : '');
     } else if (!items.length && !postText.dataset.userEdited) postText.value = '';
   }
-  ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot','publisherSisa'].forEach(function(id) {
+  ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot','publisherSisa','publisherHeight','publisherShoulders'].forEach(function(id) {
     const field = document.getElementById(id);
     if (field) { field.addEventListener('input',refreshLivePreview); field.addEventListener('change',refreshLivePreview); }
   });
