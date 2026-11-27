@@ -731,3 +731,41 @@ test('dictation recognizes single-letter size before measurements and extracts A
   await expect(page.locator('#publisherShoulders')).toHaveValue('39');
   await expect(page.locator('#publisherHeight')).toHaveValue('90');
 });
+
+
+test('dictation assigns adjacent measurements independently and normalizes capitalization', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  await page.locator('#publisherTranscript').fill('vestido Violeta marca tuchi talle s medida 35 cm de cadera 38 de tiro alto 45 cm precio $40,000 un hermoso vestido para salida');
+  await page.locator('#publisherUseTranscript').click();
+  await expect(page.locator('#publisherGarmentName')).toHaveValue('Vestido Violeta');
+  await expect(page.locator('#publisherBrand')).toHaveValue('Tuchi');
+  await expect(page.locator('#publisherSize')).toHaveValue('S');
+  await expect(page.locator('#publisherHip')).toHaveValue('35');
+  await expect(page.locator('#publisherRise')).toHaveValue('38');
+  await expect(page.locator('#publisherHeight')).toHaveValue('45');
+  await expect(page.locator('#publisherPrice')).toHaveValue('40000');
+  await expect(page.locator('#publisherObservations')).toHaveValue('Hermoso vestido para salida');
+});
+
+test('publisher sections and measurement group collapse and expand; photo follows observations', async ({ page }) => {
+  await openAuthenticatedApp(page);
+  const formDetails = page.locator('#viewPublisher .publisher-card').filter({ has: page.locator('#publisherCategory') }).locator('details.publisher-collapsible');
+  await formDetails.locator('summary').click();
+  await expect(formDetails.locator('.publisher-collapsible-content')).toBeHidden();
+  await formDetails.locator('summary').click();
+  await expect(formDetails.locator('.publisher-collapsible-content')).toBeVisible();
+  await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
+  const measurements = page.locator('#publisherMeasurementsDisclosure');
+  await expect(measurements).toBeVisible();
+  await measurements.locator('summary').click();
+  await expect(page.locator('#publisherMeasurements')).toBeHidden();
+  await measurements.locator('summary').click();
+  await expect(page.locator('#publisherMeasurements')).toBeVisible();
+  const positions = await page.evaluate(() => ['publisherObservations','publisherPhoto'].map(id => Array.from(document.querySelectorAll('#viewPublisher input,#viewPublisher textarea')).findIndex(el => el.id === id)));
+  expect(positions[1]).toBeGreaterThan(positions[0]);
+  const preview = page.locator('#viewPublisher .publisher-preview-card details.publisher-collapsible');
+  await preview.locator('summary').click();
+  await expect(preview.locator('.publisher-collapsible-content')).toBeHidden();
+  await preview.locator('summary').click();
+  await expect(preview.locator('.publisher-collapsible-content')).toBeVisible();
+});
