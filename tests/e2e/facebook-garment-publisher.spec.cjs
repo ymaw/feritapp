@@ -166,7 +166,7 @@ test('publisher stages garments with separate photo previews, removes safely and
 });
 
 
-test('mobile preview opens as an accessible modal and returns focus to the editor', async ({ page }) => {
+test('mobile preview stays inline below the editor without opening a modal', async ({ page }) => {
   await openAuthenticatedApp(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
@@ -180,27 +180,31 @@ test('mobile preview opens as an accessible modal and returns focus to the edito
     buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=', 'base64')
   });
 
-  const trigger = page.locator('#publisherOpenPreview');
-  await expect(trigger).toBeVisible();
-  await expect(page.locator('#viewPublisher .publisher-preview-card')).toBeHidden();
-  await trigger.click();
+  const layout = page.locator('#viewPublisher .publisher-layout');
+  const dictation = page.locator('#viewPublisher .publisher-dictation');
+  const editor = page.locator('#viewPublisher .publisher-card').filter({ has: page.locator('#publisherCategory') });
+  const preview = page.locator('#viewPublisher .publisher-preview-card');
+  await expect(dictation).toBeVisible();
+  await expect(editor).toBeVisible();
+  await expect(preview).toBeVisible();
+  await expect(page.locator('#publisherOpenPreview')).toBeHidden();
+  await expect(page.locator('#publisherPreviewModal')).toBeHidden();
+  await expect(preview.locator('#publisherPostText')).toHaveValue(/Vestido de prueba[\\s\\S]*Marca: Ossira[\\s\\S]*Cintura: 38 cm[\\s\\S]*Largo: 105 cm/);
+  await expect(preview.locator('#publisherPhotoPreview img')).toBeVisible();
+  await expect(preview.locator('#publisherPhotoPreview img')).toHaveCSS('object-fit', 'contain');
 
-  const modal = page.locator('#publisherPreviewModal');
-  await expect(modal).toBeVisible();
-  await expect(modal.locator('.publisher-preview-modal-panel')).toHaveAttribute('aria-modal', 'true');
-  await expect(modal.locator('#publisherPreviewTitle')).toBeVisible();
-  await expect(modal.locator('#publisherPostText')).toHaveValue(/Vestido de prueba[\s\S]*Marca: Ossira[\s\S]*Cintura: 38 cm[\s\S]*Largo: 105 cm/);
-  await expect(modal.locator('#publisherPhotoPreview img')).toBeVisible();
-  await expect(modal.locator('#publisherPhotoPreview img')).toHaveCSS('object-fit', 'contain');
-  await expect(page.locator('#publisherClosePreview')).toBeFocused();
-
-  await page.keyboard.press('Escape');
-  await expect(modal).toBeHidden();
-  await expect(page.locator('#viewPublisher .publisher-preview-card')).toBeHidden();
-  await expect(page.locator('#viewPublisher')).toBeVisible();
-  await expect(trigger).toBeFocused();
+  const order = await layout.evaluate(element => {
+    const children = Array.from(element.children);
+    return {
+      dictation: children.indexOf(element.querySelector('.publisher-dictation')),
+      editor: children.findIndex(child => child.classList.contains('publisher-card') && child.querySelector('#publisherCategory')),
+      preview: children.indexOf(element.querySelector('.publisher-preview-card'))
+    };
+  });
+  expect(order.dictation).toBeGreaterThanOrEqual(0);
+  expect(order.editor).toBeGreaterThan(order.dictation);
+  expect(order.preview).toBeGreaterThan(order.editor);
 });
-
 
 test('voice bars follow speech-recognition events and stop with the dictation session', async ({ page }) => {
   await openAuthenticatedApp(page);
@@ -455,13 +459,16 @@ test('reinterpreting edited transcript replaces generated values and observation
   await expect(page.locator('#publisherObservations')).toHaveValue('Nota agregada manualmente');
 });
 
-test('measurements are placed with garment fields before the transcription panel', async ({ page }) => {
+test('transcription panel precedes garment fields and measurements in the agreed layout', async ({ page }) => {
   await openAuthenticatedApp(page);
   const order = await page.evaluate(() => {
-    const measurements = document.querySelector('#publisherMeasurements');
-    const transcription = document.querySelector('.publisher-dictation');
-    return Boolean(measurements && transcription &&
-      (measurements.compareDocumentPosition(transcription) & Node.DOCUMENT_POSITION_FOLLOWING));
+    const layout = document.querySelector('#viewPublisher .publisher-layout');
+    const transcription = layout?.querySelector('.publisher-dictation');
+    const editor = Array.from(layout?.children || []).find(element => element.classList.contains('publisher-card') && element.querySelector('#publisherCategory'));
+    const preview = layout?.querySelector('.publisher-preview-card');
+    return Boolean(layout && transcription && editor && preview &&
+      (transcription.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+      (editor.compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING));
   });
   expect(order).toBe(true);
   await page.locator('#publisherCategory').selectOption({ label: 'Vestidos' });
