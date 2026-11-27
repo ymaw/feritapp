@@ -38,7 +38,7 @@ assert.match(moduleSource, /navigator\.share/);
 assert.match(moduleSource, /navigator\.clipboard\.writeText/);
 assert.match(moduleSource, /URL\.createObjectURL/);
 assert.match(css, /object-fit:contain/);
-assert.match(css, /@media\\(max-width:899px\\)/);
+assert.match(css, /@media\(max-width:899px\)/);
 
 assert.match(moduleSource, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
 assert.match(moduleSource, /activeRecognition\.lang = 'es-AR'/);
