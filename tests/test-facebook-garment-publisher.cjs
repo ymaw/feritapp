@@ -44,7 +44,7 @@ assert.match(moduleSource, /window\.SpeechRecognition \|\| window\.webkitSpeechR
 assert.match(moduleSource, /activeRecognition\.lang = 'es-AR'/);
 assert.match(moduleSource, /activeRecognition\.continuous = true/);
 assert.match(moduleSource, /activeRecognition\.interimResults = true/);
-assert.match(moduleSource, /Dictá los datos de la prenda y completá sus campos automáticamente/);
+assert.match(moduleSource, /Dictá la prenda y revisá los datos sugeridos/);
 assert.match(html, /id="publisherDictationStart"[^>]*>Iniciar dictado/);
 assert.match(css, /publisher-preview-card\s*\{[^}]*position:\s*sticky/);
 
@@ -153,3 +153,12 @@ assert.match(moduleSource, /\['height', 'publisherHeight'\]/);
 assert.match(moduleSource, /\['shoulders', 'publisherShoulders'\]/);
 assert.match(css, /publisher-measurements \.publisher-fields-grid[\s\S]*?repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(parserSource, /medidas\?/);
+
+assert.match(parserSource, /capitalizeFirstWord/);
+assert.match(html, /id="publisherMeasurementsDisclosure"/);
+assert.match(html, /<summary class="publisher-card-heading">[\s\S]*?Datos de la prenda/);
+assert.match(html, /<summary class="publisher-card-heading">[\s\S]*?Vista Previa/);
+assert.ok(html.indexOf('id="publisherObservations"') < html.indexOf('id="publisherPhoto"'));
+assert.match(css, /publisher-photo-upload/);
+assert.match(css, /#278c72/);
+assert.match(moduleSource, /resizeObservationsField/);
