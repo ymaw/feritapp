@@ -78,7 +78,7 @@ function normalizeNoisyTalle(value) {
   // El ASR es-AR suele separar o deformar "talle". Corregir solo
   // cuando la expresión está seguida de un talle reconocible.
   const sizeToken = '(?:xxxs|xxs|xs|s|m|l|xl|xxl|xxxl|\\d+|' + NUMBER_PHRASE_SOURCE + ')';
-  const noisyLabel = new RegExp('\\b(?:ta\\s+sh(?:e)?l{1,2}e|ta\\s+che|tache|la\\s+sh(?:e)?l{1,2}e|taile|taye|tali|tale)(?=\\s+' + sizeToken + '\\b)', 'giu');
+  const noisyLabel = new RegExp('\\b(?:ta\\s+sh(?:e)?l{1,2}e|ta\\s+che|tache|la\\s+sh(?:e)?l{1,2}e|taile|taye|tali|tale|calle)(?=\\s+' + sizeToken + '\\b)', 'giu');
   return String(value || '').replace(noisyLabel, 'talle').replace(/\\b(talle)\\s+\\1\\b/giu, '$1');
 }
 
