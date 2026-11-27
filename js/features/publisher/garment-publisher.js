@@ -499,7 +499,19 @@ export function initGarmentPublisher({ showToast }) {
   }
   ['publisherCategory','publisherGarmentName','publisherBrand','publisherSize','publisherPrice','publisherObservations','publisherWaist','publisherRise','publisherHip','publisherLength','publisherBoot','publisherSisa','publisherHeight','publisherShoulders'].forEach(function(id) {
     const field = document.getElementById(id);
-    if (field) { field.addEventListener('input',refreshLivePreview); field.addEventListener('change',refreshLivePreview); }
+    if (field) {
+      const syncInterpretedOutline = function() {
+        if (field.classList.contains('is-interpreted') && !String(field.value || '').trim()) {
+          field.classList.remove('is-interpreted');
+          interpretedFieldValues.delete(id);
+          if (id === 'publisherObservations') interpretedObservations = null;
+        }
+      };
+      field.addEventListener('input',syncInterpretedOutline);
+      field.addEventListener('change',syncInterpretedOutline);
+      field.addEventListener('input',refreshLivePreview);
+      field.addEventListener('change',refreshLivePreview);
+    }
   });
   postText.addEventListener('input',function(){postText.dataset.userEdited='true';});
   let previewReturnFocus = null;
