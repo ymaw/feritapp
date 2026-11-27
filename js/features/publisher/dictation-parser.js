@@ -78,7 +78,7 @@ function normalizeNoisyTalle(value) {
   // El ASR es-AR suele separar o deformar "talle". Corregir solo
   // cuando la expresión está seguida de un talle reconocible.
   const sizeToken = '(?:xxxs|xxs|xs|s|m|l|xl|xxl|xxxl|\\d+|' + NUMBER_PHRASE_SOURCE + ')';
-  const noisyLabel = new RegExp('\\b(?:ta\\s+sh(?:e)?l{1,2}e|ta\\s+che|tache|la\\s+sh(?:e)?l{1,2}e)(?=\\s+' + sizeToken + '\\b)', 'giu');
+  const noisyLabel = new RegExp('\\b(?:ta\\s+sh(?:e)?l{1,2}e|ta\\s+che|tache|la\\s+sh(?:e)?l{1,2}e|taile|taye|tali|tale)(?=\\s+' + sizeToken + '\\b)', 'giu');
   return String(value || '').replace(noisyLabel, 'talle').replace(/\\b(talle)\\s+\\1\\b/giu, '$1');
 }
 
@@ -117,7 +117,7 @@ export function parseGarmentDictation(transcript) {
 
   const brandExpression = /\bmarca\s+([\p{L}0-9][\p{L}0-9 .'-]{0,39}?)(?=\s*(?:[,;.:]|\b(?:talle|taye|tali|tale|medida|medidas)\b|\bprecio\b|\bcintura\b|\btiro\b|\bcadera\b|\blargo\b|\bsisa\b)|$)/iu;
   result.brand = normalizeSpokenNumbersInText(firstCapture(text, brandExpression));
-  const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|sisa|marca)\\b|$))', 'iu');
+  const sizeExpression = new RegExp('\\b(?:talle|taye|tali|tale|taile)\\s+(' + NUMBER_PHRASE_SOURCE + '|[\\p{L}0-9-]{1,12})(?=\\s*(?:[,;.]|\\b(?:precio|cintura|tiro|cadera|largo|sisa|hombros?|alto|altura|bota|medidas?|marca)\\b|$))', 'iu');
   const rawSize = firstCapture(text, sizeExpression);
   result.size = parseSpanishNumber(rawSize) || rawSize;
 
@@ -128,17 +128,19 @@ export function parseGarmentDictation(transcript) {
     result.price = digits ? digits[1].replace(/\.0+$/, '') : parseSpanishNumber(priceText);
   }
 
-  const measurementBoundary = '(?=\\s*(?:cm|centimetros?\\b|[,;.]|\\by\\b|\\b(?:sisa|cintura|tiro|cadera|largo|bota|precio)\\b|$|[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]))';
+  const measurementBoundary = '(?=\\s*(?:cm|centimetros?\\b|[,;.]|\\by\\b|\\b(?:sisa|cintura|tiro|cadera|largo|alto|altura|hombros?|bota|precio|medidas?|talle)\\b|$|[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]))';
   const measurementNames = [
     ['waist', '(?:la\\s+)?cintura'],
     ['rise', 'tiro(?:\\s+delantero)?'],
     ['hip', '(?:la\\s+)?cadera'],
     ['length', '(?:el\\s+)?largo'],
     ['boot', '(?:la\\s+)?bota'],
-    ['sisa', '(?:la\\s+)?sisa']
+    ['sisa', '(?:la\\s+)?sisa'],
+    ['height', '(?:el\\s+)?(?:alto|altura)'],
+    ['shoulders', '(?:los\\s+)?hombros?']
   ];
   const measurementExpressions = measurementNames.flatMap(([key, label]) => [
-    [key, new RegExp('\\b' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
+    [key, new RegExp('\\b(?:de\\s+)?' + label + '\\s+(?:de\\s+)?' + NUMBER_CAPTURE + '(?:\\s*(?:cm|centimetros?))?' + measurementBoundary, 'i')],
     [key, new RegExp('\\b' + NUMBER_CAPTURE + '\\s*(?:cm|centimetros?)\\s+(?:de\\s+)?' + label + measurementBoundary, 'i')]
   ]);
   for (const [key, expression] of measurementExpressions) {
