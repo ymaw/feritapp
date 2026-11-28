@@ -36,11 +36,11 @@ No se consultaron datos personales ni se escribieron datos, DDL, políticas, buc
 
 - `id uuid primary key default gen_random_uuid()`
 - `user_id uuid not null references auth.users(id) default auth.uid()`
-- Datos propios de la prenda: categoría, nombre/artículo, marca, talle, observaciones y medidas estructuradas.
+- Datos propios de la prenda: categoría, nombre/artículo, precio en ARS (entero), marca, talle, observaciones y medidas estructuradas.
 - Estado de publicación explícito y auditable: sin publicar / publicada, con fecha de confirmación nullable.
 - `created_at`, `updated_at` y, si corresponde, marca de eliminación lógica temporal para coordinar limpieza de Storage.
 
-El cliente y el estado comercial no se duplican como fuente de verdad: se derivan de la única fila de `sales` asociada.
+El cliente, el pago y la entrega no se duplican como fuente de verdad: se derivan de la única fila de `sales` asociada. La ficha conserva precio, categoría y artículo mientras está en Stock; al asignarla, esos campos compartidos se copian a la venta y las modificaciones posteriores desde Ventas deben sincronizarse de vuelta a la ficha mediante una operación consistente.
 
 ### Relación con `public.sales`
 
@@ -144,7 +144,7 @@ Se revisaron los flujos de `script.js` en la rama `feature/catalogo-prendas`:
 - Actualmente el Publicador no persiste prendas ni imágenes: `queuedGarments`, los objetos `File` y las URLs de vista previa viven en memoria. Generar, copiar o abrir el menú nativo de compartir no crea una ficha persistente ni confirma publicación externa.
 - La implementación debe separar el formulario reutilizable del ciclo de persistencia: guardar en Catálogo crea/actualiza `catalog_items` y sube fotos privadas; generar/compartir sigue siendo una acción independiente. El Catálogo puede reutilizar el intérprete y los controles existentes, pero no debe depender de la cola temporal de publicación para almacenar inventario.
 - Las fotos persistidas deben representarse desde metadatos privados y URLs temporales/autorizadas; no se deben guardar ni reutilizar las URLs `blob:` del Publicador como almacenamiento.
-- El precio aparece hoy en el formulario del Publicador para redactar el post. En Catálogo será dato comercial compartido con Ventas cuando la prenda se asigne; antes de asignarla puede conservarse en la ficha, pero al asignar debe definirse una única fuente de precio y sincronizarse sin crear filas duplicadas.
+- El precio aparece hoy en el formulario del Publicador para redactar el post. Catálogo lo conserva en la ficha mientras está en Stock; al asignar la prenda, ese precio se copia a la venta. Desde ese momento, el precio, el artículo y la categoría son campos compartidos: los cambios confirmados desde Ventas actualizan la ficha vinculada, y los cambios desde Catálogo actualizan la misma venta, sin crear filas duplicadas. Cliente, pago y entrega siguen derivados de Ventas.
 
 ## Orden de implementación recomendado
 
