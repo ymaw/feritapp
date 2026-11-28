@@ -1,4 +1,4 @@
--- CUEVA? No: FeritApp Catalogo de prendas.
+-- FeritApp: esquema inicial del Catalogo de prendas.
 -- Esquema inicial aislado. No implementa aun RPCs de asignacion ni borrado.
 -- Las transiciones a "deleting" y la cola se reservan para operaciones servidoras.
 
