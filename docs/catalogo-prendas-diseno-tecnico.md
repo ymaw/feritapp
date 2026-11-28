@@ -133,3 +133,24 @@ Se revisaron los flujos de `script.js` en la rama `feature/catalogo-prendas`:
 7. Las operaciones de grupo deben comprobar qué IDs fueron realmente eliminados y reconciliar el estado local con la respuesta del servidor. En el código actual, el borrado individual y el grupal verifican resultados, pero el borrado desde editor de cliente y el reinicio del historial no verifican de forma equivalente la cantidad/identidad de filas afectadas. Corregir esto dentro de la integración Catálogo, sin cambiar innecesariamente el comportamiento de Ventas.
 
 **Decisión funcional confirmada:** eliminar desde Ventas nunca elimina la ficha del Catálogo; eliminar desde Catálogo sí elimina la ficha, su venta vinculada y sus fotos mediante el flujo seguro descrito arriba.
+
+
+## Auditoría de carga, navegación y reutilización del Publicador
+
+- `loadSales()` ejecuta `select('*')` y transforma las filas mediante `mapRowToSale()`. El mapper actual expone los campos comerciales, pero no conserva todavía un futuro `catalog_item_id`; habrá que incorporarlo explícitamente.
+- La aplicación mantiene una carga central de ventas y un `render()` que actualiza Ventas, Entregas, resúmenes y otras vistas derivadas. El Catálogo debe tener su propia carga de `catalog_items` y metadatos de fotos, coordinada con la sesión y el usuario autenticado; no debe inferir el inventario recorriendo únicamente las ventas.
+- La navegación usa vistas independientes (`viewSales`, `viewDeliveries`, `viewPublisher`) y accesos laterales/personalizables. Catálogo debe incorporarse como una vista propia y respetar el sistema de navegación existente, sin reemplazar ni duplicar el Publicador.
+- El Publicador está modularizado en `js/features/publisher/garment-publisher.js` y `entry.js`. Su formulario ya reúne categoría, artículo, marca, talle, precio, observaciones, medidas y fotos; el intérprete de dictado completa esos campos mediante el parser modular.
+- Actualmente el Publicador no persiste prendas ni imágenes: `queuedGarments`, los objetos `File` y las URLs de vista previa viven en memoria. Generar, copiar o abrir el menú nativo de compartir no crea una ficha persistente ni confirma publicación externa.
+- La implementación debe separar el formulario reutilizable del ciclo de persistencia: guardar en Catálogo crea/actualiza `catalog_items` y sube fotos privadas; generar/compartir sigue siendo una acción independiente. El Catálogo puede reutilizar el intérprete y los controles existentes, pero no debe depender de la cola temporal de publicación para almacenar inventario.
+- Las fotos persistidas deben representarse desde metadatos privados y URLs temporales/autorizadas; no se deben guardar ni reutilizar las URLs `blob:` del Publicador como almacenamiento.
+- El precio aparece hoy en el formulario del Publicador para redactar el post. En Catálogo será dato comercial compartido con Ventas cuando la prenda se asigne; antes de asignarla puede conservarse en la ficha, pero al asignar debe definirse una única fuente de precio y sincronizarse sin crear filas duplicadas.
+
+## Orden de implementación recomendado
+
+1. Pruebas de contrato y migración aislada para tablas, FK, índices, RLS y Storage privado; primero validar localmente, sin aplicar DDL remoto.
+2. Capa de acceso a Catálogo: carga, guardado, actualización, metadatos y subida/lectura/borrado de fotos.
+3. Vista Catálogo con apartados Publicador, Stock y Archivadas, reutilizando el diseño visual y el formulario existentes.
+4. Relación Catálogo-Ventas: asignación, edición de campos compartidos, reasignación permitida y actualización de vistas derivadas.
+5. Integración de los cuatro caminos de eliminación de Ventas y de la eliminación definitiva desde Catálogo, incluyendo deshacer, fallos de red y reintentos de Storage.
+6. Pruebas de regresión funcional, seguridad multiusuario, accesibilidad y responsive; recién entonces preparar PR.
