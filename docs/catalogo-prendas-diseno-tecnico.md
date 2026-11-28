@@ -110,3 +110,26 @@ La auditoría automática actual informa protección de contraseñas filtradas d
 - Pago y entrega se muestran desde Ventas y no se editan desde Catálogo.
 - La publicación externa no se infiere al abrir el menú de compartir.
 - Las pruebas cubren RLS multiusuario, FK compuesta, unicidad, reasignación, deshacer/eliminación, Storage y regresión de Ventas/Entregas/Ranking.
+
+
+## Auditoría detallada de eliminación en Ventas (código actual)
+
+Se revisaron los flujos de `script.js` en la rama `feature/catalogo-prendas`:
+
+- **Eliminar un artículo individual:** `deleteSale(id)` quita la fila de la vista y programa el DELETE de `sales` después de 10 segundos. Si se deshace, restaura la fila local; si falla el DELETE, también restaura la vista.
+- **Eliminar varias ventas de un cliente:** `deleteSalesGroup(ids)` usa la misma ventana de 10 segundos y ejecuta un DELETE por conjunto de IDs.
+- **Quitar artículos desde el editor de cliente:** las filas existentes que se quitan se eliminan mediante una operación con deshacer; las filas nuevas se insertan como ventas independientes y las conservadas se actualizan individualmente.
+- **Eliminar todo el historial:** el botón de reinicio elimina todas las filas de `sales` tras la misma ventana de deshacer.
+- **Editar una venta individual y agregar artículos:** la fila original se actualiza y cada artículo extra se inserta como una nueva fila de `sales`. No debe heredarse automáticamente el vínculo de Catálogo de la fila original.
+
+### Comportamiento requerido al incorporar Catálogo
+
+1. Todos los caminos que borran una venta —individual, grupo, quitar desde editor de cliente y borrar historial— deben liberar únicamente el vínculo de Catálogo al confirmarse el DELETE. La ficha permanece en Stock y conserva fotos y datos exclusivos.
+2. Durante los 10 segundos de deshacer, no se debe cambiar definitivamente el estado de la ficha ni borrar sus fotografías.
+3. Si se deshace, la venta conserva su vínculo original. Si el DELETE falla, la aplicación debe restaurar o volver a consultar el estado y no dejar la prenda falsamente disponible en Stock.
+4. El borrado total del historial también debe dejar todas las fichas de Catálogo sin venta vinculada; nunca debe eliminar las fichas ni sus fotografías.
+5. Al quitar una fila desde el editor de cliente, la desvinculación se aplica solo cuando el DELETE correspondiente se confirma. Las demás filas del cliente y sus vínculos no deben alterarse.
+6. Al agregar artículos desde los editores de Ventas, cada fila nueva nace sin `catalog_item_id`; solo se vincula mediante la acción explícita de asignar una prenda existente desde Catálogo.
+7. Las operaciones de grupo deben comprobar qué IDs fueron realmente eliminados y reconciliar el estado local con la respuesta del servidor. En el código actual, el borrado individual y el grupal verifican resultados, pero el borrado desde editor de cliente y el reinicio del historial no verifican de forma equivalente la cantidad/identidad de filas afectadas. Corregir esto dentro de la integración Catálogo, sin cambiar innecesariamente el comportamiento de Ventas.
+
+**Decisión funcional confirmada:** eliminar desde Ventas nunca elimina la ficha del Catálogo; eliminar desde Catálogo sí elimina la ficha, su venta vinculada y sus fotos mediante el flujo seguro descrito arriba.
