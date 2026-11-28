@@ -193,7 +193,7 @@ create policy catalog_item_photos_update_own
 
 revoke all on public.catalog_item_photos from public, anon, authenticated;
 grant select on public.catalog_item_photos to authenticated;
-grant insert (catalog_item_id, storage_path, mime_type, byte_size, sort_order)
+grant insert (id, catalog_item_id, storage_path, mime_type, byte_size, sort_order)
   on public.catalog_item_photos to authenticated;
 grant update (sort_order) on public.catalog_item_photos to authenticated;
 grant all on public.catalog_item_photos to service_role;
