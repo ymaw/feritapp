@@ -93,7 +93,8 @@ Las RPC privilegiadas, si fueran necesarias, deben vivir en un esquema no expues
 - `mapRowToSale` y `loadSales` deberán incorporar la relación sin cambiar la semántica de los campos existentes.
 - Mantener `operationalWeekKey`, `isDeliveryItemVisible`, Ranking y sus filtros como fuente de verdad.
 - Las funciones `deleteSale` y `deleteSalesGroup` usan actualmente borrado con deshacer; la liberación de Stock solo se considera definitiva después del DELETE confirmado.
-- El formulario actual de Ventas puede editar el artículo/precio/categoría y agregar artículos. La sincronización de esos cambios con los datos maestros del Catálogo debe resolverse explícitamente antes de implementar el flujo, para evitar dos fuentes de verdad.
+- El formulario actual de Ventas puede editar únicamente los campos que ya pertenecen a «Nueva Venta» (por ejemplo, cliente, artículo, categoría y precio) y agregar artículos. Cuando una venta está vinculada a una prenda del Catálogo, los cambios confirmados en los campos compartidos se sincronizan con esa misma ficha de Catálogo; no se crea otra prenda ni otra venta.
+- Ventas no debe mostrar ni editar campos exclusivos del Catálogo, como talle, medidas, marca, observaciones o fotografías. Esos datos permanecen únicamente en `catalog_items` y sus metadatos, y se conservan al editar la venta. La sincronización de campos compartidos no debe sobrescribir información exclusiva del Catálogo.
 - El Publicador actual no debe convertirse en un inventario paralelo: el Catálogo persistente debe reutilizar su interpretación, formulario, medidas, validaciones y presentación de compartir, separando la persistencia de la lógica del intérprete.
 
 ## Seguridad y diagnósticos a tratar por separado
