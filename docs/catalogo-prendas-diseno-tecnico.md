@@ -154,3 +154,28 @@ Se revisaron los flujos de `script.js` en la rama `feature/catalogo-prendas`:
 4. Relación Catálogo-Ventas: asignación, edición de campos compartidos, reasignación permitida y actualización de vistas derivadas.
 5. Integración de los cuatro caminos de eliminación de Ventas y de la eliminación definitiva desde Catálogo, incluyendo deshacer, fallos de red y reintentos de Storage.
 6. Pruebas de regresión funcional, seguridad multiusuario, accesibilidad y responsive; recién entonces preparar PR.
+
+
+## Verificación de Supabase conectado (lectura solamente)
+
+Consulta efectuada sobre el proyecto FeritApp `tzajchnflgvdbmiwfyvj` (PostgreSQL 17.11, estado ACTIVE_HEALTHY). No se ejecutó DDL, DML ni cambios de Storage.
+
+- `sales`, `clients`, `categories`, `user_settings`, `notes` y `note_labels` existen y tienen RLS habilitado.
+- `sales` conserva sus columnas actuales y todavía no tiene `catalog_item_id`; tiene 38 filas en la instancia consultada.
+- Las políticas actuales de `sales`, `clients` y `categories` filtran por `auth.uid() = user_id`. Las políticas de `sales` actualmente aparecen dirigidas a `public`; una migración de Catálogo no debe aprovecharse para modificar globalmente esas políticas existentes.
+- La migración de seguridad V12.124 del repositorio muestra el patrón más estricto esperado para nuevas tablas: políticas `TO authenticated`, comparación con `(select auth.uid())`, validación de `WITH CHECK` y grants explícitos. El nuevo esquema de Catálogo debe seguir ese patrón sin reescribir la seguridad histórica de otras tablas.
+- El único bucket existente es `avatars`: público, limitado a JPEG y 1 MiB. Tiene políticas específicas de avatar y no debe reutilizarse para prendas.
+- Catálogo necesita un bucket separado, privado, con MIME permitido JPEG/PNG/WebP y límite máximo de 12 MiB por archivo. Toda lectura, escritura, actualización y eliminación deberá comprobar autenticación, propietario y pertenencia de la foto a una prenda del mismo usuario.
+- Para fotos privadas, la UI debe usar descarga autenticada o URLs firmadas de corta duración; nunca URL pública persistente.
+
+### Condiciones previas de la primera migración
+
+1. Definir tablas y claves compuestas que impidan asociar una venta de un usuario con una prenda de otro.
+2. Crear índice único parcial para impedir más de una venta activa por prenda.
+3. Incluir metadatos de fotos y estado/cola de eliminación para soportar Storage no transaccional y reintentos.
+4. Crear bucket privado dedicado y políticas de Storage que validen la carpeta del usuario y el ID de prenda en la ruta.
+5. Otorgar a `authenticated` únicamente los privilegios CRUD necesarios; revocar acceso de `anon`; activar RLS en todas las tablas expuestas.
+6. No usar `SECURITY DEFINER` en funciones expuestas públicamente. Si una operación privilegiada resulta imprescindible, mantenerla en un esquema no expuesto, validar `auth.uid()` internamente y otorgar EXECUTE explícitamente.
+7. Probar aislamiento entre dos usuarios, asociación cruzada, carga/lectura/borrado de fotos y fallos parciales antes de integrar la UI.
+
+**Estado:** auditoría remota de esquema y Storage completada en modo lectura. No se modificó el proyecto Supabase conectado.
